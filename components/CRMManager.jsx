@@ -11,11 +11,9 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 /* ─── Supabase Client ───────────────────────────────────────────────────────── */
 // MIGRATION: localStorage/window.storage replaced with Supabase
 // Swap targets: useEffect loader + saveContacts + saveOrgs + savePosts + saveProfile
-import { createClient } from "@supabase/supabase-js";
+import { getSupabase } from "../lib/supabase";
 
-const SUPABASE_URL  = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+const supabase = getSupabase();
 
 /* ─── Styles ───────────────────────────────────────────────────────────────── */
 const STYLES = `
@@ -314,8 +312,11 @@ function ConfBadge({confidence}) {
   return <span style={{background:hi?"var(--acid-lt)":"var(--banana-lt)",color:hi?"#3a3d00":"#7a5c00",fontSize:9,fontWeight:700,padding:"1px 6px",borderRadius:3,textTransform:"uppercase",letterSpacing:"0.07em"}}>{confidence||"MEDIUM"}</span>;
 }
 function Modal({title,onClose,children,footer,wide}) {
+  const mouseDownTarget = useRef(null);
   return (
-    <div className="mover" onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div className="mover"
+      onMouseDown={e=>{ mouseDownTarget.current = e.target; }}
+      onClick={e=>{ if (e.target===e.currentTarget && mouseDownTarget.current===e.currentTarget) onClose(); }}>
       <div className={`modal ${wide?"modal-wide":""}`}>
         <div className="m-hd"><span className="m-ttl">{title}</span><button className="m-close" onClick={onClose}>×</button></div>
         <div className="m-bd">{children}</div>
@@ -362,17 +363,23 @@ function TouchpointList({touchpoints,onAdd}) {
 }
 
 /* ─── Contact Detail Panel ───────────────────────────────────────────────────── */
-function ContactDetail({contact,orgs,onClose,onUpdate,showToast}) {
+function ContactDetail({contact,orgs,onClose,onUpdate,onEdit,showToast}) {
+  const mouseDownTarget = useRef(null);
   const org = orgs.find(o=>o.id===contact.org_id);
   const score = healthScore(contact);
   const overdue = isOverdue(contact);
   const addTp = (tp) => { onUpdate({...contact,touchpoints:[...(contact.touchpoints||[]),tp]}); showToast("Touchpoint logged ✓"); };
   return (
-    <div className="detail-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+<div className="detail-overlay"
+      onMouseDown={e=>{ mouseDownTarget.current = e.target; }}
+      onClick={e=>{ if (e.target===e.currentTarget && mouseDownTarget.current===e.currentTarget) onClose(); }}>
       <div className="detail-panel">
-        <div className="dp-hd">
+<div className="dp-hd">
           <div><div className="dp-name">{contact.first_name} {contact.last_name}</div><div className="dp-sub">{contact.title}{org?` · ${org.name}`:""}</div></div>
-          <button className="dp-close" onClick={onClose}>×</button>
+          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+            <button className="btn btn-ghost btn-sm" onClick={onEdit}>Edit</button>
+            <button className="dp-close" onClick={onClose}>×</button>
+          </div>
         </div>
         <div className="dp-body">
           <div className="dp-row"><RelTag status={contact.relationship_status}/><TierBadge tier={contact.tier}/><span className={contact.relationship_type==="mentor"?"type-tag-mentor":"type-tag"}>{REL_TYPES[contact.relationship_type]||contact.relationship_type}</span><ConfBadge confidence={contact.confidence}/></div>
@@ -404,23 +411,28 @@ function ContactDetail({contact,orgs,onClose,onUpdate,showToast}) {
 }
 
 /* ─── Org Detail Panel ───────────────────────────────────────────────────────── */
-function OrgDetail({org,contacts,onClose,onUpdate,showToast}) {
-  const linked = contacts.filter(c=>c.org_id===org.id);
-  const addTp = (tp) => { onUpdate({...org,touchpoints:[...(org.touchpoints||[]),tp]}); showToast("Touchpoint logged ✓"); };
+function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
+ const mouseDownTarget = useRef(null);
+  const linked = contacts.filter(c=>c.org_id===org.id);  
   return (
-    <div className="detail-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+<div className="detail-overlay"
+      onMouseDown={e=>{ mouseDownTarget.current = e.target; }}
+      onClick={e=>{ if (e.target===e.currentTarget && mouseDownTarget.current===e.currentTarget) onClose(); }}>
       <div className="detail-panel">
         <div className="dp-hd">
           <div><div className="dp-name">{org.name}</div><div className="dp-sub">{ORG_CATS[org.category]||org.category}{org.website?` · ${org.website}`:""}</div></div>
-          <button className="dp-close" onClick={onClose}>×</button>
+<div style={{display:"flex",gap:8,alignItems:"center"}}>
+            <button className="btn btn-ghost btn-sm" onClick={onEdit}>Edit</button>
+            <button className="dp-close" onClick={onClose}>×</button>
+          </div>
         </div>
         <div className="dp-body">
           <div className="dp-row"><RelTag status={org.relationship_status}/><TierBadge tier={org.tier}/><ConfBadge confidence={org.confidence}/></div>
           {linked.length>0&&<div className="dp-section"><div className="dp-sect-lbl">People ({linked.length})</div>{linked.map(c=><div key={c.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}><div style={{flex:1}}><div style={{fontSize:13,fontWeight:700}}>{c.first_name} {c.last_name}</div><div style={{fontSize:11,color:"var(--g600)"}}>{c.title}</div></div><RelTag status={c.relationship_status}/></div>)}</div>}
           {org.financial_relationship&&<div className="dp-section"><div className="dp-sect-lbl">Financial</div><div className="dp-field"><strong>Given to Sprout:</strong> {org.financial_relationship.has_given?fmtMoney(org.financial_relationship.total_given):"Not yet"}</div></div>}
           {org.next_action&&<div className="dp-section"><div className="dp-sect-lbl">Next Action</div><div style={{background:"var(--banana-lt)",borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700}}>{org.next_action}</div>{org.next_action_date&&<div style={{fontSize:11,color:"var(--g600)",marginTop:3}}>By {fmtDate(org.next_action_date)}</div>}</div></div>}
-          {org.notes&&<div className="dp-section"><div className="dp-sect-lbl">Notes</div><p style={{fontSize:12,lineHeight:1.7}}>{org.notes}</p></div>}
-          <div className="dp-section"><div className="dp-sect-lbl">Touchpoints ({(org.touchpoints||[]).length})</div><TouchpointList touchpoints={org.touchpoints} onAdd={addTp}/></div>
+{org.notes&&<div className="dp-section"><div className="dp-sect-lbl">Notes</div><p style={{fontSize:12,lineHeight:1.7}}>{org.notes}</p></div>}
+          <div className="dp-section"><div className="dp-sect-lbl">Touchpoints ({(org.touchpoints||[]).length})</div><TouchpointList touchpoints={org.touchpoints} onAdd={(tp)=>{ onUpdate({...org,touchpoints:[...(org.touchpoints||[]),tp]}); showToast("Touchpoint logged ✓"); }}/></div>
         </div>
       </div>
     </div>
@@ -566,10 +578,16 @@ function ContactsView({contacts,orgs,onUpdate,onDelete,showToast,pendingDetail})
     return true;
   }), [contacts, search, fType, fTier, fStatus]);
 
+const [editing,setEditing]=useState(null); // contact being edited
+
   const addContact=()=>{
-    if (!nc.first_name.trim()||!nc.last_name.trim()) return;
     const c={...nc,record_type:"individual",id:`ind_${uid()}`,touchpoints:[],tags:[],interests:[],linked_grants:[],financial_relationship:{has_given:false,total_given:0},ask_readiness:"not_ready",confidence:"MEDIUM",createdAt:new Date().toISOString()};
     onUpdate([...contacts,c]); setNc(blank); setAdding(false); showToast("Contact added ✓");
+  };
+
+  const saveEdit=()=>{
+    onUpdate(contacts.map(c=>c.id===editing.id?editing:c));
+    setEditing(null); showToast("Contact updated ✓");
   };
   const updateContact=(updated)=>onUpdate(contacts.map(c=>c.id===updated.id?updated:c));
   const sel=contacts.find(c=>c.id===selected);
@@ -616,15 +634,38 @@ function ContactsView({contacts,orgs,onUpdate,onDelete,showToast,pendingDetail})
                 <td><TierBadge tier={c.tier}/></td>
                 <td style={{maxWidth:160,fontSize:11,color:"var(--g600)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.next_action||"—"}</td>
                 <td style={{minWidth:80}}><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{flex:1,height:4,background:"var(--g200)",borderRadius:2,overflow:"hidden"}}><div style={{height:"100%",width:`${score}%`,background:score>=70?"var(--acid)":score>=40?"var(--cyan)":"var(--fuchsia)",borderRadius:2}}/></div><span style={{fontSize:10,fontWeight:700,color:"var(--g400)"}}>{score}%</span></div></td>
-<td><button className="btn btn-danger btn-xs" onClick={e=>{
+<td style={{display:"flex",gap:4,padding:"12px 14px"}}>
+                <button className="btn btn-ghost btn-xs" onClick={e=>{e.stopPropagation();setEditing({...c});}}>Edit</button>
+                <button className="btn btn-danger btn-xs" onClick={e=>{
                   e.stopPropagation();
                   if(globalThis.confirm?.(`Delete ${c.first_name} ${c.last_name}?`)??true) onDelete(c.id);
-                }}>Del</button></td>
+                }}>Del</button>
+              </td>
               </tr>;
             })}
 </tbody></table></div>
       }
-      {sel&&<ContactDetail contact={sel} orgs={orgs} onClose={()=>setSelected(null)} onUpdate={updateContact} showToast={showToast}/>}
+{sel&&<ContactDetail contact={sel} orgs={orgs} onClose={()=>setSelected(null)} onUpdate={updateContact} onEdit={()=>setEditing({...sel})} showToast={showToast}/>}
+
+{editing&&(
+  <Modal title="Edit Contact" wide onClose={()=>setEditing(null)}
+    footer={<><button className="btn btn-ghost btn-sm" onClick={()=>setEditing(null)}>Cancel</button><button className="btn btn-blk btn-sm" onClick={saveEdit}>Save Changes</button></>}>
+    <div className="frow"><div className="fg"><label className="fl">First Name</label><input className="fi" value={editing.first_name||""} onChange={e=>setEditing({...editing,first_name:e.target.value})} autoFocus/></div><div className="fg"><label className="fl">Last Name</label><input className="fi" value={editing.last_name||""} onChange={e=>setEditing({...editing,last_name:e.target.value})}/></div></div>
+    <div className="frow"><div className="fg"><label className="fl">Organization</label><select className="fs" value={editing.org_id||""} onChange={e=>setEditing({...editing,org_id:e.target.value})}><option value="">— None —</option>{orgs.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></div><div className="fg"><label className="fl">Title</label><input className="fi" value={editing.title||""} onChange={e=>setEditing({...editing,title:e.target.value})}/></div></div>
+    <div className="frow"><div className="fg"><label className="fl">Email</label><input type="email" className="fi" value={editing.email||""} onChange={e=>setEditing({...editing,email:e.target.value})}/></div><div className="fg"><label className="fl">Phone</label><input className="fi" value={editing.phone||""} onChange={e=>setEditing({...editing,phone:e.target.value})}/></div></div>
+    <div className="frow3">
+      <div className="fg"><label className="fl">Type</label><select className="fs" value={editing.relationship_type||"funder_contact"} onChange={e=>setEditing({...editing,relationship_type:e.target.value})}>{Object.entries(REL_TYPES).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></div>
+      <div className="fg"><label className="fl">Status</label><select className="fs" value={editing.relationship_status||"cold"} onChange={e=>setEditing({...editing,relationship_status:e.target.value})}>{Object.entries(REL_STATUS).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></div>
+      <div className="fg"><label className="fl">Tier</label><select className="fs" value={editing.tier||"B"} onChange={e=>setEditing({...editing,tier:e.target.value})}><option value="A">A — Weekly</option><option value="B">B — Monthly</option><option value="C">C — Quarterly</option></select></div>
+    </div>
+    <div className="frow"><div className="fg"><label className="fl">Confidence</label><select className="fs" value={editing.confidence||"MEDIUM"} onChange={e=>setEditing({...editing,confidence:e.target.value})}><option value="HIGH">High</option><option value="MEDIUM">Medium</option><option value="LOW">Low</option></select></div><div className="fg"><label className="fl">Ask Readiness</label><select className="fs" value={editing.ask_readiness||"not_ready"} onChange={e=>setEditing({...editing,ask_readiness:e.target.value})}><option value="not_ready">Not Ready</option><option value="cultivating">Cultivating</option><option value="ready">Ready</option><option value="asked">Asked</option></select></div></div>
+    <div className="frow"><div className="fg"><label className="fl">Next Action</label><input className="fi" value={editing.next_action||""} onChange={e=>setEditing({...editing,next_action:e.target.value})}/></div><div className="fg"><label className="fl">Next Action Date</label><input type="date" className="fi" value={editing.next_action_date||""} onChange={e=>setEditing({...editing,next_action_date:e.target.value})}/></div></div>
+    <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={3} value={editing.notes||""} onChange={e=>setEditing({...editing,notes:e.target.value})}/></div>
+    <div className="fg"><label className="fl">Tags (comma-separated)</label><input className="fi" value={(editing.tags||[]).join(", ")} onChange={e=>setEditing({...editing,tags:e.target.value.split(",").map(t=>t.trim()).filter(Boolean)})}/></div>
+    <div className="fg"><label className="fl">Interests (comma-separated)</label><input className="fi" value={(editing.interests||[]).join(", ")} onChange={e=>setEditing({...editing,interests:e.target.value.split(",").map(t=>t.trim()).filter(Boolean)})}/></div>
+    <div className="fg"><label className="fl">Linked Grants (comma-separated)</label><input className="fi" value={(editing.linked_grants||[]).join(", ")} onChange={e=>setEditing({...editing,linked_grants:e.target.value.split(",").map(t=>t.trim()).filter(Boolean)})}/></div>
+  </Modal>
+)}
     </div>
   );
 }
@@ -645,6 +686,13 @@ function OrgsView({orgs,contacts,onUpdate,showToast}) {
     if (fStatus!=="all"&&o.relationship_status!==fStatus) return false;
     return true;
   });
+
+const [editingOrg,setEditingOrg]=useState(null);
+
+  const saveEditOrg=()=>{
+    onUpdate(orgs.map(o=>o.id===editingOrg.id?editingOrg:o));
+    setEditingOrg(null); showToast("Organization updated ✓");
+  };
 
   const addOrg=()=>{
     if (!no.name.trim()) return;
@@ -680,7 +728,7 @@ function OrgsView({orgs,contacts,onUpdate,showToast}) {
       )}
       {filtered.length===0
         ? <div className="empty"><div className="empty-ico">🏢</div><div className="empty-ttl">No organizations</div><div className="empty-txt">Add organizations manually or import JSON from Claude.</div></div>
-        : <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Organization</th><th>Category</th><th>Status</th><th>Tier</th><th>People</th><th>Next Action</th><th>Given</th></tr></thead><tbody>
+        : <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Organization</th><th>Category</th><th>Status</th><th>Tier</th><th>People</th><th>Next Action</th><th>Given</th><th></th></tr></thead><tbody>
             {filtered.map(o=>{
               const people=contacts.filter(c=>c.org_id===o.id);
               return <tr key={o.id} onClick={()=>setSelected(o.id)}>
@@ -690,12 +738,32 @@ function OrgsView({orgs,contacts,onUpdate,showToast}) {
                 <td><TierBadge tier={o.tier}/></td>
                 <td style={{fontSize:12,color:"var(--g600)"}}>{people.length}</td>
                 <td style={{maxWidth:160,fontSize:11,color:"var(--g600)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.next_action||"—"}</td>
-                <td style={{fontSize:12}}>{o.financial_relationship?.has_given?fmtMoney(o.financial_relationship.total_given):<span style={{color:"var(--g400)"}}>—</span>}</td>
+<td style={{fontSize:12}}>{o.financial_relationship?.has_given?fmtMoney(o.financial_relationship.total_given):<span style={{color:"var(--g400)"}}>—</span>}</td>
+<td style={{display:"flex",gap:4,padding:"12px 14px"}}>
+                  <button className="btn btn-ghost btn-xs" onClick={e=>{e.stopPropagation();setEditingOrg({...o});}}>Edit</button>
+                  <button className="btn btn-danger btn-xs" onClick={e=>{e.stopPropagation();if(globalThis.confirm?.(`Delete ${o.name}?`)??true){onUpdate(orgs.filter(x=>x.id!==o.id));showToast("Organization deleted");}}}>Del</button>
+                </td>
               </tr>;
             })}
           </tbody></table></div>
       }
-      {sel&&<OrgDetail org={sel} contacts={contacts} onClose={()=>setSelected(null)} onUpdate={updateOrg} showToast={showToast}/>}
+{sel&&<OrgDetail org={sel} contacts={contacts} onClose={()=>setSelected(null)} onUpdate={updateOrg} onEdit={()=>setEditingOrg({...sel})} showToast={showToast}/>}
+
+{editingOrg&&(
+  <Modal title="Edit Organization" wide onClose={()=>setEditingOrg(null)}
+    footer={<><button className="btn btn-ghost btn-sm" onClick={()=>setEditingOrg(null)}>Cancel</button><button className="btn btn-blk btn-sm" onClick={saveEditOrg}>Save Changes</button></>}>
+    <div className="frow"><div className="fg"><label className="fl">Name *</label><input className="fi" value={editingOrg.name||""} onChange={e=>setEditingOrg({...editingOrg,name:e.target.value})} autoFocus/></div><div className="fg"><label className="fl">Website</label><input className="fi" value={editingOrg.website||""} onChange={e=>setEditingOrg({...editingOrg,website:e.target.value})}/></div></div>
+    <div className="frow3">
+      <div className="fg"><label className="fl">Category</label><select className="fs" value={editingOrg.category||"funder"} onChange={e=>setEditingOrg({...editingOrg,category:e.target.value})}>{Object.entries(ORG_CATS).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></div>
+      <div className="fg"><label className="fl">Status</label><select className="fs" value={editingOrg.relationship_status||"cold"} onChange={e=>setEditingOrg({...editingOrg,relationship_status:e.target.value})}>{Object.entries(REL_STATUS).filter(([v])=>v!=="declined").map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></div>
+      <div className="fg"><label className="fl">Tier</label><select className="fs" value={editingOrg.tier||"B"} onChange={e=>setEditingOrg({...editingOrg,tier:e.target.value})}><option value="A">A — Weekly</option><option value="B">B — Monthly</option><option value="C">C — Quarterly</option></select></div>
+    </div>
+    <div className="fg"><label className="fl">Confidence</label><select className="fs" value={editingOrg.confidence||"MEDIUM"} onChange={e=>setEditingOrg({...editingOrg,confidence:e.target.value})}><option value="HIGH">High</option><option value="MEDIUM">Medium</option><option value="LOW">Low</option></select></div>
+    <div className="frow"><div className="fg"><label className="fl">Next Action</label><input className="fi" value={editingOrg.next_action||""} onChange={e=>setEditingOrg({...editingOrg,next_action:e.target.value})}/></div><div className="fg"><label className="fl">Next Action Date</label><input type="date" className="fi" value={editingOrg.next_action_date||""} onChange={e=>setEditingOrg({...editingOrg,next_action_date:e.target.value})}/></div></div>
+    <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={3} value={editingOrg.notes||""} onChange={e=>setEditingOrg({...editingOrg,notes:e.target.value})}/></div>
+    <div className="fg"><label className="fl">Tags (comma-separated)</label><input className="fi" value={(editingOrg.tags||[]).join(", ")} onChange={e=>setEditingOrg({...editingOrg,tags:e.target.value.split(",").map(t=>t.trim()).filter(Boolean)})}/></div>
+  </Modal>
+)}
     </div>
   );
 }
@@ -1091,8 +1159,13 @@ const saveContacts=useCallback((u)=>{
       updated_at: new Date().toISOString(),
       data: c,
     }));
-    supabase.from("sprout_contacts").upsert(rows, { onConflict: "id" })
-      .then(({ error }) => { if (error) { console.error("saveContacts:", error); showToast("Save failed — check console","err"); }});
+supabase.from("sprout_contacts").upsert(rows, { onConflict: "id" })
+      .then(({ error }) => {
+        if (error) {
+          console.error("saveContacts:", error);
+          showToast(`Save failed: ${error.message}`,"err");
+        }
+      });
   },[showToast]);
 
   const saveOrgs=useCallback((u)=>{
