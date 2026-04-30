@@ -616,10 +616,10 @@ function ContactsView({contacts,orgs,onUpdate,onDelete,showToast,pendingDetail})
                 <td><TierBadge tier={c.tier}/></td>
                 <td style={{maxWidth:160,fontSize:11,color:"var(--g600)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.next_action||"—"}</td>
                 <td style={{minWidth:80}}><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{flex:1,height:4,background:"var(--g200)",borderRadius:2,overflow:"hidden"}}><div style={{height:"100%",width:`${score}%`,background:score>=70?"var(--acid)":score>=40?"var(--cyan)":"var(--fuchsia)",borderRadius:2}}/></div><span style={{fontSize:10,fontWeight:700,color:"var(--g400)"}}>{score}%</span></div></td>
-                <button className="btn btn-danger btn-xs" onClick={e=>{
+<td><button className="btn btn-danger btn-xs" onClick={e=>{
                   e.stopPropagation();
                   if(globalThis.confirm?.(`Delete ${c.first_name} ${c.last_name}?`)??true) onDelete(c.id);
-                }}>Del</button>
+                }}>Del</button></td>
               </tr>;
             })}
 </tbody></table></div>
@@ -1049,10 +1049,10 @@ Promise.resolve({ data: [], error: null }), // sprout_posts: table pending
         });
         const mergePost = (row) => ({ ...row.data, id: row.id });
 
-        const contacts = contactRows?.length ? contactRows.map(mergeContact) : SEED_CONTACTS;
-        const orgs     = orgRows?.length     ? orgRows.map(mergeOrg)         : SEED_ORGS;
-        const posts    = postRows?.length     ? postRows.map(mergePost)       : [];
-        const profile  = profileRow?.data     ? profileRow.data               : DEFAULT_PROFILE;
+      const contacts = (contactRows ?? []).map(mergeContact);
+        const orgs     = (orgRows ?? []).map(mergeOrg);
+        const posts    = (postRows ?? []).map(mergePost);
+        const profile  = profileRow?.data ?? DEFAULT_PROFILE;
 
         setContacts(contacts);
         setOrgs(orgs);
