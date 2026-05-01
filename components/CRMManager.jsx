@@ -12,6 +12,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 // MIGRATION: localStorage/window.storage replaced with Supabase
 // Swap targets: useEffect loader + saveContacts + saveOrgs + savePosts + saveProfile
 import { getSupabase } from "../lib/supabase";
+import { fetchContacts, fetchOrgs } from "../lib/services";
 
 const supabase = getSupabase();
 
@@ -1081,8 +1082,8 @@ async function loadAll() {
           { data: postRows,    error: pErr },
           { data: profileRow,  error: prErr },
         ] = await Promise.all([
-          supabase.from("sprout_contacts").select("id,data,org_id,record_type,first_name,last_name,email,relationship_status,tier,next_action_date,created_at,updated_at"),
-          supabase.from("sprout_orgs").select("id,data,name,category,relationship_status,tier,next_action_date,created_at,updated_at"),
+          fetchContacts(),
+          fetchOrgs(),
 Promise.resolve({ data: [], error: null }), // sprout_posts: table pending
           supabase.from("sprout_profile").select("id,data").eq("id","profile").single(),
         ]);
@@ -1091,34 +1092,10 @@ Promise.resolve({ data: [], error: null }), // sprout_posts: table pending
         if (oErr && oErr.code !== "PGRST116") throw oErr;
         // pErr skipped — sprout_posts table pending
 
-        // Merge top-level columns back into the data blob for the UI
-        const mergeContact = (row) => ({
-          ...row.data,
-          id: row.id,
-          org_id: row.org_id,
-          record_type: row.record_type,
-          first_name: row.first_name,
-          last_name: row.last_name,
-          email: row.email,
-          relationship_status: row.relationship_status,
-          tier: row.tier,
-          next_action_date: row.next_action_date,
-          createdAt: row.created_at,
-        });
-        const mergeOrg = (row) => ({
-          ...row.data,
-          id: row.id,
-          name: row.name,
-          category: row.category,
-          relationship_status: row.relationship_status,
-          tier: row.tier,
-          next_action_date: row.next_action_date,
-          createdAt: row.created_at,
-        });
         const mergePost = (row) => ({ ...row.data, id: row.id });
 
-      const contacts = (contactRows ?? []).map(mergeContact);
-        const orgs     = (orgRows ?? []).map(mergeOrg);
+        const contacts = contactRows;
+        const orgs     = orgRows;
         const posts    = (postRows ?? []).map(mergePost);
         const profile  = profileRow?.data ?? DEFAULT_PROFILE;
 
