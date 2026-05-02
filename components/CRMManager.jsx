@@ -229,14 +229,53 @@ const STYLES = `
 
   .settings-foot { position:sticky; bottom:0; background:var(--white); border-top:1.5px solid var(--g200); padding:14px 32px; margin:24px -32px -30px; display:flex; justify-content:flex-end; box-shadow:0 -4px 14px rgba(0,0,0,0.06); z-index:20; }
 
+  .radio-group { display:flex; gap:6px; flex-wrap:wrap; }
+  .radio-btn { padding:5px 12px; border-radius:6px; border:1.5px solid var(--g200); background:#fff; font-size:11px; font-weight:700; font-family:'Lato',sans-serif; cursor:pointer; color:var(--g600); transition:all 0.12s; letter-spacing:0.03em; }
+  .radio-btn:hover { border-color:var(--g400); color:var(--black); }
+  .radio-btn.on { background:var(--cyan); border-color:var(--cyan); color:var(--black); }
+  .radio-btn.on-a { background:var(--fuchsia); border-color:var(--fuchsia); color:#fff; }
+  .radio-btn.on-acid { background:var(--acid); border-color:var(--acid); color:var(--black); }
+
+  .chip-wrap { display:flex; flex-wrap:wrap; gap:5px; padding:6px 8px; border:1.5px solid var(--g200); border-radius:6px; background:#fff; min-height:36px; cursor:text; transition:border-color 0.12s; }
+  .chip-wrap:focus-within { border-color:var(--cyan); box-shadow:0 0 0 2px rgba(115,196,214,0.15); }
+  .chip { display:inline-flex; align-items:center; gap:4px; background:var(--cyan-lt); color:#155e6e; border-radius:20px; padding:2px 8px; font-size:11px; font-weight:700; }
+  .chip-x { background:none; border:none; cursor:pointer; color:#155e6e; font-size:13px; line-height:1; padding:0 1px; font-family:'Lato',sans-serif; }
+  .chip-x:hover { color:var(--fuchsia); }
+  .chip-fi { border:none; outline:none; font-size:12px; font-family:'Lato',sans-serif; color:var(--black); background:transparent; min-width:80px; flex:1; padding:1px 2px; }
+
+  .ss-wrap { position:relative; }
+  .ss-input { width:100%; padding:8px 11px; border:1.5px solid var(--g200); border-radius:6px; font-size:13px; font-family:'Lato',sans-serif; color:var(--black); background:#fff; outline:none; cursor:pointer; transition:border-color 0.12s; }
+  .ss-input:focus { border-color:var(--cyan); box-shadow:0 0 0 2px rgba(115,196,214,0.15); }
+  .ss-drop { position:absolute; top:calc(100% + 4px); left:0; right:0; background:#fff; border:1.5px solid var(--g200); border-radius:8px; box-shadow:var(--sh-lg); z-index:500; max-height:200px; overflow-y:auto; }
+  .ss-opt { padding:8px 12px; font-size:12px; cursor:pointer; color:var(--black); transition:background 0.1s; }
+  .ss-opt:hover { background:var(--g50); }
+  .ss-opt.selected { background:rgba(115,196,214,0.12); font-weight:700; }
+  .ss-empty { padding:10px 12px; font-size:12px; color:var(--g400); font-style:italic; }
+
+  .drawer-toggle { display:flex; align-items:center; gap:6px; background:none; border:none; font-size:11px; font-weight:700; color:var(--g400); cursor:pointer; font-family:'Lato',sans-serif; padding:4px 0; letter-spacing:0.04em; text-transform:uppercase; margin-bottom:8px; }
+  .drawer-toggle:hover { color:var(--black); }
+  .drawer-divider { border:none; border-top:1px dashed var(--g200); margin:10px 0 12px; }
+
+  .type-btn-group { display:flex; gap:5px; flex-wrap:wrap; }
+  .type-btn { padding:6px 11px; border-radius:6px; border:1.5px solid var(--g200); background:#fff; font-size:11px; font-weight:700; font-family:'Lato',sans-serif; cursor:pointer; color:var(--g600); transition:all 0.12s; }
+  .type-btn:hover { border-color:var(--cyan); color:var(--black); }
+  .type-btn.on { background:var(--black); border-color:var(--black); color:#fff; }
+
+  .modal-tabs { display:flex; border-bottom:2px solid var(--g200); margin:-17px -21px 18px; padding:0 21px; gap:1px; }
+  .modal-tab { padding:10px 14px; border:none; background:transparent; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--g400); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; font-family:'Lato',sans-serif; transition:all 0.12s; }
+  .modal-tab:hover { color:var(--black); }
+  .modal-tab.on { color:var(--black); border-bottom-color:var(--cyan); }
+
+  .sb-log-btn { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; padding:7px 10px; border-radius:6px; border:1px solid rgba(247,247,246,0.12); background:transparent; color:rgba(247,247,246,0.45); font-size:10px; font-weight:700; font-family:'Lato',sans-serif; cursor:pointer; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:10px; transition:all 0.12s; }
+  .sb-log-btn:hover { background:rgba(247,247,246,0.07); color:var(--white); border-color:rgba(247,247,246,0.25); }
+
   @media (max-width:820px) {
     .main { margin-left:0; } .sb { display:none; }
     .stats { grid-template-columns:1fr 1fr; }
     .frow,.frow3 { grid-template-columns:1fr; }
     .page { padding:18px; }
     .detail-panel { width:100vw; }
-  }
-`;
+  }`;
 
 /* ─── Constants ─────────────────────────────────────────────────────────────── */
 const REL_STATUS = { cold:"Cold", warm:"Warm", active:"Active", lapsed:"Lapsed", declined:"Declined" };
@@ -346,6 +385,81 @@ function ConfirmModal({message,onConfirm,onCancel}) {
   );
 }
 
+/* ─── Primitives ─────────────────────────────────────────────────────────────── */
+function RadioGroup({options,value,onChange,colorMap}) {
+  return (
+    <div className="radio-group">
+      {options.map(o=>{
+        const isOn = value===o.value;
+        const colorClass = isOn ? (colorMap?.[o.value] || "on") : "";
+        return (
+          <button key={o.value} className={`radio-btn ${colorClass}`} onClick={()=>onChange(o.value)}>
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ChipInput({values,onChange,placeholder}) {
+  const [input,setInput]=useState("");
+  const ref=useRef(null);
+  const add=(val)=>{ const v=val.trim(); if(v&&!values.includes(v)) onChange([...values,v]); setInput(""); };
+  const remove=(v)=>onChange(values.filter(x=>x!==v));
+  const onKey=(e)=>{
+    if((e.key==="Enter"||e.key===","||e.key===" ")&&input.trim()){ e.preventDefault(); add(input); }
+    if(e.key==="Backspace"&&!input&&values.length) remove(values[values.length-1]);
+  };
+  return (
+    <div className="chip-wrap" onClick={()=>ref.current?.focus()}>
+      {values.map(v=><span key={v} className="chip">{v}<button className="chip-x" onClick={e=>{e.stopPropagation();remove(v);}}>×</button></span>)}
+      <input ref={ref} className="chip-fi" value={input} placeholder={values.length?"":(placeholder||"Type and press Enter…")}
+        onChange={e=>setInput(e.target.value)} onKeyDown={onKey} onBlur={()=>{ if(input.trim()) add(input); }}/>
+    </div>
+  );
+}
+
+function SearchSelect({options,value,onChange,placeholder,disabled}) {
+  const [open,setOpen]=useState(false);
+  const [query,setQuery]=useState("");
+  const ref=useRef(null);
+  const selected=options.find(o=>o.value===value);
+  const filtered=options.filter(o=>o.label.toLowerCase().includes(query.toLowerCase()));
+  useEffect(()=>{
+    const h=(e)=>{ if(ref.current&&!ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown",h);
+    return ()=>document.removeEventListener("mousedown",h);
+  },[]);
+  useEffect(()=>{
+    if(!open) setQuery("");
+  },[open]);
+  return (
+    <div className="ss-wrap" ref={ref}>
+      <input className="ss-input" readOnly={!open} value={open?query:(selected?.label||"")}
+        placeholder={placeholder||"Select…"}
+        onFocus={()=>{ if(!disabled){ setOpen(true); setQuery(""); }}}
+        onChange={e=>setQuery(e.target.value)}
+        disabled={disabled}
+        style={disabled?{background:"var(--g50)",color:"var(--g400)",cursor:"not-allowed"}:{}}
+      />
+      {open&&(
+        <div className="ss-drop">
+          {filtered.length===0
+            ? <div className="ss-empty">No results</div>
+            : filtered.map(o=>(
+                <div key={o.value} className={`ss-opt ${o.value===value?"selected":""}`}
+                  onMouseDown={e=>{e.preventDefault(); onChange(o.value); setOpen(false);}}>
+                  {o.label}{o.meta&&<span style={{fontSize:10,color:"var(--g400)",marginLeft:6}}>{o.meta}</span>}
+                </div>
+              ))
+          }
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Touchpoint Log ─────────────────────────────────────────────────────────── */
 function TouchpointList({touchpoints,onAdd}) {
   const [adding,setAdding] = useState(false);
@@ -379,6 +493,55 @@ function TouchpointList({touchpoints,onAdd}) {
         </div>
       ):<button className="btn btn-ghost btn-sm" style={{marginTop:8}} onClick={()=>setAdding(true)}>+ Log Touchpoint</button>}
     </div>
+  );
+}
+
+/* ─── Quick Log Modal ────────────────────────────────────────────────────────── */
+const TP_TYPES = ["email","call","meeting","event","grant_submission","social","other"];
+const STATUS_OPTS = [
+  {value:"cold",label:"Cold"},{value:"warm",label:"Warm"},
+  {value:"active",label:"Active"},{value:"lapsed",label:"Lapsed"},{value:"declined",label:"Declined"}
+];
+const STATUS_OPTS_NO_DECLINED = STATUS_OPTS.filter(o=>o.value!=="declined");
+const TIER_OPTS = [{value:"A",label:"Tier A"},{value:"B",label:"Tier B"},{value:"C",label:"Tier C"}];
+const CONF_OPTS = [{value:"HIGH",label:"High"},{value:"MEDIUM",label:"Medium"},{value:"LOW",label:"Low"}];
+const DIR_OPTS  = [{value:"outbound",label:"Outbound"},{value:"inbound",label:"Inbound"},{value:"mutual",label:"Mutual"}];
+const TIER_COLOR = {A:"on-a",B:"on",C:"on-acid"};
+
+function QuickLogModal({contacts,initialContactId,onLog,onClose}) {
+  const today = new Date().toISOString().slice(0,10);
+  const [contactId,setContactId]=useState(initialContactId||contacts[0]?.id||"");
+  const [tp,setTp]=useState({date:today,type:"email",direction:"outbound",summary:"",outcome:"",next_step:""});
+  const [showExtra,setShowExtra]=useState(false);
+  const contactOpts=contacts.map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`,meta:c.title||""}));
+  const canSave=contactId&&tp.summary.trim();
+  const save=()=>{ if(!canSave) return; onLog(contactId,{...tp,id:Date.now().toString(36)}); onClose(); };
+  return (
+    <Modal title="Log Touchpoint" onClose={onClose}
+      footer={<><button className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button><button className="btn btn-blk btn-sm" onClick={save} disabled={!canSave}>Log Touchpoint →</button></>}>
+      <div className="fg"><label className="fl">Contact</label>
+        <SearchSelect options={contactOpts} value={contactId} onChange={setContactId} placeholder="Search contacts…"/>
+      </div>
+      <div className="fg"><label className="fl">Type</label>
+        <div className="type-btn-group">
+          {TP_TYPES.map(t=><button key={t} className={`type-btn ${tp.type===t?"on":""}`} onClick={()=>setTp({...tp,type:t})}>{t.replace("_"," ")}</button>)}
+        </div>
+      </div>
+      <div className="frow">
+        <div className="fg"><label className="fl">Direction</label><RadioGroup options={DIR_OPTS} value={tp.direction} onChange={v=>setTp({...tp,direction:v})}/></div>
+        <div className="fg"><label className="fl">Date</label><input type="date" className="fi" value={tp.date} onChange={e=>setTp({...tp,date:e.target.value})}/></div>
+      </div>
+      <div className="fg"><label className="fl">Summary *</label>
+        <textarea className="fta" rows={3} value={tp.summary} placeholder="What happened?" onChange={e=>setTp({...tp,summary:e.target.value})} autoFocus/>
+      </div>
+      <button className="drawer-toggle" onClick={()=>setShowExtra(!showExtra)}>
+        {showExtra?"▾":"▸"} Add outcome & next step
+      </button>
+      {showExtra&&<><hr className="drawer-divider"/>
+        <div className="fg"><label className="fl">Outcome</label><input className="fi" value={tp.outcome} placeholder="Result of this interaction" onChange={e=>setTp({...tp,outcome:e.target.value})}/></div>
+        <div className="fg"><label className="fl">Next Step</label><input className="fi" value={tp.next_step} placeholder="What happens next?" onChange={e=>setTp({...tp,next_step:e.target.value})}/></div>
+      </>}
+    </Modal>
   );
 }
 
@@ -462,7 +625,7 @@ function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
 }
 
 /* ─── Sidebar ────────────────────────────────────────────────────────────────── */
-function Sidebar({view,setView,contacts,profile}) {
+function Sidebar({view,setView,contacts,profile,onQuickLog}) {
   const overdueCount = contacts.filter(isOverdue).length;
   const nav = [
     {section:"Overview"},
@@ -487,11 +650,14 @@ function Sidebar({view,setView,contacts,profile}) {
             </div>
         )}
       </div>
-<div className="sb-foot"><div className="sb-foot-txt">
-        {profile?.legalName||"Sprout Society Inc."}
-        {profile?.ein&&<><br/>EIN {profile.ein}</>}
-        {profile?.address&&<><br/>{profile.address}</>}
-      </div></div>
+<div className="sb-foot">
+        <button className="sb-log-btn" onClick={onQuickLog}>+ Log Touchpoint</button>
+        <div className="sb-foot-txt">
+          {profile?.legalName||"Sprout Society Inc."}
+          {profile?.ein&&<><br/>EIN {profile.ein}</>}
+          {profile?.address&&<><br/>{profile.address}</>}
+        </div>
+      </div>
     </nav>
   );
 }
@@ -574,14 +740,60 @@ const tiers = {A:contacts.filter(c=>c.tier==="A"),B:contacts.filter(c=>c.tier===
   );
 }
 
+/* ─── Contact Edit Modal ─────────────────────────────────────────────────────── */
+function ContactEditModal({editing,setEditing,onSave,orgs}) {
+  const [eTab,setETab]=useState("overview");
+  const REL_TYPE_OPTS=Object.entries(REL_TYPES).map(([v,l])=>({value:v,label:l}));
+  const ASK_OPTS=[{value:"not_ready",label:"Not Ready"},{value:"cultivating",label:"Cultivating"},{value:"ready",label:"Ready"},{value:"asked",label:"Asked"}];
+  const orgOpts=[{value:"",label:"— None —"},...orgs.map(o=>({value:o.id,label:o.name,meta:ORG_CATS[o.category]||o.category}))];
+  return (
+    <Modal title={`Edit — ${editing.first_name} ${editing.last_name}`} wide onClose={()=>setEditing(null)}
+      footer={<><button className="btn btn-ghost btn-sm" onClick={()=>setEditing(null)}>Cancel</button><button className="btn btn-blk btn-sm" onClick={onSave}>Save Changes →</button></>}>
+      <div className="modal-tabs">
+        {["overview","details","actions","profile"].map(t=><button key={t} className={`modal-tab ${eTab===t?"on":""}`} onClick={()=>setETab(t)}>{t}</button>)}
+      </div>
+      {eTab==="overview"&&<>
+        <div className="fg"><label className="fl">Status</label><RadioGroup options={STATUS_OPTS} value={editing.relationship_status||"cold"} onChange={v=>setEditing({...editing,relationship_status:v})}/></div>
+        <div className="fg"><label className="fl">Tier</label><RadioGroup options={TIER_OPTS} value={editing.tier||"B"} onChange={v=>setEditing({...editing,tier:v})} colorMap={TIER_COLOR}/></div>
+        <div className="fg"><label className="fl">Type</label><SearchSelect options={REL_TYPE_OPTS} value={editing.relationship_type||"funder_contact"} onChange={v=>setEditing({...editing,relationship_type:v})}/></div>
+        <div className="fg"><label className="fl">Confidence</label><RadioGroup options={CONF_OPTS} value={editing.confidence||"MEDIUM"} onChange={v=>setEditing({...editing,confidence:v})}/></div>
+        <div className="fg"><label className="fl">Ask Readiness</label><SearchSelect options={ASK_OPTS} value={editing.ask_readiness||"not_ready"} onChange={v=>setEditing({...editing,ask_readiness:v})}/></div>
+      </>}
+      {eTab==="details"&&<>
+        <div className="frow">
+          <div className="fg"><label className="fl">First Name</label><input className="fi" value={editing.first_name||""} onChange={e=>setEditing({...editing,first_name:e.target.value})} autoFocus/></div>
+          <div className="fg"><label className="fl">Last Name</label><input className="fi" value={editing.last_name||""} onChange={e=>setEditing({...editing,last_name:e.target.value})}/></div>
+        </div>
+        <div className="fg"><label className="fl">Title</label><input className="fi" value={editing.title||""} onChange={e=>setEditing({...editing,title:e.target.value})}/></div>
+        <div className="frow">
+          <div className="fg"><label className="fl">Email</label><input type="email" className="fi" value={editing.email||""} onChange={e=>setEditing({...editing,email:e.target.value})}/></div>
+          <div className="fg"><label className="fl">Phone</label><input className="fi" value={editing.phone||""} onChange={e=>setEditing({...editing,phone:e.target.value})}/></div>
+        </div>
+        <div className="fg"><label className="fl">Organization</label><SearchSelect options={orgOpts} value={editing.org_id||""} onChange={v=>setEditing({...editing,org_id:v})}/></div>
+      </>}
+      {eTab==="actions"&&<>
+        <div className="fg"><label className="fl">Next Action</label><input className="fi" value={editing.next_action||""} onChange={e=>setEditing({...editing,next_action:e.target.value})} autoFocus/></div>
+        <div className="fg"><label className="fl">Due Date</label><input type="date" className="fi" value={editing.next_action_date||""} onChange={e=>setEditing({...editing,next_action_date:e.target.value})}/></div>
+      </>}
+      {eTab==="profile"&&<>
+        <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={4} value={editing.notes||""} onChange={e=>setEditing({...editing,notes:e.target.value})} autoFocus/></div>
+        <div className="fg"><label className="fl">Tags</label><ChipInput values={editing.tags||[]} onChange={v=>setEditing({...editing,tags:v})}/></div>
+        <div className="fg"><label className="fl">Interests</label><ChipInput values={editing.interests||[]} onChange={v=>setEditing({...editing,interests:v})}/></div>
+        <div className="fg"><label className="fl">Linked Grants</label><ChipInput values={editing.linked_grants||[]} onChange={v=>setEditing({...editing,linked_grants:v})}/></div>
+      </>}
+    </Modal>
+  );
+}
+
 /* ─── Contacts View ──────────────────────────────────────────────────────────── */
 function ContactsView({contacts,orgs,onUpdate,onDelete,showToast,pendingDetail,onPendingDetailConsumed}) {
   const [search,setSearch]=useState("");
   const [fType,setFType]=useState("all");
   const [fTier,setFTier]=useState("all");
   const [fStatus,setFStatus]=useState("all");
-const [selected,setSelected]=useState(null);
+  const [selected,setSelected]=useState(null);
   const [adding,setAdding]=useState(false);
+  const [ncDrawer,setNcDrawer]=useState(false);
 
 useEffect(()=>{
   if (pendingDetail?.id) {
@@ -589,7 +801,7 @@ useEffect(()=>{
     onPendingDetailConsumed();
   }
 },[pendingDetail, onPendingDetailConsumed]);
-  const blank={first_name:"",last_name:"",org_id:"",title:"",email:"",phone:"",relationship_type:"funder_contact",relationship_status:"cold",tier:"B",notes:"",next_action:"",next_action_date:""};
+  const blank={first_name:"",last_name:"",org_id:"",title:"",email:"",phone:"",relationship_type:"funder_contact",relationship_status:"cold",tier:"B",notes:"",next_action:"",next_action_date:"",tags:[],interests:[],linked_grants:[]};
   const [nc,setNc]=useState(blank);
 
 // Pre-compute scores once per render, not once per table cell
@@ -608,8 +820,9 @@ useEffect(()=>{
     return true;
   }), [contacts, search, fType, fTier, fStatus]);
 
-const [editing,setEditing]=useState(null); // contact being edited
+const [editing,setEditing]=useState(null);
   const [confirmDelete,setConfirmDelete]=useState(null);
+  const [quickLog,setQuickLog]=useState(null); // contact id or null
 
   const addContact=()=>{
     const c={...nc,record_type:"individual",id:`ind_${uid()}`,touchpoints:[],tags:[],interests:[],linked_grants:[],financial_relationship:{has_given:false,total_given:0},ask_readiness:"not_ready",confidence:"MEDIUM",createdAt:new Date().toISOString()};
@@ -633,23 +846,40 @@ const [editing,setEditing]=useState(null); // contact being edited
 <select className="fs" value={fStatus} onChange={e=>setFStatus(e.target.value)}><option value="all">All statuses</option>{Object.entries(REL_STATUS).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
         {(search||fType!=="all"||fTier!=="all"||fStatus!=="all")&&<button className="btn btn-ghost btn-sm" onClick={()=>{setSearch("");setFType("all");setFTier("all");setFStatus("all");}}>✕ Clear</button>}
       </div>
-      {adding&&(
-        <div className="card" style={{marginBottom:16}}>
-          <div className="card-hd"><span className="card-ttl">New Contact</span><button className="btn btn-ghost btn-xs" onClick={()=>setAdding(false)}>Cancel</button></div>
-          <div className="card-bd">
-            <div className="frow"><div className="fg"><label className="fl">First Name *</label><input className="fi" value={nc.first_name} onChange={e=>setNc({...nc,first_name:e.target.value})} autoFocus/></div><div className="fg"><label className="fl">Last Name *</label><input className="fi" value={nc.last_name} onChange={e=>setNc({...nc,last_name:e.target.value})}/></div></div>
-            <div className="frow"><div className="fg"><label className="fl">Organization</label><select className="fs" value={nc.org_id} onChange={e=>setNc({...nc,org_id:e.target.value})}><option value="">— None —</option>{orgs.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></div><div className="fg"><label className="fl">Title</label><input className="fi" value={nc.title} onChange={e=>setNc({...nc,title:e.target.value})}/></div></div>
-            <div className="frow"><div className="fg"><label className="fl">Email</label><input type="email" className="fi" value={nc.email} onChange={e=>setNc({...nc,email:e.target.value})}/></div><div className="fg"><label className="fl">Phone</label><input className="fi" value={nc.phone} onChange={e=>setNc({...nc,phone:e.target.value})}/></div></div>
-            <div className="frow3">
-              <div className="fg"><label className="fl">Type</label><select className="fs" value={nc.relationship_type} onChange={e=>setNc({...nc,relationship_type:e.target.value})}>{Object.entries(REL_TYPES).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></div>
-              <div className="fg"><label className="fl">Status</label><select className="fs" value={nc.relationship_status} onChange={e=>setNc({...nc,relationship_status:e.target.value})}>{Object.entries(REL_STATUS).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></div>
-              <div className="fg"><label className="fl">Tier</label><select className="fs" value={nc.tier} onChange={e=>setNc({...nc,tier:e.target.value})}><option value="A">A — Weekly</option><option value="B">B — Monthly</option><option value="C">C — Quarterly</option></select></div>
-            </div>
-            <div className="frow"><div className="fg"><label className="fl">Next Action</label><input className="fi" value={nc.next_action} onChange={e=>setNc({...nc,next_action:e.target.value})}/></div><div className="fg"><label className="fl">Next Action Date</label><input type="date" className="fi" value={nc.next_action_date} onChange={e=>setNc({...nc,next_action_date:e.target.value})}/></div></div>
-            <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={2} value={nc.notes} onChange={e=>setNc({...nc,notes:e.target.value})}/></div>
-            <button className="btn btn-blk btn-sm" onClick={addContact}>Add Contact</button>
+{adding&&(
+        <Modal title="Add Contact" onClose={()=>{setAdding(false);setNc(blank);}}
+          footer={<><button className="btn btn-ghost btn-sm" onClick={()=>{setAdding(false);setNc(blank);}}>Cancel</button><button className="btn btn-blk btn-sm" onClick={addContact} disabled={!nc.first_name.trim()||!nc.last_name.trim()}>Add Contact →</button></>}>
+          <div className="frow">
+            <div className="fg"><label className="fl">First Name *</label><input className="fi" value={nc.first_name} onChange={e=>setNc({...nc,first_name:e.target.value})} autoFocus/></div>
+            <div className="fg"><label className="fl">Last Name *</label><input className="fi" value={nc.last_name} onChange={e=>setNc({...nc,last_name:e.target.value})}/></div>
           </div>
-        </div>
+          <div className="fg"><label className="fl">Organization</label>
+            <SearchSelect options={[{value:"",label:"— None —"},...orgs.map(o=>({value:o.id,label:o.name,meta:ORG_CATS[o.category]||o.category}))]} value={nc.org_id} onChange={v=>setNc({...nc,org_id:v})} placeholder="Search organizations…"/>
+          </div>
+          <div className="fg"><label className="fl">Type</label>
+            <SearchSelect options={Object.entries(REL_TYPES).map(([v,l])=>({value:v,label:l}))} value={nc.relationship_type} onChange={v=>setNc({...nc,relationship_type:v})}/>
+          </div>
+          <div className="fg"><label className="fl">Status</label>
+            <RadioGroup options={STATUS_OPTS} value={nc.relationship_status} onChange={v=>setNc({...nc,relationship_status:v})}/>
+          </div>
+          <div className="fg"><label className="fl">Tier</label>
+            <RadioGroup options={TIER_OPTS} value={nc.tier} onChange={v=>setNc({...nc,tier:v})} colorMap={TIER_COLOR}/>
+          </div>
+          <button className="drawer-toggle" onClick={()=>setNcDrawer(d=>!d)}>{ncDrawer?"▾":"▸"} More details</button>
+          {ncDrawer&&<><hr className="drawer-divider"/>
+            <div className="fg"><label className="fl">Title</label><input className="fi" value={nc.title} onChange={e=>setNc({...nc,title:e.target.value})}/></div>
+            <div className="frow">
+              <div className="fg"><label className="fl">Email</label><input type="email" className="fi" value={nc.email} onChange={e=>setNc({...nc,email:e.target.value})}/></div>
+              <div className="fg"><label className="fl">Phone</label><input className="fi" value={nc.phone} onChange={e=>setNc({...nc,phone:e.target.value})}/></div>
+            </div>
+            <div className="frow">
+              <div className="fg"><label className="fl">Next Action</label><input className="fi" value={nc.next_action} onChange={e=>setNc({...nc,next_action:e.target.value})}/></div>
+              <div className="fg"><label className="fl">Due Date</label><input type="date" className="fi" value={nc.next_action_date} onChange={e=>setNc({...nc,next_action_date:e.target.value})}/></div>
+            </div>
+            <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={2} value={nc.notes} onChange={e=>setNc({...nc,notes:e.target.value})}/></div>
+            <div className="fg"><label className="fl">Tags</label><ChipInput values={nc.tags} onChange={v=>setNc({...nc,tags:v})}/></div>
+          </>}
+        </Modal>
       )}
       {filtered.length===0
         ? <div className="empty"><div className="empty-ico">👤</div><div className="empty-ttl">{contacts.length===0?"No contacts yet":"No results"}</div><div className="empty-txt">{contacts.length===0?"Add contacts manually or import JSON profiles from Claude.":"Try adjusting your filters."}</div></div>
@@ -669,6 +899,7 @@ const [editing,setEditing]=useState(null); // contact being edited
 <td style={{padding:"12px 14px"}}>
                 <div className="row-actions">
                   <button className="btn btn-ghost btn-xs" onClick={e=>{e.stopPropagation();setEditing({...c});}}>Edit</button>
+                  <button className="btn btn-cyan btn-xs" onClick={e=>{e.stopPropagation();setQuickLog(c.id);}}>+ Log</button>
                   <button className="btn btn-danger btn-xs" onClick={e=>{e.stopPropagation();setConfirmDelete(c);}}>Del</button>
                 </div>
               </td>
@@ -677,27 +908,23 @@ const [editing,setEditing]=useState(null); // contact being edited
 </tbody></table></div>
       }
 {sel&&<ContactDetail contact={sel} orgs={orgs} onClose={()=>setSelected(null)} onUpdate={updateContact} onEdit={()=>setEditing({...sel})} showToast={showToast}/>}
-      {confirmDelete&&<ConfirmModal message={`Delete ${confirmDelete.first_name} ${confirmDelete.last_name}? This cannot be undone.`} onConfirm={()=>{onDelete(confirmDelete.id);setConfirmDelete(null);}} onCancel={()=>setConfirmDelete(null)}/>}
+{quickLog!==null&&<QuickLogModal
+        contacts={contacts}
+        initialContactId={quickLog}
+        onLog={(cId,tp)=>{ updateContact({...contacts.find(c=>c.id===cId), touchpoints:[...(contacts.find(c=>c.id===cId)?.touchpoints||[]),tp]}); showToast("Touchpoint logged ✓"); }}
+        onClose={()=>setQuickLog(null)}
+      />}
+{editing&&<ContactEditModal editing={editing} setEditing={setEditing} onSave={saveEdit} orgs={orgs}/>}
+      {confirmDelete&&<ConfirmModal
+        message={`Delete ${confirmDelete.first_name} ${confirmDelete.last_name}? This cannot be undone.`}
+        onConfirm={()=>{
+          if(selected===confirmDelete.id) setSelected(null);
+          onDelete(confirmDelete.id);
+          setConfirmDelete(null);
+        }}
+        onCancel={()=>setConfirmDelete(null)}
+      />}
 
-{editing&&(
-  <Modal title="Edit Contact" wide onClose={()=>setEditing(null)}
-    footer={<><button className="btn btn-ghost btn-sm" onClick={()=>setEditing(null)}>Cancel</button><button className="btn btn-blk btn-sm" onClick={saveEdit}>Save Changes</button></>}>
-    <div className="frow"><div className="fg"><label className="fl">First Name</label><input className="fi" value={editing.first_name||""} onChange={e=>setEditing({...editing,first_name:e.target.value})} autoFocus/></div><div className="fg"><label className="fl">Last Name</label><input className="fi" value={editing.last_name||""} onChange={e=>setEditing({...editing,last_name:e.target.value})}/></div></div>
-    <div className="frow"><div className="fg"><label className="fl">Organization</label><select className="fs" value={editing.org_id||""} onChange={e=>setEditing({...editing,org_id:e.target.value})}><option value="">— None —</option>{orgs.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></div><div className="fg"><label className="fl">Title</label><input className="fi" value={editing.title||""} onChange={e=>setEditing({...editing,title:e.target.value})}/></div></div>
-    <div className="frow"><div className="fg"><label className="fl">Email</label><input type="email" className="fi" value={editing.email||""} onChange={e=>setEditing({...editing,email:e.target.value})}/></div><div className="fg"><label className="fl">Phone</label><input className="fi" value={editing.phone||""} onChange={e=>setEditing({...editing,phone:e.target.value})}/></div></div>
-    <div className="frow3">
-      <div className="fg"><label className="fl">Type</label><select className="fs" value={editing.relationship_type||"funder_contact"} onChange={e=>setEditing({...editing,relationship_type:e.target.value})}>{Object.entries(REL_TYPES).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></div>
-      <div className="fg"><label className="fl">Status</label><select className="fs" value={editing.relationship_status||"cold"} onChange={e=>setEditing({...editing,relationship_status:e.target.value})}>{Object.entries(REL_STATUS).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></div>
-      <div className="fg"><label className="fl">Tier</label><select className="fs" value={editing.tier||"B"} onChange={e=>setEditing({...editing,tier:e.target.value})}><option value="A">A — Weekly</option><option value="B">B — Monthly</option><option value="C">C — Quarterly</option></select></div>
-    </div>
-    <div className="frow"><div className="fg"><label className="fl">Confidence</label><select className="fs" value={editing.confidence||"MEDIUM"} onChange={e=>setEditing({...editing,confidence:e.target.value})}><option value="HIGH">High</option><option value="MEDIUM">Medium</option><option value="LOW">Low</option></select></div><div className="fg"><label className="fl">Ask Readiness</label><select className="fs" value={editing.ask_readiness||"not_ready"} onChange={e=>setEditing({...editing,ask_readiness:e.target.value})}><option value="not_ready">Not Ready</option><option value="cultivating">Cultivating</option><option value="ready">Ready</option><option value="asked">Asked</option></select></div></div>
-    <div className="frow"><div className="fg"><label className="fl">Next Action</label><input className="fi" value={editing.next_action||""} onChange={e=>setEditing({...editing,next_action:e.target.value})}/></div><div className="fg"><label className="fl">Next Action Date</label><input type="date" className="fi" value={editing.next_action_date||""} onChange={e=>setEditing({...editing,next_action_date:e.target.value})}/></div></div>
-    <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={3} value={editing.notes||""} onChange={e=>setEditing({...editing,notes:e.target.value})}/></div>
-    <div className="fg"><label className="fl">Tags (comma-separated)</label><input className="fi" value={(editing.tags||[]).join(", ")} onChange={e=>setEditing({...editing,tags:e.target.value.split(",").map(t=>t.trim()).filter(Boolean)})}/></div>
-    <div className="fg"><label className="fl">Interests (comma-separated)</label><input className="fi" value={(editing.interests||[]).join(", ")} onChange={e=>setEditing({...editing,interests:e.target.value.split(",").map(t=>t.trim()).filter(Boolean)})}/></div>
-    <div className="fg"><label className="fl">Linked Grants (comma-separated)</label><input className="fi" value={(editing.linked_grants||[]).join(", ")} onChange={e=>setEditing({...editing,linked_grants:e.target.value.split(",").map(t=>t.trim()).filter(Boolean)})}/></div>
-  </Modal>
-)}
     </div>
   );
 }
@@ -709,8 +936,9 @@ function OrgsView({orgs,contacts,onUpdate,onDelete,showToast}) {
   const [fStatus,setFStatus]=useState("all");
   const [selected,setSelected]=useState(null);
   const [adding,setAdding]=useState(false);
-  const blank={name:"",category:"funder",website:"",relationship_status:"cold",tier:"B",notes:"",next_action:"",next_action_date:""};
+  const blank={name:"",category:"funder",website:"",relationship_status:"cold",tier:"B",notes:"",next_action:"",next_action_date:"",tags:[],primary_contact_id:""};
   const [no,setNo]=useState(blank);
+  const [noDrawer,setNoDrawer]=useState(false);
 
 const filtered=useMemo(()=>orgs.filter(o=>{
     if (search&&!o.name.toLowerCase().includes(search.toLowerCase())) return false;
@@ -744,21 +972,33 @@ const [editingOrg,setEditingOrg]=useState(null);
 <select className="fs" value={fStatus} onChange={e=>setFStatus(e.target.value)}><option value="all">All statuses</option>{Object.entries(REL_STATUS).filter(([v])=>v!=="declined").map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
         {(search||fCat!=="all"||fStatus!=="all")&&<button className="btn btn-ghost btn-sm" onClick={()=>{setSearch("");setFCat("all");setFStatus("all");}}>✕ Clear</button>}
       </div>
-      {adding&&(        
-        <div className="card" style={{marginBottom:16}}>
-          <div className="card-hd"><span className="card-ttl">New Organization</span><button className="btn btn-ghost btn-xs" onClick={()=>setAdding(false)}>Cancel</button></div>
-          <div className="card-bd">
-            <div className="frow"><div className="fg"><label className="fl">Name *</label><input className="fi" value={no.name} onChange={e=>setNo({...no,name:e.target.value})} autoFocus/></div><div className="fg"><label className="fl">Website</label><input className="fi" value={no.website} onChange={e=>setNo({...no,website:e.target.value})} placeholder="example.org"/></div></div>
-            <div className="frow3">
-              <div className="fg"><label className="fl">Category</label><select className="fs" value={no.category} onChange={e=>setNo({...no,category:e.target.value})}>{Object.entries(ORG_CATS).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></div>
-              <div className="fg"><label className="fl">Status</label><select className="fs" value={no.relationship_status} onChange={e=>setNo({...no,relationship_status:e.target.value})}>{Object.entries(REL_STATUS).filter(([v])=>v!=="declined").map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></div>
-              <div className="fg"><label className="fl">Tier</label><select className="fs" value={no.tier} onChange={e=>setNo({...no,tier:e.target.value})}><option value="A">A — Weekly</option><option value="B">B — Monthly</option><option value="C">C — Quarterly</option></select></div>
-            </div>
-            <div className="frow"><div className="fg"><label className="fl">Next Action</label><input className="fi" value={no.next_action} onChange={e=>setNo({...no,next_action:e.target.value})}/></div><div className="fg"><label className="fl">Next Action Date</label><input type="date" className="fi" value={no.next_action_date} onChange={e=>setNo({...no,next_action_date:e.target.value})}/></div></div>
-            <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={2} value={no.notes} onChange={e=>setNo({...no,notes:e.target.value})}/></div>
-            <button className="btn btn-blk btn-sm" onClick={addOrg}>Add Organization</button>
+{adding&&(
+        <Modal title="Add Organization" onClose={()=>{setAdding(false);setNo(blank);}}
+          footer={<><button className="btn btn-ghost btn-sm" onClick={()=>{setAdding(false);setNo(blank);}}>Cancel</button><button className="btn btn-blk btn-sm" onClick={addOrg} disabled={!no.name.trim()}>Add Organization →</button></>}>
+          <div className="fg"><label className="fl">Name *</label><input className="fi" value={no.name} onChange={e=>setNo({...no,name:e.target.value})} autoFocus/></div>
+          <div className="fg"><label className="fl">Category</label>
+            <SearchSelect options={Object.entries(ORG_CATS).map(([v,l])=>({value:v,label:l}))} value={no.category} onChange={v=>setNo({...no,category:v})}/>
           </div>
-        </div>
+          <div className="fg"><label className="fl">Status</label>
+            <RadioGroup options={STATUS_OPTS_NO_DECLINED} value={no.relationship_status} onChange={v=>setNo({...no,relationship_status:v})}/>
+          </div>
+          <div className="fg"><label className="fl">Tier</label>
+            <RadioGroup options={TIER_OPTS} value={no.tier} onChange={v=>setNo({...no,tier:v})} colorMap={TIER_COLOR}/>
+          </div>
+          <button className="drawer-toggle" onClick={()=>setNoDrawer(d=>!d)}>{noDrawer?"▾":"▸"} More details</button>
+          {noDrawer&&<><hr className="drawer-divider"/>
+            <div className="fg"><label className="fl">Website</label><input className="fi" value={no.website} onChange={e=>setNo({...no,website:e.target.value})} placeholder="example.org"/></div>
+            <div className="fg"><label className="fl">Primary Contact</label>
+              <SearchSelect options={[{value:"",label:"— None —"},...contacts.map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`,meta:c.title||""}))]} value={no.primary_contact_id||""} onChange={v=>setNo({...no,primary_contact_id:v})} placeholder="Search contacts…"/>
+            </div>
+            <div className="frow">
+              <div className="fg"><label className="fl">Next Action</label><input className="fi" value={no.next_action} onChange={e=>setNo({...no,next_action:e.target.value})}/></div>
+              <div className="fg"><label className="fl">Due Date</label><input type="date" className="fi" value={no.next_action_date} onChange={e=>setNo({...no,next_action_date:e.target.value})}/></div>
+            </div>
+            <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={2} value={no.notes} onChange={e=>setNo({...no,notes:e.target.value})}/></div>
+            <div className="fg"><label className="fl">Tags</label><ChipInput values={no.tags||[]} onChange={v=>setNo({...no,tags:v})}/></div>
+          </>}
+        </Modal>
       )}
       {filtered.length===0
         ? <div className="empty"><div className="empty-ico">🏢</div><div className="empty-ttl">No organizations</div><div className="empty-txt">Add organizations manually or import JSON from Claude.</div></div>
@@ -787,18 +1027,29 @@ const [editingOrg,setEditingOrg]=useState(null);
       {confirmDeleteOrg&&<ConfirmModal message={`Delete ${confirmDeleteOrg.name}? This cannot be undone.`} onConfirm={()=>{if(selected===confirmDeleteOrg.id)setSelected(null);onDelete(confirmDeleteOrg.id);setConfirmDeleteOrg(null);}} onCancel={()=>setConfirmDeleteOrg(null)}/>}
 
 {editingOrg&&(
-  <Modal title="Edit Organization" wide onClose={()=>setEditingOrg(null)}
-    footer={<><button className="btn btn-ghost btn-sm" onClick={()=>setEditingOrg(null)}>Cancel</button><button className="btn btn-blk btn-sm" onClick={saveEditOrg}>Save Changes</button></>}>
-    <div className="frow"><div className="fg"><label className="fl">Name *</label><input className="fi" value={editingOrg.name||""} onChange={e=>setEditingOrg({...editingOrg,name:e.target.value})} autoFocus/></div><div className="fg"><label className="fl">Website</label><input className="fi" value={editingOrg.website||""} onChange={e=>setEditingOrg({...editingOrg,website:e.target.value})}/></div></div>
-    <div className="frow3">
-      <div className="fg"><label className="fl">Category</label><select className="fs" value={editingOrg.category||"funder"} onChange={e=>setEditingOrg({...editingOrg,category:e.target.value})}>{Object.entries(ORG_CATS).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></div>
-      <div className="fg"><label className="fl">Status</label><select className="fs" value={editingOrg.relationship_status||"cold"} onChange={e=>setEditingOrg({...editingOrg,relationship_status:e.target.value})}>{Object.entries(REL_STATUS).filter(([v])=>v!=="declined").map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></div>
-      <div className="fg"><label className="fl">Tier</label><select className="fs" value={editingOrg.tier||"B"} onChange={e=>setEditingOrg({...editingOrg,tier:e.target.value})}><option value="A">A — Weekly</option><option value="B">B — Monthly</option><option value="C">C — Quarterly</option></select></div>
+  <Modal title={`Edit — ${editingOrg.name}`} wide onClose={()=>setEditingOrg(null)}
+    footer={<><button className="btn btn-ghost btn-sm" onClick={()=>setEditingOrg(null)}>Cancel</button><button className="btn btn-blk btn-sm" onClick={saveEditOrg}>Save Changes →</button></>}>
+    <div className="fg"><label className="fl">Name *</label><input className="fi" value={editingOrg.name||""} onChange={e=>setEditingOrg({...editingOrg,name:e.target.value})} autoFocus/></div>
+    <div className="fg"><label className="fl">Category</label>
+      <SearchSelect options={Object.entries(ORG_CATS).map(([v,l])=>({value:v,label:l}))} value={editingOrg.category||"funder"} onChange={v=>setEditingOrg({...editingOrg,category:v})}/>
     </div>
-    <div className="fg"><label className="fl">Confidence</label><select className="fs" value={editingOrg.confidence||"MEDIUM"} onChange={e=>setEditingOrg({...editingOrg,confidence:e.target.value})}><option value="HIGH">High</option><option value="MEDIUM">Medium</option><option value="LOW">Low</option></select></div>
-    <div className="frow"><div className="fg"><label className="fl">Next Action</label><input className="fi" value={editingOrg.next_action||""} onChange={e=>setEditingOrg({...editingOrg,next_action:e.target.value})}/></div><div className="fg"><label className="fl">Next Action Date</label><input type="date" className="fi" value={editingOrg.next_action_date||""} onChange={e=>setEditingOrg({...editingOrg,next_action_date:e.target.value})}/></div></div>
+    <div className="fg"><label className="fl">Status</label>
+      <RadioGroup options={STATUS_OPTS_NO_DECLINED} value={editingOrg.relationship_status||"cold"} onChange={v=>setEditingOrg({...editingOrg,relationship_status:v})}/>
+    </div>
+    <div className="fg"><label className="fl">Tier</label>
+      <RadioGroup options={TIER_OPTS} value={editingOrg.tier||"B"} onChange={v=>setEditingOrg({...editingOrg,tier:v})} colorMap={TIER_COLOR}/>
+    </div>
+    <div className="fg"><label className="fl">Confidence</label>
+      <RadioGroup options={CONF_OPTS} value={editingOrg.confidence||"MEDIUM"} onChange={v=>setEditingOrg({...editingOrg,confidence:v})}/>
+    </div>
+    <hr className="drawer-divider"/>
+    <div className="fg"><label className="fl">Website</label><input className="fi" value={editingOrg.website||""} onChange={e=>setEditingOrg({...editingOrg,website:e.target.value})}/></div>
+    <div className="frow">
+      <div className="fg"><label className="fl">Next Action</label><input className="fi" value={editingOrg.next_action||""} onChange={e=>setEditingOrg({...editingOrg,next_action:e.target.value})}/></div>
+      <div className="fg"><label className="fl">Due Date</label><input type="date" className="fi" value={editingOrg.next_action_date||""} onChange={e=>setEditingOrg({...editingOrg,next_action_date:e.target.value})}/></div>
+    </div>
     <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={3} value={editingOrg.notes||""} onChange={e=>setEditingOrg({...editingOrg,notes:e.target.value})}/></div>
-    <div className="fg"><label className="fl">Tags (comma-separated)</label><input className="fi" value={(editingOrg.tags||[]).join(", ")} onChange={e=>setEditingOrg({...editingOrg,tags:e.target.value.split(",").map(t=>t.trim()).filter(Boolean)})}/></div>
+    <div className="fg"><label className="fl">Tags</label><ChipInput values={editingOrg.tags||[]} onChange={v=>setEditingOrg({...editingOrg,tags:v})}/></div>
   </Modal>
 )}
     </div>
@@ -873,9 +1124,16 @@ function ImportView({contacts,orgs,onImportContact,onImportOrg,showToast}) {
     if (!parsed) return;
     const newContacts=[]; const newOrgs=[];
     parsed.forEach(item=>{
-      const rt=item.record_type||(item.first_name?"individual":"organization");
-      if (rt==="individual") newContacts.push({...item,id:item.id||`ind_${uid()}`,touchpoints:item.touchpoints||[],tags:item.tags||[],interests:item.interests||[],linked_grants:item.linked_grants||[],createdAt:item.createdAt||new Date().toISOString()});
-      else newOrgs.push({...item,id:item.id||`org_${uid()}`,touchpoints:item.touchpoints||[],tags:item.tags||[],financial_relationship:item.financial_relationship||{has_given:false,total_given:0,grant_history:[]},createdAt:item.createdAt||new Date().toISOString()});
+const rt=item.record_type||(item.first_name?"individual":"organization");
+      if (rt==="individual") {
+        const rawId = item.id || uid();
+        const id = rawId.startsWith("ind_") ? rawId : `ind_${rawId}`;
+        newContacts.push({...item,record_type:"individual",id,touchpoints:item.touchpoints||[],tags:item.tags||[],interests:item.interests||[],linked_grants:item.linked_grants||[],createdAt:item.createdAt||new Date().toISOString()});
+      } else {
+        const rawId = item.id || uid();
+        const id = rawId.startsWith("org_") ? rawId : `org_${rawId}`;
+        newOrgs.push({...item,record_type:"organization",id,touchpoints:item.touchpoints||[],tags:item.tags||[],financial_relationship:item.financial_relationship||{has_given:false,total_given:0,grant_history:[]},createdAt:item.createdAt||new Date().toISOString()});
+      }
     });
     if (newContacts.length) onImportContact(newContacts);
     if (newOrgs.length) onImportOrg(newOrgs);
@@ -967,7 +1225,8 @@ const [contacts,setContacts]=useState([]);
   const [toast,setToast]=useState(null);
 const [loading,setLoading]=useState(true);
   const [dbError,setDbError]=useState(null);
-  const [pendingDetail,setPendingDetail]=useState(null);
+const [pendingDetail,setPendingDetail]=useState(null);
+  const [globalQuickLog,setGlobalQuickLog]=useState(false);
 
   const loadAll=useCallback(async()=>{
     setLoading(true);
@@ -1032,11 +1291,12 @@ const saveProfile = useCallback((u) => {
   const deleteContact=useCallback(async (id)=>{
     const prev = contacts;
     setContacts(contacts.filter(c=>c.id!==id)); // optimistic
+    setPendingDetail(null);
     const { error } = await deleteContactById(id);
     if (error) { console.error("deleteContact:", error); showToast("Delete failed — check console","err"); setContacts(prev); }
     else showToast("Contact deleted");
   },[contacts, showToast]);
-const importOrg=useCallback((batch)=>{ const arr=Array.isArray(batch)?batch:[batch]; const u=[...orgs.filter(x=>!arr.find(o=>o.id===x.id)),...arr]; saveOrgs(u); },[orgs,saveOrgs]);
+  const importOrg=useCallback((batch)=>{ const arr=Array.isArray(batch)?batch:[batch]; const u=[...orgs.filter(x=>!arr.find(o=>o.id===x.id)),...arr]; saveOrgs(u); },[orgs,saveOrgs]);
   const deleteOrg=useCallback(async (id)=>{
     const prev = orgs;
     setOrgs(orgs.filter(o=>o.id!==id)); // optimistic
@@ -1069,7 +1329,7 @@ if (dbError) return (
   return (
     <><style>{STYLES}</style>
     <div className="app">
-<Sidebar view={view} setView={(v)=>{setPendingDetail(null);setView(v);}} contacts={contacts} profile={profile}/>
+<Sidebar view={view} setView={(v)=>{setPendingDetail(null);setView(v);}} contacts={contacts} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)}/>
       <main className="main">
         {view==="dashboard"&&<DashboardView contacts={contacts} orgs={orgs} setView={setView} onOpenContact={openContact}/>}
 {view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} onUpdate={saveContacts} onDelete={deleteContact} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail}/>}
@@ -1078,7 +1338,17 @@ if (dbError) return (
         {view==="import"&&<ImportView contacts={contacts} orgs={orgs} onImportContact={importContact} onImportOrg={importOrg} showToast={showToast}/>}
         {view==="settings"&&<SettingsView profile={profile} onUpdate={saveProfile} showToast={showToast}/>}
       </main>
-      {toast&&<div className={`toast t-${toast.type}`}>{toast.msg}</div>}
+{toast&&<div className={`toast t-${toast.type}`}>{toast.msg}</div>}
+      {globalQuickLog&&<QuickLogModal
+        contacts={contacts}
+        initialContactId={null}
+        onLog={(cId,tp)=>{
+          const updated=contacts.map(c=>c.id===cId?{...c,touchpoints:[...(c.touchpoints||[]),tp]}:c);
+          saveContacts(updated);
+          showToast("Touchpoint logged ✓");
+        }}
+        onClose={()=>setGlobalQuickLog(false)}
+      />}
     </div></>
   );
 }
