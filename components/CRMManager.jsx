@@ -2,19 +2,23 @@
 
 /**
  * CRMManager.jsx — Sprout Society CRM v1
- * Works locally, on Vercel, and inside Claude.ai artifacts.
- * Storage: localStorage, keys namespaced sprout_crm_*
+* Works locally and on Vercel.
+ * Storage: Supabase (project: ixdnmjchvjzytyhmripc). All DB access via lib/services.js.
  */
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 
-/* ─── Supabase Client ───────────────────────────────────────────────────────── */
-// MIGRATION: localStorage/window.storage replaced with Supabase
-// Swap targets: useEffect loader + saveContacts + saveOrgs + savePosts + saveProfile
-import { getSupabase } from "../lib/supabase";
-import { fetchContacts, fetchOrgs } from "../lib/services";
-
-const supabase = getSupabase();
+import {
+  fetchContacts,
+  fetchOrgs,
+  fetchProfile,
+  saveContacts  as svcSaveContacts,
+  saveOrgs      as svcSaveOrgs,
+  saveProfile   as svcSaveProfile,
+  deleteContactById,
+  deleteOrgById,
+  DEFAULT_PROFILE,
+} from "../lib/services";
 
 /* ─── Styles ───────────────────────────────────────────────────────────────── */
 const STYLES = `
@@ -217,8 +221,13 @@ const STYLES = `
   .add-row { background:var(--g50); border-radius:8px; padding:12px; border:1.5px dashed var(--g300); margin-top:10px; }
   .info-banner { background:linear-gradient(to right,rgba(115,196,214,0.1),rgba(198,201,2,0.05)); border:1.5px solid var(--cyan); border-radius:10px; padding:12px 16px; margin-bottom:14px; font-size:12px; line-height:1.7; color:var(--g800); }
 
-  ::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar { width:5px; }
   ::-webkit-scrollbar-thumb { background:var(--g300); border-radius:5px; }
+
+  .row-actions { display:flex; gap:4px; opacity:0; transition:opacity 0.12s; }
+  .tbl tbody tr:hover .row-actions { opacity:1; }
+
+  .settings-foot { position:sticky; bottom:0; background:var(--white); border-top:1.5px solid var(--g200); padding:14px 32px; margin:24px -32px -30px; display:flex; justify-content:flex-end; box-shadow:0 -4px 14px rgba(0,0,0,0.06); z-index:20; }
 
   @media (max-width:820px) {
     .main { margin-left:0; } .sb { display:none; }
@@ -258,7 +267,7 @@ const SEED_CONTACTS = [
     notes:"Primary contact for BKO Microgrant. Email verified via Brooklyn Org website.",
     tags:["bko","microgrant","program-officer"], touchpoints:[],
     next_action:"Submit application; follow up 1 week after", next_action_date:"2026-06-07",
-    linked_grants:["bko_microgrant_2026"], confidence:"HIGH", createdAt:new Date().toISOString() },
+linked_grants:["bko_microgrant_2026"], confidence:"HIGH", createdAt:"2026-04-28T00:00:00.000Z" },
   { record_type:"individual", id:"ind_jocelynne_rainey", first_name:"Jocelynne", last_name:"Rainey",
     org_id:"org_brooklyn_org", title:"Dr. — Brooklyn Org (role TBD)", email:"", phone:"",
     relationship_type:"funder_contact", relationship_status:"cold", tier:"B", ask_readiness:"not_ready",
@@ -266,7 +275,7 @@ const SEED_CONTACTS = [
     notes:"Identified in BKO grant research. Title and contact details need verification.",
     tags:["bko","needs-research"], touchpoints:[],
     next_action:"Verify title and contact info via web search", next_action_date:"2026-05-01",
-    linked_grants:["bko_microgrant_2026"], confidence:"MEDIUM", createdAt:new Date().toISOString() },
+    linked_grants:["bko_microgrant_2026"], confidence:"MEDIUM", createdAt:"2026-04-28T00:00:00.000Z" },
   { record_type:"individual", id:"ind_sabrina_hargrave", first_name:"Sabrina", last_name:"Hargrave",
     org_id:"org_brooklyn_org", title:"Brooklyn Org (role TBD)", email:"", phone:"",
     relationship_type:"funder_contact", relationship_status:"cold", tier:"B", ask_readiness:"not_ready",
@@ -274,7 +283,7 @@ const SEED_CONTACTS = [
     notes:"Identified in BKO grant research. Title and contact details need verification.",
     tags:["bko","needs-research"], touchpoints:[],
     next_action:"Verify title and contact info via web search", next_action_date:"2026-05-01",
-    linked_grants:["bko_microgrant_2026"], confidence:"MEDIUM", createdAt:new Date().toISOString() },
+    linked_grants:["bko_microgrant_2026"], confidence:"MEDIUM", createdAt:"2026-04-28T00:00:00.000Z" },
 ];
 
 /* ─── Utils ─────────────────────────────────────────────────────────────────── */
@@ -314,8 +323,8 @@ function ConfBadge({confidence}) {
 }
 function Modal({title,onClose,children,footer,wide}) {
   const mouseDownTarget = useRef(null);
-  return (
-    <div className="mover"
+  useEffect(()=>{ const h=(e)=>{ if(e.key==="Escape") onClose(); }; document.addEventListener("keydown",h); return ()=>document.removeEventListener("keydown",h); },[onClose]);
+  return (    <div className="mover"
       onMouseDown={e=>{ mouseDownTarget.current = e.target; }}
       onClick={e=>{ if (e.target===e.currentTarget && mouseDownTarget.current===e.currentTarget) onClose(); }}>
       <div className={`modal ${wide?"modal-wide":""}`}>
@@ -324,6 +333,16 @@ function Modal({title,onClose,children,footer,wide}) {
         {footer&&<div className="m-ft">{footer}</div>}
       </div>
     </div>
+  );
+}
+
+/* ─── Confirm Modal ──────────────────────────────────────────────────────────── */
+function ConfirmModal({message,onConfirm,onCancel}) {
+  return (
+    <Modal title="Confirm Delete" onClose={onCancel}
+      footer={<><button className="btn btn-ghost btn-sm" onClick={onCancel}>Cancel</button><button className="btn btn-danger btn-sm" onClick={onConfirm}>Delete</button></>}>
+      <p style={{fontSize:13,lineHeight:1.7,color:"var(--g800)"}}>{message}</p>
+    </Modal>
   );
 }
 
@@ -366,6 +385,7 @@ function TouchpointList({touchpoints,onAdd}) {
 /* ─── Contact Detail Panel ───────────────────────────────────────────────────── */
 function ContactDetail({contact,orgs,onClose,onUpdate,onEdit,showToast}) {
   const mouseDownTarget = useRef(null);
+  useEffect(()=>{ const h=(e)=>{ if(e.key==="Escape") onClose(); }; document.addEventListener("keydown",h); return ()=>document.removeEventListener("keydown",h); },[onClose]);
   const org = orgs.find(o=>o.id===contact.org_id);
   const score = healthScore(contact);
   const overdue = isOverdue(contact);
@@ -414,7 +434,8 @@ function ContactDetail({contact,orgs,onClose,onUpdate,onEdit,showToast}) {
 /* ─── Org Detail Panel ───────────────────────────────────────────────────────── */
 function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
  const mouseDownTarget = useRef(null);
-  const linked = contacts.filter(c=>c.org_id===org.id);  
+  useEffect(()=>{ const h=(e)=>{ if(e.key==="Escape") onClose(); }; document.addEventListener("keydown",h); return ()=>document.removeEventListener("keydown",h); },[onClose]);
+  const linked = contacts.filter(c=>c.org_id===org.id);
   return (
 <div className="detail-overlay"
       onMouseDown={e=>{ mouseDownTarget.current = e.target; }}
@@ -441,9 +462,8 @@ function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
 }
 
 /* ─── Sidebar ────────────────────────────────────────────────────────────────── */
-function Sidebar({view,setView,contacts,posts}) {
+function Sidebar({view,setView,contacts,profile}) {
   const overdueCount = contacts.filter(isOverdue).length;
-  const scheduledCount = posts.filter(p=>p.status==="scheduled").length;
   const nav = [
     {section:"Overview"},
     {id:"dashboard",label:"Dashboard",icon:"📊",badge:overdueCount>0?overdueCount:null},
@@ -451,8 +471,6 @@ function Sidebar({view,setView,contacts,posts}) {
     {id:"contacts",label:"Contacts",icon:"👤"},
     {id:"orgs",label:"Organizations",icon:"🏢"},
     {id:"outreach",label:"Outreach Log",icon:"📋"},
-    {section:"Communications"},
-    {id:"social",label:"Social & Email",icon:"📣",badge:scheduledCount>0?scheduledCount:null},
     {section:"Tools"},
     {id:"import",label:"Import JSON",icon:"⬇"},
     {id:"settings",label:"Settings",icon:"⚙"},
@@ -469,18 +487,22 @@ function Sidebar({view,setView,contacts,posts}) {
             </div>
         )}
       </div>
-      <div className="sb-foot"><div className="sb-foot-txt">Sprout Society Inc.<br/>EIN 83-1298420<br/>449 Troutman St, Brooklyn NY</div></div>
+<div className="sb-foot"><div className="sb-foot-txt">
+        {profile?.legalName||"Sprout Society Inc."}
+        {profile?.ein&&<><br/>EIN {profile.ein}</>}
+        {profile?.address&&<><br/>{profile.address}</>}
+      </div></div>
     </nav>
   );
 }
 
 /* ─── Dashboard ──────────────────────────────────────────────────────────────── */
-function DashboardView({contacts,orgs,posts,setView,onOpenContact}) {
+function DashboardView({contacts,orgs,setView,onOpenContact}) {
   const overdue = contacts.filter(isOverdue);
   const active = contacts.filter(c=>c.relationship_status==="active").length;
   const upcoming = contacts.filter(c=>{ const d=daysUntil(c.next_action_date); return d!==null&&d>=0&&d<=14; }).sort((a,b)=>new Date(a.next_action_date)-new Date(b.next_action_date));
-  const scheduled = posts.filter(p=>p.status==="scheduled"||p.status==="draft");
-  const tiers = {A:contacts.filter(c=>c.tier==="A"),B:contacts.filter(c=>c.tier==="B"),C:contacts.filter(c=>c.tier==="C")};
+const tiers = {A:contacts.filter(c=>c.tier==="A"),B:contacts.filter(c=>c.tier==="B"),C:contacts.filter(c=>c.tier==="C")};
+  const scheduled = []; // sprout_posts table pending — stub until posts feature is built
   return (
     <div className="page">
       <div className="pg-hd">
@@ -531,7 +553,7 @@ function DashboardView({contacts,orgs,posts,setView,onOpenContact}) {
           </div>
         </div>
         <div className="card">
-          <div className="card-hd"><span className="card-ttl">📣 Comms Pipeline</span><button className="btn btn-ghost btn-xs" onClick={()=>setView("social")}>View all</button></div>
+<div className="card-hd"><span className="card-ttl">📣 Comms Pipeline</span><button className="btn btn-ghost btn-xs" onClick={()=>setView("outreach")}>View all</button></div>
           <div className="card-bd">
             {scheduled.length===0
               ? <p style={{fontSize:12,color:"var(--g400)",textAlign:"center",padding:"12px 0"}}>No posts scheduled</p>
@@ -553,13 +575,20 @@ function DashboardView({contacts,orgs,posts,setView,onOpenContact}) {
 }
 
 /* ─── Contacts View ──────────────────────────────────────────────────────────── */
-function ContactsView({contacts,orgs,onUpdate,onDelete,showToast,pendingDetail}) {
+function ContactsView({contacts,orgs,onUpdate,onDelete,showToast,pendingDetail,onPendingDetailConsumed}) {
   const [search,setSearch]=useState("");
   const [fType,setFType]=useState("all");
   const [fTier,setFTier]=useState("all");
   const [fStatus,setFStatus]=useState("all");
-  const [selected,setSelected]=useState(()=>pendingDetail?.id||null);
+const [selected,setSelected]=useState(null);
   const [adding,setAdding]=useState(false);
+
+useEffect(()=>{
+  if (pendingDetail?.id) {
+    setSelected(pendingDetail.id);
+    onPendingDetailConsumed();
+  }
+},[pendingDetail, onPendingDetailConsumed]);
   const blank={first_name:"",last_name:"",org_id:"",title:"",email:"",phone:"",relationship_type:"funder_contact",relationship_status:"cold",tier:"B",notes:"",next_action:"",next_action_date:""};
   const [nc,setNc]=useState(blank);
 
@@ -580,6 +609,7 @@ function ContactsView({contacts,orgs,onUpdate,onDelete,showToast,pendingDetail})
   }), [contacts, search, fType, fTier, fStatus]);
 
 const [editing,setEditing]=useState(null); // contact being edited
+  const [confirmDelete,setConfirmDelete]=useState(null);
 
   const addContact=()=>{
     const c={...nc,record_type:"individual",id:`ind_${uid()}`,touchpoints:[],tags:[],interests:[],linked_grants:[],financial_relationship:{has_given:false,total_given:0},ask_readiness:"not_ready",confidence:"MEDIUM",createdAt:new Date().toISOString()};
@@ -600,7 +630,8 @@ const [editing,setEditing]=useState(null); // contact being edited
         <input className="fi" placeholder="Search name or title…" value={search} onChange={e=>setSearch(e.target.value)}/>
         <select className="fs" value={fType} onChange={e=>setFType(e.target.value)}><option value="all">All types</option>{Object.entries(REL_TYPES).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
         <select className="fs" value={fTier} onChange={e=>setFTier(e.target.value)}><option value="all">All tiers</option><option value="A">Tier A</option><option value="B">Tier B</option><option value="C">Tier C</option></select>
-        <select className="fs" value={fStatus} onChange={e=>setFStatus(e.target.value)}><option value="all">All statuses</option>{Object.entries(REL_STATUS).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
+<select className="fs" value={fStatus} onChange={e=>setFStatus(e.target.value)}><option value="all">All statuses</option>{Object.entries(REL_STATUS).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
+        {(search||fType!=="all"||fTier!=="all"||fStatus!=="all")&&<button className="btn btn-ghost btn-sm" onClick={()=>{setSearch("");setFType("all");setFTier("all");setFStatus("all");}}>✕ Clear</button>}
       </div>
       {adding&&(
         <div className="card" style={{marginBottom:16}}>
@@ -635,18 +666,18 @@ const [editing,setEditing]=useState(null); // contact being edited
                 <td><TierBadge tier={c.tier}/></td>
                 <td style={{maxWidth:160,fontSize:11,color:"var(--g600)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.next_action||"—"}</td>
                 <td style={{minWidth:80}}><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{flex:1,height:4,background:"var(--g200)",borderRadius:2,overflow:"hidden"}}><div style={{height:"100%",width:`${score}%`,background:score>=70?"var(--acid)":score>=40?"var(--cyan)":"var(--fuchsia)",borderRadius:2}}/></div><span style={{fontSize:10,fontWeight:700,color:"var(--g400)"}}>{score}%</span></div></td>
-<td style={{display:"flex",gap:4,padding:"12px 14px"}}>
-                <button className="btn btn-ghost btn-xs" onClick={e=>{e.stopPropagation();setEditing({...c});}}>Edit</button>
-                <button className="btn btn-danger btn-xs" onClick={e=>{
-                  e.stopPropagation();
-                  if(globalThis.confirm?.(`Delete ${c.first_name} ${c.last_name}?`)??true) onDelete(c.id);
-                }}>Del</button>
+<td style={{padding:"12px 14px"}}>
+                <div className="row-actions">
+                  <button className="btn btn-ghost btn-xs" onClick={e=>{e.stopPropagation();setEditing({...c});}}>Edit</button>
+                  <button className="btn btn-danger btn-xs" onClick={e=>{e.stopPropagation();setConfirmDelete(c);}}>Del</button>
+                </div>
               </td>
               </tr>;
             })}
 </tbody></table></div>
       }
 {sel&&<ContactDetail contact={sel} orgs={orgs} onClose={()=>setSelected(null)} onUpdate={updateContact} onEdit={()=>setEditing({...sel})} showToast={showToast}/>}
+      {confirmDelete&&<ConfirmModal message={`Delete ${confirmDelete.first_name} ${confirmDelete.last_name}? This cannot be undone.`} onConfirm={()=>{onDelete(confirmDelete.id);setConfirmDelete(null);}} onCancel={()=>setConfirmDelete(null)}/>}
 
 {editing&&(
   <Modal title="Edit Contact" wide onClose={()=>setEditing(null)}
@@ -672,7 +703,7 @@ const [editing,setEditing]=useState(null); // contact being edited
 }
 
 /* ─── Organizations View ─────────────────────────────────────────────────────── */
-function OrgsView({orgs,contacts,onUpdate,showToast}) {
+function OrgsView({orgs,contacts,onUpdate,onDelete,showToast}) {
   const [search,setSearch]=useState("");
   const [fCat,setFCat]=useState("all");
   const [fStatus,setFStatus]=useState("all");
@@ -681,14 +712,15 @@ function OrgsView({orgs,contacts,onUpdate,showToast}) {
   const blank={name:"",category:"funder",website:"",relationship_status:"cold",tier:"B",notes:"",next_action:"",next_action_date:""};
   const [no,setNo]=useState(blank);
 
-  const filtered=orgs.filter(o=>{
+const filtered=useMemo(()=>orgs.filter(o=>{
     if (search&&!o.name.toLowerCase().includes(search.toLowerCase())) return false;
     if (fCat!=="all"&&o.category!==fCat) return false;
     if (fStatus!=="all"&&o.relationship_status!==fStatus) return false;
     return true;
-  });
+  }),[orgs,search,fCat,fStatus]);
 
 const [editingOrg,setEditingOrg]=useState(null);
+  const [confirmDeleteOrg,setConfirmDeleteOrg]=useState(null);
 
   const saveEditOrg=()=>{
     onUpdate(orgs.map(o=>o.id===editingOrg.id?editingOrg:o));
@@ -709,9 +741,10 @@ const [editingOrg,setEditingOrg]=useState(null);
       <div className="filter-bar">
         <input className="fi" placeholder="Search organizations…" value={search} onChange={e=>setSearch(e.target.value)}/>
         <select className="fs" value={fCat} onChange={e=>setFCat(e.target.value)}><option value="all">All categories</option>{Object.entries(ORG_CATS).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
-        <select className="fs" value={fStatus} onChange={e=>setFStatus(e.target.value)}><option value="all">All statuses</option>{Object.entries(REL_STATUS).filter(([v])=>v!=="declined").map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
+<select className="fs" value={fStatus} onChange={e=>setFStatus(e.target.value)}><option value="all">All statuses</option>{Object.entries(REL_STATUS).filter(([v])=>v!=="declined").map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
+        {(search||fCat!=="all"||fStatus!=="all")&&<button className="btn btn-ghost btn-sm" onClick={()=>{setSearch("");setFCat("all");setFStatus("all");}}>✕ Clear</button>}
       </div>
-      {adding&&(
+      {adding&&(        
         <div className="card" style={{marginBottom:16}}>
           <div className="card-hd"><span className="card-ttl">New Organization</span><button className="btn btn-ghost btn-xs" onClick={()=>setAdding(false)}>Cancel</button></div>
           <div className="card-bd">
@@ -740,15 +773,18 @@ const [editingOrg,setEditingOrg]=useState(null);
                 <td style={{fontSize:12,color:"var(--g600)"}}>{people.length}</td>
                 <td style={{maxWidth:160,fontSize:11,color:"var(--g600)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.next_action||"—"}</td>
 <td style={{fontSize:12}}>{o.financial_relationship?.has_given?fmtMoney(o.financial_relationship.total_given):<span style={{color:"var(--g400)"}}>—</span>}</td>
-<td style={{display:"flex",gap:4,padding:"12px 14px"}}>
-                  <button className="btn btn-ghost btn-xs" onClick={e=>{e.stopPropagation();setEditingOrg({...o});}}>Edit</button>
-                  <button className="btn btn-danger btn-xs" onClick={e=>{e.stopPropagation();if(globalThis.confirm?.(`Delete ${o.name}?`)??true){onUpdate(orgs.filter(x=>x.id!==o.id));showToast("Organization deleted");}}}>Del</button>
+<td style={{padding:"12px 14px"}}>
+                  <div className="row-actions">
+                    <button className="btn btn-ghost btn-xs" onClick={e=>{e.stopPropagation();setEditingOrg({...o});}}>Edit</button>
+                    <button className="btn btn-danger btn-xs" onClick={e=>{e.stopPropagation();setConfirmDeleteOrg(o);}}>Del</button>
+                  </div>
                 </td>
               </tr>;
             })}
           </tbody></table></div>
       }
 {sel&&<OrgDetail org={sel} contacts={contacts} onClose={()=>setSelected(null)} onUpdate={updateOrg} onEdit={()=>setEditingOrg({...sel})} showToast={showToast}/>}
+      {confirmDeleteOrg&&<ConfirmModal message={`Delete ${confirmDeleteOrg.name}? This cannot be undone.`} onConfirm={()=>{if(selected===confirmDeleteOrg.id)setSelected(null);onDelete(confirmDeleteOrg.id);setConfirmDeleteOrg(null);}} onCancel={()=>setConfirmDeleteOrg(null)}/>}
 
 {editingOrg&&(
   <Modal title="Edit Organization" wide onClose={()=>setEditingOrg(null)}
@@ -813,134 +849,6 @@ const all=useMemo(()=>{
             ))}
           </div></div>
       }
-    </div>
-  );
-}
-
-/* ─── Social & Email View ────────────────────────────────────────────────────── */
-function SocialView({posts,onUpdate,showToast}) {
-  const [tab,setTab]=useState("calendar");
-  const [calDate,setCalDate]=useState(new Date());
-  const [editPost,setEditPost]=useState(null);
-  const [showForm,setShowForm]=useState(false);
-  const blank={platform:"ig",type:"post",status:"draft",scheduled_date:"",caption:"",subject:"",preview:"",body:"",campaign:"",hashtags:"",goal:""};
-  const [np,setNp]=useState(blank);
-
-  const year=calDate.getFullYear(); const month=calDate.getMonth();
-  const firstDay=new Date(year,month,1).getDay();
-  const daysInMonth=new Date(year,month+1,0).getDate();
-  const today=new Date();
-
-  const calDays=[];
-  for(let i=0;i<firstDay;i++) calDays.push({date:new Date(year,month,-firstDay+i+1),other:true});
-  for(let i=1;i<=daysInMonth;i++) calDays.push({date:new Date(year,month,i),other:false});
-  while(calDays.length<42) calDays.push({date:new Date(year,month+1,calDays.length-firstDay-daysInMonth+1),other:true});
-
-  const postsByDate=(d)=>{ const ds=d.toISOString().slice(0,10); return posts.filter(p=>p.scheduled_date===ds); };
-
-  const savePost=()=>{
-    if (editPost) { onUpdate(posts.map(p=>p.id===editPost.id?{...editPost}:p)); showToast("Post updated ✓"); }
-    else { onUpdate([...posts,{...np,id:uid(),createdAt:new Date().toISOString()}]); showToast("Post added ✓"); }
-    setShowForm(false); setEditPost(null); setNp(blank);
-  };
-  const deletePost=(id)=>{ onUpdate(posts.filter(p=>p.id!==id)); showToast("Deleted"); };
-
-  const listPosts=tab==="ig"?posts.filter(p=>p.platform==="ig"):tab==="nl"?posts.filter(p=>p.platform==="nl"):posts;
-
-  const PostForm=({post,setPost})=>(
-    <>
-      <div className="frow3">
-        <div className="fg"><label className="fl">Platform</label><select className="fs" value={post.platform} onChange={e=>setPost({...post,platform:e.target.value})}><option value="ig">Instagram</option><option value="nl">Newsletter</option></select></div>
-        <div className="fg"><label className="fl">Status</label><select className="fs" value={post.status} onChange={e=>setPost({...post,status:e.target.value})}><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="published">Published</option><option value="sent">Sent</option></select></div>
-        <div className="fg"><label className="fl">Scheduled Date</label><input type="date" className="fi" value={post.scheduled_date} onChange={e=>setPost({...post,scheduled_date:e.target.value})}/></div>
-      </div>
-      <div className="frow"><div className="fg"><label className="fl">Campaign / Series</label><input className="fi" value={post.campaign} onChange={e=>setPost({...post,campaign:e.target.value})} placeholder="e.g. Spring 2026 Newsletter"/></div><div className="fg"><label className="fl">Goal</label><input className="fi" value={post.goal} onChange={e=>setPost({...post,goal:e.target.value})} placeholder="e.g. Drive event signups"/></div></div>
-      {post.platform==="ig"?<>
-        <div className="fg"><label className="fl">Post Type</label><select className="fs" value={post.type} onChange={e=>setPost({...post,type:e.target.value})}><option value="post">Feed Post</option><option value="story">Story</option><option value="reel">Reel</option><option value="carousel">Carousel</option></select></div>
-        <div className="fg"><label className="fl">Caption</label><textarea className="fta" rows={5} value={post.caption} onChange={e=>setPost({...post,caption:e.target.value})} placeholder="Write your caption here. Ask Claude to draft this using the outreach prompts."/></div>
-        <div className="fg"><label className="fl">Hashtags</label><input className="fi" value={post.hashtags} onChange={e=>setPost({...post,hashtags:e.target.value})} placeholder="#sproutsociety #brooklyn #mentalhealth #community"/></div>
-      </>:<>
-        <div className="fg"><label className="fl">Subject Line</label><input className="fi" value={post.subject} onChange={e=>setPost({...post,subject:e.target.value})} placeholder="Newsletter subject line"/></div>
-        <div className="fg"><label className="fl">Preview Text</label><input className="fi" value={post.preview} onChange={e=>setPost({...post,preview:e.target.value})} placeholder="Preview shown in inbox"/></div>
-        <div className="fg"><label className="fl">Body / Planning Notes</label><textarea className="fta" rows={5} value={post.body} onChange={e=>setPost({...post,body:e.target.value})} placeholder="Newsletter body or notes. Ask Claude to draft full copy."/></div>
-      </>}
-    </>
-  );
-
-  return (
-    <div className="page">
-      <div className="pg-hd"><div><div className="pg-ttl">Social & Email</div><div className="pg-sub">Instagram + newsletter content pipeline</div></div><button className="btn btn-blk" onClick={()=>{setEditPost(null);setShowForm(true);}}>+ New Content</button></div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:20}}>
-        {[{l:"Total Content",v:posts.length,m:"all platforms"},{l:"Scheduled",v:posts.filter(p=>p.status==="scheduled").length,m:"upcoming",c:"var(--cyan)"},{l:"Published / Sent",v:posts.filter(p=>["published","sent"].includes(p.status)).length,m:"completed",c:"var(--acid)"}].map(s=>(
-          <div key={s.l} className="stat"><div className="stat-lbl">{s.l}</div><div className="stat-val" style={{color:s.c||"var(--black)"}}>{s.v}</div><div className="stat-meta">{s.m}</div></div>
-        ))}
-      </div>
-      <div className="tabs">
-        {[{id:"calendar",l:"📅 Calendar"},{id:"ig",l:"📸 Instagram"},{id:"nl",l:"✉ Newsletter"},{id:"all",l:"All Content"}].map(t=>(
-          <button key={t.id} className={`tab ${tab===t.id?"on":""}`} onClick={()=>setTab(t.id)}>{t.l}</button>
-        ))}
-      </div>
-
-      {tab==="calendar"&&<>
-        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-          <button className="btn btn-ghost btn-sm" onClick={()=>setCalDate(new Date(year,month-1,1))}>← Prev</button>
-          <span style={{fontWeight:900,fontSize:16}}>{MONTHS[month]} {year}</span>
-          <button className="btn btn-ghost btn-sm" onClick={()=>setCalDate(new Date(year,month+1,1))}>Next →</button>
-        </div>
-        <div className="cal-grid">
-          {DAYS.map(d=><div key={d} className="cal-day-hd">{d}</div>)}
-          {calDays.map(({date,other},i)=>{
-            const ps=postsByDate(date);
-            const isToday=date.toDateString()===today.toDateString();
-            return (
-              <div key={i} className={`cal-day ${isToday?"today":""} ${other?"other-month":""}`}
-                onClick={()=>{setNp({...blank,scheduled_date:date.toISOString().slice(0,10)});setShowForm(true);}}>
-                <div className="cal-date">{date.getDate()}</div>
-                {ps.map(p=>(
-                  <div key={p.id} className={`cal-dot dot-${p.platform} ${p.status==="draft"?"dot-draft":""}`}
-                    onClick={e=>{e.stopPropagation();setEditPost({...p});setShowForm(true);}}>
-                    {p.platform==="ig"?"📸":"✉"} {(p.caption||p.subject||"Draft").slice(0,10)}…
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-        </div>
-      </>}
-
-      {tab!=="calendar"&&(
-        listPosts.length===0
-          ? <div className="empty"><div className="empty-ico">{tab==="ig"?"📸":"✉"}</div><div className="empty-ttl">No content yet</div><div className="empty-txt">Add posts or newsletters to build your content pipeline.</div></div>
-          : [...listPosts].sort((a,b)=>new Date(b.scheduled_date||b.createdAt)-new Date(a.scheduled_date||a.createdAt)).map(p=>(
-              <div key={p.id} className="post-card">
-                <div className={`post-platform post-${p.platform}`}>{p.platform==="ig"?"📸":"✉"}</div>
-                <div className="post-info">
-                  <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:4,flexWrap:"wrap"}}>
-                    <span className={`post-status ps-${p.status}`}>{p.status}</span>
-                    {p.scheduled_date&&<span style={{fontSize:10,color:"var(--g400)"}}>{fmtDate(p.scheduled_date)}</span>}
-                    {p.campaign&&<span style={{fontSize:10,background:"var(--banana-lt)",color:"#7a5c00",padding:"1px 6px",borderRadius:3,fontWeight:700}}>{p.campaign}</span>}
-                    {p.type&&p.platform==="ig"&&<span style={{fontSize:10,color:"var(--g400)"}}>{p.type}</span>}
-                  </div>
-                  {p.platform==="ig"
-                    ? <><div style={{fontSize:12,lineHeight:1.5}}>{p.caption||<em style={{color:"var(--g400)"}}>No caption yet</em>}</div>{p.hashtags&&<div style={{fontSize:11,color:"var(--cyan)",marginTop:3}}>{p.hashtags}</div>}</>
-                    : <><div style={{fontWeight:700,fontSize:13}}>{p.subject||<em style={{color:"var(--g400)"}}>No subject yet</em>}</div>{p.body&&<div style={{fontSize:12,marginTop:3,color:"var(--g600)"}}>{p.body.slice(0,120)}{p.body.length>120?"…":""}</div>}</>
-                  }
-                  {p.goal&&<div style={{fontSize:11,color:"var(--g600)",marginTop:3}}>Goal: {p.goal}</div>}
-                </div>
-                <div style={{display:"flex",flexDirection:"column",gap:5,flexShrink:0}}>
-                  <button className="btn btn-ghost btn-xs" onClick={()=>{setEditPost({...p});setShowForm(true);}}>Edit</button>
-                  <button className="btn btn-danger btn-xs" onClick={()=>deletePost(p.id)}>Del</button>
-                </div>
-              </div>
-            ))
-      )}
-
-      {showForm&&(
-        <Modal title={editPost?"Edit Content":"New Content"} wide onClose={()=>{setShowForm(false);setEditPost(null);}}
-          footer={<><button className="btn btn-ghost btn-sm" onClick={()=>{setShowForm(false);setEditPost(null);}}>Cancel</button><button className="btn btn-blk btn-sm" onClick={savePost}>Save</button></>}>
-          {editPost?<PostForm post={editPost} setPost={setEditPost}/>:<PostForm post={np} setPost={setNp}/>}
-        </Modal>
-      )}
     </div>
   );
 }
@@ -1022,24 +930,12 @@ function ImportView({contacts,orgs,onImportContact,onImportOrg,showToast}) {
 }
 
 /* ─── Settings ───────────────────────────────────────────────────────────────── */
-const DEFAULT_PROFILE={
-  legalName:"Sprout Society Inc.",ein:"83-1298420",address:"449 Troutman St, Brooklyn NY 11237",
-  website:"sproutsociety.org",founded:"2019",annualBudget:"",numStaff:"",numVolunteers:"",
-  mission:"Building community and peer connection for mental wellness; combating the loneliness epidemic.",
-  programs:"Free community space; peer support resources; fundraising support; online portal for community builders.",
-  population:"Adults experiencing loneliness/isolation/depression; young adults 19–35; Brooklyn/NYC residents.",
-  serviceArea:"Brooklyn, NY / New York City",
-  igHandle:"@sproutsocietyorg",igUrl:"https://www.instagram.com/sproutsocietyorg/",
-  newsletterPlatform:"",newsletterAudience:"",
-  contactName:"",contactTitle:"",contactEmail:"",contactPhone:"",
-};
-
 function SettingsView({profile,onUpdate,showToast}) {
   const [d,setD]=useState(profile);
   const s=(k,v)=>setD(p=>({...p,[k]:v}));
   return (
     <div className="page">
-      <div className="pg-hd"><div><div className="pg-ttl">Settings</div><div className="pg-sub">Organization profile and communications setup</div></div><button className="btn btn-acid" onClick={()=>{onUpdate(d);showToast("Settings saved ✓");}}>Save Settings</button></div>
+<div className="pg-hd"><div><div className="pg-ttl">Settings</div><div className="pg-sub">Organization profile and communications setup</div></div></div>
       <div className="card"><div className="card-hd"><span className="card-ttl">Organization Identity</span></div><div className="card-bd">
         <div className="frow"><div className="fg"><label className="fl">Legal Name</label><input className="fi" value={d.legalName} onChange={e=>s("legalName",e.target.value)}/></div><div className="fg"><label className="fl">EIN</label><input className="fi" value={d.ein} onChange={e=>s("ein",e.target.value)}/></div></div>
         <div className="frow3"><div className="fg"><label className="fl">Founded</label><input className="fi" value={d.founded} onChange={e=>s("founded",e.target.value)}/></div><div className="fg"><label className="fl">Annual Budget</label><input className="fi" value={d.annualBudget} onChange={e=>s("annualBudget",e.target.value)} placeholder="e.g. $120,000"/></div><div className="fg"><label className="fl">Service Area</label><input className="fi" value={d.serviceArea} onChange={e=>s("serviceArea",e.target.value)}/></div></div>
@@ -1057,6 +953,7 @@ function SettingsView({profile,onUpdate,showToast}) {
         <div className="frow"><div className="fg"><label className="fl">Name</label><input className="fi" value={d.contactName} onChange={e=>s("contactName",e.target.value)}/></div><div className="fg"><label className="fl">Title</label><input className="fi" value={d.contactTitle} onChange={e=>s("contactTitle",e.target.value)}/></div></div>
         <div className="frow"><div className="fg"><label className="fl">Email</label><input type="email" className="fi" value={d.contactEmail} onChange={e=>s("contactEmail",e.target.value)}/></div><div className="fg"><label className="fl">Phone</label><input className="fi" value={d.contactPhone} onChange={e=>s("contactPhone",e.target.value)}/></div></div>
       </div></div>
+      <div className="settings-foot"><button className="btn btn-acid" onClick={()=>{onUpdate(d);showToast("Settings saved ✓");}}>Save Settings</button></div>
     </div>
   );
 }
@@ -1064,54 +961,43 @@ function SettingsView({profile,onUpdate,showToast}) {
 /* ─── Main App ───────────────────────────────────────────────────────────────── */
 export default function CRMApp() {
   const [view,setView]=useState("dashboard");
-  const [contacts,setContacts]=useState([]);
+const [contacts,setContacts]=useState([]);
   const [orgs,setOrgs]=useState([]);
-  const [posts,setPosts]=useState([]);
   const [profile,setProfile]=useState(DEFAULT_PROFILE);
   const [toast,setToast]=useState(null);
-  const [loading,setLoading]=useState(true);
+const [loading,setLoading]=useState(true);
   const [dbError,setDbError]=useState(null);
   const [pendingDetail,setPendingDetail]=useState(null);
 
-  useEffect(()=>{
-async function loadAll() {
-      try {
-        const [
-          { data: contactRows, error: cErr },
-          { data: orgRows,     error: oErr },
-          { data: postRows,    error: pErr },
-          { data: profileRow,  error: prErr },
-        ] = await Promise.all([
-          fetchContacts(),
-          fetchOrgs(),
-Promise.resolve({ data: [], error: null }), // sprout_posts: table pending
-          supabase.from("sprout_profile").select("id,data").eq("id","profile").single(),
-        ]);
+  const loadAll=useCallback(async()=>{
+    setLoading(true);
+    setDbError(null);
+    try {
+      const [
+        { data: contactRows, error: cErr },
+        { data: orgRows,     error: oErr },
+        { data: profileData, error: prErr },
+      ] = await Promise.all([
+        fetchContacts(),
+        fetchOrgs(),
+        fetchProfile(),
+      ]);
 
-        if (cErr && cErr.code !== "PGRST116") throw cErr;
-        if (oErr && oErr.code !== "PGRST116") throw oErr;
-        // pErr skipped — sprout_posts table pending
+      if (cErr) throw new Error(cErr);
+      if (oErr) throw new Error(oErr);
+      if (prErr) console.warn("fetchProfile warning:", prErr);
 
-        const mergePost = (row) => ({ ...row.data, id: row.id });
-
-        const contacts = contactRows;
-        const orgs     = orgRows;
-        const posts    = (postRows ?? []).map(mergePost);
-        const profile  = profileRow?.data ?? DEFAULT_PROFILE;
-
-        setContacts(contacts);
-        setOrgs(orgs);
-        setPosts(posts);
-        setProfile(profile);
-      } catch(err) {
-        console.error("CRM load error:", err);
-        setDbError(err.message || "Failed to load data from Supabase.");
-      } finally {
-        setLoading(false);
-      }
+      setContacts(contactRows);
+      setOrgs(orgRows);
+      setProfile(profileData);    } catch (err) {
+      console.error("CRM load error:", err);
+      setDbError(err.message || "Failed to load data from Supabase.");
+    } finally {
+      setLoading(false);
     }
-    loadAll();
   },[]);
+
+  useEffect(()=>{ loadAll(); },[loadAll]);
 
 const toastTimer=useRef(null);
   const showToast=useCallback((msg,type="ok")=>{
@@ -1121,73 +1007,45 @@ const toastTimer=useRef(null);
   },[]);
 
   useEffect(()=>()=>{if(toastTimer.current)clearTimeout(toastTimer.current);},[]);
-const saveContacts=useCallback((u)=>{
-    setContacts(u); // optimistic
-    const rows = u.map(c => ({
-      id: c.id,
-      org_id: c.org_id || null,
-      record_type: c.record_type || "individual",
-      first_name: c.first_name || null,
-      last_name: c.last_name || null,
-      email: c.email || null,
-      relationship_status: c.relationship_status || null,
-      tier: c.tier || null,
-      next_action_date: c.next_action_date || null,
-      updated_at: new Date().toISOString(),
-      data: c,
-    }));
-supabase.from("sprout_contacts").upsert(rows, { onConflict: "id" })
-      .then(({ error }) => {
-        if (error) {
-          console.error("saveContacts:", error);
-          showToast(`Save failed: ${error.message}`,"err");
-        }
-      });
-  },[showToast]);
+const saveContacts = useCallback((u) => {
+    setContacts(u);
+    svcSaveContacts(u).then(({ error }) => {
+      if (error) { console.error("saveContacts:", error); showToast(`Save failed: ${error}`, "err"); }
+    });
+  }, [showToast]);
 
-  const saveOrgs=useCallback((u)=>{
-    setOrgs(u); // optimistic
-    const rows = u.map(o => ({
-      id: o.id,
-      name: o.name,
-      category: o.category || null,
-      relationship_status: o.relationship_status || null,
-      tier: o.tier || null,
-      next_action_date: o.next_action_date || null,
-      updated_at: new Date().toISOString(),
-      data: o,
-    }));
-    supabase.from("sprout_orgs").upsert(rows, { onConflict: "id" })
-      .then(({ error }) => { if (error) { console.error("saveOrgs:", error); showToast("Save failed — check console","err"); }});
-  },[showToast]);
+  const saveOrgs = useCallback((u) => {
+    setOrgs(u);
+    svcSaveOrgs(u).then(({ error }) => {
+      if (error) { console.error("saveOrgs:", error); showToast("Save failed — check console", "err"); }
+    });
+  }, [showToast]);
 
-  const savePosts=useCallback((u)=>{
-    setPosts(u); // optimistic
-    const rows = u.map(p => ({
-      id: p.id,
-      updated_at: new Date().toISOString(),
-      data: p,
-    }));
-    supabase.from("sprout_posts").upsert(rows, { onConflict: "id" })
-      .then(({ error }) => { if (error) { console.error("savePosts:", error); showToast("Save failed — check console","err"); }});
-  },[showToast]);
+const saveProfile = useCallback((u) => {
+    setProfile(u);
+    svcSaveProfile(u).then(({ error }) => {
+      if (error) { console.error("saveProfile:", error); showToast("Save failed — check console", "err"); }
+    });
+  }, [showToast]);
 
-  const saveProfile=useCallback((u)=>{
-    setProfile(u); // optimistic
-    supabase.from("sprout_profile").upsert({ id: "profile", data: u, updated_at: new Date().toISOString() }, { onConflict: "id" })
-      .then(({ error }) => { if (error) { console.error("saveProfile:", error); showToast("Save failed — check console","err"); }});
-  },[showToast]);
-
-const importContact=useCallback((batch)=>{ const arr=Array.isArray(batch)?batch:[batch]; const u=[...contacts.filter(x=>!arr.find(c=>c.id===x.id)),...arr]; saveContacts(u); },[contacts,saveContacts]);
-const deleteContact=useCallback(async (id)=>{
-    const updated = contacts.filter(c=>c.id!==id);
-    setContacts(updated); // optimistic
-    const { error } = await supabase.from("sprout_contacts").delete().eq("id", id);
-    if (error) { console.error("deleteContact:", error); showToast("Delete failed — check console","err"); setContacts(contacts); }
+  const importContact=useCallback((batch)=>{ const arr=Array.isArray(batch)?batch:[batch]; const u=[...contacts.filter(x=>!arr.find(c=>c.id===x.id)),...arr]; saveContacts(u); },[contacts,saveContacts]);
+  const deleteContact=useCallback(async (id)=>{
+    const prev = contacts;
+    setContacts(contacts.filter(c=>c.id!==id)); // optimistic
+    const { error } = await deleteContactById(id);
+    if (error) { console.error("deleteContact:", error); showToast("Delete failed — check console","err"); setContacts(prev); }
     else showToast("Contact deleted");
   },[contacts, showToast]);
-  const importOrg=useCallback((batch)=>{ const arr=Array.isArray(batch)?batch:[batch]; const u=[...orgs.filter(x=>!arr.find(o=>o.id===x.id)),...arr]; saveOrgs(u); },[orgs,saveOrgs]);
+const importOrg=useCallback((batch)=>{ const arr=Array.isArray(batch)?batch:[batch]; const u=[...orgs.filter(x=>!arr.find(o=>o.id===x.id)),...arr]; saveOrgs(u); },[orgs,saveOrgs]);
+  const deleteOrg=useCallback(async (id)=>{
+    const prev = orgs;
+    setOrgs(orgs.filter(o=>o.id!==id)); // optimistic
+    const { error } = await deleteOrgById(id);
+    if (error) { console.error("deleteOrg:", error); showToast("Delete failed — check console","err"); setOrgs(prev); }
+    else showToast("Organization deleted");
+  },[orgs, showToast]);
   const openContact=useCallback((c)=>{ setPendingDetail(c); setView("contacts"); },[]);
+  const clearPendingDetail=useCallback(()=>setPendingDetail(null),[]);
 
 if (loading) return (
     <><style>{STYLES}</style>
@@ -1198,25 +1056,25 @@ if (loading) return (
     </div></>
   );
 
-  if (dbError) return (
+if (dbError) return (
     <><style>{STYLES}</style>
     <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",fontFamily:"Lato,sans-serif",flexDirection:"column",gap:12}}>
       <div style={{fontSize:28}}>⚠️</div>
       <div style={{fontSize:14,fontWeight:900,color:"#B91C1C"}}>CRM failed to load</div>
-      <div style={{fontSize:12,color:"#4B5563"}}>{dbError}</div>
+      <div style={{fontSize:12,color:"#4B5563",marginBottom:4}}>{dbError}</div>
+      <button className="btn btn-ghost btn-sm" onClick={loadAll}>↺ Retry</button>
     </div></>
   );
 
   return (
     <><style>{STYLES}</style>
     <div className="app">
-      <Sidebar view={view} setView={(v)=>{setPendingDetail(null);setView(v);}} contacts={contacts} posts={posts}/>
+<Sidebar view={view} setView={(v)=>{setPendingDetail(null);setView(v);}} contacts={contacts} profile={profile}/>
       <main className="main">
-        {view==="dashboard"&&<DashboardView contacts={contacts} orgs={orgs} posts={posts} setView={setView} onOpenContact={openContact}/>}
-{view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} onUpdate={saveContacts} onDelete={deleteContact} showToast={showToast} pendingDetail={pendingDetail}/>}
-        {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} showToast={showToast}/>}
+        {view==="dashboard"&&<DashboardView contacts={contacts} orgs={orgs} setView={setView} onOpenContact={openContact}/>}
+{view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} onUpdate={saveContacts} onDelete={deleteContact} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail}/>}
+{view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
         {view==="outreach"&&<OutreachView contacts={contacts} orgs={orgs}/>}
-        {view==="social"&&<SocialView posts={posts} onUpdate={savePosts} showToast={showToast}/>}
         {view==="import"&&<ImportView contacts={contacts} orgs={orgs} onImportContact={importContact} onImportOrg={importOrg} showToast={showToast}/>}
         {view==="settings"&&<SettingsView profile={profile} onUpdate={saveProfile} showToast={showToast}/>}
       </main>
