@@ -94,9 +94,6 @@ const STYLES = `
   .t-active   { background:var(--acid-lt); color:#3a3d00; }
   .t-lapsed   { background:#FEE2E2; color:#B91C1C; }
   .t-declined { background:var(--g200); color:var(--g600); }
-  .tier-a { background:var(--fuchsia); color:#fff; font-size:9px; font-weight:900; padding:2px 7px; border-radius:4px; }
-  .tier-b { background:var(--cyan); color:var(--black); font-size:9px; font-weight:900; padding:2px 7px; border-radius:4px; }
-  .tier-c { background:var(--g200); color:var(--g600); font-size:9px; font-weight:900; padding:2px 7px; border-radius:4px; }
   .type-tag { background:rgba(115,196,214,0.15); color:#155e6e; font-size:9px; font-weight:700; padding:2px 7px; border-radius:4px; text-transform:uppercase; letter-spacing:0.05em; }
   .type-tag-mentor { background:rgba(198,201,2,0.18); color:#3a3d00; font-size:9px; font-weight:700; padding:2px 7px; border-radius:4px; text-transform:uppercase; letter-spacing:0.05em; }
 
@@ -157,7 +154,6 @@ const STYLES = `
   .tp-type { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; background:var(--cyan-lt); color:#155e6e; padding:1px 6px; border-radius:3px; }
   .tp-dir { font-size:9px; color:var(--g400); }
   .tp-summary { font-size:12px; line-height:1.5; }
-  .tp-outcome { font-size:11px; color:var(--g600); font-style:italic; margin-top:2px; }
   .tp-next { font-size:11px; color:var(--cyan); font-weight:700; margin-top:3px; }
 
   .mover { position:fixed; inset:0; background:rgba(3,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:400; padding:20px; animation:fIn 0.15s ease; }
@@ -281,51 +277,50 @@ const STYLES = `
   }`;
 
 /* ─── Constants ─────────────────────────────────────────────────────────────── */
-const REL_STATUS = { cold:"Cold", warm:"Warm", active:"Active", lapsed:"Lapsed", declined:"Declined" };
-const REL_TYPES  = { funder_contact:"Funder Contact", partner:"Partner", community_builder:"Community Builder", donor:"Donor", board:"Board", volunteer:"Volunteer", mentor:"Mentor" };
+const REL_STATUS = { cold:"Cold", cool:"Cool", warm:"Warm", active:"Active" };
+const REL_TYPES  = { music:"Music", art:"Art", event_host:"Event Host", community_builder:"Community Builder", partner:"Partner", other:"Other" };
 const ORG_CATS   = { funder:"Funder", partner:"Partner", vendor:"Vendor", media:"Media", government:"Government" };
-const CADENCE    = { A:30, B:90, C:180 };
+const CADENCE    = { active:30, warm:90, cool:120, cold:180 };
 const MONTHS     = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const DAYS       = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
 /* ─── Seed Data ─────────────────────────────────────────────────────────────── */
 const SEED_ORGS = [{
   record_type:"organization", id:"org_brooklyn_org", name:"Brooklyn Org", category:"funder",
-  website:"brooklynorg.org", relationship_status:"warm", tier:"A",
+  website:"brooklynorg.org", relationship_status:"warm",
   primary_contact_id:"ind_donna_lennon",
   financial_relationship:{ has_given:false, total_given:0, grant_history:[] },
   notes:"Key local funder. BKO Microgrant program aligns with Sprout Society mission. Three known contacts. Application in progress.",
-  tags:["brooklyn","microgrant","local-funder"], touchpoints:[],
+  touchpoints:[],
   next_action:"Submit BKO Microgrant application", next_action_date:"2026-05-31",
-  confidence:"HIGH", createdAt:"2026-04-28T00:00:00.000Z",
+  createdAt:"2026-04-28T00:00:00.000Z",
 }];
 
 const SEED_CONTACTS = [
   { record_type:"individual", id:"ind_donna_lennon", first_name:"Donna", last_name:"Lennon",
-    org_id:"org_brooklyn_org", title:"Program Manager, BKO Microgrant", email:"programs@brooklyn.org", phone:"",
-    relationship_type:"funder_contact", relationship_status:"warm", tier:"A", ask_readiness:"cultivating",
+    org_id:"org_brooklyn_org", email:"programs@brooklyn.org", phone:"",
+    relationship_type:"community_builder", relationship_status:"warm",
     financial_relationship:{ has_given:false, total_given:0 },
-    interests:["community building","peer support","Brooklyn orgs"],
     notes:"Primary contact for BKO Microgrant. Email verified via Brooklyn Org website.",
-    tags:["bko","microgrant","program-officer"], touchpoints:[],
+    touchpoints:[],
     next_action:"Submit application; follow up 1 week after", next_action_date:"2026-06-07",
-linked_grants:["bko_microgrant_2026"], confidence:"HIGH", createdAt:"2026-04-28T00:00:00.000Z" },
+    createdAt:"2026-04-28T00:00:00.000Z" },
   { record_type:"individual", id:"ind_jocelynne_rainey", first_name:"Jocelynne", last_name:"Rainey",
-    org_id:"org_brooklyn_org", title:"Dr. — Brooklyn Org (role TBD)", email:"", phone:"",
-    relationship_type:"funder_contact", relationship_status:"cold", tier:"B", ask_readiness:"not_ready",
-    financial_relationship:{ has_given:false, total_given:0 }, interests:[],
+    org_id:"org_brooklyn_org", email:"", phone:"",
+    relationship_type:"other", other_description:"Funder contact (role TBD)", relationship_status:"cold",
+    financial_relationship:{ has_given:false, total_given:0 },
     notes:"Identified in BKO grant research. Title and contact details need verification.",
-    tags:["bko","needs-research"], touchpoints:[],
+    touchpoints:[],
     next_action:"Verify title and contact info via web search", next_action_date:"2026-05-01",
-    linked_grants:["bko_microgrant_2026"], confidence:"MEDIUM", createdAt:"2026-04-28T00:00:00.000Z" },
+    createdAt:"2026-04-28T00:00:00.000Z" },
   { record_type:"individual", id:"ind_sabrina_hargrave", first_name:"Sabrina", last_name:"Hargrave",
-    org_id:"org_brooklyn_org", title:"Brooklyn Org (role TBD)", email:"", phone:"",
-    relationship_type:"funder_contact", relationship_status:"cold", tier:"B", ask_readiness:"not_ready",
-    financial_relationship:{ has_given:false, total_given:0 }, interests:[],
+    org_id:"org_brooklyn_org", email:"", phone:"",
+    relationship_type:"other", other_description:"Funder contact (role TBD)", relationship_status:"cold",
+    financial_relationship:{ has_given:false, total_given:0 },
     notes:"Identified in BKO grant research. Title and contact details need verification.",
-    tags:["bko","needs-research"], touchpoints:[],
+    touchpoints:[],
     next_action:"Verify title and contact info via web search", next_action_date:"2026-05-01",
-    linked_grants:["bko_microgrant_2026"], confidence:"MEDIUM", createdAt:"2026-04-28T00:00:00.000Z" },
+    createdAt:"2026-04-28T00:00:00.000Z" },
 ];
 
 /* ─── Utils ─────────────────────────────────────────────────────────────────── */
@@ -341,14 +336,14 @@ function lastTouchDate(record) {
   return tps.map(t=>t.date).sort().reverse()[0];
 }
 function isOverdue(c) {
-  if (!c.tier || c.relationship_status==="declined") return false;
-  const limit = CADENCE[c.tier];
+  const limit = CADENCE[c.relationship_status];
+  if (!limit) return false;
   const last = lastTouchDate(c);
   const since = last ? daysSince(last.slice(0,10)) : daysSince(c.createdAt?.slice(0,10));
   return since !== null && since > limit;
 }
 function healthScore(c) {
-  const limit = CADENCE[c.tier];
+  const limit = CADENCE[c.relationship_status];
   if (!limit) return 0;
   const last = lastTouchDate(c);
   if (!last) return 10;
@@ -358,11 +353,6 @@ function healthScore(c) {
 
 /* ─── Small UI Components ────────────────────────────────────────────────────── */
 function RelTag({status}) { return <span className={`tag t-${status||"cold"}`}>{REL_STATUS[status]||status}</span>; }
-function TierBadge({tier}) { if (!tier) return null; return <span className={`tier-${tier.toLowerCase()}`}>Tier {tier}</span>; }
-function ConfBadge({confidence}) {
-  const hi = confidence==="HIGH";
-  return <span style={{background:hi?"var(--acid-lt)":"var(--banana-lt)",color:hi?"#3a3d00":"#7a5c00",fontSize:9,fontWeight:700,padding:"1px 6px",borderRadius:3,textTransform:"uppercase",letterSpacing:"0.07em"}}>{confidence||"MEDIUM"}</span>;
-}
 function Modal({title,onClose,children,footer,wide}) {
   const mouseDownTarget = useRef(null);
   useEffect(()=>{ const h=(e)=>{ if(e.key==="Escape") onClose(); }; document.addEventListener("keydown",h); return ()=>document.removeEventListener("keydown",h); },[onClose]);
@@ -467,31 +457,27 @@ function SearchSelect({options,value,onChange,placeholder,disabled}) {
 /* ─── Touchpoint Log ─────────────────────────────────────────────────────────── */
 function TouchpointList({touchpoints,onAdd}) {
   const [adding,setAdding] = useState(false);
-  const [tp,setTp] = useState({date:new Date().toISOString().slice(0,10),type:"email",direction:"outbound",summary:"",outcome:"",next_step:""});
-  const save = () => { if (!tp.summary.trim()) return; onAdd({...tp,id:uid()}); setTp({date:new Date().toISOString().slice(0,10),type:"email",direction:"outbound",summary:"",outcome:"",next_step:""}); setAdding(false); };
+  const [tp,setTp] = useState({date:new Date().toISOString().slice(0,10),summary:"",next_action:"",next_action_date:""});
+  const blankTp = () => ({date:new Date().toISOString().slice(0,10),summary:"",next_action:"",next_action_date:""});
+  const save = () => { if (!tp.summary.trim()) return; onAdd({...tp,id:uid()}); setTp(blankTp()); setAdding(false); };
   const sorted = [...(touchpoints||[])].sort((a,b)=>new Date(b.date)-new Date(a.date));
   return (
     <div>
       {sorted.length===0&&!adding&&<p style={{fontSize:12,color:"var(--g400)",fontStyle:"italic",marginBottom:10}}>No touchpoints logged yet.</p>}
       {sorted.map((t,i)=>(
         <div key={t.id||i} className="tp">
-          <div className="tp-hd"><span className="tp-date">{fmtDate(t.date)}</span><span className="tp-type">{t.type}</span><span className="tp-dir">{t.direction}</span></div>
+          <div className="tp-hd"><span className="tp-date">{fmtDate(t.date)}</span></div>
           <div className="tp-summary">{t.summary}</div>
-          {t.outcome&&<div className="tp-outcome">Outcome: {t.outcome}</div>}
-          {t.next_step&&<div className="tp-next">→ {t.next_step}</div>}
+          {t.next_action&&<div className="tp-next">→ {t.next_action}{t.next_action_date?` · by ${fmtDate(t.next_action_date)}`:""}</div>}
         </div>
       ))}
       {adding ? (
         <div className="add-row">
-          <div className="frow3">
-            <div className="fg"><label className="fl">Date</label><input type="date" className="fi" value={tp.date} onChange={e=>setTp({...tp,date:e.target.value})}/></div>
-            <div className="fg"><label className="fl">Type</label><select className="fs" value={tp.type} onChange={e=>setTp({...tp,type:e.target.value})}>{["email","call","meeting","event","grant_submission","social","other"].map(v=><option key={v} value={v}>{v}</option>)}</select></div>
-            <div className="fg"><label className="fl">Direction</label><select className="fs" value={tp.direction} onChange={e=>setTp({...tp,direction:e.target.value})}><option value="outbound">Outbound</option><option value="inbound">Inbound</option><option value="mutual">Mutual</option></select></div>
-          </div>
+          <div className="fg"><label className="fl">Date</label><input type="date" className="fi" value={tp.date} onChange={e=>setTp({...tp,date:e.target.value})}/></div>
           <div className="fg"><label className="fl">Summary *</label><textarea className="fta" rows={2} value={tp.summary} onChange={e=>setTp({...tp,summary:e.target.value})} placeholder="What happened?"/></div>
           <div className="frow">
-            <div className="fg"><label className="fl">Outcome</label><input className="fi" value={tp.outcome} onChange={e=>setTp({...tp,outcome:e.target.value})} placeholder="Result of this interaction"/></div>
-            <div className="fg"><label className="fl">Next Step</label><input className="fi" value={tp.next_step} onChange={e=>setTp({...tp,next_step:e.target.value})} placeholder="What happens next?"/></div>
+            <div className="fg"><label className="fl">Next Action</label><input className="fi" value={tp.next_action} onChange={e=>setTp({...tp,next_action:e.target.value})} placeholder="What should happen next?"/></div>
+            <div className="fg"><label className="fl">Next Action Date</label><input type="date" className="fi" value={tp.next_action_date} onChange={e=>setTp({...tp,next_action_date:e.target.value})}/></div>
           </div>
           <div style={{display:"flex",gap:8}}><button className="btn btn-blk btn-sm" onClick={save}>Log Touchpoint</button><button className="btn btn-ghost btn-sm" onClick={()=>setAdding(false)}>Cancel</button></div>
         </div>
@@ -501,23 +487,17 @@ function TouchpointList({touchpoints,onAdd}) {
 }
 
 /* ─── Quick Log Modal ────────────────────────────────────────────────────────── */
-const TP_TYPES = ["email","call","meeting","event","grant_submission","social","other"];
 const STATUS_OPTS = [
-  {value:"cold",label:"Cold"},{value:"warm",label:"Warm"},
-  {value:"active",label:"Active"},{value:"lapsed",label:"Lapsed"},{value:"declined",label:"Declined"}
+  {value:"cold",label:"Cold"},{value:"cool",label:"Cool"},{value:"warm",label:"Warm"},{value:"active",label:"Active"}
 ];
-const STATUS_OPTS_NO_DECLINED = STATUS_OPTS.filter(o=>o.value!=="declined");
-const TIER_OPTS = [{value:"A",label:"Tier A"},{value:"B",label:"Tier B"},{value:"C",label:"Tier C"}];
-const CONF_OPTS = [{value:"HIGH",label:"High"},{value:"MEDIUM",label:"Medium"},{value:"LOW",label:"Low"}];
-const DIR_OPTS  = [{value:"outbound",label:"Outbound"},{value:"inbound",label:"Inbound"},{value:"mutual",label:"Mutual"}];
-const TIER_COLOR = {A:"on-a",B:"on",C:"on-acid"};
+const STATUS_OPTS_NO_DECLINED = STATUS_OPTS.filter(o=>!["cool","declined"].includes(o.value));
 
 function QuickLogModal({contacts,initialContactId,onLog,onClose}) {
   const today = new Date().toISOString().slice(0,10);
   const [contactId,setContactId]=useState(initialContactId||contacts[0]?.id||"");
-  const [tp,setTp]=useState({date:today,type:"email",direction:"outbound",summary:"",outcome:"",next_step:""});
+  const [tp,setTp]=useState({date:today,summary:"",next_action:"",next_action_date:""});
   const [showExtra,setShowExtra]=useState(false);
-  const contactOpts=contacts.map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`,meta:c.title||""}));
+  const contactOpts=contacts.map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`,meta:""}));
   const canSave=contactId&&tp.summary.trim();
   const save=()=>{ if(!canSave) return; onLog(contactId,{...tp,id:Date.now().toString(36)}); onClose(); };
   return (
@@ -526,24 +506,18 @@ function QuickLogModal({contacts,initialContactId,onLog,onClose}) {
       <div className="fg"><label className="fl">Contact</label>
         <SearchSelect options={contactOpts} value={contactId} onChange={setContactId} placeholder="Search contacts…"/>
       </div>
-      <div className="fg"><label className="fl">Type</label>
-        <div className="type-btn-group">
-          {TP_TYPES.map(t=><button key={t} className={`type-btn ${tp.type===t?"on":""}`} onClick={()=>setTp({...tp,type:t})}>{t.replace("_"," ")}</button>)}
-        </div>
-      </div>
-      <div className="frow">
-        <div className="fg"><label className="fl">Direction</label><RadioGroup options={DIR_OPTS} value={tp.direction} onChange={v=>setTp({...tp,direction:v})}/></div>
-        <div className="fg"><label className="fl">Date</label><input type="date" className="fi" value={tp.date} onChange={e=>setTp({...tp,date:e.target.value})}/></div>
+      <div className="fg"><label className="fl">Date</label>
+        <input type="date" className="fi" value={tp.date} onChange={e=>setTp({...tp,date:e.target.value})}/>
       </div>
       <div className="fg"><label className="fl">Summary *</label>
         <textarea className="fta" rows={3} value={tp.summary} placeholder="What happened?" onChange={e=>setTp({...tp,summary:e.target.value})} autoFocus/>
       </div>
       <button className="drawer-toggle" onClick={()=>setShowExtra(!showExtra)}>
-        {showExtra?"▾":"▸"} Add outcome & next step
+        {showExtra?"▾":"▸"} Add next action
       </button>
       {showExtra&&<><hr className="drawer-divider"/>
-        <div className="fg"><label className="fl">Outcome</label><input className="fi" value={tp.outcome} placeholder="Result of this interaction" onChange={e=>setTp({...tp,outcome:e.target.value})}/></div>
-        <div className="fg"><label className="fl">Next Step</label><input className="fi" value={tp.next_step} placeholder="What happens next?" onChange={e=>setTp({...tp,next_step:e.target.value})}/></div>
+        <div className="fg"><label className="fl">Next Action</label><input className="fi" value={tp.next_action} placeholder="What should happen next?" onChange={e=>setTp({...tp,next_action:e.target.value})}/></div>
+        <div className="fg"><label className="fl">Next Action Date</label><input type="date" className="fi" value={tp.next_action_date} onChange={e=>setTp({...tp,next_action_date:e.target.value})}/></div>
       </>}
     </Modal>
   );
@@ -554,8 +528,6 @@ function ContactDetail({contact,orgs,onClose,onUpdate,onEdit,showToast}) {
   const mouseDownTarget = useRef(null);
   useEffect(()=>{ const h=(e)=>{ if(e.key==="Escape") onClose(); }; document.addEventListener("keydown",h); return ()=>document.removeEventListener("keydown",h); },[onClose]);
   const org = orgs.find(o=>o.id===contact.org_id);
-  const score = healthScore(contact);
-  const overdue = isOverdue(contact);
   const addTp = (tp) => { onUpdate({...contact,touchpoints:[...(contact.touchpoints||[]),tp]}); showToast("Touchpoint logged ✓"); };
   return (
 <div className="detail-overlay"
@@ -563,35 +535,24 @@ function ContactDetail({contact,orgs,onClose,onUpdate,onEdit,showToast}) {
       onClick={e=>{ if (e.target===e.currentTarget && mouseDownTarget.current===e.currentTarget) onClose(); }}>
       <div className="detail-panel">
 <div className="dp-hd">
-          <div><div className="dp-name">{contact.first_name} {contact.last_name}</div><div className="dp-sub">{contact.title}{org?` · ${org.name}`:""}</div></div>
+          <div><div className="dp-name">{contact.first_name} {contact.last_name}</div><div className="dp-sub">{org?org.name:""}</div></div>
           <div style={{display:"flex",gap:8,alignItems:"center"}}>
             <button className="btn btn-ghost btn-sm" onClick={onEdit}>Edit</button>
             <button className="dp-close" onClick={onClose}>×</button>
           </div>
         </div>
         <div className="dp-body">
-          <div className="dp-row"><RelTag status={contact.relationship_status}/><TierBadge tier={contact.tier}/><span className={contact.relationship_type==="mentor"?"type-tag-mentor":"type-tag"}>{REL_TYPES[contact.relationship_type]||contact.relationship_type}</span><ConfBadge confidence={contact.confidence}/></div>
-          <div className="dp-section">
-            <div className="dp-sect-lbl">Relationship Health</div>
-            <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <div style={{flex:1}}><div className="health-bar"><div className="health-fill" style={{width:`${score}%`,background:score>=70?"var(--acid)":score>=40?"var(--cyan)":"var(--fuchsia)"}}/></div></div>
-              <span style={{fontSize:12,fontWeight:700,color:score>=70?"#3a3d00":score>=40?"#155e6e":"#B91C1C"}}>{score}%</span>
-            </div>
-            {overdue&&<p style={{fontSize:11,color:"#B91C1C",fontWeight:700,marginTop:5}}>⚠ Overdue for contact — Tier {contact.tier} cadence exceeded</p>}
-          </div>
+          <div className="dp-row"><RelTag status={contact.relationship_status}/><span className="type-tag">{REL_TYPES[contact.relationship_type]||contact.relationship_type}</span></div>
           <div className="dp-section">
             <div className="dp-sect-lbl">Contact Details</div>
             {contact.email&&<div className="dp-field"><strong>Email:</strong> <a href={`mailto:${contact.email}`} style={{color:"var(--cyan)"}}>{contact.email}</a></div>}
             {contact.phone&&<div className="dp-field"><strong>Phone:</strong> {contact.phone}</div>}
-            {contact.ask_readiness&&<div className="dp-field"><strong>Ask Readiness:</strong> {contact.ask_readiness.replace(/_/g," ")}</div>}
-            {contact.interests?.length>0&&<div className="dp-field"><strong>Interests:</strong> {contact.interests.join(", ")}</div>}
-            {contact.linked_grants?.length>0&&<div className="dp-field"><strong>Linked Grants:</strong> {contact.linked_grants.join(", ")}</div>}
+            {contact.instagram_handle&&<div className="dp-field"><strong>Instagram:</strong> {contact.instagram_handle}</div>}
+            {contact.website&&<div className="dp-field"><strong>Website:</strong> <a href={contact.website} target="_blank" rel="noreferrer" style={{color:"var(--cyan)"}}>{contact.website}</a></div>}
             {contact.financial_relationship?.has_given&&<div className="dp-field"><strong>Total Given:</strong> {fmtMoney(contact.financial_relationship.total_given)}</div>}
           </div>
           {contact.next_action&&<div className="dp-section"><div className="dp-sect-lbl">Next Action</div><div style={{background:"var(--banana-lt)",borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700}}>{contact.next_action}</div>{contact.next_action_date&&<div style={{fontSize:11,color:"var(--g600)",marginTop:3}}>By {fmtDate(contact.next_action_date)}</div>}</div></div>}
           {contact.notes&&<div className="dp-section"><div className="dp-sect-lbl">Notes</div><p style={{fontSize:12,lineHeight:1.7,color:"var(--g800)"}}>{contact.notes}</p></div>}
-          {contact.tags?.length>0&&<div className="dp-section"><div className="dp-sect-lbl">Tags</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{contact.tags.map(t=><span key={t} style={{background:"var(--g100)",color:"var(--g600)",fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:20}}>{t}</span>)}</div></div>}
-          <div className="dp-section"><div className="dp-sect-lbl">Touchpoints ({(contact.touchpoints||[]).length})</div><TouchpointList touchpoints={contact.touchpoints} onAdd={addTp}/></div>
         </div>
       </div>
     </div>
@@ -616,11 +577,16 @@ function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
           </div>
         </div>
         <div className="dp-body">
-          <div className="dp-row"><RelTag status={org.relationship_status}/><TierBadge tier={org.tier}/><ConfBadge confidence={org.confidence}/></div>
-          {linked.length>0&&<div className="dp-section"><div className="dp-sect-lbl">People ({linked.length})</div>{linked.map(c=><div key={c.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}><div style={{flex:1}}><div style={{fontSize:13,fontWeight:700}}>{c.first_name} {c.last_name}</div><div style={{fontSize:11,color:"var(--g600)"}}>{c.title}</div></div><RelTag status={c.relationship_status}/></div>)}</div>}
-          {org.financial_relationship&&<div className="dp-section"><div className="dp-sect-lbl">Financial</div><div className="dp-field"><strong>Given to Sprout:</strong> {org.financial_relationship.has_given?fmtMoney(org.financial_relationship.total_given):"Not yet"}</div></div>}
-          {org.next_action&&<div className="dp-section"><div className="dp-sect-lbl">Next Action</div><div style={{background:"var(--banana-lt)",borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700}}>{org.next_action}</div>{org.next_action_date&&<div style={{fontSize:11,color:"var(--g600)",marginTop:3}}>By {fmtDate(org.next_action_date)}</div>}</div></div>}
-{org.notes&&<div className="dp-section"><div className="dp-sect-lbl">Notes</div><p style={{fontSize:12,lineHeight:1.7}}>{org.notes}</p></div>}
+          <div className="dp-row"><RelTag status={org.relationship_status}/></div>
+          {linked.length>0&&<div className="dp-section"><div className="dp-sect-lbl">People ({linked.length})</div>{linked.map(c=><div key={c.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}><div style={{flex:1}}><div style={{fontSize:13,fontWeight:700}}>{c.first_name} {c.last_name}</div></div><RelTag status={c.relationship_status}/></div>)}</div>}
+          <div className="dp-section">
+            <div className="dp-sect-lbl">Contact Details</div>
+            {org.phone&&<div className="dp-field"><strong>Phone:</strong> {org.phone}</div>}
+            {org.email&&<div className="dp-field"><strong>Email:</strong> <a href={`mailto:${org.email}`} style={{color:"var(--cyan)"}}>{org.email}</a></div>}
+            {org.instagram_handle&&<div className="dp-field"><strong>Instagram:</strong> {org.instagram_handle}</div>}
+            {org.website&&<div className="dp-field"><strong>Website:</strong> <a href={org.website} target="_blank" rel="noreferrer" style={{color:"var(--cyan)"}}>{org.website}</a></div>}
+          </div>
+          {org.notes&&<div className="dp-section"><div className="dp-sect-lbl">Notes</div><p style={{fontSize:12,lineHeight:1.7}}>{org.notes}</p></div>}
           <div className="dp-section"><div className="dp-sect-lbl">Touchpoints ({(org.touchpoints||[]).length})</div><TouchpointList touchpoints={org.touchpoints} onAdd={(tp)=>{ onUpdate({...org,touchpoints:[...(org.touchpoints||[]),tp]}); showToast("Touchpoint logged ✓"); }}/></div>
         </div>
       </div>
@@ -693,7 +659,7 @@ const tiers = {A:contacts.filter(c=>c.tier==="A"),B:contacts.filter(c=>c.tier===
               ? <p style={{fontSize:12,color:"var(--g400)",textAlign:"center",padding:"12px 0"}}>All contacts are on schedule 🎉</p>
               : overdue.slice(0,5).map(c=>{
                   const last=lastTouchDate(c); const since=last?daysSince(last.slice(0,10)):null;
-                  return <div key={c.id} className="overdue-row" onClick={()=>onOpenContact(c)}><div><div className="overdue-name">{c.first_name} {c.last_name}</div><div className="overdue-meta">{c.title} · Tier {c.tier}</div></div><span style={{fontSize:11,fontWeight:700,color:"#B91C1C",whiteSpace:"nowrap"}}>{since!==null?`${since}d ago`:"Never contacted"}</span></div>;
+                  return <div key={c.id} className="overdue-row" onClick={()=>onOpenContact(c)}><div><div className="overdue-name">{c.first_name} {c.last_name}</div><div className="overdue-meta">{REL_STATUS[c.relationship_status]||c.relationship_status}</div></div><span style={{fontSize:11,fontWeight:700,color:"#B91C1C",whiteSpace:"nowrap"}}>{since!==null?`${since}d ago`:"Never contacted"}</span></div>;
                 })
             }
           </div>
@@ -746,10 +712,8 @@ const tiers = {A:contacts.filter(c=>c.tier==="A"),B:contacts.filter(c=>c.tier===
 }
 
 /* ─── Contact Edit Modal ─────────────────────────────────────────────────────── */
-function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents}) {
+function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,onNavigate}) {
   const [eTab,setETab]=useState("overview");
-  const REL_TYPE_OPTS=Object.entries(REL_TYPES).map(([v,l])=>({value:v,label:l}));
-  const ASK_OPTS=[{value:"not_ready",label:"Not Ready"},{value:"cultivating",label:"Cultivating"},{value:"ready",label:"Ready"},{value:"asked",label:"Asked"}];
   const orgOpts=[{value:"",label:"— None —"},...orgs.map(o=>({value:o.id,label:o.name,meta:ORG_CATS[o.category]||o.category}))];
   const toggleEventLink = (evtId) => {
     const updated = events.map(ev=>{
@@ -765,36 +729,40 @@ function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents}
     <Modal title={`Edit — ${editing.first_name} ${editing.last_name}`} wide onClose={()=>setEditing(null)}
       footer={<><button className="btn btn-ghost btn-sm" onClick={()=>setEditing(null)}>Cancel</button><button className="btn btn-blk btn-sm" onClick={onSave}>Save Changes →</button></>}>
       <div className="modal-tabs">
-        {["overview","details","actions","profile","events"].map(t=><button key={t} className={`modal-tab ${eTab===t?"on":""}`} onClick={()=>setETab(t)}>{t}</button>)}
+        {["overview","outreach log","events"].map(t=><button key={t} className={`modal-tab ${eTab===t?"on":""}`} onClick={()=>setETab(t)}>{t}</button>)}
       </div>
       {eTab==="overview"&&<>
-        <div className="fg"><label className="fl">Status</label><RadioGroup options={STATUS_OPTS} value={editing.relationship_status||"cold"} onChange={v=>setEditing({...editing,relationship_status:v})}/></div>
-        <div className="fg"><label className="fl">Tier</label><RadioGroup options={TIER_OPTS} value={editing.tier||"B"} onChange={v=>setEditing({...editing,tier:v})} colorMap={TIER_COLOR}/></div>
-        <div className="fg"><label className="fl">Type</label><SearchSelect options={REL_TYPE_OPTS} value={editing.relationship_type||"funder_contact"} onChange={v=>setEditing({...editing,relationship_type:v})}/></div>
-        <div className="fg"><label className="fl">Confidence</label><RadioGroup options={CONF_OPTS} value={editing.confidence||"MEDIUM"} onChange={v=>setEditing({...editing,confidence:v})}/></div>
-        <div className="fg"><label className="fl">Ask Readiness</label><SearchSelect options={ASK_OPTS} value={editing.ask_readiness||"not_ready"} onChange={v=>setEditing({...editing,ask_readiness:v})}/></div>
-      </>}
-      {eTab==="details"&&<>
         <div className="frow">
           <div className="fg"><label className="fl">First Name</label><input className="fi" value={editing.first_name||""} onChange={e=>setEditing({...editing,first_name:e.target.value})} autoFocus/></div>
           <div className="fg"><label className="fl">Last Name</label><input className="fi" value={editing.last_name||""} onChange={e=>setEditing({...editing,last_name:e.target.value})}/></div>
         </div>
-        <div className="fg"><label className="fl">Title</label><input className="fi" value={editing.title||""} onChange={e=>setEditing({...editing,title:e.target.value})}/></div>
         <div className="frow">
           <div className="fg"><label className="fl">Email</label><input type="email" className="fi" value={editing.email||""} onChange={e=>setEditing({...editing,email:e.target.value})}/></div>
           <div className="fg"><label className="fl">Phone</label><input className="fi" value={editing.phone||""} onChange={e=>setEditing({...editing,phone:e.target.value})}/></div>
         </div>
+        <div className="fg"><label className="fl">Instagram</label><input className="fi" value={editing.instagram_handle||""} onChange={e=>setEditing({...editing,instagram_handle:e.target.value})} placeholder="@handle"/></div>
         <div className="fg"><label className="fl">Organization</label><SearchSelect options={orgOpts} value={editing.org_id||""} onChange={v=>setEditing({...editing,org_id:v})}/></div>
-      </>}
-      {eTab==="actions"&&<>
-        <div className="fg"><label className="fl">Next Action</label><input className="fi" value={editing.next_action||""} onChange={e=>setEditing({...editing,next_action:e.target.value})} autoFocus/></div>
+        <div className="fg"><label className="fl">Status</label><RadioGroup options={STATUS_OPTS} value={editing.relationship_status||"cold"} onChange={v=>setEditing({...editing,relationship_status:v})}/></div>
+        <div className="fg"><label className="fl">Type</label>
+          <div className="type-btn-group">
+            {Object.entries(REL_TYPES).map(([v,l])=>(
+              <button key={v} className={`type-btn ${editing.relationship_type===v?"on":""}`} onClick={()=>setEditing({...editing,relationship_type:v})}>{l}</button>
+            ))}
+          </div>
+        </div>
+        {editing.relationship_type==="other"&&<div className="fg"><label className="fl">Describe Type</label><input className="fi" value={editing.other_description||""} onChange={e=>setEditing({...editing,other_description:e.target.value})} placeholder="Describe the relationship…"/></div>}
+        <div className="fg"><label className="fl">Next Action</label><input className="fi" value={editing.next_action||""} onChange={e=>setEditing({...editing,next_action:e.target.value})}/></div>
         <div className="fg"><label className="fl">Due Date</label><input type="date" className="fi" value={editing.next_action_date||""} onChange={e=>setEditing({...editing,next_action_date:e.target.value})}/></div>
+        <button className="drawer-toggle" onClick={()=>setEditing(prev=>({...prev,_showMore:!prev._showMore}))}>
+          {editing._showMore?"▾":"▸"} Show more
+        </button>
+        {editing._showMore&&<><hr className="drawer-divider"/>
+          <div className="fg"><label className="fl">Website</label><input className="fi" value={editing.website||""} onChange={e=>setEditing({...editing,website:e.target.value})} placeholder="https://example.org"/></div>
+          <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={3} value={editing.notes||""} onChange={e=>setEditing({...editing,notes:e.target.value})}/></div>
+        </>}
       </>}
-      {eTab==="profile"&&<>
-        <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={4} value={editing.notes||""} onChange={e=>setEditing({...editing,notes:e.target.value})} autoFocus/></div>
-        <div className="fg"><label className="fl">Tags</label><ChipInput values={editing.tags||[]} onChange={v=>setEditing({...editing,tags:v})}/></div>
-        <div className="fg"><label className="fl">Interests</label><ChipInput values={editing.interests||[]} onChange={v=>setEditing({...editing,interests:v})}/></div>
-        <div className="fg"><label className="fl">Linked Grants</label><ChipInput values={editing.linked_grants||[]} onChange={v=>setEditing({...editing,linked_grants:v})}/></div>
+      {eTab==="outreach log"&&<>
+        <TouchpointList touchpoints={editing.touchpoints||[]} onAdd={(tp)=>setEditing({...editing,touchpoints:[...(editing.touchpoints||[]),tp]})}/>
       </>}
       {eTab==="events"&&<>
         <div className="fg">
@@ -803,13 +771,14 @@ function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents}
             {events.length===0&&<div style={{padding:"10px 12px",fontSize:12,color:"var(--g400)"}}>No events in CRM yet</div>}
             {events.map(ev=>{
               const on=linkedEventIds.includes(ev.id);
-              return <div key={ev.id} onClick={()=>toggleEventLink(ev.id)} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",cursor:"pointer",background:on?"var(--cyan-lt)":"#fff",borderBottom:"1px solid var(--g100)"}}>
-                <div style={{flex:1}}>
+              return <div key={ev.id} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",background:on?"var(--cyan-lt)":"#fff",borderBottom:"1px solid var(--g100)"}}>
+                <div style={{flex:1,cursor:"pointer"}} onClick={()=>toggleEventLink(ev.id)}>
                   <div style={{fontSize:13,fontWeight:700}}>{ev.name||"(Unnamed)"}</div>
                   <div style={{fontSize:10,color:"var(--g400)"}}>{fmtDate(ev.event_date)}</div>
                 </div>
                 <EventStatusTag status={ev.status}/>
                 {on&&<span style={{color:"var(--cyan)",fontWeight:900,fontSize:14}}>✓</span>}
+                {on&&<button className="btn btn-ghost btn-xs" onClick={()=>{ setEditing(null); onNavigate("events"); }}>View Event →</button>}
               </div>;
             })}
           </div>
@@ -820,10 +789,9 @@ function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents}
 }
 
 /* ─── Contacts View ──────────────────────────────────────────────────────────── */
-function ContactsView({contacts,orgs,events,onUpdate,onDelete,onUpdateEvents,showToast,pendingDetail,onPendingDetailConsumed}) {
+function ContactsView({contacts,orgs,events,onUpdate,onDelete,onUpdateEvents,showToast,pendingDetail,onPendingDetailConsumed,setView}) {
   const [search,setSearch]=useState("");
   const [fType,setFType]=useState("all");
-  const [fTier,setFTier]=useState("all");
   const [fStatus,setFStatus]=useState("all");
   const [selected,setSelected]=useState(null);
   const [adding,setAdding]=useState(false);
@@ -835,7 +803,7 @@ useEffect(()=>{
     onPendingDetailConsumed();
   }
 },[pendingDetail, onPendingDetailConsumed]);
-  const blank={first_name:"",last_name:"",org_id:"",title:"",email:"",phone:"",relationship_type:"funder_contact",relationship_status:"cold",tier:"B",notes:"",next_action:"",next_action_date:"",tags:[],interests:[],linked_grants:[]};
+const blank={first_name:"",last_name:"",org_id:"",email:"",phone:"",instagram_handle:"",website:"",relationship_type:"partner",relationship_status:"cold",notes:"",next_action:"",next_action_date:""};
   const [nc,setNc]=useState(blank);
 
 // Pre-compute scores once per render, not once per table cell
@@ -849,17 +817,16 @@ useEffect(()=>{
     const name=`${c.first_name} ${c.last_name} ${c.title||""}`.toLowerCase();
     if (search&&!name.includes(search.toLowerCase())) return false;
     if (fType!=="all"&&c.relationship_type!==fType) return false;
-    if (fTier!=="all"&&c.tier!==fTier) return false;
     if (fStatus!=="all"&&c.relationship_status!==fStatus) return false;
     return true;
-  }), [contacts, search, fType, fTier, fStatus]);
+  }), [contacts, search, fType, fStatus]);
 
 const [editing,setEditing]=useState(null);
   const [confirmDelete,setConfirmDelete]=useState(null);
   const [quickLog,setQuickLog]=useState(null); // contact id or null
 
   const addContact=()=>{
-    const c={...nc,record_type:"individual",id:`ind_${uid()}`,touchpoints:[],tags:[],interests:[],linked_grants:[],financial_relationship:{has_given:false,total_given:0},ask_readiness:"not_ready",confidence:"MEDIUM",createdAt:new Date().toISOString()};
+    const c={...nc,record_type:"individual",id:`ind_${uid()}`,touchpoints:[],financial_relationship:{has_given:false,total_given:0},createdAt:new Date().toISOString()};
     onUpdate([...contacts,c]); setNc(blank); setAdding(false); showToast("Contact added ✓");
   };
 
@@ -876,9 +843,8 @@ const [editing,setEditing]=useState(null);
       <div className="filter-bar">
         <input className="fi" placeholder="Search name or title…" value={search} onChange={e=>setSearch(e.target.value)}/>
         <select className="fs" value={fType} onChange={e=>setFType(e.target.value)}><option value="all">All types</option>{Object.entries(REL_TYPES).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
-        <select className="fs" value={fTier} onChange={e=>setFTier(e.target.value)}><option value="all">All tiers</option><option value="A">Tier A</option><option value="B">Tier B</option><option value="C">Tier C</option></select>
 <select className="fs" value={fStatus} onChange={e=>setFStatus(e.target.value)}><option value="all">All statuses</option>{Object.entries(REL_STATUS).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
-        {(search||fType!=="all"||fTier!=="all"||fStatus!=="all")&&<button className="btn btn-ghost btn-sm" onClick={()=>{setSearch("");setFType("all");setFTier("all");setFStatus("all");}}>✕ Clear</button>}
+{(search||fType!=="all"||fStatus!=="all")&&<button className="btn btn-ghost btn-sm" onClick={()=>{setSearch("");setFType("all");setFStatus("all");}}>✕ Clear</button>}
       </div>
 {adding&&(
         <Modal title="Add Contact" onClose={()=>{setAdding(false);setNc(blank);}}
@@ -891,27 +857,29 @@ const [editing,setEditing]=useState(null);
             <SearchSelect options={[{value:"",label:"— None —"},...orgs.map(o=>({value:o.id,label:o.name,meta:ORG_CATS[o.category]||o.category}))]} value={nc.org_id} onChange={v=>setNc({...nc,org_id:v})} placeholder="Search organizations…"/>
           </div>
           <div className="fg"><label className="fl">Type</label>
-            <SearchSelect options={Object.entries(REL_TYPES).map(([v,l])=>({value:v,label:l}))} value={nc.relationship_type} onChange={v=>setNc({...nc,relationship_type:v})}/>
+            <div className="type-btn-group">
+              {Object.entries(REL_TYPES).map(([v,l])=>(
+                <button key={v} className={`type-btn ${nc.relationship_type===v?"on":""}`} onClick={()=>setNc({...nc,relationship_type:v})}>{l}</button>
+              ))}
+            </div>
           </div>
+          {nc.relationship_type==="other"&&<div className="fg"><label className="fl">Describe Type</label><input className="fi" value={nc.other_description||""} onChange={e=>setNc({...nc,other_description:e.target.value})} placeholder="Describe the relationship…"/></div>}
           <div className="fg"><label className="fl">Status</label>
             <RadioGroup options={STATUS_OPTS} value={nc.relationship_status} onChange={v=>setNc({...nc,relationship_status:v})}/>
           </div>
-          <div className="fg"><label className="fl">Tier</label>
-            <RadioGroup options={TIER_OPTS} value={nc.tier} onChange={v=>setNc({...nc,tier:v})} colorMap={TIER_COLOR}/>
-          </div>
           <button className="drawer-toggle" onClick={()=>setNcDrawer(d=>!d)}>{ncDrawer?"▾":"▸"} More details</button>
           {ncDrawer&&<><hr className="drawer-divider"/>
-            <div className="fg"><label className="fl">Title</label><input className="fi" value={nc.title} onChange={e=>setNc({...nc,title:e.target.value})}/></div>
             <div className="frow">
               <div className="fg"><label className="fl">Email</label><input type="email" className="fi" value={nc.email} onChange={e=>setNc({...nc,email:e.target.value})}/></div>
               <div className="fg"><label className="fl">Phone</label><input className="fi" value={nc.phone} onChange={e=>setNc({...nc,phone:e.target.value})}/></div>
             </div>
+            <div className="fg"><label className="fl">Instagram</label><input className="fi" value={nc.instagram_handle||""} onChange={e=>setNc({...nc,instagram_handle:e.target.value})} placeholder="@handle"/></div>
+            <div className="fg"><label className="fl">Website</label><input className="fi" value={nc.website||""} onChange={e=>setNc({...nc,website:e.target.value})} placeholder="https://example.org"/></div>
             <div className="frow">
               <div className="fg"><label className="fl">Next Action</label><input className="fi" value={nc.next_action} onChange={e=>setNc({...nc,next_action:e.target.value})}/></div>
               <div className="fg"><label className="fl">Due Date</label><input type="date" className="fi" value={nc.next_action_date} onChange={e=>setNc({...nc,next_action_date:e.target.value})}/></div>
             </div>
             <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={2} value={nc.notes} onChange={e=>setNc({...nc,notes:e.target.value})}/></div>
-            <div className="fg"><label className="fl">Tags</label><ChipInput values={nc.tags} onChange={v=>setNc({...nc,tags:v})}/></div>
           </>}
         </Modal>
       )}
@@ -927,9 +895,7 @@ const [editing,setEditing]=useState(null);
                 <td><span className={c.relationship_type==="mentor"?"type-tag-mentor":"type-tag"}>{REL_TYPES[c.relationship_type]||c.relationship_type}</span></td>
                 <td style={{fontSize:12,color:"var(--g600)"}}>{org?.name||"—"}</td>
                 <td><RelTag status={c.relationship_status}/></td>
-                <td><TierBadge tier={c.tier}/></td>
                 <td style={{maxWidth:160,fontSize:11,color:"var(--g600)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.next_action||"—"}</td>
-                <td style={{minWidth:80}}><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{flex:1,height:4,background:"var(--g200)",borderRadius:2,overflow:"hidden"}}><div style={{height:"100%",width:`${score}%`,background:score>=70?"var(--acid)":score>=40?"var(--cyan)":"var(--fuchsia)",borderRadius:2}}/></div><span style={{fontSize:10,fontWeight:700,color:"var(--g400)"}}>{score}%</span></div></td>
 <td style={{padding:"12px 14px"}}>
                 <div className="row-actions">
                   <button className="btn btn-ghost btn-xs" onClick={e=>{e.stopPropagation();setEditing({...c});}}>Edit</button>
@@ -948,7 +914,7 @@ const [editing,setEditing]=useState(null);
         onLog={(cId,tp)=>{ updateContact({...contacts.find(c=>c.id===cId), touchpoints:[...(contacts.find(c=>c.id===cId)?.touchpoints||[]),tp]}); showToast("Touchpoint logged ✓"); }}
         onClose={()=>setQuickLog(null)}
       />}
-{editing&&<ContactEditModal editing={editing} setEditing={setEditing} onSave={saveEdit} orgs={orgs} events={events||[]} onUpdateEvents={onUpdateEvents}/>}
+{editing&&<ContactEditModal editing={editing} setEditing={setEditing} onSave={saveEdit} orgs={orgs} events={events||[]} onUpdateEvents={onUpdateEvents} onNavigate={setView}/>}
       {confirmDelete&&<ConfirmModal
         message={`Delete ${confirmDelete.first_name} ${confirmDelete.last_name}? This cannot be undone.`}
         onConfirm={()=>{
@@ -963,6 +929,43 @@ const [editing,setEditing]=useState(null);
   );
 }
 
+/* ─── Org Edit Modal ─────────────────────────────────────────────────────────── */
+function OrgEditModal({editingOrg,setEditingOrg,onSave}) {
+  const [oTab,setOTab]=useState("overview");
+  return (
+    <Modal title={`Edit — ${editingOrg.name}`} wide onClose={()=>setEditingOrg(null)}
+      footer={<><button className="btn btn-ghost btn-sm" onClick={()=>setEditingOrg(null)}>Cancel</button><button className="btn btn-blk btn-sm" onClick={onSave}>Save Changes →</button></>}>
+      <div className="modal-tabs">
+        {["overview","touchpoint log"].map(t=><button key={t} className={`modal-tab ${oTab===t?"on":""}`} onClick={()=>setOTab(t)}>{t}</button>)}
+      </div>
+      {oTab==="overview"&&<>
+        <div className="fg"><label className="fl">Name *</label><input className="fi" value={editingOrg.name||""} onChange={e=>setEditingOrg({...editingOrg,name:e.target.value})} autoFocus/></div>
+        <div className="fg"><label className="fl">Website</label><input className="fi" value={editingOrg.website||""} onChange={e=>setEditingOrg({...editingOrg,website:e.target.value})} placeholder="https://example.org"/></div>
+        <div className="fg"><label className="fl">Instagram</label><input className="fi" value={editingOrg.instagram_handle||""} onChange={e=>setEditingOrg({...editingOrg,instagram_handle:e.target.value})} placeholder="@handle"/></div>
+        <div className="fg"><label className="fl">Category</label>
+          <SearchSelect options={Object.entries(ORG_CATS).map(([v,l])=>({value:v,label:l}))} value={editingOrg.category||"funder"} onChange={v=>setEditingOrg({...editingOrg,category:v})}/>
+        </div>
+        <div className="fg"><label className="fl">Status</label>
+          <RadioGroup options={STATUS_OPTS_NO_DECLINED} value={editingOrg.relationship_status||"cold"} onChange={v=>setEditingOrg({...editingOrg,relationship_status:v})}/>
+        </div>
+        <button className="drawer-toggle" onClick={()=>setEditingOrg(o=>({...o,_showMore:!o._showMore}))}>
+          {editingOrg._showMore?"▾":"▸"} Show more
+        </button>
+        {editingOrg._showMore&&<><hr className="drawer-divider"/>
+          <div className="frow">
+            <div className="fg"><label className="fl">Phone</label><input className="fi" value={editingOrg.phone||""} onChange={e=>setEditingOrg({...editingOrg,phone:e.target.value})}/></div>
+            <div className="fg"><label className="fl">Email</label><input type="email" className="fi" value={editingOrg.email||""} onChange={e=>setEditingOrg({...editingOrg,email:e.target.value})}/></div>
+          </div>
+          <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={3} value={editingOrg.notes||""} onChange={e=>setEditingOrg({...editingOrg,notes:e.target.value})}/></div>
+        </>}
+      </>}
+      {oTab==="touchpoint log"&&<>
+        <TouchpointList touchpoints={editingOrg.touchpoints||[]} onAdd={(tp)=>setEditingOrg({...editingOrg,touchpoints:[...(editingOrg.touchpoints||[]),tp]})}/>
+      </>}
+    </Modal>
+  );
+}
+
 /* ─── Organizations View ─────────────────────────────────────────────────────── */
 function OrgsView({orgs,contacts,onUpdate,onDelete,showToast}) {
   const [search,setSearch]=useState("");
@@ -970,7 +973,7 @@ function OrgsView({orgs,contacts,onUpdate,onDelete,showToast}) {
   const [fStatus,setFStatus]=useState("all");
   const [selected,setSelected]=useState(null);
   const [adding,setAdding]=useState(false);
-  const blank={name:"",category:"funder",website:"",relationship_status:"cold",tier:"B",notes:"",next_action:"",next_action_date:"",tags:[],primary_contact_id:""};
+const blank={name:"",category:"funder",website:"",instagram_handle:"",phone:"",email:"",relationship_status:"cold",notes:"",next_action:"",next_action_date:"",primary_contact_id:""};
   const [no,setNo]=useState(blank);
   const [noDrawer,setNoDrawer]=useState(false);
 
@@ -991,7 +994,7 @@ const [editingOrg,setEditingOrg]=useState(null);
 
   const addOrg=()=>{
     if (!no.name.trim()) return;
-    const o={...no,record_type:"organization",id:`org_${uid()}`,primary_contact_id:"",financial_relationship:{has_given:false,total_given:0,grant_history:[]},tags:[],touchpoints:[],confidence:"MEDIUM",createdAt:new Date().toISOString()};
+    const o={...no,record_type:"organization",id:`org_${uid()}`,primary_contact_id:"",financial_relationship:{has_given:false,total_given:0,grant_history:[]},touchpoints:[],createdAt:new Date().toISOString()};
     onUpdate([...orgs,o]); setNo(blank); setAdding(false); showToast("Organization added ✓");
   };
   const updateOrg=(updated)=>onUpdate(orgs.map(o=>o.id===updated.id?updated:o));
@@ -1010,40 +1013,33 @@ const [editingOrg,setEditingOrg]=useState(null);
         <Modal title="Add Organization" onClose={()=>{setAdding(false);setNo(blank);}}
           footer={<><button className="btn btn-ghost btn-sm" onClick={()=>{setAdding(false);setNo(blank);}}>Cancel</button><button className="btn btn-blk btn-sm" onClick={addOrg} disabled={!no.name.trim()}>Add Organization →</button></>}>
           <div className="fg"><label className="fl">Name *</label><input className="fi" value={no.name} onChange={e=>setNo({...no,name:e.target.value})} autoFocus/></div>
+          <div className="fg"><label className="fl">Website</label><input className="fi" value={no.website} onChange={e=>setNo({...no,website:e.target.value})} placeholder="https://example.org"/></div>
           <div className="fg"><label className="fl">Category</label>
             <SearchSelect options={Object.entries(ORG_CATS).map(([v,l])=>({value:v,label:l}))} value={no.category} onChange={v=>setNo({...no,category:v})}/>
           </div>
           <div className="fg"><label className="fl">Status</label>
             <RadioGroup options={STATUS_OPTS_NO_DECLINED} value={no.relationship_status} onChange={v=>setNo({...no,relationship_status:v})}/>
           </div>
-          <div className="fg"><label className="fl">Tier</label>
-            <RadioGroup options={TIER_OPTS} value={no.tier} onChange={v=>setNo({...no,tier:v})} colorMap={TIER_COLOR}/>
-          </div>
           <button className="drawer-toggle" onClick={()=>setNoDrawer(d=>!d)}>{noDrawer?"▾":"▸"} More details</button>
           {noDrawer&&<><hr className="drawer-divider"/>
-            <div className="fg"><label className="fl">Website</label><input className="fi" value={no.website} onChange={e=>setNo({...no,website:e.target.value})} placeholder="example.org"/></div>
-            <div className="fg"><label className="fl">Primary Contact</label>
-              <SearchSelect options={[{value:"",label:"— None —"},...contacts.map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`,meta:c.title||""}))]} value={no.primary_contact_id||""} onChange={v=>setNo({...no,primary_contact_id:v})} placeholder="Search contacts…"/>
-            </div>
+            <div className="fg"><label className="fl">Instagram</label><input className="fi" value={no.instagram_handle||""} onChange={e=>setNo({...no,instagram_handle:e.target.value})} placeholder="@handle"/></div>
             <div className="frow">
-              <div className="fg"><label className="fl">Next Action</label><input className="fi" value={no.next_action} onChange={e=>setNo({...no,next_action:e.target.value})}/></div>
-              <div className="fg"><label className="fl">Due Date</label><input type="date" className="fi" value={no.next_action_date} onChange={e=>setNo({...no,next_action_date:e.target.value})}/></div>
+              <div className="fg"><label className="fl">Phone</label><input className="fi" value={no.phone||""} onChange={e=>setNo({...no,phone:e.target.value})}/></div>
+              <div className="fg"><label className="fl">Email</label><input type="email" className="fi" value={no.email||""} onChange={e=>setNo({...no,email:e.target.value})}/></div>
             </div>
             <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={2} value={no.notes} onChange={e=>setNo({...no,notes:e.target.value})}/></div>
-            <div className="fg"><label className="fl">Tags</label><ChipInput values={no.tags||[]} onChange={v=>setNo({...no,tags:v})}/></div>
           </>}
         </Modal>
       )}
       {filtered.length===0
         ? <div className="empty"><div className="empty-ico">🏢</div><div className="empty-ttl">No organizations</div><div className="empty-txt">Add organizations manually or import JSON from Claude.</div></div>
-        : <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Organization</th><th>Category</th><th>Status</th><th>Tier</th><th>People</th><th>Next Action</th><th>Given</th><th></th></tr></thead><tbody>
+        : <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Organization</th><th>Category</th><th>Status</th><th>People</th><th>Next Action</th><th>Given</th><th></th></tr></thead><tbody>
             {filtered.map(o=>{
               const people=contacts.filter(c=>c.org_id===o.id);
               return <tr key={o.id} onClick={()=>setSelected(o.id)}>
                 <td><div style={{fontWeight:700}}>{o.name}</div><div style={{fontSize:11,color:"var(--g400)"}}>{o.website||""}</div></td>
                 <td><span className="type-tag">{ORG_CATS[o.category]||o.category}</span></td>
                 <td><RelTag status={o.relationship_status}/></td>
-                <td><TierBadge tier={o.tier}/></td>
                 <td style={{fontSize:12,color:"var(--g600)"}}>{people.length}</td>
                 <td style={{maxWidth:160,fontSize:11,color:"var(--g600)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.next_action||"—"}</td>
 <td style={{fontSize:12}}>{o.financial_relationship?.has_given?fmtMoney(o.financial_relationship.total_given):<span style={{color:"var(--g400)"}}>—</span>}</td>
@@ -1060,42 +1056,16 @@ const [editingOrg,setEditingOrg]=useState(null);
 {sel&&<OrgDetail org={sel} contacts={contacts} onClose={()=>setSelected(null)} onUpdate={updateOrg} onEdit={()=>setEditingOrg({...sel})} showToast={showToast}/>}
       {confirmDeleteOrg&&<ConfirmModal message={`Delete ${confirmDeleteOrg.name}? This cannot be undone.`} onConfirm={()=>{if(selected===confirmDeleteOrg.id)setSelected(null);onDelete(confirmDeleteOrg.id);setConfirmDeleteOrg(null);}} onCancel={()=>setConfirmDeleteOrg(null)}/>}
 
-{editingOrg&&(
-  <Modal title={`Edit — ${editingOrg.name}`} wide onClose={()=>setEditingOrg(null)}
-    footer={<><button className="btn btn-ghost btn-sm" onClick={()=>setEditingOrg(null)}>Cancel</button><button className="btn btn-blk btn-sm" onClick={saveEditOrg}>Save Changes →</button></>}>
-    <div className="fg"><label className="fl">Name *</label><input className="fi" value={editingOrg.name||""} onChange={e=>setEditingOrg({...editingOrg,name:e.target.value})} autoFocus/></div>
-    <div className="fg"><label className="fl">Category</label>
-      <SearchSelect options={Object.entries(ORG_CATS).map(([v,l])=>({value:v,label:l}))} value={editingOrg.category||"funder"} onChange={v=>setEditingOrg({...editingOrg,category:v})}/>
-    </div>
-    <div className="fg"><label className="fl">Status</label>
-      <RadioGroup options={STATUS_OPTS_NO_DECLINED} value={editingOrg.relationship_status||"cold"} onChange={v=>setEditingOrg({...editingOrg,relationship_status:v})}/>
-    </div>
-    <div className="fg"><label className="fl">Tier</label>
-      <RadioGroup options={TIER_OPTS} value={editingOrg.tier||"B"} onChange={v=>setEditingOrg({...editingOrg,tier:v})} colorMap={TIER_COLOR}/>
-    </div>
-    <div className="fg"><label className="fl">Confidence</label>
-      <RadioGroup options={CONF_OPTS} value={editingOrg.confidence||"MEDIUM"} onChange={v=>setEditingOrg({...editingOrg,confidence:v})}/>
-    </div>
-    <hr className="drawer-divider"/>
-    <div className="fg"><label className="fl">Website</label><input className="fi" value={editingOrg.website||""} onChange={e=>setEditingOrg({...editingOrg,website:e.target.value})}/></div>
-    <div className="frow">
-      <div className="fg"><label className="fl">Next Action</label><input className="fi" value={editingOrg.next_action||""} onChange={e=>setEditingOrg({...editingOrg,next_action:e.target.value})}/></div>
-      <div className="fg"><label className="fl">Due Date</label><input type="date" className="fi" value={editingOrg.next_action_date||""} onChange={e=>setEditingOrg({...editingOrg,next_action_date:e.target.value})}/></div>
-    </div>
-    <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={3} value={editingOrg.notes||""} onChange={e=>setEditingOrg({...editingOrg,notes:e.target.value})}/></div>
-    <div className="fg"><label className="fl">Tags</label><ChipInput values={editingOrg.tags||[]} onChange={v=>setEditingOrg({...editingOrg,tags:v})}/></div>
-  </Modal>
-)}
+{editingOrg&&<OrgEditModal editingOrg={editingOrg} setEditingOrg={setEditingOrg} onSave={saveEditOrg}/>}
     </div>
   );
 }
 
 /* ─── Outreach Log ───────────────────────────────────────────────────────────── */
 function OutreachView({contacts,orgs}) {
-  const [fType,setFType]=useState("all");
   const [search,setSearch]=useState("");
 
-const all=useMemo(()=>{
+  const all=useMemo(()=>{
     const items=[];
     contacts.forEach(c=>(c.touchpoints||[]).forEach(tp=>items.push({...tp,personName:`${c.first_name} ${c.last_name}`,orgName:orgs.find(o=>o.id===c.org_id)?.name||""})));
     orgs.forEach(o=>(o.touchpoints||[]).forEach(tp=>items.push({...tp,personName:o.name,orgName:"Organization record"})));
@@ -1103,17 +1073,15 @@ const all=useMemo(()=>{
   },[contacts,orgs]);
 
   const filtered=useMemo(()=>all.filter(tp=>{
-    if (fType!=="all"&&tp.type!==fType) return false;
     if (search&&!tp.personName.toLowerCase().includes(search.toLowerCase())&&!tp.summary?.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
-  }),[all,fType,search]);
+  }),[all,search]);
 
   return (
     <div className="page">
       <div className="pg-hd"><div><div className="pg-ttl">Outreach Log</div><div className="pg-sub">{all.length} touchpoints across all records</div></div></div>
       <div className="filter-bar">
         <input className="fi" placeholder="Search contact or summary…" value={search} onChange={e=>setSearch(e.target.value)}/>
-        <select className="fs" value={fType} onChange={e=>setFType(e.target.value)}><option value="all">All types</option>{["email","call","meeting","event","grant_submission","social","other"].map(v=><option key={v} value={v}>{v}</option>)}</select>
       </div>
       {filtered.length===0
         ? <div className="empty"><div className="empty-ico">📋</div><div className="empty-ttl">No touchpoints yet</div><div className="empty-txt">Open any contact or org and log a touchpoint to track your outreach history here.</div></div>
@@ -1123,13 +1091,10 @@ const all=useMemo(()=>{
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5,flexWrap:"wrap"}}>
                   <span style={{fontSize:13,fontWeight:700}}>{tp.personName}</span>
                   {tp.orgName&&<span style={{fontSize:11,color:"var(--g400)"}}>· {tp.orgName}</span>}
-                  <span style={{fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",background:"var(--cyan-lt)",color:"#155e6e",padding:"1px 6px",borderRadius:3}}>{tp.type}</span>
-                  <span style={{fontSize:9,color:"var(--g400)"}}>{tp.direction}</span>
                   <span style={{marginLeft:"auto",fontSize:11,color:"var(--g400)",fontWeight:700}}>{fmtDate(tp.date)}</span>
                 </div>
                 <div style={{fontSize:12,lineHeight:1.6}}>{tp.summary}</div>
-                {tp.outcome&&<div style={{fontSize:11,color:"var(--g600)",fontStyle:"italic",marginTop:3}}>Outcome: {tp.outcome}</div>}
-                {tp.next_step&&<div style={{fontSize:11,color:"var(--cyan)",fontWeight:700,marginTop:2}}>→ {tp.next_step}</div>}
+                {tp.next_action&&<div style={{fontSize:11,color:"var(--cyan)",fontWeight:700,marginTop:2}}>→ {tp.next_action}{tp.next_action_date?` · by ${fmtDate(tp.next_action_date)}`:""}</div>}
               </div>
             ))}
           </div></div>
@@ -1187,7 +1152,7 @@ const rt=item.record_type||(item.first_name?"individual":"organization");
           <div className={`import-zone ${jsonText?"active":""}`}>
             <textarea className="import-ta" value={jsonText}
               onChange={e=>{setJsonText(e.target.value);setParsed(null);setParseError("");}}
-              placeholder={`// Single record:\n{\n  "record_type": "individual",\n  "id": "ind_example",\n  "first_name": "Jane",\n  "last_name": "Smith",\n  "tier": "A",\n  ...\n}\n\n// Or array:\n[\n  { "record_type": "organization", ... },\n  { "record_type": "individual", ... }\n]`}
+              placeholder={`// Single record:\n{\n  "record_type": "individual",\n  "id": "ind_example",\n  "first_name": "Jane",\n  "last_name": "Smith",\n  "relationship_type": "partner",\n  ...\n}\n\n// Or array:\n[\n  { "record_type": "organization", ... },\n  { "record_type": "individual", ... }\n]`}
             />
           </div>
           {parseError&&<p style={{fontSize:12,color:"#B91C1C",marginTop:8}}>⚠ {parseError}</p>}
@@ -1197,8 +1162,8 @@ const rt=item.record_type||(item.first_name?"individual":"organization");
               {parsed.map((item,i)=>(
                 <div key={i} className="preview-meta" style={{marginTop:4}}>
                   {item.record_type==="individual"||item.first_name
-                    ? `👤 ${item.first_name} ${item.last_name} · ${item.title||""} · Tier ${item.tier||"?"} · ${item.confidence||"MEDIUM"}`
-                    : `🏢 ${item.name} · ${item.category||""} · Tier ${item.tier||"?"} · ${item.confidence||"MEDIUM"}`}
+                    ? `👤 ${item.first_name} ${item.last_name} · ${item.relationship_type||""} · ${item.relationship_status||"cold"}`
+                    : `🏢 ${item.name} · ${item.category||""} · ${item.relationship_status||"cold"}`}
                 </div>
               ))}
             </div>
@@ -1212,7 +1177,7 @@ const rt=item.record_type||(item.first_name?"individual":"organization");
       <div style={{marginTop:20}}>
         <div className="sect-lbl">Schema Quick Reference</div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-          {[{l:"Individual — Key Fields",f:["record_type: \"individual\"","first_name, last_name","relationship_type","relationship_status","tier (A/B/C)","linked_grants: []","confidence (HIGH/MEDIUM)"]},{l:"Organization — Key Fields",f:["record_type: \"organization\"","name","category (funder/partner…)","relationship_status","tier (A/B/C)","confidence (HIGH/MEDIUM)"]}].map(s=>(
+          {[{l:"Individual — Key Fields",f:["record_type: \"individual\"","first_name, last_name","email, phone","relationship_type (partner/community_builder/other)","relationship_status (cold/warm/active)","next_action, next_action_date","instagram_handle, website"]},{l:"Organization — Key Fields",f:["record_type: \"organization\"","name","category (funder/partner/vendor/media/government)","relationship_status (cold/warm/active/lapsed)","phone, email, instagram_handle, website","next_action, next_action_date"]}].map(s=>(
             <div key={s.l} className="card"><div className="card-hd"><span className="card-ttl">{s.l}</span></div><div className="card-bd">{s.f.map(f=><div key={f} style={{fontSize:12,fontFamily:"monospace",color:"var(--g800)",marginBottom:4}}>{f}</div>)}</div></div>
           ))}
         </div>
@@ -1560,7 +1525,7 @@ if (dbError) return (
 <Sidebar view={view} setView={(v)=>{setPendingDetail(null);setView(v);}} contacts={contacts} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)}/>
       <main className="main">
         {view==="dashboard"&&<DashboardView contacts={contacts} orgs={orgs} setView={setView} onOpenContact={openContact}/>}
-{view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail}/>}
+{view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail} setView={setView}/>}
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
         {view==="events"&&<EventsView events={events} contacts={contacts} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast}/>}
         {view==="outreach"&&<OutreachView contacts={contacts} orgs={orgs}/>}

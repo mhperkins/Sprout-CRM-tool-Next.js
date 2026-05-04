@@ -22,7 +22,6 @@ lives in the `data` JSONB blob and is accessed via the merge pattern.
 | `email`             | text        | Nullable                               |
 | `phone`             | text        | Nullable. Promoted S4; SELECT S8; upsert S7; merge S9. |
 | `relationship_status` | text      | Enum: `cold` `warm` `active` `lapsed` `declined` |
-| `tier`              | text        | Enum: `A` `B` `C`                     |
 | `next_action_date`  | date        | ISO string. Used for overdue queries.  |
 | `created_at`        | timestamptz | Set on insert                          |
 | `updated_at`        | timestamptz | Set on every upsert                    |
@@ -33,16 +32,13 @@ source of truth for the UI merge pattern. Additional JSONB-only fields:
 
 | Key                         | Type             | Notes                                       |
 |-----------------------------|------------------|---------------------------------------------|
-| `title`                     | string           | Job title                                   |
 | `phone`                     | string           | Nullable                                    |
-| `relationship_type`         | string           | Enum: `funder_contact` `partner` `community_builder` `donor` `board` `volunteer` `mentor` |
-| `confidence`                | string           | Enum: `HIGH` `MEDIUM` `LOW`                 |
-| `ask_readiness`             | string           | Enum: `not_ready` `cultivating` `ready` `asked` |
+| `relationship_type`         | string           | Enum: `partner` `community_builder` `other` |
+| `other_description`         | string           | Free text when `relationship_type` is `other` |
+| `website`                   | string           | Nullable                                    |
+| `instagram_handle`          | string           | Nullable                                    |
 | `notes`                     | string           | Free text                                   |
 | `next_action`               | string           | Description of the next action              |
-| `tags`                      | string[]         | e.g. `["brooklyn", "microgrant"]`           |
-| `interests`                 | string[]         | Topic interests                             |
-| `linked_grants`             | string[]         | Grant names this contact is linked to       |
 | `touchpoints`               | Touchpoint[]     | See Touchpoint schema below                 |
 | `financial_relationship`    | FinancialRel     | See FinancialRel schema below               |
 | `createdAt`                 | ISO string       | Maps from SQL `created_at` on merge         |
@@ -58,7 +54,6 @@ source of truth for the UI merge pattern. Additional JSONB-only fields:
 | `name`              | text        | Promoted for sort/search               |
 | `category`          | text        | Enum: `funder` `partner` `vendor` `media` `government` |
 | `relationship_status` | text      | Enum: `cold` `warm` `active` `lapsed`  |
-| `tier`              | text        | Enum: `A` `B` `C`                     |
 | `next_action_date`  | date        | ISO string. Used for overdue queries.  |
 | `created_at`        | timestamptz | Set on insert                          |
 | `updated_at`        | timestamptz | Set on every upsert                    |
@@ -69,10 +64,11 @@ source of truth for the UI merge pattern. Additional JSONB-only fields:
 | `record_type`               | string           | Always `"organization"`                     |
 | `website`                   | string           | Nullable                                    |
 | `primary_contact_id`        | string           | `ind_` prefixed ID. Nullable.               |
-| `confidence`                | string           | Enum: `HIGH` `MEDIUM` `LOW`                 |
+| `phone`                     | string           | Nullable                                    |
+| `email`                     | string           | Nullable                                    |
+| `instagram_handle`          | string           | Nullable                                    |
 | `notes`                     | string           | Free text                                   |
 | `next_action`               | string           | Description of the next action              |
-| `tags`                      | string[]         |                                             |
 | `touchpoints`               | Touchpoint[]     | See Touchpoint schema below                 |
 | `financial_relationship`    | FinancialRel     | See FinancialRel schema below               |
 | `createdAt`                 | ISO string       | Maps from SQL `created_at` on merge         |
@@ -143,12 +139,10 @@ source of truth for the UI merge pattern. Additional JSONB-only fields:
 ### Touchpoint
 ```json
 {
-  "date":      "2026-04-15",
-  "type":      "email",
-  "direction": "outbound",
-  "summary":   "Sent intro email re: BKO grant",
-  "outcome":   "Awaiting reply",
-  "next_step": "Follow up May 1"
+  "date":             "2026-04-15",
+  "summary":          "Sent intro email re: BKO grant",
+  "next_action":      "Follow up in two weeks",
+  "next_action_date": "2026-05-01"
 }
 ```
 > Lives inside `data.touchpoints[]` on both contacts and orgs.
@@ -173,17 +167,16 @@ indexed values:
 
 ```js
 const mergeContact = (row) => ({
-  ...row.data,          // JSONB blob as base
-  id:                   row.id,
-  org_id:               row.org_id,
-  record_type:          row.record_type,
-  first_name:           row.first_name,
-  last_name:            row.last_name,
-  email:                row.email,
-  relationship_status:  row.relationship_status,
-  tier:                 row.tier,
-  next_action_date:     row.next_action_date,
-  createdAt:            row.created_at,
+  ...row.data,         // JSONB blob as base
+  id:                  row.id,
+  org_id:              row.org_id,
+  record_type:         row.record_type,
+  first_name:          row.first_name,
+  last_name:           row.last_name,
+  email:               row.email,
+  relationship_status: row.relationship_status,
+  next_action_date:    row.next_action_date,
+  createdAt:           row.created_at,
 });
 ```
 
