@@ -11,12 +11,15 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   fetchContacts,
   fetchOrgs,
+  fetchEvents,
   fetchProfile,
-  saveContacts  as svcSaveContacts,
-  saveOrgs      as svcSaveOrgs,
-  saveProfile   as svcSaveProfile,
+  saveContacts    as svcSaveContacts,
+  saveOrgs        as svcSaveOrgs,
+  saveEvents      as svcSaveEvents,
+  saveProfile     as svcSaveProfile,
   deleteContactById,
   deleteOrgById,
+  deleteEventById,
   DEFAULT_PROFILE,
 } from "../lib/services";
 
@@ -634,6 +637,7 @@ function Sidebar({view,setView,contacts,profile,onQuickLog}) {
     {section:"Relationships"},
     {id:"contacts",label:"Contacts",icon:"👤"},
     {id:"orgs",label:"Organizations",icon:"🏢"},
+    {id:"events",label:"Events",icon:"🗓"},
     {id:"outreach",label:"Outreach Log",icon:"📋"},
     {section:"Tools"},
     {id:"import",label:"Import JSON",icon:"⬇"},
@@ -742,16 +746,26 @@ const tiers = {A:contacts.filter(c=>c.tier==="A"),B:contacts.filter(c=>c.tier===
 }
 
 /* ─── Contact Edit Modal ─────────────────────────────────────────────────────── */
-function ContactEditModal({editing,setEditing,onSave,orgs}) {
+function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents}) {
   const [eTab,setETab]=useState("overview");
   const REL_TYPE_OPTS=Object.entries(REL_TYPES).map(([v,l])=>({value:v,label:l}));
   const ASK_OPTS=[{value:"not_ready",label:"Not Ready"},{value:"cultivating",label:"Cultivating"},{value:"ready",label:"Ready"},{value:"asked",label:"Asked"}];
   const orgOpts=[{value:"",label:"— None —"},...orgs.map(o=>({value:o.id,label:o.name,meta:ORG_CATS[o.category]||o.category}))];
+  const toggleEventLink = (evtId) => {
+    const updated = events.map(ev=>{
+      const ids=ev.contact_ids||[];
+      const linked=ids.includes(editing.id);
+      if(ev.id===evtId) return {...ev,contact_ids:linked?ids.filter(x=>x!==editing.id):[...ids,editing.id]};
+      return ev;
+    });
+    onUpdateEvents(updated);
+  };
+  const linkedEventIds = events.filter(ev=>(ev.contact_ids||[]).includes(editing.id)).map(ev=>ev.id);
   return (
     <Modal title={`Edit — ${editing.first_name} ${editing.last_name}`} wide onClose={()=>setEditing(null)}
       footer={<><button className="btn btn-ghost btn-sm" onClick={()=>setEditing(null)}>Cancel</button><button className="btn btn-blk btn-sm" onClick={onSave}>Save Changes →</button></>}>
       <div className="modal-tabs">
-        {["overview","details","actions","profile"].map(t=><button key={t} className={`modal-tab ${eTab===t?"on":""}`} onClick={()=>setETab(t)}>{t}</button>)}
+        {["overview","details","actions","profile","events"].map(t=><button key={t} className={`modal-tab ${eTab===t?"on":""}`} onClick={()=>setETab(t)}>{t}</button>)}
       </div>
       {eTab==="overview"&&<>
         <div className="fg"><label className="fl">Status</label><RadioGroup options={STATUS_OPTS} value={editing.relationship_status||"cold"} onChange={v=>setEditing({...editing,relationship_status:v})}/></div>
@@ -782,12 +796,31 @@ function ContactEditModal({editing,setEditing,onSave,orgs}) {
         <div className="fg"><label className="fl">Interests</label><ChipInput values={editing.interests||[]} onChange={v=>setEditing({...editing,interests:v})}/></div>
         <div className="fg"><label className="fl">Linked Grants</label><ChipInput values={editing.linked_grants||[]} onChange={v=>setEditing({...editing,linked_grants:v})}/></div>
       </>}
+      {eTab==="events"&&<>
+        <div className="fg">
+          <label className="fl">Linked Events ({linkedEventIds.length})</label>
+          <div style={{maxHeight:200,overflowY:"auto",border:"1.5px solid var(--g200)",borderRadius:6}}>
+            {events.length===0&&<div style={{padding:"10px 12px",fontSize:12,color:"var(--g400)"}}>No events in CRM yet</div>}
+            {events.map(ev=>{
+              const on=linkedEventIds.includes(ev.id);
+              return <div key={ev.id} onClick={()=>toggleEventLink(ev.id)} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",cursor:"pointer",background:on?"var(--cyan-lt)":"#fff",borderBottom:"1px solid var(--g100)"}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:700}}>{ev.name||"(Unnamed)"}</div>
+                  <div style={{fontSize:10,color:"var(--g400)"}}>{fmtDate(ev.event_date)}</div>
+                </div>
+                <EventStatusTag status={ev.status}/>
+                {on&&<span style={{color:"var(--cyan)",fontWeight:900,fontSize:14}}>✓</span>}
+              </div>;
+            })}
+          </div>
+        </div>
+      </>}
     </Modal>
   );
 }
 
 /* ─── Contacts View ──────────────────────────────────────────────────────────── */
-function ContactsView({contacts,orgs,onUpdate,onDelete,showToast,pendingDetail,onPendingDetailConsumed}) {
+function ContactsView({contacts,orgs,events,onUpdate,onDelete,onUpdateEvents,showToast,pendingDetail,onPendingDetailConsumed}) {
   const [search,setSearch]=useState("");
   const [fType,setFType]=useState("all");
   const [fTier,setFTier]=useState("all");
@@ -915,7 +948,7 @@ const [editing,setEditing]=useState(null);
         onLog={(cId,tp)=>{ updateContact({...contacts.find(c=>c.id===cId), touchpoints:[...(contacts.find(c=>c.id===cId)?.touchpoints||[]),tp]}); showToast("Touchpoint logged ✓"); }}
         onClose={()=>setQuickLog(null)}
       />}
-{editing&&<ContactEditModal editing={editing} setEditing={setEditing} onSave={saveEdit} orgs={orgs}/>}
+{editing&&<ContactEditModal editing={editing} setEditing={setEditing} onSave={saveEdit} orgs={orgs} events={events||[]} onUpdateEvents={onUpdateEvents}/>}
       {confirmDelete&&<ConfirmModal
         message={`Delete ${confirmDelete.first_name} ${confirmDelete.last_name}? This cannot be undone.`}
         onConfirm={()=>{
@@ -1217,39 +1250,218 @@ function SettingsView({profile,onUpdate,showToast}) {
   );
 }
 
+/* ─── Events View ────────────────────────────────────────────────────────────── */
+const EVT_STATUS_OPTS = [
+  {value:"upcoming",label:"Upcoming"},
+  {value:"completed",label:"Completed"},
+  {value:"cancelled",label:"Cancelled"},
+];
+const EVT_STATUS_COLOR = {upcoming:"var(--acid-lt)",completed:"var(--cyan-lt)",cancelled:"var(--g200)"};
+const EVT_STATUS_TEXT  = {upcoming:"#3a3d00",completed:"#155e6e",cancelled:"var(--g600)"};
+
+function EventStatusTag({status}) {
+  return <span style={{background:EVT_STATUS_COLOR[status]||"var(--g100)",color:EVT_STATUS_TEXT[status]||"var(--g600)",fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:20,textTransform:"uppercase",letterSpacing:"0.05em",whiteSpace:"nowrap"}}>{status||"upcoming"}</span>;
+}
+
+const BLANK_EVENT = () => ({
+  id: `evt_${uid()}`,
+  name: "", event_date: "", status: "upcoming",
+  location: "", description: "", contact_ids: [], tags: [], notes: "",
+});
+
+function EventEditModal({editing,setEditing,onSave,contacts}) {
+  const contactOpts = contacts.map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`.trim()||c.id,meta:c.title||""}));
+  const toggleContact = (cId) => {
+    const ids = editing.contact_ids||[];
+    setEditing({...editing, contact_ids: ids.includes(cId) ? ids.filter(x=>x!==cId) : [...ids,cId]});
+  };
+  const [cSearch,setCSearch]=useState("");
+  const filteredC = contactOpts.filter(o=>o.label.toLowerCase().includes(cSearch.toLowerCase()));
+  return (
+    <Modal title={editing._isNew?"Add Event":`Edit — ${editing.name||"Event"}`} wide onClose={()=>setEditing(null)}
+      footer={<><button className="btn btn-ghost btn-sm" onClick={()=>setEditing(null)}>Cancel</button><button className="btn btn-blk btn-sm" onClick={onSave}>Save Changes →</button></>}>
+      <div className="frow">
+        <div className="fg"><label className="fl">Event Name</label><input className="fi" value={editing.name||""} onChange={e=>setEditing({...editing,name:e.target.value})} autoFocus/></div>
+        <div className="fg"><label className="fl">Date</label><input type="date" className="fi" value={editing.event_date||""} onChange={e=>setEditing({...editing,event_date:e.target.value})}/></div>
+      </div>
+      <div className="fg"><label className="fl">Status</label><RadioGroup options={EVT_STATUS_OPTS} value={editing.status||"upcoming"} onChange={v=>setEditing({...editing,status:v})}/></div>
+      <div className="fg"><label className="fl">Location</label><input className="fi" value={editing.location||""} onChange={e=>setEditing({...editing,location:e.target.value})}/></div>
+      <div className="fg"><label className="fl">Description</label><textarea className="fta" rows={3} value={editing.description||""} onChange={e=>setEditing({...editing,description:e.target.value})}/></div>
+      <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={2} value={editing.notes||""} onChange={e=>setEditing({...editing,notes:e.target.value})}/></div>
+      <div className="fg"><label className="fl">Tags</label><ChipInput values={editing.tags||[]} onChange={v=>setEditing({...editing,tags:v})}/></div>
+      <div className="fg">
+        <label className="fl">Linked Contacts ({(editing.contact_ids||[]).length})</label>
+        <input className="fi" placeholder="Search contacts…" value={cSearch} onChange={e=>setCSearch(e.target.value)} style={{marginBottom:6}}/>
+        <div style={{maxHeight:140,overflowY:"auto",border:"1.5px solid var(--g200)",borderRadius:6}}>
+          {filteredC.map(o=>{
+            const on=(editing.contact_ids||[]).includes(o.value);
+            return <div key={o.value} onClick={()=>toggleContact(o.value)} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",cursor:"pointer",background:on?"var(--cyan-lt)":"#fff",borderBottom:"1px solid var(--g100)"}}>
+              <span style={{fontSize:12,fontWeight:700,flex:1}}>{o.label}</span>
+              {o.meta&&<span style={{fontSize:10,color:"var(--g400)"}}>{o.meta}</span>}
+              {on&&<span style={{color:"var(--cyan)",fontWeight:900,fontSize:14}}>✓</span>}
+            </div>;
+          })}
+          {filteredC.length===0&&<div style={{padding:"10px 12px",fontSize:12,color:"var(--g400)"}}>No contacts found</div>}
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function EventDetailPanel({event,contacts,onClose,onEdit,onDelete,showToast}) {
+  const mouseDownTarget=useRef(null);
+  useEffect(()=>{ const h=(e)=>{ if(e.key==="Escape") onClose(); }; document.addEventListener("keydown",h); return ()=>document.removeEventListener("keydown",h); },[onClose]);
+  const linked = contacts.filter(c=>(event.contact_ids||[]).includes(c.id));
+  return (
+    <div className="detail-overlay"
+      onMouseDown={e=>{ mouseDownTarget.current=e.target; }}
+      onClick={e=>{ if(e.target===e.currentTarget&&mouseDownTarget.current===e.currentTarget) onClose(); }}>
+      <div className="detail-panel">
+        <div className="dp-hd">
+          <div><div className="dp-name">{event.name||"(Unnamed Event)"}</div><div className="dp-sub">{fmtDate(event.event_date)}{event.location?` · ${event.location}`:""}</div></div>
+          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+            <button className="btn btn-ghost btn-sm" onClick={onEdit}>Edit</button>
+            <button className="dp-close" onClick={onClose}>×</button>
+          </div>
+        </div>
+        <div className="dp-body">
+          <div className="dp-row"><EventStatusTag status={event.status}/></div>
+          {event.description&&<div className="dp-section"><div className="dp-sect-lbl">Description</div><p style={{fontSize:12,lineHeight:1.7}}>{event.description}</p></div>}
+          {event.notes&&<div className="dp-section"><div className="dp-sect-lbl">Notes</div><p style={{fontSize:12,lineHeight:1.7}}>{event.notes}</p></div>}
+          {linked.length>0&&<div className="dp-section"><div className="dp-sect-lbl">Contacts ({linked.length})</div>{linked.map(c=><div key={c.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}><div style={{flex:1}}><div style={{fontSize:13,fontWeight:700}}>{c.first_name} {c.last_name}</div><div style={{fontSize:11,color:"var(--g600)"}}>{c.title}</div></div><RelTag status={c.relationship_status}/></div>)}</div>}
+          {(event.tags||[]).length>0&&<div className="dp-section"><div className="dp-sect-lbl">Tags</div><div style={{display:"flex",flexWrap:"wrap",gap:4}}>{event.tags.map(t=><span key={t} style={{background:"var(--g100)",color:"var(--g600)",fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:20,textTransform:"uppercase"}}>{t}</span>)}</div></div>}
+          <div style={{marginTop:16}}><button className="btn btn-danger btn-sm" onClick={onDelete}>Delete Event</button></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EventsView({events,contacts,onUpdate,onDelete,showToast}) {
+  const [search,setSearch]=useState("");
+  const [fStatus,setFStatus]=useState("all");
+  const [selected,setSelected]=useState(null);
+  const [adding,setAdding]=useState(false);
+  const [editing,setEditing]=useState(null);
+  const [confirmDel,setConfirmDel]=useState(null);
+
+  const filtered = useMemo(()=>{
+    return events.filter(e=>{
+      const q=search.toLowerCase();
+      const matchQ=!q||e.name?.toLowerCase().includes(q)||(e.location||"").toLowerCase().includes(q);
+      const matchS=fStatus==="all"||e.status===fStatus;
+      return matchQ&&matchS;
+    }).sort((a,b)=>{
+      if(!a.event_date&&!b.event_date) return 0;
+      if(!a.event_date) return 1;
+      if(!b.event_date) return -1;
+      return a.event_date.localeCompare(b.event_date);
+    });
+  },[events,search,fStatus]);
+
+  const selectedEvent = selected ? events.find(e=>e.id===selected) : null;
+
+  const handleSave = () => {
+    if(!editing) return;
+    const updated = events.find(e=>e.id===editing.id)
+      ? events.map(e=>e.id===editing.id?editing:e)
+      : [...events, editing];
+    onUpdate(updated);
+    showToast(editing._isNew?"Event added ✓":"Event updated ✓");
+    setEditing(null);
+    setAdding(false);
+  };
+
+  const handleDelete = (id) => {
+    onDelete(id);
+    setSelected(null);
+    setConfirmDel(null);
+  };
+
+  return (
+    <div className="page">
+      <div className="pg-hd">
+        <div><div className="pg-ttl">Events</div><div className="pg-sub">{events.length} event{events.length!==1?"s":""} total</div></div>
+        <button className="btn btn-blk" onClick={()=>{ const b=BLANK_EVENT(); setEditing({...b,_isNew:true}); setAdding(true); }}>+ Add Event</button>
+      </div>
+      <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
+        <input className="fi" style={{maxWidth:260}} placeholder="Search events…" value={search} onChange={e=>setSearch(e.target.value)}/>
+        <select className="fs" style={{maxWidth:160}} value={fStatus} onChange={e=>setFStatus(e.target.value)}>
+          <option value="all">All Statuses</option>
+          {EVT_STATUS_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      </div>
+      <div className="tbl-wrap">
+        <table className="tbl">
+          <thead><tr>
+            <th>Event</th><th>Date</th><th>Status</th><th>Contacts</th><th>Location</th><th></th>
+          </tr></thead>
+          <tbody>
+            {filtered.length===0
+              ? <tr><td colSpan={6} style={{textAlign:"center",color:"var(--g400)",padding:"28px 0",fontSize:13}}>No events found</td></tr>
+              : filtered.map(e=>(
+                <tr key={e.id} onClick={()=>setSelected(e.id)}>
+                  <td style={{fontWeight:700}}>{e.name||"(Unnamed)"}</td>
+                  <td style={{fontSize:12,color:"var(--g600)"}}>{fmtDate(e.event_date)}</td>
+                  <td><EventStatusTag status={e.status}/></td>
+                  <td style={{fontSize:12,color:"var(--g600)"}}>{(e.contact_ids||[]).length}</td>
+                  <td style={{fontSize:12,color:"var(--g600)",maxWidth:160,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.location||"—"}</td>
+                  <td onClick={ev=>ev.stopPropagation()} style={{display:"flex",gap:4}}>
+                    <button className="btn btn-ghost btn-xs" onClick={()=>setEditing({...e})}>Edit</button>
+                    <button className="btn btn-danger btn-xs" onClick={()=>setConfirmDel(e.id)}>Del</button>
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+      {selectedEvent&&<EventDetailPanel event={selectedEvent} contacts={contacts} onClose={()=>setSelected(null)} onEdit={()=>setEditing({...selectedEvent})} onDelete={()=>setConfirmDel(selectedEvent.id)} showToast={showToast}/>}
+      {editing&&<EventEditModal editing={editing} setEditing={setEditing} onSave={handleSave} contacts={contacts}/>}
+      {confirmDel&&<ConfirmModal message={`Delete "${events.find(e=>e.id===confirmDel)?.name||"this event"}"? This cannot be undone.`} onConfirm={()=>handleDelete(confirmDel)} onCancel={()=>setConfirmDel(null)}/>}
+    </div>
+  );
+}
+
 /* ─── Main App ───────────────────────────────────────────────────────────────── */
 export default function CRMApp() {
   const [view,setView]=useState("dashboard");
-const [contacts,setContacts]=useState([]);
+  const [contacts,setContacts]=useState([]);
   const [orgs,setOrgs]=useState([]);
+  const [events,setEvents]=useState([]);
   const [profile,setProfile]=useState(DEFAULT_PROFILE);
   const [toast,setToast]=useState(null);
-const [loading,setLoading]=useState(true);
+  const [loading,setLoading]=useState(true);
   const [dbError,setDbError]=useState(null);
-const [pendingDetail,setPendingDetail]=useState(null);
+  const [pendingDetail,setPendingDetail]=useState(null);
   const [globalQuickLog,setGlobalQuickLog]=useState(false);
 
   const loadAll=useCallback(async()=>{
     setLoading(true);
     setDbError(null);
     try {
-      const [
+const [
         { data: contactRows, error: cErr },
         { data: orgRows,     error: oErr },
+        { data: eventRows,   error: evErr },
         { data: profileData, error: prErr },
       ] = await Promise.all([
         fetchContacts(),
         fetchOrgs(),
+        fetchEvents(),
         fetchProfile(),
       ]);
 
       if (cErr) throw new Error(cErr);
       if (oErr) throw new Error(oErr);
+      if (evErr) console.warn("fetchEvents warning:", evErr);
       if (prErr) console.warn("fetchProfile warning:", prErr);
 
       setContacts(contactRows);
       setOrgs(orgRows);
-      setProfile(profileData);    } catch (err) {
+      setEvents(eventRows);
+      setProfile(profileData);
+    } catch (err) {
       console.error("CRM load error:", err);
       setDbError(err.message || "Failed to load data from Supabase.");
     } finally {
@@ -1274,10 +1486,17 @@ const saveContacts = useCallback((u) => {
     });
   }, [showToast]);
 
-  const saveOrgs = useCallback((u) => {
+const saveOrgs = useCallback((u) => {
     setOrgs(u);
     svcSaveOrgs(u).then(({ error }) => {
       if (error) { console.error("saveOrgs:", error); showToast("Save failed — check console", "err"); }
+    });
+  }, [showToast]);
+
+  const saveEvents = useCallback((u) => {
+    setEvents(u);
+    svcSaveEvents(u).then(({ error }) => {
+      if (error) { console.error("saveEvents:", error); showToast("Save failed — check console", "err"); }
     });
   }, [showToast]);
 
@@ -1305,6 +1524,14 @@ const saveProfile = useCallback((u) => {
     if (error) { console.error("deleteOrg:", error); showToast("Delete failed — check console","err"); setOrgs(prev); }
     else showToast("Organization deleted");
   },[orgs, showToast]);
+
+  const deleteEvent=useCallback(async (id)=>{
+    const prev = events;
+    setEvents(events.filter(e=>e.id!==id)); // optimistic
+    const { error } = await deleteEventById(id);
+    if (error) { console.error("deleteEvent:", error); showToast("Delete failed — check console","err"); setEvents(prev); }
+    else showToast("Event deleted");
+  },[events, showToast]);
   const openContact=useCallback((c)=>{ setPendingDetail(c); setView("contacts"); },[]);
   const clearPendingDetail=useCallback(()=>setPendingDetail(null),[]);
 
@@ -1333,8 +1560,9 @@ if (dbError) return (
 <Sidebar view={view} setView={(v)=>{setPendingDetail(null);setView(v);}} contacts={contacts} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)}/>
       <main className="main">
         {view==="dashboard"&&<DashboardView contacts={contacts} orgs={orgs} setView={setView} onOpenContact={openContact}/>}
-{view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} onUpdate={saveContacts} onDelete={deleteContact} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail}/>}
-{view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
+{view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail}/>}
+        {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
+        {view==="events"&&<EventsView events={events} contacts={contacts} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast}/>}
         {view==="outreach"&&<OutreachView contacts={contacts} orgs={orgs}/>}
         {view==="import"&&<ImportView contacts={contacts} orgs={orgs} onImportContact={importContact} onImportOrg={importOrg} showToast={showToast}/>}
         {view==="settings"&&<SettingsView profile={profile} onUpdate={saveProfile} showToast={showToast}/>}

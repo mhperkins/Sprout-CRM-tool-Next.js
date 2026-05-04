@@ -198,3 +198,40 @@ extracted into their SQL columns in the same upsert row.
 - Profile: hardcoded string `"profile"`
 - Posts: no prefix (pending table design)
 - **Never use raw UUIDs.**
+
+--- 
+
+## `sprout_events`
+
+### SQL Columns (queryable / indexed)
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | text PK | Prefix: `evt_` — e.g. `evt_brooklyn_gala_2026` |
+| `name` | text | Promoted for sort/search |
+| `event_date` | date | ISO string. Queryable for sorting. |
+| `status` | text | Enum: `upcoming` `completed` `cancelled` |
+| `created_at` | timestamptz | Set on insert |
+| `updated_at` | timestamptz | Set on every upsert |
+| `data` | jsonb | Full event blob |
+
+### `data` JSONB Keys
+
+| Key | Type | Notes |
+|---|---|---|
+| `name` | string | Duplicated from SQL column |
+| `event_date` | string | Duplicated from SQL column |
+| `status` | string | Duplicated from SQL column |
+| `location` | string | Venue / address |
+| `description` | string | Free text |
+| `contact_ids` | string[] | Array of `ind_` IDs — client-side join, no FK |
+| `tags` | string[] | |
+| `notes` | string | |
+
+### Merge Pattern
+
+`mergeEvent(row)` — SQL columns override JSONB blob. Same bridge rule as `mergeContact` / `mergeOrg`.
+
+### Join Strategy
+
+Contact ↔ Event is stored as `contact_ids: string[]` inside the event `data` JSONB. Client-side resolution. No FK constraint. No junction table. Bidirectional sync maintained via contact edit modal events tab.
