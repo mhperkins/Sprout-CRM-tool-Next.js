@@ -21,7 +21,7 @@ lives in the `data` JSONB blob and is accessed via the merge pattern.
 | `last_name`         | text        | Promoted for sort/search               |
 | `email`             | text        | Nullable                               |
 | `phone`             | text        | Nullable. Promoted S4; SELECT S8; upsert S7; merge S9. |
-| `relationship_status` | text      | Enum: `cold` `warm` `active` `lapsed` `declined` |
+| `relationship_status` | text      | Enum: `cold` `warm` `active` `declined` |
 | `next_action_date`  | date        | ISO string. Used for overdue queries.  |
 | `created_at`        | timestamptz | Set on insert                          |
 | `updated_at`        | timestamptz | Set on every upsert                    |
@@ -53,7 +53,7 @@ source of truth for the UI merge pattern. Additional JSONB-only fields:
 | `id`                | text PK     | Format: `org_` prefix. e.g. `org_brooklyn_org` |
 | `name`              | text        | Promoted for sort/search               |
 | `category`          | text        | Enum: `funder` `partner` `vendor` `media` `government` |
-| `relationship_status` | text      | Enum: `cold` `warm` `active` `lapsed`  |
+| `relationship_status` | text      | Enum: `cold` `warm` `active`  |
 | `next_action_date`  | date        | ISO string. Used for overdue queries.  |
 | `created_at`        | timestamptz | Set on insert                          |
 | `updated_at`        | timestamptz | Set on every upsert                    |

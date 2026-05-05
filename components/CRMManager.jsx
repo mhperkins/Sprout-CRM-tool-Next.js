@@ -92,7 +92,6 @@ const STYLES = `
   .t-cold     { background:var(--g100); color:var(--g600); }
   .t-warm     { background:var(--banana-lt); color:#7a5c00; }
   .t-active   { background:var(--acid-lt); color:#3a3d00; }
-  .t-lapsed   { background:#FEE2E2; color:#B91C1C; }
   .t-declined { background:var(--g200); color:var(--g600); }
   .type-tag { background:rgba(115,196,214,0.15); color:#155e6e; font-size:9px; font-weight:700; padding:2px 7px; border-radius:4px; text-transform:uppercase; letter-spacing:0.05em; }
   .type-tag-mentor { background:rgba(198,201,2,0.18); color:#3a3d00; font-size:9px; font-weight:700; padding:2px 7px; border-radius:4px; text-transform:uppercase; letter-spacing:0.05em; }
@@ -148,13 +147,24 @@ const STYLES = `
   .dp-field { font-size:12px; color:var(--g600); margin-bottom:5px; }
   .dp-field strong { color:var(--black); font-weight:700; }
 
-  .tp { padding:10px 12px; border-radius:8px; background:var(--g50); border:1px solid var(--g200); margin-bottom:7px; }
+  .tp { padding:10px 12px; border-radius:8px; background:var(--banana-lt); border:1px solid rgba(250,209,0,0.25); margin-bottom:7px; cursor:pointer; transition:filter 0.12s; }
+  .tp:hover { filter:brightness(0.96); }
   .tp-hd { display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap; }
   .tp-date { font-size:10px; font-weight:700; color:var(--g600); }
   .tp-type { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; background:var(--cyan-lt); color:#155e6e; padding:1px 6px; border-radius:3px; }
   .tp-dir { font-size:9px; color:var(--g400); }
-  .tp-summary { font-size:12px; line-height:1.5; }
-  .tp-next { font-size:11px; color:var(--cyan); font-weight:700; margin-top:3px; }
+  .tp-summary { font-size:12px; line-height:1.5; color:#1a5f7a; font-weight:700; }
+  .tp-next { font-size:11px; color:var(--g600); font-weight:700; margin-top:3px; }
+  .tp-wrap { max-height:320px; overflow-y:auto; padding-right:2px; }
+  .tp-wrap::-webkit-scrollbar { width:4px; } .tp-wrap::-webkit-scrollbar-track { background:transparent; } .tp-wrap::-webkit-scrollbar-thumb { background:var(--g300); border-radius:4px; }
+  .na-hist { padding:8px 10px; border-radius:7px; background:var(--g50); border:1px solid var(--g200); margin-bottom:6px; display:flex; align-items:flex-start; gap:8px; position:relative; }
+  .na-hist:hover .na-hist-del { opacity:1; }
+  .na-hist-del { opacity:0; transition:opacity 0.12s; background:none; border:none; cursor:pointer; font-size:11px; color:var(--g400); padding:0; line-height:1; flex-shrink:0; margin-top:2px; }
+  .na-hist-del:hover { color:var(--fuchsia); }
+  .na-hist-body { flex:1; }
+  .na-hist-txt { font-size:12px; color:var(--g800); line-height:1.5; }
+  .na-hist-date { font-size:10px; color:var(--g400); margin-top:2px; }
+  .na-hist-check { width:22px; height:22px; border-radius:50%; border:2px solid #4ade80; background:#f0fdf4; display:flex; align-items:center; justify-content:center; font-size:11px; color:#16a34a; flex-shrink:0; margin-top:1px; }
 
   .mover { position:fixed; inset:0; background:rgba(3,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:400; padding:20px; animation:fIn 0.15s ease; }
   .modal { background:#fff; border-radius:14px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.18); animation:sUp 0.18s ease; }
@@ -455,22 +465,45 @@ function SearchSelect({options,value,onChange,placeholder,disabled}) {
 }
 
 /* ─── Touchpoint Log ─────────────────────────────────────────────────────────── */
-function TouchpointList({touchpoints,onAdd}) {
+function TouchpointList({touchpoints,onAdd,onEdit}) {
   const [adding,setAdding] = useState(false);
+  const [editingId,setEditingId] = useState(null);
   const [tp,setTp] = useState({date:new Date().toISOString().slice(0,10),summary:"",next_action:"",next_action_date:""});
+  const [editTp,setEditTp] = useState(null);
   const blankTp = () => ({date:new Date().toISOString().slice(0,10),summary:"",next_action:"",next_action_date:""});
   const save = () => { if (!tp.summary.trim()) return; onAdd({...tp,id:uid()}); setTp(blankTp()); setAdding(false); };
+  const startEdit = (t) => { setEditingId(t.id); setEditTp({...t}); setAdding(false); };
+  const saveEdit = () => {
+    if (!editTp.summary.trim()) return;
+    if (onEdit) onEdit(editTp);
+    setEditingId(null); setEditTp(null);
+  };
+  const cancelEdit = () => { setEditingId(null); setEditTp(null); };
   const sorted = [...(touchpoints||[])].sort((a,b)=>new Date(b.date)-new Date(a.date));
   return (
     <div>
       {sorted.length===0&&!adding&&<p style={{fontSize:12,color:"var(--g400)",fontStyle:"italic",marginBottom:10}}>No touchpoints logged yet.</p>}
-      {sorted.map((t,i)=>(
-        <div key={t.id||i} className="tp">
-          <div className="tp-hd"><span className="tp-date">{fmtDate(t.date)}</span></div>
-          <div className="tp-summary">{t.summary}</div>
-          {t.next_action&&<div className="tp-next">→ {t.next_action}{t.next_action_date?` · by ${fmtDate(t.next_action_date)}`:""}</div>}
-        </div>
-      ))}
+      <div className="tp-wrap">
+        {sorted.map((t,i)=>(
+          editingId===t.id ? (
+            <div key={t.id||i} className="add-row">
+              <div className="fg"><label className="fl">Date</label><input type="date" className="fi" value={editTp.date} onChange={e=>setEditTp({...editTp,date:e.target.value})}/></div>
+              <div className="fg"><label className="fl">Summary</label><textarea className="fta" rows={2} value={editTp.summary} onChange={e=>setEditTp({...editTp,summary:e.target.value})}/></div>
+              <div className="frow">
+                <div className="fg"><label className="fl">Next Action</label><input className="fi" value={editTp.next_action||""} onChange={e=>setEditTp({...editTp,next_action:e.target.value})} placeholder="What should happen next?"/></div>
+                <div className="fg"><label className="fl">Next Action Date</label><input type="date" className="fi" value={editTp.next_action_date||""} onChange={e=>setEditTp({...editTp,next_action_date:e.target.value})}/></div>
+              </div>
+              <div style={{display:"flex",gap:8}}><button className="btn btn-blk btn-sm" onClick={saveEdit}>Save</button><button className="btn btn-ghost btn-sm" onClick={cancelEdit}>Cancel</button></div>
+            </div>
+          ) : (
+            <div key={t.id||i} className="tp" onClick={()=>startEdit(t)}>
+              <div className="tp-hd"><span className="tp-date">{fmtDate(t.date)}</span></div>
+              <div className="tp-summary">{t.summary}</div>
+              {t.next_action&&<div className="tp-next">→ {t.next_action}{t.next_action_date?` · by ${fmtDate(t.next_action_date)}`:""}</div>}
+            </div>
+          )
+        ))}
+      </div>
       {adding ? (
         <div className="add-row">
           <div className="fg"><label className="fl">Date</label><input type="date" className="fi" value={tp.date} onChange={e=>setTp({...tp,date:e.target.value})}/></div>
@@ -490,7 +523,7 @@ function TouchpointList({touchpoints,onAdd}) {
 const STATUS_OPTS = [
   {value:"cold",label:"Cold"},{value:"cool",label:"Cool"},{value:"warm",label:"Warm"},{value:"active",label:"Active"}
 ];
-const STATUS_OPTS_NO_DECLINED = STATUS_OPTS.filter(o=>!["cool","declined"].includes(o.value));
+const STATUS_OPTS_NO_DECLINED = STATUS_OPTS.filter(o=>o.value!=="declined");
 
 function QuickLogModal({contacts,initialContactId,onLog,onClose}) {
   const today = new Date().toISOString().slice(0,10);
@@ -523,18 +556,84 @@ function QuickLogModal({contacts,initialContactId,onLog,onClose}) {
   );
 }
 
+/* ─── Add Action Modal ───────────────────────────────────────────────────────── */
+function AddActionModal({onSave,onClose}) {
+  const [text,setText] = useState("");
+  const [date,setDate] = useState("");
+  const save = () => { if (!text.trim()) return; onSave(text.trim(),date); onClose(); };
+  return (
+    <Modal title="Add Next Action" onClose={onClose}
+      footer={<><button className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button><button className="btn btn-blk btn-sm" onClick={save}>Save Action →</button></>}>
+      <div className="fg"><label className="fl">Action</label><input className="fi" value={text} onChange={e=>setText(e.target.value)} placeholder="What needs to happen?" autoFocus/></div>
+      <div className="fg"><label className="fl">Due Date</label><input type="date" className="fi" value={date} onChange={e=>setDate(e.target.value)}/></div>
+    </Modal>
+  );
+}
+
 /* ─── Contact Detail Panel ───────────────────────────────────────────────────── */
 function ContactDetail({contact,orgs,onClose,onUpdate,onEdit,showToast}) {
   const mouseDownTarget = useRef(null);
+  const [notesExpanded, setNotesExpanded] = useState(false);
+  const [naExpanded, setNaExpanded] = useState(false);
+  const [addingAction, setAddingAction] = useState(false);
   useEffect(()=>{ const h=(e)=>{ if(e.key==="Escape") onClose(); }; document.addEventListener("keydown",h); return ()=>document.removeEventListener("keydown",h); },[onClose]);
   const org = orgs.find(o=>o.id===contact.org_id);
-  const addTp = (tp) => { onUpdate({...contact,touchpoints:[...(contact.touchpoints||[]),tp]}); showToast("Touchpoint logged ✓"); };
+  const LINE_H = 1.7, FONT = 12, MAX_LINES = 6;
+  const notesClamp = !notesExpanded ? {overflow:"hidden",display:"-webkit-box",WebkitLineClamp:MAX_LINES,WebkitBoxOrient:"vertical"} : {};
+  const notesIsLong = (contact.notes||"").split("\n").length > MAX_LINES || (contact.notes||"").length > 420;
+  const naLog = contact.next_actions_log||[];
+  const [confirmDeleteNA, setConfirmDeleteNA] = useState(null);
+  const uncompleteAction = (entry, idx) => {
+    const newLog = naLog.filter((_,i)=>i!==idx);
+    onUpdate({...contact, next_action:entry.text, next_action_date:entry.date||"", next_actions_log:newLog});
+    showToast("Action restored ✓");
+  };
+  const deleteLogEntry = (idx) => {
+    const newLog = naLog.filter((_,i)=>i!==idx);
+    onUpdate({...contact, next_actions_log:newLog});
+    showToast("Action removed");
+  };
+  const completeAction = () => {
+    const prevLog = contact.next_actions_log||[];
+    const archived = contact.next_action ? [{text:contact.next_action,date:contact.next_action_date||null,loggedAt:new Date().toISOString(),completed:true},...prevLog] : prevLog;
+    onUpdate({...contact, next_action:"", next_action_date:"", next_actions_log:archived});
+    showToast("Action marked complete ✓");
+  };
+  const saveNewAction = (text,date) => {
+    const prevLog = contact.next_actions_log||[];
+    const archived = contact.next_action ? [{text:contact.next_action,date:contact.next_action_date||null,loggedAt:new Date().toISOString(),completed:false},...prevLog] : prevLog;
+    onUpdate({...contact, next_action:text, next_action_date:date||"", next_actions_log:archived});
+    showToast("Next action saved ✓");
+  };
+  const addTp = (tp) => {
+    const base = {...contact, touchpoints:[...(contact.touchpoints||[]),tp]};
+    if (tp.next_action) {
+      const prevLog = contact.next_actions_log||[];
+      const prevEntry = contact.next_action ? [{text:contact.next_action,date:contact.next_action_date||null,loggedAt:new Date().toISOString()},...prevLog] : prevLog;
+      onUpdate({...base, next_action:tp.next_action, next_action_date:tp.next_action_date||"", next_actions_log:prevEntry});
+    } else {
+      onUpdate(base);
+    }
+    showToast("Touchpoint logged ✓");
+  };
+  const editTp = (updatedTp) => {
+    const tps = (contact.touchpoints||[]).map(t=>t.id===updatedTp.id?updatedTp:t);
+    const base = {...contact, touchpoints:tps};
+    if (updatedTp.next_action) {
+      const prevLog = contact.next_actions_log||[];
+      const prevEntry = contact.next_action ? [{text:contact.next_action,date:contact.next_action_date||null,loggedAt:new Date().toISOString()},...prevLog] : prevLog;
+      onUpdate({...base, next_action:updatedTp.next_action, next_action_date:updatedTp.next_action_date||"", next_actions_log:prevEntry});
+    } else {
+      onUpdate(base);
+    }
+    showToast("Touchpoint updated ✓");
+  };
   return (
-<div className="detail-overlay"
+    <div className="detail-overlay"
       onMouseDown={e=>{ mouseDownTarget.current = e.target; }}
       onClick={e=>{ if (e.target===e.currentTarget && mouseDownTarget.current===e.currentTarget) onClose(); }}>
       <div className="detail-panel">
-<div className="dp-hd">
+        <div className="dp-hd">
           <div><div className="dp-name">{contact.first_name} {contact.last_name}</div><div className="dp-sub">{org?org.name:""}</div></div>
           <div style={{display:"flex",gap:8,alignItems:"center"}}>
             <button className="btn btn-ghost btn-sm" onClick={onEdit}>Edit</button>
@@ -549,29 +648,125 @@ function ContactDetail({contact,orgs,onClose,onUpdate,onEdit,showToast}) {
             {contact.phone&&<div className="dp-field"><strong>Phone:</strong> {contact.phone}</div>}
             {contact.instagram_handle&&<div className="dp-field"><strong>Instagram:</strong> {contact.instagram_handle}</div>}
             {contact.website&&<div className="dp-field"><strong>Website:</strong> <a href={contact.website} target="_blank" rel="noreferrer" style={{color:"var(--cyan)"}}>{contact.website}</a></div>}
-            {contact.financial_relationship?.has_given&&<div className="dp-field"><strong>Total Given:</strong> {fmtMoney(contact.financial_relationship.total_given)}</div>}
           </div>
-          {contact.next_action&&<div className="dp-section"><div className="dp-sect-lbl">Next Action</div><div style={{background:"var(--banana-lt)",borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700}}>{contact.next_action}</div>{contact.next_action_date&&<div style={{fontSize:11,color:"var(--g600)",marginTop:3}}>By {fmtDate(contact.next_action_date)}</div>}</div></div>}
-          {contact.notes&&<div className="dp-section"><div className="dp-sect-lbl">Notes</div><p style={{fontSize:12,lineHeight:1.7,color:"var(--g800)"}}>{contact.notes}</p></div>}
+          <div className="dp-section">
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+              <div className="dp-sect-lbl" style={{marginBottom:0,paddingBottom:0,borderBottom:"none"}}>Next Action</div>
+              <button className="btn btn-ghost btn-xs" onClick={()=>setAddingAction(true)}>+ Add Action</button>
+            </div>
+            <div style={{borderBottom:"1px solid var(--g100)",marginBottom:8}}/>
+            {contact.next_action
+              ? <div style={{background:"var(--banana-lt)",borderRadius:8,padding:"10px 12px",marginBottom:6,display:"flex",alignItems:"flex-start",gap:10}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:700}}>{contact.next_action}</div>
+                    {contact.next_action_date&&<div style={{fontSize:11,color:"var(--g600)",marginTop:3}}>By {fmtDate(contact.next_action_date)}</div>}
+                  </div>
+                  <button onClick={completeAction} title="Mark complete" style={{background:"none",border:"2px solid var(--g300)",borderRadius:"50%",width:26,height:26,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,color:"var(--g400)",flexShrink:0,transition:"all 0.12s"}}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--acid)";e.currentTarget.style.color="var(--acid)";}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--g300)";e.currentTarget.style.color="var(--g400)";}}>✓</button>
+                  <button onClick={()=>setConfirmDeleteNA("current")} title="Delete action" style={{background:"none",border:"none",cursor:"pointer",fontSize:15,color:"var(--g300)",flexShrink:0,lineHeight:1,transition:"color 0.12s"}}
+                    onMouseEnter={e=>e.currentTarget.style.color="var(--fuchsia)"}
+                    onMouseLeave={e=>e.currentTarget.style.color="var(--g300)"}>✕</button>
+                </div>
+              : <p style={{fontSize:12,color:"var(--g400)",fontStyle:"italic",marginBottom:6}}>No action set.</p>
+            }
+            {naLog.length>0&&<>
+              {(naExpanded?naLog:naLog.slice(0,2)).map((entry,i)=>(
+                <div key={i} className="na-hist">
+                  <div className="na-hist-body">
+                    <div className="na-hist-txt" style={{textDecoration:entry.completed?"line-through":"none",color:entry.completed?"var(--g400)":"var(--g800)"}}>{entry.text}</div>
+                    {entry.date&&<div className="na-hist-date">By {fmtDate(entry.date)}</div>}
+                  </div>
+                  {entry.completed&&<button onClick={()=>uncompleteAction(entry,i)} title="Restore action" className="na-hist-check" style={{cursor:"pointer",border:"2px solid #4ade80",background:"#f0fdf4"}}>✓</button>}
+                  <button className="na-hist-del" onClick={()=>setConfirmDeleteNA(i)} title="Delete">✕</button>
+                </div>
+              ))}
+              {naLog.length>2&&<button onClick={()=>setNaExpanded(x=>!x)} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,color:"var(--cyan)",fontWeight:700,padding:"2px 0 0",display:"block"}}>{naExpanded?"▴ Show less":"▾ Show all previous"}</button>}
+            </>}
+          </div>
+          {contact.notes&&<div className="dp-section">
+            <div className="dp-sect-lbl">Notes</div>
+            <p style={{fontSize:FONT,lineHeight:LINE_H,color:"var(--g800)",...notesClamp}}>{contact.notes}</p>
+            {notesIsLong&&<button onClick={()=>setNotesExpanded(x=>!x)} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,color:"var(--cyan)",fontWeight:700,padding:"4px 0 0",display:"block"}}>{notesExpanded?"▴ Show less":"▾ Show more"}</button>}
+          </div>}
+          <div className="dp-section">
+            <div className="dp-sect-lbl">Touchpoints ({(contact.touchpoints||[]).length})</div>
+            <TouchpointList touchpoints={contact.touchpoints} onAdd={addTp} onEdit={editTp}/>
+          </div>
         </div>
       </div>
+      {addingAction&&<AddActionModal onSave={saveNewAction} onClose={()=>setAddingAction(false)}/>}
+      {confirmDeleteNA!==null&&<ConfirmModal message="Delete this action? This cannot be undone." onConfirm={()=>{ if(confirmDeleteNA==="current"){onUpdate({...org,next_action:"",next_action_date:""});showToast("Action deleted");}else{deleteLogEntry(confirmDeleteNA);}setConfirmDeleteNA(null);}} onCancel={()=>setConfirmDeleteNA(null)}/>}
     </div>
   );
 }
 
 /* ─── Org Detail Panel ───────────────────────────────────────────────────────── */
 function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
- const mouseDownTarget = useRef(null);
+  const mouseDownTarget = useRef(null);
+  const [notesExpanded, setNotesExpanded] = useState(false);
+  const [naExpanded, setNaExpanded] = useState(false);
+  const [addingAction, setAddingAction] = useState(false);
   useEffect(()=>{ const h=(e)=>{ if(e.key==="Escape") onClose(); }; document.addEventListener("keydown",h); return ()=>document.removeEventListener("keydown",h); },[onClose]);
   const linked = contacts.filter(c=>c.org_id===org.id);
+  const completeAction = () => {
+    const prevLog = org.next_actions_log||[];
+    const archived = org.next_action ? [{text:org.next_action,date:org.next_action_date||null,loggedAt:new Date().toISOString(),completed:true},...prevLog] : prevLog;
+    onUpdate({...org, next_action:"", next_action_date:"", next_actions_log:archived});
+    showToast("Action marked complete ✓");
+  };
+  const saveNewAction = (text,date) => {
+    const prevLog = org.next_actions_log||[];
+    const archived = org.next_action ? [{text:org.next_action,date:org.next_action_date||null,loggedAt:new Date().toISOString(),completed:false},...prevLog] : prevLog;
+    onUpdate({...org, next_action:text, next_action_date:date||"", next_actions_log:archived});
+    showToast("Next action saved ✓");
+  };
+  const LINE_H = 1.7, FONT = 12, MAX_LINES = 6;
+  const notesClamp = !notesExpanded ? {overflow:"hidden",display:"-webkit-box",WebkitLineClamp:MAX_LINES,WebkitBoxOrient:"vertical"} : {};
+  const notesIsLong = (org.notes||"").split("\n").length > MAX_LINES || (org.notes||"").length > 420;
+  const naLog = org.next_actions_log||[];
+  const [confirmDeleteNA, setConfirmDeleteNA] = useState(null);
+  const uncompleteAction = (entry, idx) => {
+    const newLog = naLog.filter((_,i)=>i!==idx);
+    onUpdate({...org, next_action:entry.text, next_action_date:entry.date||"", next_actions_log:newLog});
+    showToast("Action restored ✓");
+  };
+  const deleteLogEntry = (idx) => {
+    const newLog = naLog.filter((_,i)=>i!==idx);
+    onUpdate({...org, next_actions_log:newLog});
+    showToast("Action removed");
+  };
+  const addTp = (tp) => {
+    const base = {...org, touchpoints:[...(org.touchpoints||[]),tp]};
+    if (tp.next_action) {
+      const prevLog = org.next_actions_log||[];
+      const prevEntry = org.next_action ? [{text:org.next_action,date:org.next_action_date||null,loggedAt:new Date().toISOString()},...prevLog] : prevLog;
+      onUpdate({...base, next_action:tp.next_action, next_action_date:tp.next_action_date||"", next_actions_log:prevEntry});
+    } else {
+      onUpdate(base);
+    }
+    showToast("Touchpoint logged ✓");
+  };
+  const editTp = (updatedTp) => {
+    const tps = (org.touchpoints||[]).map(t=>t.id===updatedTp.id?updatedTp:t);
+    const base = {...org, touchpoints:tps};
+    if (updatedTp.next_action) {
+      const prevLog = org.next_actions_log||[];
+      const prevEntry = org.next_action ? [{text:org.next_action,date:org.next_action_date||null,loggedAt:new Date().toISOString()},...prevLog] : prevLog;
+      onUpdate({...base, next_action:updatedTp.next_action, next_action_date:updatedTp.next_action_date||"", next_actions_log:prevEntry});
+    } else {
+      onUpdate(base);
+    }
+    showToast("Touchpoint updated ✓");
+  };
   return (
-<div className="detail-overlay"
+    <div className="detail-overlay"
       onMouseDown={e=>{ mouseDownTarget.current = e.target; }}
       onClick={e=>{ if (e.target===e.currentTarget && mouseDownTarget.current===e.currentTarget) onClose(); }}>
       <div className="detail-panel">
         <div className="dp-hd">
           <div><div className="dp-name">{org.name}</div><div className="dp-sub">{ORG_CATS[org.category]||org.category}{org.website?` · ${org.website}`:""}</div></div>
-<div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <div style={{display:"flex",gap:8,alignItems:"center"}}>
             <button className="btn btn-ghost btn-sm" onClick={onEdit}>Edit</button>
             <button className="dp-close" onClick={onClose}>×</button>
           </div>
@@ -581,15 +776,60 @@ function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
           {linked.length>0&&<div className="dp-section"><div className="dp-sect-lbl">People ({linked.length})</div>{linked.map(c=><div key={c.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}><div style={{flex:1}}><div style={{fontSize:13,fontWeight:700}}>{c.first_name} {c.last_name}</div></div><RelTag status={c.relationship_status}/></div>)}</div>}
           <div className="dp-section">
             <div className="dp-sect-lbl">Contact Details</div>
+            {org.category&&<div className="dp-field"><strong>Category:</strong> {ORG_CATS[org.category]||org.category}</div>}
             {org.phone&&<div className="dp-field"><strong>Phone:</strong> {org.phone}</div>}
             {org.email&&<div className="dp-field"><strong>Email:</strong> <a href={`mailto:${org.email}`} style={{color:"var(--cyan)"}}>{org.email}</a></div>}
             {org.instagram_handle&&<div className="dp-field"><strong>Instagram:</strong> {org.instagram_handle}</div>}
             {org.website&&<div className="dp-field"><strong>Website:</strong> <a href={org.website} target="_blank" rel="noreferrer" style={{color:"var(--cyan)"}}>{org.website}</a></div>}
           </div>
-          {org.notes&&<div className="dp-section"><div className="dp-sect-lbl">Notes</div><p style={{fontSize:12,lineHeight:1.7}}>{org.notes}</p></div>}
-          <div className="dp-section"><div className="dp-sect-lbl">Touchpoints ({(org.touchpoints||[]).length})</div><TouchpointList touchpoints={org.touchpoints} onAdd={(tp)=>{ onUpdate({...org,touchpoints:[...(org.touchpoints||[]),tp]}); showToast("Touchpoint logged ✓"); }}/></div>
+          <div className="dp-section">
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+              <div className="dp-sect-lbl" style={{marginBottom:0,paddingBottom:0,borderBottom:"none"}}>Next Action</div>
+              <button className="btn btn-ghost btn-xs" onClick={()=>setAddingAction(true)}>+ Add Action</button>
+            </div>
+            <div style={{borderBottom:"1px solid var(--g100)",marginBottom:8}}/>
+            {org.next_action
+              ? <div style={{background:"var(--banana-lt)",borderRadius:8,padding:"10px 12px",marginBottom:6,display:"flex",alignItems:"flex-start",gap:10}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:700}}>{org.next_action}</div>
+                    {org.next_action_date&&<div style={{fontSize:11,color:"var(--g600)",marginTop:3}}>By {fmtDate(org.next_action_date)}</div>}
+                  </div>
+                  <button onClick={completeAction} title="Mark complete" style={{background:"none",border:"2px solid var(--g300)",borderRadius:"50%",width:26,height:26,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,color:"var(--g400)",flexShrink:0,transition:"all 0.12s"}}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--acid)";e.currentTarget.style.color="var(--acid)";}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--g300)";e.currentTarget.style.color="var(--g400)";}}>✓</button>
+                  <button onClick={()=>setConfirmDeleteNA("current")} title="Delete action" style={{background:"none",border:"none",cursor:"pointer",fontSize:15,color:"var(--g300)",flexShrink:0,lineHeight:1,transition:"color 0.12s"}}
+                    onMouseEnter={e=>e.currentTarget.style.color="var(--fuchsia)"}
+                    onMouseLeave={e=>e.currentTarget.style.color="var(--g300)"}>✕</button>
+                </div>
+              : <p style={{fontSize:12,color:"var(--g400)",fontStyle:"italic",marginBottom:6}}>No action set.</p>
+            }
+            {naLog.length>0&&<>
+              {(naExpanded?naLog:naLog.slice(0,2)).map((entry,i)=>(
+                <div key={i} className="na-hist">
+                  <div className="na-hist-body">
+                    <div className="na-hist-txt" style={{textDecoration:entry.completed?"line-through":"none",color:entry.completed?"var(--g400)":"var(--g800)"}}>{entry.text}</div>
+                    {entry.date&&<div className="na-hist-date">By {fmtDate(entry.date)}</div>}
+                  </div>
+                  {entry.completed&&<button onClick={()=>uncompleteAction(entry,i)} title="Restore action" className="na-hist-check" style={{cursor:"pointer",border:"2px solid #4ade80",background:"#f0fdf4"}}>✓</button>}
+                  <button className="na-hist-del" onClick={()=>setConfirmDeleteNA(i)} title="Delete">✕</button>
+                </div>
+              ))}
+              {naLog.length>2&&<button onClick={()=>setNaExpanded(x=>!x)} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,color:"var(--cyan)",fontWeight:700,padding:"2px 0 0",display:"block"}}>{naExpanded?"▴ Show less":"▾ Show all previous"}</button>}
+            </>}
+          </div>
+          {org.notes&&<div className="dp-section">
+            <div className="dp-sect-lbl">Notes</div>
+            <p style={{fontSize:FONT,lineHeight:LINE_H,...notesClamp}}>{org.notes}</p>
+            {notesIsLong&&<button onClick={()=>setNotesExpanded(x=>!x)} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,color:"var(--cyan)",fontWeight:700,padding:"4px 0 0",display:"block"}}>{notesExpanded?"▴ Show less":"▾ Show more"}</button>}
+          </div>}
+          <div className="dp-section">
+            <div className="dp-sect-lbl">Touchpoints ({(org.touchpoints||[]).length})</div>
+            <TouchpointList touchpoints={org.touchpoints} onAdd={addTp} onEdit={editTp}/>
+          </div>
         </div>
       </div>
+      {addingAction&&<AddActionModal onSave={saveNewAction} onClose={()=>setAddingAction(false)}/>}
+      {confirmDeleteNA!==null&&<ConfirmModal message="Delete this action? This cannot be undone." onConfirm={()=>{if(confirmDeleteNA==="current"){onUpdate({...org,next_action:"",next_action_date:""});showToast("Action deleted");}else{deleteLogEntry(confirmDeleteNA);}setConfirmDeleteNA(null);}} onCancel={()=>setConfirmDeleteNA(null)}/>}
     </div>
   );
 }
@@ -848,7 +1088,7 @@ const [editing,setEditing]=useState(null);
       </div>
 {adding&&(
         <Modal title="Add Contact" onClose={()=>{setAdding(false);setNc(blank);}}
-          footer={<><button className="btn btn-ghost btn-sm" onClick={()=>{setAdding(false);setNc(blank);}}>Cancel</button><button className="btn btn-blk btn-sm" onClick={addContact} disabled={!nc.first_name.trim()||!nc.last_name.trim()}>Add Contact →</button></>}>
+          footer={<><button className="btn btn-ghost btn-sm" onClick={()=>{setAdding(false);setNc(blank);}}>Cancel</button><button className="btn btn-blk btn-sm" onClick={addContact}>Add Contact →</button></>}>
           <div className="frow">
             <div className="fg"><label className="fl">First Name *</label><input className="fi" value={nc.first_name} onChange={e=>setNc({...nc,first_name:e.target.value})} autoFocus/></div>
             <div className="fg"><label className="fl">Last Name *</label><input className="fi" value={nc.last_name} onChange={e=>setNc({...nc,last_name:e.target.value})}/></div>
@@ -895,14 +1135,21 @@ const [editing,setEditing]=useState(null);
                 <td><span className={c.relationship_type==="mentor"?"type-tag-mentor":"type-tag"}>{REL_TYPES[c.relationship_type]||c.relationship_type}</span></td>
                 <td style={{fontSize:12,color:"var(--g600)"}}>{org?.name||"—"}</td>
                 <td><RelTag status={c.relationship_status}/></td>
+                <td style={{fontSize:11,color:"var(--g600)",fontWeight:700}}>{c.tier||"—"}</td>
                 <td style={{maxWidth:160,fontSize:11,color:"var(--g600)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.next_action||"—"}</td>
-<td style={{padding:"12px 14px"}}>
-                <div className="row-actions">
-                  <button className="btn btn-ghost btn-xs" onClick={e=>{e.stopPropagation();setEditing({...c});}}>Edit</button>
-                  <button className="btn btn-cyan btn-xs" onClick={e=>{e.stopPropagation();setQuickLog(c.id);}}>+ Log</button>
-                  <button className="btn btn-danger btn-xs" onClick={e=>{e.stopPropagation();setConfirmDelete(c);}}>Del</button>
-                </div>
-              </td>
+                <td style={{padding:"12px 14px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <div className="health-bar" style={{width:48,margin:0}}><div className="health-fill" style={{width:`${score}%`,background:score>60?"var(--acid)":score>30?"var(--banana)":"var(--fuchsia)"}}/></div>
+                    <span style={{fontSize:10,color:"var(--g400)",fontWeight:700}}>{score}</span>
+                  </div>
+                </td>
+                <td style={{padding:"12px 14px"}}>
+                  <div className="row-actions">
+                    <button className="btn btn-ghost btn-xs" onClick={e=>{e.stopPropagation();setEditing({...c});}}>Edit</button>
+                    <button className="btn btn-cyan btn-xs" onClick={e=>{e.stopPropagation();setQuickLog(c.id);}}>+ Log</button>
+                    <button className="btn btn-danger btn-xs" onClick={e=>{e.stopPropagation();setConfirmDelete(c);}}>Del</button>
+                  </div>
+                </td>
               </tr>;
             })}
 </tbody></table></div>
@@ -1177,7 +1424,7 @@ const rt=item.record_type||(item.first_name?"individual":"organization");
       <div style={{marginTop:20}}>
         <div className="sect-lbl">Schema Quick Reference</div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-          {[{l:"Individual — Key Fields",f:["record_type: \"individual\"","first_name, last_name","email, phone","relationship_type (partner/community_builder/other)","relationship_status (cold/warm/active)","next_action, next_action_date","instagram_handle, website"]},{l:"Organization — Key Fields",f:["record_type: \"organization\"","name","category (funder/partner/vendor/media/government)","relationship_status (cold/warm/active/lapsed)","phone, email, instagram_handle, website","next_action, next_action_date"]}].map(s=>(
+          {[{l:"Individual — Key Fields",f:["record_type: \"individual\"","first_name, last_name","email, phone","relationship_type (partner/community_builder/other)","relationship_status (cold/warm/active)","next_action, next_action_date","instagram_handle, website"]},{l:"Organization — Key Fields",f:["record_type: \"organization\"","name","category (funder/partner/vendor/media/government)","relationship_status (cold/warm/active)","phone, email, instagram_handle, website","next_action, next_action_date"]}].map(s=>(
             <div key={s.l} className="card"><div className="card-hd"><span className="card-ttl">{s.l}</span></div><div className="card-bd">{s.f.map(f=><div key={f} style={{fontSize:12,fontFamily:"monospace",color:"var(--g800)",marginBottom:4}}>{f}</div>)}</div></div>
           ))}
         </div>
