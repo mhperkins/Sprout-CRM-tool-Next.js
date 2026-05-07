@@ -20,7 +20,6 @@ lives in the `data` JSONB blob and is accessed via the merge pattern.
 | `first_name`        | text        | Promoted for sort/search               |
 | `last_name`         | text        | Promoted for sort/search               |
 | `email`             | text        | Nullable                               |
-| `phone`             | text        | Nullable. Promoted S4; SELECT S8; upsert S7; merge S9. |
 | `relationship_status` | text      | Enum: `cold` `warm` `active` `declined` |
 | `next_action_date`  | date        | ISO string. Used for overdue queries.  |
 | `created_at`        | timestamptz | Set on insert                          |

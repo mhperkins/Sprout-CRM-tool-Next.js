@@ -480,10 +480,11 @@ function TouchpointList({touchpoints,onAdd,onEdit}) {
   };
   const cancelEdit = () => { setEditingId(null); setEditTp(null); };
   const sorted = [...(touchpoints||[])].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const tpScrollable = sorted.length>=3;
   return (
     <div>
       {sorted.length===0&&!adding&&<p style={{fontSize:12,color:"var(--g400)",fontStyle:"italic",marginBottom:10}}>No touchpoints logged yet.</p>}
-      <div className="tp-wrap">
+      <div className="tp-wrap" style={tpScrollable?{maxHeight:220,overflowY:"auto"}:{maxHeight:"none",overflowY:"visible"}}>
         {sorted.map((t,i)=>(
           editingId===t.id ? (
             <div key={t.id||i} className="add-row">
@@ -696,7 +697,7 @@ function ContactDetail({contact,orgs,onClose,onUpdate,onEdit,showToast}) {
         </div>
       </div>
       {addingAction&&<AddActionModal onSave={saveNewAction} onClose={()=>setAddingAction(false)}/>}
-      {confirmDeleteNA!==null&&<ConfirmModal message="Delete this action? This cannot be undone." onConfirm={()=>{ if(confirmDeleteNA==="current"){onUpdate({...org,next_action:"",next_action_date:""});showToast("Action deleted");}else{deleteLogEntry(confirmDeleteNA);}setConfirmDeleteNA(null);}} onCancel={()=>setConfirmDeleteNA(null)}/>}
+      {confirmDeleteNA!==null&&<ConfirmModal message="Delete this action? This cannot be undone." onConfirm={()=>{ if(confirmDeleteNA==="current"){const remaining=(contact.next_actions||[]).filter(a=>a.text!==contact.next_action);const earliest=remaining.filter(a=>!a.completed&&a.date).sort((a,b)=>a.date.localeCompare(b.date))[0];onUpdate({...contact,next_action:earliest?.text||"",next_action_date:earliest?.date||"",next_actions:remaining});showToast("Action deleted");}else{deleteLogEntry(confirmDeleteNA);}setConfirmDeleteNA(null);}} onCancel={()=>setConfirmDeleteNA(null)}/>}
     </div>
   );
 }
@@ -741,7 +742,9 @@ function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
     if (tp.next_action) {
       const prevLog = org.next_actions_log||[];
       const prevEntry = org.next_action ? [{text:org.next_action,date:org.next_action_date||null,loggedAt:new Date().toISOString()},...prevLog] : prevLog;
-      onUpdate({...base, next_action:tp.next_action, next_action_date:tp.next_action_date||"", next_actions_log:prevEntry});
+      const newNa = tp.next_action_date ? [{id:uid(),text:tp.next_action,date:tp.next_action_date,completed:false}] : [];
+      const mergedNas = [...(org.next_actions||[]),...newNa];
+      onUpdate({...base, next_action:tp.next_action, next_action_date:tp.next_action_date||"", next_actions_log:prevEntry, next_actions:mergedNas});
     } else {
       onUpdate(base);
     }
@@ -753,7 +756,9 @@ function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
     if (updatedTp.next_action) {
       const prevLog = org.next_actions_log||[];
       const prevEntry = org.next_action ? [{text:org.next_action,date:org.next_action_date||null,loggedAt:new Date().toISOString()},...prevLog] : prevLog;
-      onUpdate({...base, next_action:updatedTp.next_action, next_action_date:updatedTp.next_action_date||"", next_actions_log:prevEntry});
+      const newNa = updatedTp.next_action_date ? [{id:uid(),text:updatedTp.next_action,date:updatedTp.next_action_date,completed:false}] : [];
+      const mergedNas = [...(org.next_actions||[]),...newNa];
+      onUpdate({...base, next_action:updatedTp.next_action, next_action_date:updatedTp.next_action_date||"", next_actions_log:prevEntry, next_actions:mergedNas});
     } else {
       onUpdate(base);
     }
@@ -835,11 +840,22 @@ function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
 }
 
 /* ─── Sidebar ────────────────────────────────────────────────────────────────── */
-function Sidebar({view,setView,contacts,profile,onQuickLog}) {
-  const overdueCount = contacts.filter(isOverdue).length;
+function Sidebar({view,setView,contacts,events,profile,onQuickLog}) {
+  const notifCount = (() => {
+    const items = [];
+    contacts.forEach(c=>{
+      const actions = c.next_actions||[];
+      actions.filter(a=>!a.completed&&a.date).forEach(a=>items.push(a.date));
+      if(!actions.length&&c.next_action&&c.next_action_date) items.push(c.next_action_date);
+    });
+    (events||[]).forEach(ev=>{
+      (ev.checklist||[]).filter(i=>!i.completed&&i.date).forEach(i=>items.push(i.date));
+    });
+    return items.filter(d=>{ const n=daysUntil(d); return n!==null&&n<=3; }).length;
+  })();
   const nav = [
     {section:"Overview"},
-    {id:"dashboard",label:"Dashboard",icon:"📊",badge:overdueCount>0?overdueCount:null},
+    {id:"dashboard",label:"Dashboard",icon:"📊",badge:notifCount>0?notifCount:null},
     {section:"Relationships"},
     {id:"contacts",label:"Contacts",icon:"👤"},
     {id:"orgs",label:"Organizations",icon:"🏢"},
@@ -874,7 +890,7 @@ function Sidebar({view,setView,contacts,profile,onQuickLog}) {
 }
 
 /* ─── Dashboard ──────────────────────────────────────────────────────────────── */
-function DashboardView({contacts,orgs,setView,events,onUpdateContacts,onUpdateEvents,showToast}) {
+function DashboardView({contacts,orgs,setView,openContact,events,onUpdateContacts,onUpdateEvents,showToast}) {
   const today = new Date().toISOString().slice(0,10);
   const overdue = contacts.filter(isOverdue);
   const active = contacts.filter(c=>c.relationship_status==="active").length;
@@ -888,6 +904,11 @@ function DashboardView({contacts,orgs,setView,events,onUpdateContacts,onUpdateEv
     if((!actions.length)&&c.next_action&&c.next_action_date){
       allActions.push({type:"contact",contact:c,text:c.next_action,date:c.next_action_date,id:c.id+"-na"});
     }
+  });
+  (orgs||[]).forEach(o=>{
+    (o.next_actions||[]).filter(a=>!a.completed&&a.date).forEach(a=>{
+      allActions.push({type:"org",org:o,text:a.text,date:a.date,id:a.id});
+    });
   });
   (events||[]).forEach(ev=>{
     (ev.checklist||[]).filter(item=>!item.completed&&item.date).forEach(item=>{
@@ -916,6 +937,7 @@ function DashboardView({contacts,orgs,setView,events,onUpdateContacts,onUpdateEv
     setDashEditing(null);
     showToast("Contact saved ✓");
   };
+  const [dashContact,setDashContact]=useState(null);
   return (
     <div className="page">
       <div className="pg-hd">
@@ -961,10 +983,11 @@ function DashboardView({contacts,orgs,setView,events,onUpdateContacts,onUpdateEv
               : dueSoon.map(a=>{
                   const tag=getNotiTag(a.date);
                   return (
-                    <div key={a.id} className="overdue-row" onClick={()=>a.type==="contact"?openDashEdit(a.contact):setView("events")}>
+                    <div key={a.id} className="overdue-row" onClick={()=>a.type==="contact"?setDashContact(a.contact):a.type==="org"?setView("orgs"):setView("events")}>
                       <div style={{flex:1,minWidth:0}}>
                         <div className="overdue-name">
-                          {a.type==="contact"?`${a.contact.first_name} ${a.contact.last_name}`:a.event?.name||"Event"}
+                          {a.type==="contact"?`${a.contact.first_name} ${a.contact.last_name}`:a.type==="org"?a.org?.name||"Org":a.event?.name||"Event"}
+                          {a.type==="org"&&<span style={{fontSize:10,marginLeft:6,color:"var(--g400)"}}>🏢 org</span>}
                           {a.type==="event"&&<span style={{fontSize:10,marginLeft:6,color:"var(--g400)"}}>📅 event</span>}
                         </div>
                         <div className="overdue-meta" style={{maxWidth:180,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.text}</div>
@@ -981,16 +1004,17 @@ function DashboardView({contacts,orgs,setView,events,onUpdateContacts,onUpdateEv
         </div>
 
         <div className="card" style={{gridColumn:"1/-1"}}>
-          <div className="card-hd"><span className="card-ttl">⚠ Overdue Contacts</span><button className="btn btn-ghost btn-xs" onClick={()=>setView("contacts")}>View all</button></div>
-          <div className="card-bd" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {overdue.length===0
-              ? <p style={{fontSize:12,color:"var(--g400)",textAlign:"center",padding:"12px 0",gridColumn:"1/-1"}}>All contacts are on schedule 🎉</p>
-              : overdue.map(c=>{
-                  const last=lastTouchDate(c); const since=last?daysSince(last.slice(0,10)):null;
+          <div className="card-hd"><span className="card-ttl">⚠ Overdue Actions</span></div>
+          <div className="card-bd" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,maxHeight:allActions.filter(a=>{const d=daysUntil(a.date);return d!==null&&d<0;}).length>4?260:undefined,overflowY:allActions.filter(a=>{const d=daysUntil(a.date);return d!==null&&d<0;}).length>4?"auto":"visible"}}>
+            {allActions.filter(a=>{const d=daysUntil(a.date);return d!==null&&d<0;}).length===0
+              ? <p style={{fontSize:12,color:"var(--g400)",textAlign:"center",padding:"12px 0",gridColumn:"1/-1"}}>No overdue actions 🎉</p>
+              : allActions.filter(a=>{const d=daysUntil(a.date);return d!==null&&d<0;}).map(a=>{
+                  const name=a.type==="contact"?`${a.contact.first_name} ${a.contact.last_name}`:a.type==="org"?a.org?.name||"Org":a.event?.name||"Event";
+                  const daysAgo=Math.abs(Math.ceil((new Date(a.date)-new Date())/86400000));
                   return (
-                    <div key={c.id} className="overdue-row" onClick={()=>openDashEdit(c)}>
-                      <div><div className="overdue-name">{c.first_name} {c.last_name}</div><div className="overdue-meta">{REL_STATUS[c.relationship_status]||c.relationship_status}</div></div>
-                      <span style={{fontSize:11,fontWeight:700,color:"#B91C1C",whiteSpace:"nowrap"}}>{since!==null?`${since}d ago`:"Never contacted"}</span>
+                    <div key={a.id} className="overdue-row" onClick={()=>a.type==="contact"?setDashContact(a.contact):a.type==="org"?setView("orgs"):setView("events")}>
+                      <div><div className="overdue-name">{name}{a.type==="org"&&<span style={{fontSize:10,marginLeft:6,color:"var(--g400)"}}>🏢 org</span>}{a.type==="event"&&<span style={{fontSize:10,marginLeft:6,color:"var(--g400)"}}>📅 event</span>}</div><div className="overdue-meta">{a.text}</div></div>
+                      <span style={{fontSize:11,fontWeight:700,color:"#B91C1C",whiteSpace:"nowrap"}}>{daysAgo}d ago</span>
                     </div>
                   );
                 })
@@ -1000,6 +1024,7 @@ function DashboardView({contacts,orgs,setView,events,onUpdateContacts,onUpdateEv
 
       </div>
       {dashEditing&&<ContactEditModal editing={dashEditing} setEditing={setDashEditing} onSave={saveDashEdit} orgs={orgs} events={events||[]} onUpdateEvents={onUpdateEvents} onNavigate={setView}/>}
+      {dashContact&&<ContactDetail contact={contacts.find(c=>c.id===dashContact.id)||dashContact} orgs={orgs} onClose={()=>setDashContact(null)} onUpdate={(updated)=>{onUpdateContacts(contacts.map(c=>c.id===updated.id?updated:c));setDashContact(updated);showToast("Contact saved ✓");}} onEdit={()=>{setDashEditing({...dashContact});setDashContact(null);}} showToast={showToast}/>}
     </div>
   );
 }
@@ -1053,17 +1078,21 @@ function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,
           const addNA=()=>{
             if(!naText.trim()) return;
             const entry={id:`na_${uid()}`,text:naText.trim(),date:naDate||null,completed:false};
-            const updated=[entry,...nas];
-            const earliest=updated.filter(a=>!a.completed&&a.date).sort((a,b)=>a.date.localeCompare(b.date))[0];
-            setEditing(p=>({...p,next_actions:updated,next_action:entry.text,next_action_date:earliest?.date||entry.date||"",_naText:"",_naDate:""}));
+            setEditing(p=>{
+              const updated=[entry,...(p.next_actions||[])];
+              const earliest=updated.filter(a=>!a.completed&&a.date).sort((a,b)=>a.date.localeCompare(b.date))[0];
+              return {...p,next_actions:updated,next_action:entry.text,next_action_date:earliest?.date||entry.date||"",_naText:"",_naDate:""};
+            });
           };
           const toggleNA=(id)=>{
-            const updated=nas.map(a=>a.id===id?{...a,completed:!a.completed}:a);
-            const earliest=updated.filter(a=>!a.completed&&a.date).sort((a,b)=>a.date.localeCompare(b.date))[0];
-            setEditing(p=>({...p,next_actions:updated,next_action_date:earliest?.date||""}));
+            setEditing(p=>{
+              const updated=(p.next_actions||[]).map(a=>a.id===id?{...a,completed:!a.completed}:a);
+              const earliest=updated.filter(a=>!a.completed&&a.date).sort((a,b)=>a.date.localeCompare(b.date))[0];
+              return {...p,next_actions:updated,next_action_date:earliest?.date||""};
+            });
           };
-          const deleteNA=(id)=>setEditing(p=>({...p,next_actions:nas.filter(a=>a.id!==id)}));
-          const scrollable=nas.length>3;
+          const deleteNA=(id)=>{ showToast("Action deleted ✓"); setEditing(p=>({...p,next_actions:(p.next_actions||[]).filter(a=>a.id!==id)})); };
+          const scrollable=nas.length>=3;
           return <div className="fg">
             <label className="fl">Next Actions</label>
             <div style={{display:"flex",gap:6,marginBottom:6}}>
@@ -1071,16 +1100,25 @@ function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,
               <input type="date" className="fi" style={{width:140}} value={naDate} onChange={e=>setNaDate(e.target.value)}/>
               <button className="btn btn-blk btn-xs" onClick={addNA}>+ Add</button>
             </div>
-            {nas.length>0&&<div style={{maxHeight:scrollable?108:undefined,overflowY:scrollable?"auto":"visible",border:"1.5px solid var(--g200)",borderRadius:6}}>
-              {nas.map(a=><div key={a.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",borderBottom:"1px solid var(--g100)",opacity:a.completed?0.45:1,background:a.completed?"var(--g50)":"#fff"}}>
-                <input type="checkbox" checked={a.completed} disabled={a.completed} onChange={()=>!a.completed&&toggleNA(a.id)} style={{cursor:a.completed?"not-allowed":"pointer"}}/>
-                <div style={{flex:1,fontSize:12}}>
-                  <div style={{textDecoration:a.completed?"line-through":"none",fontWeight:600}}>{a.text}</div>
-                  {a.date&&<div style={{fontSize:10,color:"var(--g400)"}}>{fmtDate(a.date)}</div>}
+            {nas.length>0&&(()=>{
+              const active_nas=nas.filter(a=>!a.completed);
+              const done_nas=nas.filter(a=>a.completed);
+              const renderRow=(a)=>(
+                <div key={a.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",borderBottom:"1px solid var(--g100)",background:a.completed?"var(--g50)":"var(--banana-lt)"}}>
+                  <input type="checkbox" checked={a.completed} disabled={a.completed} onChange={()=>!a.completed&&toggleNA(a.id)} style={{cursor:a.completed?"not-allowed":"pointer",flexShrink:0}}/>
+                  <div style={{flex:1,fontSize:12,opacity:a.completed?0.45:1}}>
+                    <div style={{textDecoration:a.completed?"line-through":"none",fontWeight:600}}>{a.text}</div>
+                    {a.date&&<div style={{fontSize:10,color:"var(--g400)"}}>{fmtDate(a.date)}</div>}
+                  </div>
+                  <button style={{background:"none",border:"none",cursor:"pointer",color:"var(--fuchsia)",fontWeight:900,fontSize:14,padding:"0 2px"}} onClick={e=>{e.stopPropagation();deleteNA(a.id);}}>✕</button>
                 </div>
-                <button style={{background:"none",border:"none",cursor:"pointer",color:"var(--fuchsia)",fontWeight:900,fontSize:14,padding:"0 2px"}} onClick={()=>deleteNA(a.id)}>✕</button>
-              </div>)}
-            </div>}
+              );
+              return <div style={{maxHeight:scrollable?180:undefined,overflowY:scrollable?"auto":"visible",border:"1.5px solid var(--g200)",borderRadius:6}}>
+                {active_nas.map(renderRow)}
+                {done_nas.length>0&&active_nas.length>0&&<div style={{borderTop:"2px solid var(--g200)"}}/>}
+                {done_nas.map(renderRow)}
+              </div>;
+            })()}
           </div>;
         })()}
         <button className="drawer-toggle" onClick={()=>setEditing(prev=>({...prev,_showMore:!prev._showMore}))}>
@@ -1999,9 +2037,9 @@ if (dbError) return (
   return (
     <><style>{STYLES}</style>
     <div className="app">
-<Sidebar view={view} setView={(v)=>{setPendingDetail(null);setView(v);}} contacts={contacts} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)}/>
+<Sidebar view={view} setView={(v)=>{setPendingDetail(null);setView(v);}} contacts={contacts} events={events} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)}/>
       <main className="main">
-        {view==="dashboard"&&<DashboardView contacts={contacts} orgs={orgs} events={events} setView={setView} onUpdateContacts={saveContacts} onUpdateEvents={saveEvents} showToast={showToast}/>}
+        {view==="dashboard"&&<DashboardView contacts={contacts} orgs={orgs} events={events} setView={setView} openContact={openContact} onUpdateContacts={saveContacts} onUpdateEvents={saveEvents} showToast={showToast}/>}
 {view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail} setView={setView}/>}
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
 {view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))}/>}
