@@ -641,7 +641,7 @@ function ContactDetail({contact,orgs,onClose,onUpdate,onEdit,showToast}) {
           </div>
         </div>
         <div className="dp-body">
-          <div className="dp-row"><RelTag status={contact.relationship_status}/><span className="type-tag">{REL_TYPES[contact.relationship_type]||contact.relationship_type}</span></div>
+          <div className="dp-row"><RelTag status={contact.relationship_status}/><div style={{display:"flex",gap:4,flexWrap:"wrap"}}>{(contact.relationship_types&&contact.relationship_types.length?contact.relationship_types:[contact.relationship_type]).filter(Boolean).map(t=><span key={t} className="type-tag">{REL_TYPES[t]||t}</span>)}</div></div>
           <div className="dp-section">
             <div className="dp-sect-lbl">Contact Details</div>
             {contact.email&&<div className="dp-field"><strong>Email:</strong> <a href={`mailto:${contact.email}`} style={{color:"var(--cyan)"}}>{contact.email}</a></div>}
@@ -874,86 +874,139 @@ function Sidebar({view,setView,contacts,profile,onQuickLog}) {
 }
 
 /* ─── Dashboard ──────────────────────────────────────────────────────────────── */
-function DashboardView({contacts,orgs,setView,onOpenContact}) {
+function DashboardView({contacts,orgs,setView,events,onUpdateContacts,onUpdateEvents,showToast}) {
+  const today = new Date().toISOString().slice(0,10);
   const overdue = contacts.filter(isOverdue);
   const active = contacts.filter(c=>c.relationship_status==="active").length;
-  const upcoming = contacts.filter(c=>{ const d=daysUntil(c.next_action_date); return d!==null&&d>=0&&d<=14; }).sort((a,b)=>new Date(a.next_action_date)-new Date(b.next_action_date));
-const tiers = {A:contacts.filter(c=>c.tier==="A"),B:contacts.filter(c=>c.tier==="B"),C:contacts.filter(c=>c.tier==="C")};
-  const scheduled = []; // sprout_posts table pending — stub until posts feature is built
+
+  const allActions = [];
+  contacts.forEach(c=>{
+    const actions = c.next_actions||[];
+    actions.filter(a=>!a.completed&&a.date).forEach(a=>{
+      allActions.push({type:"contact",contact:c,text:a.text,date:a.date,id:a.id});
+    });
+    if((!actions.length)&&c.next_action&&c.next_action_date){
+      allActions.push({type:"contact",contact:c,text:c.next_action,date:c.next_action_date,id:c.id+"-na"});
+    }
+  });
+  (events||[]).forEach(ev=>{
+    (ev.checklist||[]).filter(item=>!item.completed&&item.date).forEach(item=>{
+      allActions.push({type:"event",event:ev,text:item.text,date:item.date,id:ev.id+"-"+item.id});
+    });
+  });
+  allActions.sort((a,b)=>new Date(a.date)-new Date(b.date));
+
+  const getNotiTag = (date) => {
+    const d=daysUntil(date);
+    if(d===null) return null;
+    if(d<0) return {label:"Overdue",color:"#B91C1C"};
+    if(d===0) return {label:"Due today",color:"var(--fuchsia)"};
+    if(d<=3) return {label:"Due soon",color:"var(--acid)"};
+    return null;
+  };
+
+  const dueSoon = allActions.filter(a=>{ const d=daysUntil(a.date); return d!==null&&d>=0&&d<=14; });
+  const totalNotifications = allActions.filter(a=>{ const d=daysUntil(a.date); return d!==null&&d<=3; }).length;
+  const upcomingEvents = (events||[]).filter(ev=>ev.status==="upcoming"&&ev.event_date&&ev.event_date>=today).sort((a,b)=>new Date(a.event_date)-new Date(b.event_date));
+
+  const [dashEditing,setDashEditing]=useState(null);
+  const openDashEdit=(c)=>setDashEditing({...c});
+  const saveDashEdit=(updated)=>{
+    onUpdateContacts(contacts.map(c=>c.id===updated.id?updated:c));
+    setDashEditing(null);
+    showToast("Contact saved ✓");
+  };
   return (
     <div className="page">
       <div className="pg-hd">
-        <div><div className="pg-ttl">Dashboard</div><div className="pg-sub">{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})}</div></div>
+        <div>
+          <div className="pg-ttl">Dashboard
+            {totalNotifications>0&&<span style={{marginLeft:8,fontSize:11,fontWeight:700,background:"var(--fuchsia)",color:"#fff",borderRadius:10,padding:"2px 8px",verticalAlign:"middle"}}>{totalNotifications}</span>}
+          </div>
+          <div className="pg-sub">{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})}</div>
+        </div>
       </div>
       <div className="stats">
         <div className="stat"><div className="stat-lbl">Total Contacts</div><div className="stat-val">{contacts.length}</div><div className="stat-meta">{orgs.length} organizations</div></div>
         <div className="stat"><div className="stat-lbl">Active Relationships</div><div className="stat-val" style={{color:"var(--cyan)"}}>{active}</div><div className="stat-meta">of {contacts.length} contacts</div></div>
         <div className="stat"><div className="stat-lbl">Overdue</div><div className="stat-val" style={{color:overdue.length>0?"var(--fuchsia)":"var(--black)"}}>{overdue.length}</div><div className="stat-meta">need contact now</div></div>
-        <div className="stat"><div className="stat-lbl">Due This Week</div><div className="stat-val" style={{color:"var(--acid)"}}>{upcoming.length}</div><div className="stat-meta">actions in 14 days</div></div>
+        <div className="stat"><div className="stat-lbl">Due This Week</div><div className="stat-val" style={{color:"var(--acid)"}}>{dueSoon.length}</div><div className="stat-meta">actions in 14 days</div></div>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+
         <div className="card">
-          <div className="card-hd"><span className="card-ttl">⚠ Overdue Contacts</span><button className="btn btn-ghost btn-xs" onClick={()=>setView("contacts")}>View all</button></div>
+          <div className="card-hd"><span className="card-ttl">🗓 Upcoming Events</span><button className="btn btn-ghost btn-xs" onClick={()=>setView("events")}>View all</button></div>
           <div className="card-bd">
-            {overdue.length===0
-              ? <p style={{fontSize:12,color:"var(--g400)",textAlign:"center",padding:"12px 0"}}>All contacts are on schedule 🎉</p>
-              : overdue.slice(0,5).map(c=>{
-                  const last=lastTouchDate(c); const since=last?daysSince(last.slice(0,10)):null;
-                  return <div key={c.id} className="overdue-row" onClick={()=>onOpenContact(c)}><div><div className="overdue-name">{c.first_name} {c.last_name}</div><div className="overdue-meta">{REL_STATUS[c.relationship_status]||c.relationship_status}</div></div><span style={{fontSize:11,fontWeight:700,color:"#B91C1C",whiteSpace:"nowrap"}}>{since!==null?`${since}d ago`:"Never contacted"}</span></div>;
+            {upcomingEvents.length===0
+              ? <p style={{fontSize:12,color:"var(--g400)",textAlign:"center",padding:"12px 0"}}>No upcoming events</p>
+              : upcomingEvents.slice(0,5).map(ev=>{
+                  const d=daysUntil(ev.event_date);
+                  const tag=d===0?"Today":d===1?"Tomorrow":d!==null?`In ${d}d`:null;
+                  return (
+                    <div key={ev.id} className="overdue-row" onClick={()=>setView("events")}>
+                      <div><div className="overdue-name">{ev.name}</div><div className="overdue-meta">{ev.location||"No location"} · {(ev.contact_ids||[]).length} contacts</div></div>
+                      {tag&&<span style={{fontSize:11,fontWeight:700,color:d===0?"var(--fuchsia)":d<=3?"var(--acid)":"var(--g600)",whiteSpace:"nowrap"}}>{tag}</span>}
+                    </div>
+                  );
                 })
             }
           </div>
         </div>
+
         <div className="card">
-          <div className="card-hd"><span className="card-ttl">📅 Upcoming Actions</span></div>
-          <div className="card-bd">
-            {upcoming.length===0
+          <div className="card-hd"><span className="card-ttl">📅 Next Actions</span></div>
+          <div className="card-bd" style={dueSoon.length>5?{maxHeight:280,overflowY:"auto"}:{}}>
+            {dueSoon.length===0
               ? <p style={{fontSize:12,color:"var(--g400)",textAlign:"center",padding:"12px 0"}}>No actions due in next 14 days</p>
-              : upcoming.slice(0,5).map(c=>(
-                  <div key={c.id} className="overdue-row" onClick={()=>onOpenContact(c)}>
-                    <div><div className="overdue-name">{c.first_name} {c.last_name}</div><div className="overdue-meta" style={{maxWidth:180,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.next_action}</div></div>
-                    <span style={{fontSize:11,fontWeight:700,color:"var(--g600)",whiteSpace:"nowrap"}}>{fmtDate(c.next_action_date)}</span>
-                  </div>
-                ))
-            }
-          </div>
-        </div>
-        <div className="card">
-          <div className="card-hd"><span className="card-ttl">Tier Distribution</span></div>
-          <div className="card-bd">
-            {[{k:"A",label:"Tier A — Weekly",color:"var(--fuchsia)"},{k:"B",label:"Tier B — Monthly",color:"var(--cyan)"},{k:"C",label:"Tier C — Quarterly",color:"var(--g300)"}].map(row=>(
-              <div key={row.k} style={{marginBottom:12}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}><span style={{fontSize:12,fontWeight:700}}>{row.label}</span><span style={{fontSize:12,color:"var(--g600)"}}>{tiers[row.k].length}</span></div>
-                <div className="health-bar"><div className="health-fill" style={{width:contacts.length?`${(tiers[row.k].length/contacts.length)*100}%`:"0%",background:row.color}}/></div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="card">
-<div className="card-hd"><span className="card-ttl">📣 Comms Pipeline</span><button className="btn btn-ghost btn-xs" onClick={()=>setView("outreach")}>View all</button></div>
-          <div className="card-bd">
-            {scheduled.length===0
-              ? <p style={{fontSize:12,color:"var(--g400)",textAlign:"center",padding:"12px 0"}}>No posts scheduled</p>
-              : scheduled.slice(0,4).map(p=>(
-                  <div key={p.id} style={{display:"flex",gap:10,alignItems:"flex-start",padding:"8px 0",borderBottom:"1px solid var(--g100)"}}>
-                    <div className={`post-platform post-${p.platform}`}>{p.platform==="ig"?"📸":"✉"}</div>
-                    <div style={{flex:1}}>
-                      <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:2}}><span className={`post-status ps-${p.status}`}>{p.status}</span><span style={{fontSize:10,color:"var(--g400)"}}>{fmtDate(p.scheduled_date)}</span></div>
-                      <div style={{fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:200}}>{p.caption||p.subject||"(no content)"}</div>
+              : dueSoon.map(a=>{
+                  const tag=getNotiTag(a.date);
+                  return (
+                    <div key={a.id} className="overdue-row" onClick={()=>a.type==="contact"?openDashEdit(a.contact):setView("events")}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div className="overdue-name">
+                          {a.type==="contact"?`${a.contact.first_name} ${a.contact.last_name}`:a.event?.name||"Event"}
+                          {a.type==="event"&&<span style={{fontSize:10,marginLeft:6,color:"var(--g400)"}}>📅 event</span>}
+                        </div>
+                        <div className="overdue-meta" style={{maxWidth:180,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.text}</div>
+                      </div>
+                      <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:2,whiteSpace:"nowrap"}}>
+                        {tag&&<span style={{fontSize:10,fontWeight:700,color:tag.color,background:tag.color+"18",borderRadius:4,padding:"1px 5px"}}>{tag.label}</span>}
+                        <span style={{fontSize:11,color:"var(--g600)"}}>{fmtDate(a.date)}</span>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
             }
           </div>
         </div>
+
+        <div className="card" style={{gridColumn:"1/-1"}}>
+          <div className="card-hd"><span className="card-ttl">⚠ Overdue Contacts</span><button className="btn btn-ghost btn-xs" onClick={()=>setView("contacts")}>View all</button></div>
+          <div className="card-bd" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {overdue.length===0
+              ? <p style={{fontSize:12,color:"var(--g400)",textAlign:"center",padding:"12px 0",gridColumn:"1/-1"}}>All contacts are on schedule 🎉</p>
+              : overdue.map(c=>{
+                  const last=lastTouchDate(c); const since=last?daysSince(last.slice(0,10)):null;
+                  return (
+                    <div key={c.id} className="overdue-row" onClick={()=>openDashEdit(c)}>
+                      <div><div className="overdue-name">{c.first_name} {c.last_name}</div><div className="overdue-meta">{REL_STATUS[c.relationship_status]||c.relationship_status}</div></div>
+                      <span style={{fontSize:11,fontWeight:700,color:"#B91C1C",whiteSpace:"nowrap"}}>{since!==null?`${since}d ago`:"Never contacted"}</span>
+                    </div>
+                  );
+                })
+            }
+          </div>
+        </div>
+
       </div>
+      {dashEditing&&<ContactEditModal editing={dashEditing} setEditing={setDashEditing} onSave={saveDashEdit} orgs={orgs} events={events||[]} onUpdateEvents={onUpdateEvents} onNavigate={setView}/>}
     </div>
   );
 }
 
 /* ─── Contact Edit Modal ─────────────────────────────────────────────────────── */
-function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,onNavigate}) {
-  const [eTab,setETab]=useState("overview");
+function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,onNavigate,initialTab="overview"}) {
+  const [eTab,setETab]=useState(initialTab);
   const orgOpts=[{value:"",label:"— None —"},...orgs.map(o=>({value:o.id,label:o.name,meta:ORG_CATS[o.category]||o.category}))];
   const toggleEventLink = (evtId) => {
     const updated = events.map(ev=>{
@@ -983,16 +1036,53 @@ function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,
         <div className="fg"><label className="fl">Instagram</label><input className="fi" value={editing.instagram_handle||""} onChange={e=>setEditing({...editing,instagram_handle:e.target.value})} placeholder="@handle"/></div>
         <div className="fg"><label className="fl">Organization</label><SearchSelect options={orgOpts} value={editing.org_id||""} onChange={v=>setEditing({...editing,org_id:v})}/></div>
         <div className="fg"><label className="fl">Status</label><RadioGroup options={STATUS_OPTS} value={editing.relationship_status||"cold"} onChange={v=>setEditing({...editing,relationship_status:v})}/></div>
-        <div className="fg"><label className="fl">Type</label>
+        <div className="fg"><label className="fl">Type <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(select all that apply)</span></label>
           <div className="type-btn-group">
-            {Object.entries(REL_TYPES).map(([v,l])=>(
-              <button key={v} className={`type-btn ${editing.relationship_type===v?"on":""}`} onClick={()=>setEditing({...editing,relationship_type:v})}>{l}</button>
-            ))}
+            {Object.entries(REL_TYPES).map(([v,l])=>{
+              const types=editing.relationship_types||[];
+              const on=types.includes(v);
+              return <button key={v} className={`type-btn ${on?"on":""}`} onClick={()=>setEditing({...editing,relationship_types:on?types.filter(t=>t!==v):[...types,v]})}>{l}</button>;
+            })}
           </div>
         </div>
-        {editing.relationship_type==="other"&&<div className="fg"><label className="fl">Describe Type</label><input className="fi" value={editing.other_description||""} onChange={e=>setEditing({...editing,other_description:e.target.value})} placeholder="Describe the relationship…"/></div>}
-        <div className="fg"><label className="fl">Next Action</label><input className="fi" value={editing.next_action||""} onChange={e=>setEditing({...editing,next_action:e.target.value})}/></div>
-        <div className="fg"><label className="fl">Due Date</label><input type="date" className="fi" value={editing.next_action_date||""} onChange={e=>setEditing({...editing,next_action_date:e.target.value})}/></div>
+        {(editing.relationship_types||[]).includes("other")&&<div className="fg"><label className="fl">Describe Type</label><input className="fi" value={editing.other_description||""} onChange={e=>setEditing({...editing,other_description:e.target.value})} placeholder="Describe the relationship…"/></div>}
+        {(()=>{
+          const nas=editing.next_actions||[];
+          const [naText,setNaText]=[editing._naText||"",v=>setEditing(p=>({...p,_naText:v}))];
+          const [naDate,setNaDate]=[editing._naDate||"",v=>setEditing(p=>({...p,_naDate:v}))];
+          const addNA=()=>{
+            if(!naText.trim()) return;
+            const entry={id:`na_${uid()}`,text:naText.trim(),date:naDate||null,completed:false};
+            const updated=[entry,...nas];
+            const earliest=updated.filter(a=>!a.completed&&a.date).sort((a,b)=>a.date.localeCompare(b.date))[0];
+            setEditing(p=>({...p,next_actions:updated,next_action:entry.text,next_action_date:earliest?.date||entry.date||"",_naText:"",_naDate:""}));
+          };
+          const toggleNA=(id)=>{
+            const updated=nas.map(a=>a.id===id?{...a,completed:!a.completed}:a);
+            const earliest=updated.filter(a=>!a.completed&&a.date).sort((a,b)=>a.date.localeCompare(b.date))[0];
+            setEditing(p=>({...p,next_actions:updated,next_action_date:earliest?.date||""}));
+          };
+          const deleteNA=(id)=>setEditing(p=>({...p,next_actions:nas.filter(a=>a.id!==id)}));
+          const scrollable=nas.length>3;
+          return <div className="fg">
+            <label className="fl">Next Actions</label>
+            <div style={{display:"flex",gap:6,marginBottom:6}}>
+              <input className="fi" style={{flex:1}} placeholder="New action…" value={naText} onChange={e=>setNaText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addNA()}/>
+              <input type="date" className="fi" style={{width:140}} value={naDate} onChange={e=>setNaDate(e.target.value)}/>
+              <button className="btn btn-blk btn-xs" onClick={addNA}>+ Add</button>
+            </div>
+            {nas.length>0&&<div style={{maxHeight:scrollable?108:undefined,overflowY:scrollable?"auto":"visible",border:"1.5px solid var(--g200)",borderRadius:6}}>
+              {nas.map(a=><div key={a.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",borderBottom:"1px solid var(--g100)",opacity:a.completed?0.45:1,background:a.completed?"var(--g50)":"#fff"}}>
+                <input type="checkbox" checked={a.completed} disabled={a.completed} onChange={()=>!a.completed&&toggleNA(a.id)} style={{cursor:a.completed?"not-allowed":"pointer"}}/>
+                <div style={{flex:1,fontSize:12}}>
+                  <div style={{textDecoration:a.completed?"line-through":"none",fontWeight:600}}>{a.text}</div>
+                  {a.date&&<div style={{fontSize:10,color:"var(--g400)"}}>{fmtDate(a.date)}</div>}
+                </div>
+                <button style={{background:"none",border:"none",cursor:"pointer",color:"var(--fuchsia)",fontWeight:900,fontSize:14,padding:"0 2px"}} onClick={()=>deleteNA(a.id)}>✕</button>
+              </div>)}
+            </div>}
+          </div>;
+        })()}
         <button className="drawer-toggle" onClick={()=>setEditing(prev=>({...prev,_showMore:!prev._showMore}))}>
           {editing._showMore?"▾":"▸"} Show more
         </button>
@@ -1002,7 +1092,17 @@ function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,
         </>}
       </>}
       {eTab==="outreach log"&&<>
-        <TouchpointList touchpoints={editing.touchpoints||[]} onAdd={(tp)=>setEditing({...editing,touchpoints:[...(editing.touchpoints||[]),tp]})}/>
+        <TouchpointList touchpoints={editing.touchpoints||[]} onAdd={(tp)=>{
+          const base={...editing,touchpoints:[...(editing.touchpoints||[]),tp]};
+          if(tp.next_action&&tp.next_action.trim()){
+            const entry={id:`na_${uid()}`,text:tp.next_action.trim(),date:tp.next_action_date||null,completed:false};
+            const updated=[entry,...(editing.next_actions||[])];
+            const earliest=updated.filter(a=>!a.completed&&a.date).sort((a,b)=>a.date.localeCompare(b.date))[0];
+            setEditing({...base,next_actions:updated,next_action:entry.text,next_action_date:earliest?.date||entry.date||""});
+          } else {
+            setEditing(base);
+          }
+        }}/>
       </>}
       {eTab==="events"&&<>
         <div className="fg">
@@ -1043,7 +1143,7 @@ useEffect(()=>{
     onPendingDetailConsumed();
   }
 },[pendingDetail, onPendingDetailConsumed]);
-const blank={first_name:"",last_name:"",org_id:"",email:"",phone:"",instagram_handle:"",website:"",relationship_type:"partner",relationship_status:"cold",notes:"",next_action:"",next_action_date:""};
+const blank={first_name:"",last_name:"",org_id:"",email:"",phone:"",instagram_handle:"",website:"",relationship_types:[],relationship_status:"cold",notes:"",next_action:"",next_action_date:"",next_actions:[]};
   const [nc,setNc]=useState(blank);
 
 // Pre-compute scores once per render, not once per table cell
@@ -1056,12 +1156,13 @@ const blank={first_name:"",last_name:"",org_id:"",email:"",phone:"",instagram_ha
   const filtered=useMemo(()=>contacts.filter(c=>{
     const name=`${c.first_name} ${c.last_name} ${c.title||""}`.toLowerCase();
     if (search&&!name.includes(search.toLowerCase())) return false;
-    if (fType!=="all"&&c.relationship_type!==fType) return false;
+    if (fType!=="all"&&!(c.relationship_types||[c.relationship_type]).includes(fType)) return false;
     if (fStatus!=="all"&&c.relationship_status!==fStatus) return false;
     return true;
   }), [contacts, search, fType, fStatus]);
 
 const [editing,setEditing]=useState(null);
+  const [editingTab,setEditingTab]=useState("overview"); // pre-select tab on open
   const [confirmDelete,setConfirmDelete]=useState(null);
   const [quickLog,setQuickLog]=useState(null); // contact id or null
 
@@ -1096,14 +1197,16 @@ const [editing,setEditing]=useState(null);
           <div className="fg"><label className="fl">Organization</label>
             <SearchSelect options={[{value:"",label:"— None —"},...orgs.map(o=>({value:o.id,label:o.name,meta:ORG_CATS[o.category]||o.category}))]} value={nc.org_id} onChange={v=>setNc({...nc,org_id:v})} placeholder="Search organizations…"/>
           </div>
-          <div className="fg"><label className="fl">Type</label>
+          <div className="fg"><label className="fl">Type <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(select all that apply)</span></label>
             <div className="type-btn-group">
-              {Object.entries(REL_TYPES).map(([v,l])=>(
-                <button key={v} className={`type-btn ${nc.relationship_type===v?"on":""}`} onClick={()=>setNc({...nc,relationship_type:v})}>{l}</button>
-              ))}
+              {Object.entries(REL_TYPES).map(([v,l])=>{
+                const types=nc.relationship_types||[];
+                const on=types.includes(v);
+                return <button key={v} className={`type-btn ${on?"on":""}`} onClick={()=>setNc({...nc,relationship_types:on?types.filter(t=>t!==v):[...types,v]})}>{l}</button>;
+              })}
             </div>
           </div>
-          {nc.relationship_type==="other"&&<div className="fg"><label className="fl">Describe Type</label><input className="fi" value={nc.other_description||""} onChange={e=>setNc({...nc,other_description:e.target.value})} placeholder="Describe the relationship…"/></div>}
+          {(nc.relationship_types||[]).includes("other")&&<div className="fg"><label className="fl">Describe Type</label><input className="fi" value={nc.other_description||""} onChange={e=>setNc({...nc,other_description:e.target.value})} placeholder="Describe the relationship…"/></div>}
           <div className="fg"><label className="fl">Status</label>
             <RadioGroup options={STATUS_OPTS} value={nc.relationship_status} onChange={v=>setNc({...nc,relationship_status:v})}/>
           </div>
@@ -1126,16 +1229,27 @@ const [editing,setEditing]=useState(null);
       {filtered.length===0
         ? <div className="empty"><div className="empty-ico">👤</div><div className="empty-ttl">{contacts.length===0?"No contacts yet":"No results"}</div><div className="empty-txt">{contacts.length===0?"Add contacts manually or import JSON profiles from Claude.":"Try adjusting your filters."}</div></div>
       : <div className="tbl-wrap"><table className="tbl">
-            <thead><tr><th>Name</th><th>Type</th><th>Organization</th><th>Status</th><th>Tier</th><th>Next Action</th><th>Health</th><th></th></tr></thead>
+            <thead><tr><th>Name</th><th>Type</th><th>Organization</th><th>Status</th><th>Next Action</th><th>Health</th><th></th></tr></thead>
             <tbody>
 {filtered.map(c=>{
               const org=orgs.find(o=>o.id===c.org_id);
               const { score, overdue: od } = contactMeta[c.id] || { score:0, overdue:false };              return <tr key={c.id} onClick={()=>setSelected(c.id)}>
-                <td><div style={{fontWeight:700}}>{c.first_name} {c.last_name}{od&&<span style={{marginLeft:6,background:"var(--fuchsia)",color:"#fff",fontSize:8,fontWeight:900,padding:"1px 5px",borderRadius:10}}>!</span>}</div><div style={{fontSize:11,color:"var(--g400)"}}>{c.title}</div></td>
-                <td><span className={c.relationship_type==="mentor"?"type-tag-mentor":"type-tag"}>{REL_TYPES[c.relationship_type]||c.relationship_type}</span></td>
+                <td>{(()=>{
+                  const cEvts=(events||[]).filter(ev=>(ev.contact_ids||[]).includes(c.id));
+                  const confirmed=cEvts.filter(ev=>(ev.confirmed_ids||[]).includes(c.id));
+                  return <div>
+                    <div style={{fontWeight:700,display:"flex",alignItems:"center",gap:5}}>
+                      {c.first_name} {c.last_name}
+                      {od&&<span style={{background:"var(--fuchsia)",color:"#fff",fontSize:8,fontWeight:900,padding:"1px 5px",borderRadius:10}}>!</span>}
+                      {confirmed.length>0&&<span title={`Confirmed: ${confirmed.map(e=>e.name).join(", ")}`} style={{background:"var(--acid)",color:"#000",fontSize:8,fontWeight:900,padding:"1px 5px",borderRadius:10}}>✓ {confirmed.length}</span>}
+                      {(cEvts.length-confirmed.length)>0&&<span title={`Invited: ${cEvts.filter(ev=>!(ev.confirmed_ids||[]).includes(c.id)).map(e=>e.name).join(", ")}`} style={{background:"var(--cyan)",color:"#fff",fontSize:8,fontWeight:900,padding:"1px 5px",borderRadius:10}}>🗓 {cEvts.length-confirmed.length}</span>}
+                    </div>
+                    <div style={{fontSize:11,color:"var(--g400)"}}>{c.title}</div>
+                  </div>;
+                })()}</td>
+                <td><div style={{display:"flex",flexWrap:"wrap",gap:3}}>{(c.relationship_types&&c.relationship_types.length?c.relationship_types:[c.relationship_type]).filter(Boolean).map(t=><span key={t} className="type-tag">{REL_TYPES[t]||t}</span>)}</div></td>
                 <td style={{fontSize:12,color:"var(--g600)"}}>{org?.name||"—"}</td>
                 <td><RelTag status={c.relationship_status}/></td>
-                <td style={{fontSize:11,color:"var(--g600)",fontWeight:700}}>{c.tier||"—"}</td>
                 <td style={{maxWidth:160,fontSize:11,color:"var(--g600)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.next_action||"—"}</td>
                 <td style={{padding:"12px 14px"}}>
                   <div style={{display:"flex",alignItems:"center",gap:6}}>
@@ -1145,8 +1259,9 @@ const [editing,setEditing]=useState(null);
                 </td>
                 <td style={{padding:"12px 14px"}}>
                   <div className="row-actions">
-                    <button className="btn btn-ghost btn-xs" onClick={e=>{e.stopPropagation();setEditing({...c});}}>Edit</button>
+                    <button className="btn btn-ghost btn-xs" onClick={e=>{e.stopPropagation();setEditingTab("overview");setEditing({...c});}}>Edit</button>
                     <button className="btn btn-cyan btn-xs" onClick={e=>{e.stopPropagation();setQuickLog(c.id);}}>+ Log</button>
+                    <button className="btn btn-ghost btn-xs" onClick={e=>{e.stopPropagation();setEditingTab("events");setEditing({...c});}}>+ Event</button>
                     <button className="btn btn-danger btn-xs" onClick={e=>{e.stopPropagation();setConfirmDelete(c);}}>Del</button>
                   </div>
                 </td>
@@ -1161,7 +1276,7 @@ const [editing,setEditing]=useState(null);
         onLog={(cId,tp)=>{ updateContact({...contacts.find(c=>c.id===cId), touchpoints:[...(contacts.find(c=>c.id===cId)?.touchpoints||[]),tp]}); showToast("Touchpoint logged ✓"); }}
         onClose={()=>setQuickLog(null)}
       />}
-{editing&&<ContactEditModal editing={editing} setEditing={setEditing} onSave={saveEdit} orgs={orgs} events={events||[]} onUpdateEvents={onUpdateEvents} onNavigate={setView}/>}
+{editing&&<ContactEditModal editing={editing} setEditing={setEditing} onSave={saveEdit} orgs={orgs} events={events||[]} onUpdateEvents={onUpdateEvents} onNavigate={setView} initialTab={editingTab}/>}
       {confirmDelete&&<ConfirmModal
         message={`Delete ${confirmDelete.first_name} ${confirmDelete.last_name}? This cannot be undone.`}
         onConfirm={()=>{
@@ -1280,14 +1395,12 @@ const [editingOrg,setEditingOrg]=useState(null);
       )}
       {filtered.length===0
         ? <div className="empty"><div className="empty-ico">🏢</div><div className="empty-ttl">No organizations</div><div className="empty-txt">Add organizations manually or import JSON from Claude.</div></div>
-        : <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Organization</th><th>Category</th><th>Status</th><th>People</th><th>Next Action</th><th>Given</th><th></th></tr></thead><tbody>
+        : <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Organization</th><th>Category</th><th>Status</th><th>Next Action</th><th>Given</th><th></th></tr></thead><tbody>
             {filtered.map(o=>{
-              const people=contacts.filter(c=>c.org_id===o.id);
               return <tr key={o.id} onClick={()=>setSelected(o.id)}>
                 <td><div style={{fontWeight:700}}>{o.name}</div><div style={{fontSize:11,color:"var(--g400)"}}>{o.website||""}</div></td>
                 <td><span className="type-tag">{ORG_CATS[o.category]||o.category}</span></td>
                 <td><RelTag status={o.relationship_status}/></td>
-                <td style={{fontSize:12,color:"var(--g600)"}}>{people.length}</td>
                 <td style={{maxWidth:160,fontSize:11,color:"var(--g600)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.next_action||"—"}</td>
 <td style={{fontSize:12}}>{o.financial_relationship?.has_given?fmtMoney(o.financial_relationship.total_given):<span style={{color:"var(--g400)"}}>—</span>}</td>
 <td style={{padding:"12px 14px"}}>
@@ -1478,10 +1591,12 @@ function EventStatusTag({status}) {
 const BLANK_EVENT = () => ({
   id: `evt_${uid()}`,
   name: "", event_date: "", status: "upcoming",
-  location: "", description: "", contact_ids: [], tags: [], notes: "",
+  location: "", description: "", contact_ids: [], confirmed_ids: [], notes: "",
+  checklist: [], next_actions: [],
 });
 
 function EventEditModal({editing,setEditing,onSave,contacts}) {
+  const [eTab,setETab]=useState("overview");
   const contactOpts = contacts.map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`.trim()||c.id,meta:c.title||""}));
   const toggleContact = (cId) => {
     const ids = editing.contact_ids||[];
@@ -1489,22 +1604,102 @@ function EventEditModal({editing,setEditing,onSave,contacts}) {
   };
   const [cSearch,setCSearch]=useState("");
   const filteredC = contactOpts.filter(o=>o.label.toLowerCase().includes(cSearch.toLowerCase()));
+
+  // Checklist helpers
+  const [clText,setClText]=useState(""); const [clDate,setClDate]=useState("");
+  const addChecklistItem = () => {
+    if(!clText.trim()) return;
+    const item={id:uid(),text:clText.trim(),date:clDate||null,completed:false};
+    setEditing({...editing,checklist:[...(editing.checklist||[]),item]});
+    setClText(""); setClDate("");
+  };
+  const toggleChecklist = (id) => {
+    const updated=(editing.checklist||[]).map(i=>i.id===id?{...i,completed:!i.completed}:i);
+    setEditing({...editing,checklist:updated});
+  };
+  const deleteChecklistItem = (id) => setEditing({...editing,checklist:(editing.checklist||[]).filter(i=>i.id!==id)});
+
+  // Next Actions helpers
+  const [naText,setNaText]=useState(""); const [naDate,setNaDate]=useState("");
+  const addNextAction = () => {
+    if(!naText.trim()) return;
+    const item={id:uid(),text:naText.trim(),date:naDate||null,completed:false};
+    setEditing({...editing,next_actions:[...(editing.next_actions||[]),item]});
+    setNaText(""); setNaDate("");
+  };
+  const toggleNextAction = (id) => {
+    const updated=(editing.next_actions||[]).map(i=>i.id===id?{...i,completed:!i.completed}:i);
+    setEditing({...editing,next_actions:updated});
+  };
+  const deleteNextAction = (id) => setEditing({...editing,next_actions:(editing.next_actions||[]).filter(i=>i.id!==id)});
+
+  const active_cl=(editing.checklist||[]).filter(i=>!i.completed);
+  const done_cl=(editing.checklist||[]).filter(i=>i.completed);
+  const active_na=(editing.next_actions||[]).filter(i=>!i.completed);
+  const done_na=(editing.next_actions||[]).filter(i=>i.completed);
+
   return (
     <Modal title={editing._isNew?"Add Event":`Edit — ${editing.name||"Event"}`} wide onClose={()=>setEditing(null)}
       footer={<><button className="btn btn-ghost btn-sm" onClick={()=>setEditing(null)}>Cancel</button><button className="btn btn-blk btn-sm" onClick={onSave}>Save Changes →</button></>}>
-      <div className="frow">
-        <div className="fg"><label className="fl">Event Name</label><input className="fi" value={editing.name||""} onChange={e=>setEditing({...editing,name:e.target.value})} autoFocus/></div>
-        <div className="fg"><label className="fl">Date</label><input type="date" className="fi" value={editing.event_date||""} onChange={e=>setEditing({...editing,event_date:e.target.value})}/></div>
+      <div className="modal-tabs">
+        {["overview","checklist","next actions","contacts"].map(t=><button key={t} className={`modal-tab ${eTab===t?"on":""}`} onClick={()=>setETab(t)}>{t}</button>)}
       </div>
-      <div className="fg"><label className="fl">Status</label><RadioGroup options={EVT_STATUS_OPTS} value={editing.status||"upcoming"} onChange={v=>setEditing({...editing,status:v})}/></div>
-      <div className="fg"><label className="fl">Location</label><input className="fi" value={editing.location||""} onChange={e=>setEditing({...editing,location:e.target.value})}/></div>
-      <div className="fg"><label className="fl">Description</label><textarea className="fta" rows={3} value={editing.description||""} onChange={e=>setEditing({...editing,description:e.target.value})}/></div>
-      <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={2} value={editing.notes||""} onChange={e=>setEditing({...editing,notes:e.target.value})}/></div>
-      <div className="fg"><label className="fl">Tags</label><ChipInput values={editing.tags||[]} onChange={v=>setEditing({...editing,tags:v})}/></div>
-      <div className="fg">
+
+      {eTab==="overview"&&<>
+        <div className="frow">
+          <div className="fg"><label className="fl">Event Name</label><input className="fi" value={editing.name||""} onChange={e=>setEditing({...editing,name:e.target.value})} autoFocus/></div>
+          <div className="fg"><label className="fl">Date</label><input type="date" className="fi" value={editing.event_date||""} onChange={e=>setEditing({...editing,event_date:e.target.value})}/></div>
+        </div>
+        <div className="fg"><label className="fl">Status</label><RadioGroup options={EVT_STATUS_OPTS} value={editing.status||"upcoming"} onChange={v=>setEditing({...editing,status:v})}/></div>
+        <div className="fg"><label className="fl">Location</label><input className="fi" value={editing.location||""} onChange={e=>setEditing({...editing,location:e.target.value})}/></div>
+        <div className="fg"><label className="fl">Description</label><textarea className="fta" rows={3} value={editing.description||""} onChange={e=>setEditing({...editing,description:e.target.value})}/></div>
+        <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={2} value={editing.notes||""} onChange={e=>setEditing({...editing,notes:e.target.value})}/></div>
+      </>}
+
+      {eTab==="checklist"&&<>
+        <div style={{fontSize:11,color:"var(--g400)",marginBottom:12}}>Event day / prep checklist — mark items done during the event.</div>
+        <div style={{maxHeight:220,overflowY:"auto",marginBottom:12}}>
+          {[...active_cl,...done_cl].map(item=>(
+            <div key={item.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}>
+              <input type="checkbox" checked={item.completed} onChange={()=>toggleChecklist(item.id)} style={{accentColor:"var(--cyan)",cursor:"pointer"}}/>
+              <span style={{flex:1,fontSize:12,textDecoration:item.completed?"line-through":"none",color:item.completed?"var(--g400)":"inherit"}}>{item.text}</span>
+              {item.date&&<span style={{fontSize:10,color:"var(--g400)"}}>{fmtDate(item.date)}</span>}
+              <button onClick={()=>deleteChecklistItem(item.id)} style={{background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:14,lineHeight:1,padding:"0 2px"}}>×</button>
+            </div>
+          ))}
+          {(editing.checklist||[]).length===0&&<div style={{fontSize:12,color:"var(--g400)",padding:"10px 0"}}>No checklist items yet.</div>}
+        </div>
+        <div className="frow" style={{alignItems:"flex-end",gap:8}}>
+          <div className="fg"><label className="fl">Item</label><input className="fi" placeholder="Add checklist item…" value={clText} onChange={e=>setClText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addChecklistItem()}/></div>
+          <div style={{width:130,flexShrink:0}}><label className="fl">Due date</label><input type="date" className="fi" value={clDate} onChange={e=>setClDate(e.target.value)}/></div>
+          <button className="btn btn-blk btn-sm" style={{flexShrink:0,marginBottom:1}} onClick={addChecklistItem}>Add</button>
+        </div>
+      </>}
+
+      {eTab==="next actions"&&<>
+        <div style={{fontSize:11,color:"var(--g400)",marginBottom:12}}>Follow-up actions after this event — track to completion.</div>
+        <div style={{maxHeight:220,overflowY:"auto",marginBottom:12}}>
+          {[...active_na,...done_na].map(item=>(
+            <div key={item.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}>
+              <input type="checkbox" checked={item.completed} onChange={()=>toggleNextAction(item.id)} style={{accentColor:"var(--cyan)",cursor:"pointer"}}/>
+              <span style={{flex:1,fontSize:12,textDecoration:item.completed?"line-through":"none",color:item.completed?"var(--g400)":"inherit"}}>{item.text}</span>
+              {item.date&&<span style={{fontSize:10,color:"var(--g400)"}}>{fmtDate(item.date)}</span>}
+              <button onClick={()=>deleteNextAction(item.id)} style={{background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:14,lineHeight:1,padding:"0 2px"}}>×</button>
+            </div>
+          ))}
+          {(editing.next_actions||[]).length===0&&<div style={{fontSize:12,color:"var(--g400)",padding:"10px 0"}}>No next actions yet.</div>}
+        </div>
+        <div className="frow" style={{alignItems:"flex-end",gap:8}}>
+          <div className="fg"><label className="fl">Action</label><input className="fi" placeholder="Add next action…" value={naText} onChange={e=>setNaText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addNextAction()}/></div>
+          <div style={{width:130,flexShrink:0}}><label className="fl">Due date</label><input type="date" className="fi" value={naDate} onChange={e=>setNaDate(e.target.value)}/></div>
+          <button className="btn btn-blk btn-sm" style={{flexShrink:0,marginBottom:1}} onClick={addNextAction}>Add</button>
+        </div>
+      </>}
+
+      {eTab==="contacts"&&<div className="fg">
         <label className="fl">Linked Contacts ({(editing.contact_ids||[]).length})</label>
         <input className="fi" placeholder="Search contacts…" value={cSearch} onChange={e=>setCSearch(e.target.value)} style={{marginBottom:6}}/>
-        <div style={{maxHeight:140,overflowY:"auto",border:"1.5px solid var(--g200)",borderRadius:6}}>
+        <div style={{maxHeight:240,overflowY:"auto",border:"1.5px solid var(--g200)",borderRadius:6}}>
           {filteredC.map(o=>{
             const on=(editing.contact_ids||[]).includes(o.value);
             return <div key={o.value} onClick={()=>toggleContact(o.value)} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",cursor:"pointer",background:on?"var(--cyan-lt)":"#fff",borderBottom:"1px solid var(--g100)"}}>
@@ -1515,15 +1710,22 @@ function EventEditModal({editing,setEditing,onSave,contacts}) {
           })}
           {filteredC.length===0&&<div style={{padding:"10px 12px",fontSize:12,color:"var(--g400)"}}>No contacts found</div>}
         </div>
-      </div>
+      </div>}
     </Modal>
   );
 }
 
-function EventDetailPanel({event,contacts,onClose,onEdit,onDelete,showToast}) {
+function EventDetailPanel({event,contacts,onClose,onEdit,onDelete,showToast,onUpdateEvent,onContactClick}) {
   const mouseDownTarget=useRef(null);
   useEffect(()=>{ const h=(e)=>{ if(e.key==="Escape") onClose(); }; document.addEventListener("keydown",h); return ()=>document.removeEventListener("keydown",h); },[onClose]);
   const linked = contacts.filter(c=>(event.contact_ids||[]).includes(c.id));
+  const onToggleConfirm = (cId) => {
+    const ids=event.confirmed_ids||[];
+    onUpdateEvent({...event, confirmed_ids: ids.includes(cId)?ids.filter(x=>x!==cId):[...ids,cId]});
+  };
+  const onRemoveContact = (cId) => {
+    onUpdateEvent({...event, contact_ids:(event.contact_ids||[]).filter(x=>x!==cId), confirmed_ids:(event.confirmed_ids||[]).filter(x=>x!==cId)});
+  };
   return (
     <div className="detail-overlay"
       onMouseDown={e=>{ mouseDownTarget.current=e.target; }}
@@ -1540,8 +1742,23 @@ function EventDetailPanel({event,contacts,onClose,onEdit,onDelete,showToast}) {
           <div className="dp-row"><EventStatusTag status={event.status}/></div>
           {event.description&&<div className="dp-section"><div className="dp-sect-lbl">Description</div><p style={{fontSize:12,lineHeight:1.7}}>{event.description}</p></div>}
           {event.notes&&<div className="dp-section"><div className="dp-sect-lbl">Notes</div><p style={{fontSize:12,lineHeight:1.7}}>{event.notes}</p></div>}
-          {linked.length>0&&<div className="dp-section"><div className="dp-sect-lbl">Contacts ({linked.length})</div>{linked.map(c=><div key={c.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}><div style={{flex:1}}><div style={{fontSize:13,fontWeight:700}}>{c.first_name} {c.last_name}</div><div style={{fontSize:11,color:"var(--g600)"}}>{c.title}</div></div><RelTag status={c.relationship_status}/></div>)}</div>}
-          {(event.tags||[]).length>0&&<div className="dp-section"><div className="dp-sect-lbl">Tags</div><div style={{display:"flex",flexWrap:"wrap",gap:4}}>{event.tags.map(t=><span key={t} style={{background:"var(--g100)",color:"var(--g600)",fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:20,textTransform:"uppercase"}}>{t}</span>)}</div></div>}
+          {linked.length>0&&<div className="dp-section">
+            <div className="dp-sect-lbl">Contacts ({linked.length})</div>
+            {linked.map(c=>{
+              const confirmed=(event.confirmed_ids||[]).includes(c.id);
+              return <div key={c.id} onClick={()=>onContactClick&&onContactClick(c)} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)",cursor:onContactClick?"pointer":"default"}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:700}}>{c.first_name} {c.last_name}</div>
+                  <div style={{fontSize:11,color:"var(--g600)"}}>{c.title}</div>
+                </div>
+                <RelTag status={c.relationship_status}/>
+                <button onClick={ev=>{ev.stopPropagation();onToggleConfirm(c.id);}} style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:20,border:"1.5px solid",cursor:"pointer",background:confirmed?"var(--cyan)":"transparent",color:confirmed?"#fff":"var(--g400)",borderColor:confirmed?"var(--cyan)":"var(--g300)"}}>
+                  {confirmed?"✓ Confirmed":"RSVP"}
+                </button>
+                <button onClick={ev=>{ev.stopPropagation();onRemoveContact(c.id);}} style={{background:"none",border:"none",cursor:"pointer",color:"var(--g400)",fontSize:16,lineHeight:1,padding:"0 2px"}} title="Remove from event">×</button>
+              </div>;
+            })}
+          </div>}
           <div style={{marginTop:16}}><button className="btn btn-danger btn-sm" onClick={onDelete}>Delete Event</button></div>
         </div>
       </div>
@@ -1549,13 +1766,14 @@ function EventDetailPanel({event,contacts,onClose,onEdit,onDelete,showToast}) {
   );
 }
 
-function EventsView({events,contacts,onUpdate,onDelete,showToast}) {
+function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateContacts}) {
   const [search,setSearch]=useState("");
   const [fStatus,setFStatus]=useState("all");
   const [selected,setSelected]=useState(null);
   const [adding,setAdding]=useState(false);
   const [editing,setEditing]=useState(null);
   const [confirmDel,setConfirmDel]=useState(null);
+  const [inlineContact,setInlineContact]=useState(null);
 
   const filtered = useMemo(()=>{
     return events.filter(e=>{
@@ -1588,6 +1806,17 @@ function EventsView({events,contacts,onUpdate,onDelete,showToast}) {
     onDelete(id);
     setSelected(null);
     setConfirmDel(null);
+  };
+
+  const handleUpdateEvent = (updated) => {
+    onUpdate(events.map(e=>e.id===updated.id?updated:e));
+  };
+
+  const handleContactClick = (c) => { setInlineContact({...c}); };
+  const handleSaveInlineContact = () => {
+    if(!inlineContact||!onUpdateContacts) return;
+    onUpdateContacts(inlineContact);
+    setInlineContact(null);
   };
 
   return (
@@ -1628,9 +1857,10 @@ function EventsView({events,contacts,onUpdate,onDelete,showToast}) {
           </tbody>
         </table>
       </div>
-      {selectedEvent&&<EventDetailPanel event={selectedEvent} contacts={contacts} onClose={()=>setSelected(null)} onEdit={()=>setEditing({...selectedEvent})} onDelete={()=>setConfirmDel(selectedEvent.id)} showToast={showToast}/>}
+      {selectedEvent&&<EventDetailPanel event={selectedEvent} contacts={contacts} onClose={()=>setSelected(null)} onEdit={()=>setEditing({...selectedEvent})} onDelete={()=>setConfirmDel(selectedEvent.id)} showToast={showToast} onUpdateEvent={handleUpdateEvent} onContactClick={handleContactClick}/>}
       {editing&&<EventEditModal editing={editing} setEditing={setEditing} onSave={handleSave} contacts={contacts}/>}
       {confirmDel&&<ConfirmModal message={`Delete "${events.find(e=>e.id===confirmDel)?.name||"this event"}"? This cannot be undone.`} onConfirm={()=>handleDelete(confirmDel)} onCancel={()=>setConfirmDel(null)}/>}
+      {inlineContact&&<ContactEditModal editing={inlineContact} setEditing={setInlineContact} onSave={handleSaveInlineContact} orgs={orgs||[]} events={events} onUpdateEvents={onUpdate} onNavigate={()=>{}}/>}
     </div>
   );
 }
@@ -1771,10 +2001,10 @@ if (dbError) return (
     <div className="app">
 <Sidebar view={view} setView={(v)=>{setPendingDetail(null);setView(v);}} contacts={contacts} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)}/>
       <main className="main">
-        {view==="dashboard"&&<DashboardView contacts={contacts} orgs={orgs} setView={setView} onOpenContact={openContact}/>}
+        {view==="dashboard"&&<DashboardView contacts={contacts} orgs={orgs} events={events} setView={setView} onUpdateContacts={saveContacts} onUpdateEvents={saveEvents} showToast={showToast}/>}
 {view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail} setView={setView}/>}
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
-        {view==="events"&&<EventsView events={events} contacts={contacts} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast}/>}
+{view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))}/>}
         {view==="outreach"&&<OutreachView contacts={contacts} orgs={orgs}/>}
         {view==="import"&&<ImportView contacts={contacts} orgs={orgs} onImportContact={importContact} onImportOrg={importOrg} showToast={showToast}/>}
         {view==="settings"&&<SettingsView profile={profile} onUpdate={saveProfile} showToast={showToast}/>}

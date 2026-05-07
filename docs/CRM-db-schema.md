@@ -30,18 +30,19 @@ lives in the `data` JSONB blob and is accessed via the merge pattern.
 All fields from the SQL columns above are duplicated inside `data` as the
 source of truth for the UI merge pattern. Additional JSONB-only fields:
 
-| Key                         | Type             | Notes                                       |
-|-----------------------------|------------------|---------------------------------------------|
-| `phone`                     | string           | Nullable                                    |
-| `relationship_type`         | string           | Enum: `partner` `community_builder` `other` |
-| `other_description`         | string           | Free text when `relationship_type` is `other` |
-| `website`                   | string           | Nullable                                    |
-| `instagram_handle`          | string           | Nullable                                    |
-| `notes`                     | string           | Free text                                   |
-| `next_action`               | string           | Description of the next action              |
-| `touchpoints`               | Touchpoint[]     | See Touchpoint schema below                 |
-| `financial_relationship`    | FinancialRel     | See FinancialRel schema below               |
-| `createdAt`                 | ISO string       | Maps from SQL `created_at` on merge         |
+| Key                         | Type             | Notes                                                           |
+|-----------------------------|------------------|-----------------------------------------------------------------|
+| `phone`                     | string           | Nullable                                                        |
+| `relationship_types`        | string[]         | Multi-select. Enum: `music` `art` `event_host` `partner` `community_builder` `other`. Legacy single-string coerced to array on read. |
+| `other_description`         | string           | Free text when `relationship_types` includes `other`            |
+| `website`                   | string           | Nullable                                                        |
+| `instagram_handle`          | string           | Nullable                                                        |
+| `notes`                     | string           | Free text                                                       |
+| `next_action`               | string           | Description of the next action (legacy / touchpoint append target) |
+| `next_actions`              | NextAction[]     | Multi-action queue. See NextAction schema below                 |
+| `touchpoints`               | Touchpoint[]     | See Touchpoint schema below                                     |
+| `financial_relationship`    | FinancialRel     | See FinancialRel schema below                                   |
+| `createdAt`                 | ISO string       | Maps from SQL `created_at` on merge                             |
 
 ---
 
@@ -53,7 +54,7 @@ source of truth for the UI merge pattern. Additional JSONB-only fields:
 | `id`                | text PK     | Format: `org_` prefix. e.g. `org_brooklyn_org` |
 | `name`              | text        | Promoted for sort/search               |
 | `category`          | text        | Enum: `funder` `partner` `vendor` `media` `government` |
-| `relationship_status` | text      | Enum: `cold` `warm` `active`  |
+| `relationship_status` | text      | Enum: `cold` `cool` `warm` `active`  |
 | `next_action_date`  | date        | ISO string. Used for overdue queries.  |
 | `created_at`        | timestamptz | Set on insert                          |
 | `updated_at`        | timestamptz | Set on every upsert                    |
@@ -158,6 +159,29 @@ source of truth for the UI merge pattern. Additional JSONB-only fields:
 ```
 > Lives inside `data.financial_relationship` on both contacts and orgs.
 
+### NextAction
+```json
+{
+  "id":        "uid-generated string",
+  "text":      "Send follow-up email",
+  "date":      "2026-05-15",
+  "completed": false
+}
+```
+> Lives inside `data.next_actions[]` on contacts and events, and `data.checklist[]` on events.
+> `date` is nullable. `completed: true` items are greyed out, visible, and uncheckkable in the UI.
+> The earliest active (completed: false) `date` value is promoted to the SQL `next_action_date` column on save.
+
+### Link (event only)
+```json
+{
+  "id":    "uid-generated string",
+  "label": "RSVP Form",
+  "url":   "https://example.com/rsvp"
+}
+```
+> Lives inside `data.links[]` on events only. Client-rendered. No FK.
+
 ---
 
 ## Merge Pattern (The Bridge Rule)
@@ -218,7 +242,11 @@ extracted into their SQL columns in the same upsert row.
 | `location` | string | Venue / address |
 | `description` | string | Free text |
 | `contact_ids` | string[] | Array of `ind_` IDs — client-side join, no FK |
+| `confirmed_ids` | string[] | Subset of `contact_ids`. Confirmed RSVPs. No FK. |
 | `tags` | string[] | |
+| `links` | Link[] | See Link schema below |
+| `checklist` | NextAction[] | Pre-event task checklist. See NextAction schema below |
+| `next_actions` | NextAction[] | Post-event or general action queue |
 | `notes` | string | |
 
 ### Merge Pattern
