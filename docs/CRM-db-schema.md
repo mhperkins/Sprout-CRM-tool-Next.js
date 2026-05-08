@@ -1,6 +1,6 @@
 # docs/db-schema.md
-# Sprout CRM — Database Schema Reference
-# Version: 1.0 | Session: 6
+# Sprout CRM — Database Schema Reference# Version: 1.1 | Session: 8
+# Version: 1.1 | Session: 8
 
 This file is the authoritative mapping of SQL columns vs. `data` JSONB keys for
 all Supabase tables. Claude reads this to know where each field lives.
@@ -20,7 +20,7 @@ lives in the `data` JSONB blob and is accessed via the merge pattern.
 | `first_name`        | text        | Promoted for sort/search               |
 | `last_name`         | text        | Promoted for sort/search               |
 | `email`             | text        | Nullable                               |
-| `relationship_status` | text      | Enum: `cold` `warm` `active` `declined` |
+| `relationship_status` | text      | Enum: `cold` `cool` `warm` `active`    |
 | `next_action_date`  | date        | ISO string. Used for overdue queries.  |
 | `created_at`        | timestamptz | Set on insert                          |
 | `updated_at`        | timestamptz | Set on every upsert                    |
@@ -37,11 +37,12 @@ source of truth for the UI merge pattern. Additional JSONB-only fields:
 | `website`                   | string           | Nullable                                                        |
 | `instagram_handle`          | string           | Nullable                                                        |
 | `notes`                     | string           | Free text                                                       |
-| `next_action`               | string           | Description of the next action (legacy / touchpoint append target) |
-| `next_actions`              | NextAction[]     | Multi-action queue. See NextAction schema below                 |
-| `touchpoints`               | Touchpoint[]     | See Touchpoint schema below                                     |
-| `financial_relationship`    | FinancialRel     | See FinancialRel schema below                                   |
-| `createdAt`                 | ISO string       | Maps from SQL `created_at` on merge                             |
+| `next_action`               | string           | Legacy single-action field. Still written by touchpoint log.    |
+| `next_actions`              | NextAction[]     | Multi-action queue. See NextAction schema below.                |
+| `next_actions_log`          | object[]         | Archive of completed/superseded actions. Shape: `{ text, date, loggedAt, completed }`. Passthrough — not in Zod schema. v2: consolidate into `next_actions[]`. |
+| `touchpoints`               | Touchpoint[]     | See Touchpoint schema below.                                    |
+| `financial_relationship`    | FinancialRel     | See FinancialRel schema below.                                  |
+| `createdAt`                 | ISO string       | Maps from SQL `created_at` on merge.                            |
 
 ---
 
@@ -68,10 +69,13 @@ source of truth for the UI merge pattern. Additional JSONB-only fields:
 | `email`                     | string           | Nullable                                    |
 | `instagram_handle`          | string           | Nullable                                    |
 | `notes`                     | string           | Free text                                   |
-| `next_action`               | string           | Description of the next action              |
-| `touchpoints`               | Touchpoint[]     | See Touchpoint schema below                 |
-| `financial_relationship`    | FinancialRel     | See FinancialRel schema below               |
-| `createdAt`                 | ISO string       | Maps from SQL `created_at` on merge         |
+| `next_action`               | string           | Legacy single-action field. Still written by touchpoint log. |
+| `next_action_date`          | string           | Legacy date field. Written alongside `next_action`.          |
+| `next_actions`              | NextAction[]     | Multi-action queue. Populated via touchpoint dual-write.     |
+| `next_actions_log`          | object[]         | Archive of completed/superseded actions. Same pattern as contacts. Passthrough — not in Zod schema. |
+| `touchpoints`               | Touchpoint[]     | See Touchpoint schema below.                |
+| `financial_relationship`    | FinancialRel     | See FinancialRel schema below.              |
+| `createdAt`                 | ISO string       | Maps from SQL `created_at` on merge.        |
 
 ---
 
