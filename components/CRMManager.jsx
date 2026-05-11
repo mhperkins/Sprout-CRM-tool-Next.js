@@ -270,7 +270,8 @@ const STYLES = `
   .type-btn:hover { border-color:var(--cyan); color:var(--black); }
   .type-btn.on { background:var(--black); border-color:var(--black); color:#fff; }
 
-  .modal-tabs { display:flex; border-bottom:2px solid var(--g200); margin:-17px -21px 18px; padding:0 21px; gap:1px; }
+  .modal-tabs { display:flex; border-bottom:2px solid var(--g200); margin:0 0 18px; padding:0; gap:1px; }
+  .modal-tabs.in-modal { margin:-17px -21px 18px; padding:0 21px; }
   .modal-tab { padding:10px 14px; border:none; background:transparent; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--g400); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; font-family:'Lato',sans-serif; transition:all 0.12s; }
   .modal-tab:hover { color:var(--black); }
   .modal-tab.on { color:var(--black); border-bottom-color:var(--cyan); }
@@ -1046,7 +1047,7 @@ function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,
   return (
     <Modal title={`Edit — ${editing.first_name} ${editing.last_name}`} wide onClose={()=>setEditing(null)}
       footer={<><button className="btn btn-ghost btn-sm" onClick={()=>setEditing(null)}>Cancel</button><button className="btn btn-blk btn-sm" onClick={onSave}>Save Changes →</button></>}>
-      <div className="modal-tabs">
+      <div className="modal-tabs in-modal">
         {["overview","outreach log","events"].map(t=><button key={t} className={`modal-tab ${eTab===t?"on":""}`} onClick={()=>setETab(t)}>{t}</button>)}
       </div>
       {eTab==="overview"&&<>
@@ -1335,7 +1336,7 @@ function OrgEditModal({editingOrg,setEditingOrg,onSave}) {
   return (
     <Modal title={`Edit — ${editingOrg.name}`} wide onClose={()=>setEditingOrg(null)}
       footer={<><button className="btn btn-ghost btn-sm" onClick={()=>setEditingOrg(null)}>Cancel</button><button className="btn btn-blk btn-sm" onClick={onSave}>Save Changes →</button></>}>
-      <div className="modal-tabs">
+      <div className="modal-tabs in-modal">
         {["overview","touchpoint log"].map(t=><button key={t} className={`modal-tab ${oTab===t?"on":""}`} onClick={()=>setOTab(t)}>{t}</button>)}
       </div>
       {oTab==="overview"&&<>
@@ -1630,10 +1631,10 @@ const BLANK_EVENT = () => ({
   id: `evt_${uid()}`,
   name: "", event_date: "", status: "upcoming",
   location: "", description: "", contact_ids: [], confirmed_ids: [], notes: "",
-  checklist: [], next_actions: [],
+  checklist: [], next_actions: [], links: [],
 });
 
-function EventEditModal({editing,setEditing,onSave,contacts}) {
+function EventEditPage({editing,setEditing,onSave,onCancel,contacts}) {
   const [eTab,setETab]=useState("overview");
   const contactOpts = contacts.map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`.trim()||c.id,meta:c.title||""}));
   const toggleContact = (cId) => {
@@ -1671,16 +1672,43 @@ function EventEditModal({editing,setEditing,onSave,contacts}) {
   };
   const deleteNextAction = (id) => setEditing({...editing,next_actions:(editing.next_actions||[]).filter(i=>i.id!==id)});
 
+  // Links helpers
+  const [lkUrl,setLkUrl]=useState(""); const [lkLabel,setLkLabel]=useState("");
+  const addLink = () => {
+    if(!lkUrl.trim()) return;
+    const item={id:uid(),url:lkUrl.trim(),label:lkLabel.trim()};
+    setEditing({...editing,links:[...(editing.links||[]),item]});
+    setLkUrl(""); setLkLabel("");
+  };
+  const deleteLink = (id) => setEditing({...editing,links:(editing.links||[]).filter(l=>l.id!==id)});
+
   const active_cl=(editing.checklist||[]).filter(i=>!i.completed);
   const done_cl=(editing.checklist||[]).filter(i=>i.completed);
   const active_na=(editing.next_actions||[]).filter(i=>!i.completed);
   const done_na=(editing.next_actions||[]).filter(i=>i.completed);
 
   return (
-    <Modal title={editing._isNew?"Add Event":`Edit — ${editing.name||"Event"}`} wide onClose={()=>setEditing(null)}
-      footer={<><button className="btn btn-ghost btn-sm" onClick={()=>setEditing(null)}>Cancel</button><button className="btn btn-blk btn-sm" onClick={onSave}>Save Changes →</button></>}>
+    <div className="page">
+      <div className="pg-hd">
+        <div>
+          {!editing._isNew&&<div style={{fontSize:12,color:"var(--g500)",marginBottom:6}}>
+            <span style={{cursor:"pointer",color:"var(--cyan)"}} onClick={onCancel}>Events</span>
+            <span style={{margin:"0 6px",color:"var(--g400)"}}>›</span>
+            <span style={{cursor:"pointer",color:"var(--cyan)"}} onClick={onCancel}>{editing.name||"Event"}</span>
+            <span style={{margin:"0 6px",color:"var(--g400)"}}>›</span>
+            <span>Edit</span>
+          </div>}
+          {!editing._isNew&&<button className="btn btn-ghost btn-sm" style={{marginBottom:6}} onClick={onCancel}>← Back to detail</button>}
+          <div className="pg-ttl">{editing._isNew?"Add Event":`Edit — ${editing.name||"Event"}`}</div>
+          <div style={{fontSize:12,color:"var(--g500)",marginTop:2}}>Changes saved optimistically</div>
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <button className="btn btn-ghost btn-sm" onClick={onCancel}>Cancel</button>
+          <button className="btn btn-blk btn-sm" onClick={onSave}>Save Changes →</button>
+        </div>
+      </div>
       <div className="modal-tabs">
-        {["overview","checklist","next actions","contacts"].map(t=><button key={t} className={`modal-tab ${eTab===t?"on":""}`} onClick={()=>setETab(t)}>{t}</button>)}
+        {["overview","checklist","next actions","contacts","links"].map(t=><button key={t} className={`modal-tab ${eTab===t?"on":""}`} onClick={()=>setETab(t)}>{t}</button>)}
       </div>
 
       {eTab==="overview"&&<>
@@ -1696,7 +1724,7 @@ function EventEditModal({editing,setEditing,onSave,contacts}) {
 
       {eTab==="checklist"&&<>
         <div style={{fontSize:11,color:"var(--g400)",marginBottom:12}}>Event day / prep checklist — mark items done during the event.</div>
-        <div style={{maxHeight:220,overflowY:"auto",marginBottom:12}}>
+        <div style={{maxHeight:340,overflowY:"auto",marginBottom:12}}>
           {[...active_cl,...done_cl].map(item=>(
             <div key={item.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}>
               <input type="checkbox" checked={item.completed} onChange={()=>toggleChecklist(item.id)} style={{accentColor:"var(--cyan)",cursor:"pointer"}}/>
@@ -1716,7 +1744,7 @@ function EventEditModal({editing,setEditing,onSave,contacts}) {
 
       {eTab==="next actions"&&<>
         <div style={{fontSize:11,color:"var(--g400)",marginBottom:12}}>Follow-up actions after this event — track to completion.</div>
-        <div style={{maxHeight:220,overflowY:"auto",marginBottom:12}}>
+        <div style={{maxHeight:340,overflowY:"auto",marginBottom:12}}>
           {[...active_na,...done_na].map(item=>(
             <div key={item.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}>
               <input type="checkbox" checked={item.completed} onChange={()=>toggleNextAction(item.id)} style={{accentColor:"var(--cyan)",cursor:"pointer"}}/>
@@ -1737,7 +1765,7 @@ function EventEditModal({editing,setEditing,onSave,contacts}) {
       {eTab==="contacts"&&<div className="fg">
         <label className="fl">Linked Contacts ({(editing.contact_ids||[]).length})</label>
         <input className="fi" placeholder="Search contacts…" value={cSearch} onChange={e=>setCSearch(e.target.value)} style={{marginBottom:6}}/>
-        <div style={{maxHeight:240,overflowY:"auto",border:"1.5px solid var(--g200)",borderRadius:6}}>
+        <div style={{maxHeight:360,overflowY:"auto",border:"1.5px solid var(--g200)",borderRadius:6}}>
           {filteredC.map(o=>{
             const on=(editing.contact_ids||[]).includes(o.value);
             return <div key={o.value} onClick={()=>toggleContact(o.value)} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",cursor:"pointer",background:on?"var(--cyan-lt)":"#fff",borderBottom:"1px solid var(--g100)"}}>
@@ -1749,57 +1777,259 @@ function EventEditModal({editing,setEditing,onSave,contacts}) {
           {filteredC.length===0&&<div style={{padding:"10px 12px",fontSize:12,color:"var(--g400)"}}>No contacts found</div>}
         </div>
       </div>}
-    </Modal>
+
+      {eTab==="links"&&<>
+        <div style={{fontSize:11,color:"var(--g400)",marginBottom:12}}>Store Google Docs, Drive folders, shared resources, and reference URLs for this event.</div>
+        <div style={{marginBottom:12}}>
+          {(editing.links||[]).length===0&&<div style={{fontSize:12,color:"var(--g400)",padding:"10px 0"}}>No links yet.</div>}
+          {(editing.links||[]).map(l=>{
+            const isDoc=l.url.includes("docs.google.com");
+            const isFolder=l.url.includes("drive.google.com");
+            const iconBg=isDoc?"rgba(115,196,214,0.15)":isFolder?"var(--acid-lt)":"var(--g100)";
+            const iconColor=isDoc?"#155e6e":isFolder?"#3a3d00":"var(--g600)";
+            const iconChar=isDoc?"D":isFolder?"F":"↗";
+            return (
+              <div key={l.id} onClick={()=>window.open(l.url,"_blank","noreferrer")} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",marginBottom:6,border:"1.5px solid var(--g200)",borderRadius:8,background:"#fff",boxShadow:"var(--sh-sm)",cursor:"pointer"}}>
+                <div style={{width:28,height:28,borderRadius:6,background:iconBg,color:iconColor,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,flexShrink:0}}>{iconChar}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:12,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{l.label||l.url}</div>
+                  {l.label&&<div style={{fontSize:10,color:"var(--g400)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{l.url}</div>}
+                </div>
+                <span style={{color:"var(--g400)",fontSize:13,flexShrink:0,padding:"4px"}}>↗</span>
+                <button onClick={ev=>{ev.stopPropagation();deleteLink(l.id);}} style={{background:"none",border:"none",cursor:"pointer",color:"var(--g400)",fontSize:16,lineHeight:1,padding:"0 2px",flexShrink:0}} title="Remove">×</button>
+              </div>
+            );
+          })}
+        </div>
+        <div className="frow" style={{alignItems:"flex-end",gap:8}}>
+          <div className="fg"><label className="fl">URL *</label><input className="fi" placeholder="https://…" value={lkUrl} onChange={e=>setLkUrl(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addLink()}/></div>
+          <div className="fg"><label className="fl">Label (optional)</label><input className="fi" placeholder="e.g. RSVP Form" value={lkLabel} onChange={e=>setLkLabel(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addLink()}/></div>
+          <button className="btn btn-blk btn-sm" style={{flexShrink:0,marginBottom:1}} onClick={addLink}>Add</button>
+        </div>
+      </>}
+    </div>
   );
 }
 
-function EventDetailPanel({event,contacts,onClose,onEdit,onDelete,showToast,onUpdateEvent,onContactClick}) {
-  const mouseDownTarget=useRef(null);
-  useEffect(()=>{ const h=(e)=>{ if(e.key==="Escape") onClose(); }; document.addEventListener("keydown",h); return ()=>document.removeEventListener("keydown",h); },[onClose]);
+function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,onContactClick}) {
   const linked = contacts.filter(c=>(event.contact_ids||[]).includes(c.id));
+  const today=new Date().toISOString().slice(0,10);
+
+  // contacts modal
+  const [showContactsModal,setShowContactsModal]=useState(false);
+
+  // calendar state — default to event month, else current month
+  const defaultMonth=(event.event_date||today).slice(0,7);
+  const [calMonth,setCalMonth]=useState(defaultMonth);
+  const [popover,setPopover]=useState(null); // {itemId}
+
   const onToggleConfirm = (cId) => {
     const ids=event.confirmed_ids||[];
     onUpdateEvent({...event, confirmed_ids: ids.includes(cId)?ids.filter(x=>x!==cId):[...ids,cId]});
   };
-  const onRemoveContact = (cId) => {
-    onUpdateEvent({...event, contact_ids:(event.contact_ids||[]).filter(x=>x!==cId), confirmed_ids:(event.confirmed_ids||[]).filter(x=>x!==cId)});
+  const onToggleChecklist = (id) => {
+    const updated=(event.checklist||[]).map(i=>i.id===id?{...i,completed:!i.completed}:i);
+    onUpdateEvent({...event, checklist:updated});
   };
-  return (
-    <div className="detail-overlay"
-      onMouseDown={e=>{ mouseDownTarget.current=e.target; }}
-      onClick={e=>{ if(e.target===e.currentTarget&&mouseDownTarget.current===e.currentTarget) onClose(); }}>
-      <div className="detail-panel">
-        <div className="dp-hd">
-          <div><div className="dp-name">{event.name||"(Unnamed Event)"}</div><div className="dp-sub">{fmtDate(event.event_date)}{event.location?` · ${event.location}`:""}</div></div>
-          <div style={{display:"flex",gap:8,alignItems:"center"}}>
-            <button className="btn btn-ghost btn-sm" onClick={onEdit}>Edit</button>
-            <button className="dp-close" onClick={onClose}>×</button>
-          </div>
+
+  const cl=event.checklist||[];
+  const clTotal=cl.length;
+  const clDone=cl.filter(i=>i.completed).length;
+  const clWithDate=cl.filter(i=>i.date);
+  const clNoDate=cl.filter(i=>!i.date);
+
+  const avatarColors=["#2dd4bf","#818cf8","#fb923c","#34d399","#f472b6","#60a5fa"];
+  const avatarBg=(c)=>avatarColors[(c.first_name||"").charCodeAt(0)%avatarColors.length];
+
+  // calendar helpers
+  const [calYear,calMonthIdx]=calMonth.split("-").map(Number);
+  const prevMonth=()=>{
+    const d=new Date(calYear,calMonthIdx-1,1);
+    d.setMonth(d.getMonth()-1);
+    setCalMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`);
+    setPopover(null);
+  };
+  const nextMonth=()=>{
+    const d=new Date(calYear,calMonthIdx-1,1);
+    d.setMonth(d.getMonth()+1);
+    setCalMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`);
+    setPopover(null);
+  };
+  const daysInMonth=new Date(calYear,calMonthIdx,0).getDate();
+  const firstDow=new Date(calYear,calMonthIdx-1,1).getDay();
+  const monthLabel=new Date(calYear,calMonthIdx-1,1).toLocaleString("default",{month:"long",year:"numeric"});
+
+  // map date→items for this month
+  const itemsByDay={};
+  clWithDate.forEach(item=>{
+    if(item.date.slice(0,7)===calMonth) {
+      const day=parseInt(item.date.slice(8,10),10);
+      if(!itemsByDay[day]) itemsByDay[day]=[];
+      itemsByDay[day].push(item);
+    }
+  });
+
+  const popoverItem=popover?cl.find(i=>i.id===popover.itemId):null;
+
+  const ContactRow=({c})=>{
+    const confirmed=(event.confirmed_ids||[]).includes(c.id);
+    const initials=((c.first_name||"").charAt(0)+(c.last_name||"").charAt(0)).toUpperCase();
+    return (
+      <div onClick={()=>onContactClick&&onContactClick(c)} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 0",borderBottom:"1px solid var(--g100)",cursor:onContactClick?"pointer":"default"}}>
+        <div style={{width:32,height:32,borderRadius:"50%",background:avatarBg(c),display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:"#fff",flexShrink:0}}>{initials}</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:13,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.first_name} {c.last_name}</div>
+          <div style={{fontSize:11,color:"var(--g600)"}}>{c.title}</div>
         </div>
-        <div className="dp-body">
-          <div className="dp-row"><EventStatusTag status={event.status}/></div>
-          {event.description&&<div className="dp-section"><div className="dp-sect-lbl">Description</div><p style={{fontSize:12,lineHeight:1.7}}>{event.description}</p></div>}
-          {event.notes&&<div className="dp-section"><div className="dp-sect-lbl">Notes</div><p style={{fontSize:12,lineHeight:1.7}}>{event.notes}</p></div>}
-          {linked.length>0&&<div className="dp-section">
-            <div className="dp-sect-lbl">Contacts ({linked.length})</div>
-            {linked.map(c=>{
-              const confirmed=(event.confirmed_ids||[]).includes(c.id);
-              return <div key={c.id} onClick={()=>onContactClick&&onContactClick(c)} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)",cursor:onContactClick?"pointer":"default"}}>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:13,fontWeight:700}}>{c.first_name} {c.last_name}</div>
-                  <div style={{fontSize:11,color:"var(--g600)"}}>{c.title}</div>
-                </div>
-                <RelTag status={c.relationship_status}/>
-                <button onClick={ev=>{ev.stopPropagation();onToggleConfirm(c.id);}} style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:20,border:"1.5px solid",cursor:"pointer",background:confirmed?"var(--cyan)":"transparent",color:confirmed?"#fff":"var(--g400)",borderColor:confirmed?"var(--cyan)":"var(--g300)"}}>
-                  {confirmed?"✓ Confirmed":"RSVP"}
-                </button>
-                <button onClick={ev=>{ev.stopPropagation();onRemoveContact(c.id);}} style={{background:"none",border:"none",cursor:"pointer",color:"var(--g400)",fontSize:16,lineHeight:1,padding:"0 2px"}} title="Remove from event">×</button>
-              </div>;
-            })}
-          </div>}
-          <div style={{marginTop:16}}><button className="btn btn-danger btn-sm" onClick={onDelete}>Delete Event</button></div>
+        <button onClick={ev=>{ev.stopPropagation();onToggleConfirm(c.id);}} style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:20,border:"1.5px solid",cursor:"pointer",flexShrink:0,background:confirmed?"var(--cyan)":"transparent",color:confirmed?"#fff":"var(--g400)",borderColor:confirmed?"var(--cyan)":"var(--g300)"}}>
+          {confirmed?"✓ Confirmed":"RSVP"}
+        </button>
+      </div>
+    );
+  };
+
+  return (
+    <div className="page" onClick={()=>popover&&setPopover(null)}>
+      {/* PAGE HEADER */}
+      <div className="pg-hd">
+        <div>
+          <div style={{fontSize:12,color:"var(--g500)",marginBottom:6}}>
+            <span style={{cursor:"pointer",color:"var(--cyan)"}} onClick={onBack}>Events</span>
+            <span style={{margin:"0 6px",color:"var(--g400)"}}>›</span>
+            <span>{event.name||"(Unnamed Event)"}</span>
+          </div>
+          <div className="pg-ttl">{event.name||"(Unnamed Event)"}</div>
+          <div className="pg-sub">{fmtDate(event.event_date)}{event.location?` · ${event.location}`:""}</div>
+        </div>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <button className="btn btn-ghost btn-sm" onClick={onEdit}>Edit Event</button>
+          <button className="btn btn-danger btn-sm" onClick={onDelete}>Delete</button>
         </div>
       </div>
+      <div style={{marginBottom:16}}><EventStatusTag status={event.status}/></div>
+
+      {/* TOP TWO-COLUMN: info left, contacts right */}
+      <div style={{display:"flex",gap:24,alignItems:"flex-start",marginBottom:24}}>
+        <div style={{flex:"1 1 0",minWidth:0}}>
+          {event.description&&<div className="dp-section"><div className="dp-sect-lbl">Description</div><p style={{fontSize:12,lineHeight:1.7,margin:0}}>{event.description}</p></div>}
+          {event.notes&&<div className="dp-section"><div className="dp-sect-lbl">Notes</div><p style={{fontSize:12,lineHeight:1.7,margin:0}}>{event.notes}</p></div>}
+          {(event.links||[]).length>0&&<div className="dp-section">
+            <div className="dp-sect-lbl">Links</div>
+            {(event.links||[]).map(l=>{
+              const isDoc=l.url.includes("docs.google.com");
+              const isFolder=l.url.includes("drive.google.com");
+              const iconBg=isDoc?"rgba(115,196,214,0.15)":isFolder?"var(--acid-lt)":"var(--g100)";
+              const iconColor=isDoc?"#155e6e":isFolder?"#3a3d00":"var(--g600)";
+              const iconChar=isDoc?"D":isFolder?"F":"↗";
+              return (
+                <div key={l.id} onClick={()=>window.open(l.url,"_blank","noreferrer")} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",marginBottom:6,border:"1.5px solid var(--g200)",borderRadius:8,background:"#fff",boxShadow:"var(--sh-sm)",cursor:"pointer"}}>
+                  <div style={{width:28,height:28,borderRadius:6,background:iconBg,color:iconColor,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,flexShrink:0}}>{iconChar}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:12,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{l.label||l.url}</div>
+                    {l.label&&<div style={{fontSize:10,color:"var(--g400)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{l.url}</div>}
+                  </div>
+                  <span style={{color:"var(--g400)",fontSize:13,flexShrink:0,padding:"4px"}}>↗</span>
+                </div>
+              );
+            })}
+          </div>}
+        </div>
+
+        {/* CONTACTS STRIP */}
+        {linked.length>0&&<div style={{width:260,flexShrink:0}}>
+          <div className="dp-section" style={{paddingTop:0}}>
+            <div className="dp-sect-lbl">Contacts ({linked.length}) — RSVP</div>
+            {linked.slice(0,3).map(c=><ContactRow key={c.id} c={c}/>)}
+            {linked.length>3&&<div style={{paddingTop:8}}>
+              <button className="btn btn-ghost btn-sm" style={{width:"100%"}} onClick={()=>setShowContactsModal(true)}>
+                Show all {linked.length} contacts
+              </button>
+            </div>}
+          </div>
+        </div>}
+      </div>
+
+      {/* FULL-WIDTH CHECKLIST CALENDAR */}
+      {clTotal>0&&<div style={{borderTop:"1.5px solid var(--g200)",paddingTop:20}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <div className="dp-sect-lbl" style={{margin:0}}>Checklist</div>
+            <span style={{fontSize:11,color:"var(--g500)"}}>{clDone} / {clTotal} done</span>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <button className="btn btn-ghost btn-sm" onClick={prevMonth}>←</button>
+            <span style={{fontSize:12,fontWeight:700,minWidth:130,textAlign:"center"}}>{monthLabel}</span>
+            <button className="btn btn-ghost btn-sm" onClick={nextMonth}>→</button>
+          </div>
+        </div>
+        <div style={{height:5,borderRadius:3,background:"var(--g100)",marginBottom:16,overflow:"hidden"}}>
+          <div style={{height:"100%",borderRadius:3,background:"var(--cyan)",width:clTotal?`${(clDone/clTotal)*100}%`:"0%",transition:"width 0.3s"}}/>
+        </div>
+
+        {/* CALENDAR GRID */}
+        <div className="cal-grid" onClick={e=>e.stopPropagation()}>
+          {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d=>(
+            <div key={d} className="cal-day-hd">{d}</div>
+          ))}
+          {Array.from({length:firstDow}).map((_,i)=>(
+            <div key={`empty-${i}`} className="cal-day other-month"/>
+          ))}
+          {Array.from({length:daysInMonth}).map((_,i)=>{
+            const day=i+1;
+            const dayStr=`${calMonth}-${String(day).padStart(2,"0")}`;
+            const isToday=dayStr===today;
+            const items=itemsByDay[day]||[];
+            return (
+              <div key={day} className={`cal-day${isToday?" today":""}`} style={{cursor:items.length?"pointer":"default",position:"relative"}}>
+                <div className="cal-date">{day}</div>
+                {items.map(item=>(
+                  <div key={item.id} className="cal-dot" onClick={e=>{e.stopPropagation();setPopover(popover?.itemId===item.id?null:{itemId:item.id});}}
+                    style={{background:item.completed?"var(--cyan-lt)":(!item.completed&&item.date<=today)?"var(--fuchsia-lt)":"var(--acid-lt)",color:item.completed?"#155e6e":(!item.completed&&item.date<=today)?"#8b0057":"#3a3d00",textDecoration:item.completed?"line-through":"none"}}>
+                    {item.text}
+                  </div>
+                ))}
+                {/* POPOVER */}
+                {popoverItem&&popover?.itemId&&items.find(i=>i.id===popover.itemId)&&(
+                  <div onClick={e=>e.stopPropagation()} style={{position:"absolute",top:"100%",left:0,zIndex:300,background:"#fff",border:"1.5px solid var(--g200)",borderRadius:8,padding:"10px 12px",boxShadow:"var(--sh-lg)",minWidth:180,marginTop:4}}>
+                    <div style={{fontSize:12,fontWeight:700,marginBottom:8,lineHeight:1.4}}>{popoverItem.text}</div>
+                    {popoverItem.date&&<div style={{fontSize:10,color:"var(--g400)",marginBottom:8}}>{fmtDate(popoverItem.date)}</div>}
+                    <label style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",fontSize:12}}>
+                      <input type="checkbox" checked={popoverItem.completed} onChange={()=>onToggleChecklist(popoverItem.id)} style={{accentColor:"var(--cyan)"}}/>
+                      {popoverItem.completed?"Mark incomplete":"Mark complete"}
+                    </label>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* NO-DATE ITEMS */}
+        {clNoDate.length>0&&<div style={{marginTop:16}}>
+          <div className="dp-sect-lbl" style={{marginBottom:8}}>No due date</div>
+          {clNoDate.map(item=>(
+            <div key={item.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}>
+              <input type="checkbox" checked={item.completed} onChange={()=>onToggleChecklist(item.id)} style={{accentColor:"var(--cyan)",cursor:"pointer"}}/>
+              <span style={{flex:1,fontSize:12,textDecoration:item.completed?"line-through":"none",color:item.completed?"var(--g400)":"inherit"}}>{item.text}</span>
+            </div>
+          ))}
+        </div>}
+      </div>}
+
+      {/* CONTACTS MODAL */}
+      {showContactsModal&&(
+        <div className="mover" onClick={()=>setShowContactsModal(false)}>
+          <div className="modal" onClick={e=>e.stopPropagation()} style={{width:480,maxHeight:"80vh",display:"flex",flexDirection:"column"}}>
+            <div className="m-hd">
+              <div className="m-ttl">Contacts ({linked.length}) — RSVP</div>
+              <button className="m-close" onClick={()=>setShowContactsModal(false)}>×</button>
+            </div>
+            <div className="m-bd" style={{overflowY:"auto",flex:1}}>
+              {linked.map(c=><ContactRow key={c.id} c={c}/>)}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1807,9 +2037,9 @@ function EventDetailPanel({event,contacts,onClose,onEdit,onDelete,showToast,onUp
 function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateContacts}) {
   const [search,setSearch]=useState("");
   const [fStatus,setFStatus]=useState("all");
-  const [selected,setSelected]=useState(null);
-  const [adding,setAdding]=useState(false);
-  const [editing,setEditing]=useState(null);
+  const [evtPage,setEvtPage]=useState("list");
+  const [selectedId,setSelectedId]=useState(null);
+  const [editDraft,setEditDraft]=useState(null);
   const [confirmDel,setConfirmDel]=useState(null);
   const [inlineContact,setInlineContact]=useState(null);
 
@@ -1827,23 +2057,28 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
     });
   },[events,search,fStatus]);
 
-  const selectedEvent = selected ? events.find(e=>e.id===selected) : null;
+  const selectedEvent = selectedId ? events.find(e=>e.id===selectedId) : null;
 
   const handleSave = () => {
-    if(!editing) return;
-    const updated = events.find(e=>e.id===editing.id)
-      ? events.map(e=>e.id===editing.id?editing:e)
-      : [...events, editing];
+    if(!editDraft) return;
+    const {_isNew, ...clean} = editDraft;
+    const isNew = !!_isNew;
+    const updated = events.find(e=>e.id===clean.id)
+      ? events.map(e=>e.id===clean.id?clean:e)
+      : [...events, clean];
     onUpdate(updated);
-    showToast(editing._isNew?"Event added ✓":"Event updated ✓");
-    setEditing(null);
-    setAdding(false);
+    showToast(isNew?"Event added ✓":"Event updated ✓");
+    setSelectedId(clean.id);
+    setEditDraft(null);
+    if(isNew) { setEvtPage("list"); }
+    else { setEvtPage("detail"); }
   };
 
   const handleDelete = (id) => {
     onDelete(id);
-    setSelected(null);
+    setSelectedId(null);
     setConfirmDel(null);
+    setEvtPage("list");
   };
 
   const handleUpdateEvent = (updated) => {
@@ -1851,18 +2086,62 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
   };
 
   const handleContactClick = (c) => { setInlineContact({...c}); };
+  const handleCancelEdit = () => { setEditDraft(null); setEvtPage(selectedId?"detail":"list"); };
   const handleSaveInlineContact = () => {
     if(!inlineContact||!onUpdateContacts) return;
     onUpdateContacts(inlineContact);
     setInlineContact(null);
   };
 
+  if((evtPage==="edit"||evtPage==="new")&&editDraft) return <>
+    <EventEditPage
+      editing={editDraft}
+      setEditing={setEditDraft}
+      onSave={handleSave}
+      onCancel={handleCancelEdit}
+      contacts={contacts}
+    />
+    {confirmDel&&<ConfirmModal message={`Delete "${editDraft.name||"this event"}"? This cannot be undone.`} onConfirm={()=>handleDelete(confirmDel)} onCancel={()=>setConfirmDel(null)}/>}
+  </>;
+
+  if(evtPage==="detail"&&selectedEvent) return <>
+    <EventDetailPage
+      event={selectedEvent}
+      contacts={contacts}
+      onBack={()=>{setEvtPage("list");setSelectedId(null);}}
+      onEdit={()=>{setEditDraft({...selectedEvent});setEvtPage("edit");}}
+      onDelete={()=>setConfirmDel(selectedEvent.id)}
+      onUpdateEvent={handleUpdateEvent}
+      onContactClick={handleContactClick}
+    />
+    {confirmDel&&<ConfirmModal message={`Delete "${selectedEvent.name||"this event"}"? This cannot be undone.`} onConfirm={()=>handleDelete(confirmDel)} onCancel={()=>setConfirmDel(null)}/>}
+    {inlineContact&&<ContactEditModal editing={inlineContact} setEditing={setInlineContact} onSave={handleSaveInlineContact} orgs={orgs||[]} events={events} onUpdateEvents={onUpdate} onNavigate={()=>{}}/>}
+  </>;
+
   return (
     <div className="page">
       <div className="pg-hd">
         <div><div className="pg-ttl">Events</div><div className="pg-sub">{events.length} event{events.length!==1?"s":""} total</div></div>
-        <button className="btn btn-blk" onClick={()=>{ const b=BLANK_EVENT(); setEditing({...b,_isNew:true}); setAdding(true); }}>+ Add Event</button>
+        <button className="btn btn-blk" onClick={()=>{ setEditDraft({...BLANK_EVENT(),_isNew:true}); setEvtPage("new"); }}>+ Add Event</button>
       </div>
+      {(()=>{
+        const today=new Date().toISOString().slice(0,10);
+        const upcoming=events.filter(e=>e.status==="upcoming").length;
+        const completed=events.filter(e=>e.status==="completed").length;
+        const overdue=events.reduce((acc,e)=>acc+(e.checklist||[]).filter(i=>!i.completed&&i.date&&i.date<=today).length,0);
+        const statCard=(label,val,valColor)=>(
+          <div className="stat" style={{flex:1,minWidth:90}}>
+            <div className="stat-lbl">{label}</div>
+            <div className="stat-val" style={valColor?{color:valColor}:{}}>{val}</div>
+          </div>
+        );
+        return <div className="stats" style={{marginBottom:18}}>
+          {statCard("Total",events.length)}
+          {statCard("Upcoming",upcoming,"var(--cyan)")}
+          {statCard("Completed",completed)}
+          {statCard("Checklist overdue",overdue,overdue>0?"var(--orange)":undefined)}
+        </div>;
+      })()}
       <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
         <input className="fi" style={{maxWidth:260}} placeholder="Search events…" value={search} onChange={e=>setSearch(e.target.value)}/>
         <select className="fs" style={{maxWidth:160}} value={fStatus} onChange={e=>setFStatus(e.target.value)}>
@@ -1879,14 +2158,14 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
             {filtered.length===0
               ? <tr><td colSpan={6} style={{textAlign:"center",color:"var(--g400)",padding:"28px 0",fontSize:13}}>No events found</td></tr>
               : filtered.map(e=>(
-                <tr key={e.id} onClick={()=>setSelected(e.id)}>
+                <tr key={e.id} onClick={()=>{setSelectedId(e.id);setEvtPage("detail");}}>
                   <td style={{fontWeight:700}}>{e.name||"(Unnamed)"}</td>
                   <td style={{fontSize:12,color:"var(--g600)"}}>{fmtDate(e.event_date)}</td>
                   <td><EventStatusTag status={e.status}/></td>
                   <td style={{fontSize:12,color:"var(--g600)"}}>{(e.contact_ids||[]).length}</td>
                   <td style={{fontSize:12,color:"var(--g600)",maxWidth:160,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.location||"—"}</td>
                   <td onClick={ev=>ev.stopPropagation()} style={{display:"flex",gap:4}}>
-                    <button className="btn btn-ghost btn-xs" onClick={()=>setEditing({...e})}>Edit</button>
+                    <button className="btn btn-ghost btn-xs" onClick={()=>{setEditDraft({...e});setEvtPage("edit");}}>Edit</button>
                     <button className="btn btn-danger btn-xs" onClick={()=>setConfirmDel(e.id)}>Del</button>
                   </td>
                 </tr>
@@ -1895,8 +2174,6 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
           </tbody>
         </table>
       </div>
-      {selectedEvent&&<EventDetailPanel event={selectedEvent} contacts={contacts} onClose={()=>setSelected(null)} onEdit={()=>setEditing({...selectedEvent})} onDelete={()=>setConfirmDel(selectedEvent.id)} showToast={showToast} onUpdateEvent={handleUpdateEvent} onContactClick={handleContactClick}/>}
-      {editing&&<EventEditModal editing={editing} setEditing={setEditing} onSave={handleSave} contacts={contacts}/>}
       {confirmDel&&<ConfirmModal message={`Delete "${events.find(e=>e.id===confirmDel)?.name||"this event"}"? This cannot be undone.`} onConfirm={()=>handleDelete(confirmDel)} onCancel={()=>setConfirmDel(null)}/>}
       {inlineContact&&<ContactEditModal editing={inlineContact} setEditing={setInlineContact} onSave={handleSaveInlineContact} orgs={orgs||[]} events={events} onUpdateEvents={onUpdate} onNavigate={()=>{}}/>}
     </div>
