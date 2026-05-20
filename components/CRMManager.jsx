@@ -289,7 +289,7 @@ const STYLES = `
 
 /* ─── Constants ─────────────────────────────────────────────────────────────── */
 const REL_STATUS = { cold:"Cold", cool:"Cool", warm:"Warm", active:"Active" };
-const REL_TYPES  = { music:"Music", art:"Art", event_host:"Event Host", community_builder:"Community Builder", partner:"Partner", other:"Other" };
+const REL_TYPES  = { music:"Music", art:"Art", event_host:"Event Host", community_builder:"Community Builder", partner:"Partner", attendee:"Attendee", other:"Other" };
 const ORG_CATS   = { funder:"Funder", partner:"Partner", vendor:"Vendor", media:"Media", government:"Government" };
 const CADENCE    = { active:30, warm:90, cool:120, cold:180 };
 const MONTHS     = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -598,7 +598,12 @@ function ContactDetail({contact,orgs,onClose,onUpdate,onEdit,showToast}) {
   const completeAction = () => {
     const prevLog = contact.next_actions_log||[];
     const archived = contact.next_action ? [{text:contact.next_action,date:contact.next_action_date||null,loggedAt:new Date().toISOString(),completed:true},...prevLog] : prevLog;
-    onUpdate({...contact, next_action:"", next_action_date:"", next_actions_log:archived});
+    // Also mark the matching entry in next_actions[] as completed so the dashboard clears it
+    const updatedNextActions = (contact.next_actions||[]).map(a =>
+      (!a.completed && a.text === contact.next_action) ? {...a, completed:true} : a
+    );
+    const nextActive = updatedNextActions.filter(a=>!a.completed&&a.date).sort((a,b)=>a.date.localeCompare(b.date))[0];
+    onUpdate({...contact, next_action:nextActive?.text||"", next_action_date:nextActive?.date||"", next_actions_log:archived, next_actions:updatedNextActions});
     showToast("Action marked complete ✓");
   };
   const saveNewAction = (text,date) => {
@@ -1195,7 +1200,13 @@ const blank={first_name:"",last_name:"",org_id:"",email:"",phone:"",instagram_ha
   const filtered=useMemo(()=>contacts.filter(c=>{
     const name=`${c.first_name} ${c.last_name} ${c.title||""}`.toLowerCase();
     if (search&&!name.includes(search.toLowerCase())) return false;
-    if (fType!=="all"&&!(c.relationship_types||[c.relationship_type]).includes(fType)) return false;
+    if (fType!=="all") {
+      // Prefer relationship_types array if it has entries; fall back to legacy relationship_type string
+      const types = (c.relationship_types && c.relationship_types.length > 0)
+        ? c.relationship_types
+        : (c.relationship_type ? [c.relationship_type] : []);
+      if (!types.includes(fType)) return false;
+    }
     if (fStatus!=="all"&&c.relationship_status!==fStatus) return false;
     return true;
   }), [contacts, search, fType, fStatus]);
@@ -1265,6 +1276,10 @@ const [editing,setEditing]=useState(null);
           </>}
         </Modal>
       )}
+      {contacts.length>0&&<div style={{fontSize:12,color:"var(--g600)",marginBottom:12,display:"flex",alignItems:"center",gap:6}}>
+        <span><strong style={{color:"var(--black)"}}>{filtered.length}</strong> of {contacts.length} contact{contacts.length!==1?"s":""} shown</span>
+        {(search||fType!=="all"||fStatus!=="all")&&<span style={{fontSize:11,background:"var(--cyan-lt)",color:"#155e6e",padding:"1px 7px",borderRadius:10,fontWeight:700}}>filtered</span>}
+      </div>}
       {filtered.length===0
         ? <div className="empty"><div className="empty-ico">👤</div><div className="empty-ttl">{contacts.length===0?"No contacts yet":"No results"}</div><div className="empty-txt">{contacts.length===0?"Add contacts manually or import JSON profiles from Claude.":"Try adjusting your filters."}</div></div>
       : <div className="tbl-wrap"><table className="tbl">
