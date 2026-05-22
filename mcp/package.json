@@ -1,0 +1,15 @@
+{
+  "name": "sprout-crm-mcp",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "MCP server exposing Sprout CRM data as Claude tools",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "@supabase/supabase-js": "^2.0.0",
+    "dotenv": "^16.0.0"
+  }
+}
