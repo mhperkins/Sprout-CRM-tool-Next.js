@@ -609,7 +609,9 @@ function ContactDetail({contact,orgs,onClose,onUpdate,onEdit,showToast}) {
   const saveNewAction = (text,date) => {
     const prevLog = contact.next_actions_log||[];
     const archived = contact.next_action ? [{text:contact.next_action,date:contact.next_action_date||null,loggedAt:new Date().toISOString(),completed:false},...prevLog] : prevLog;
-    onUpdate({...contact, next_action:text, next_action_date:date||"", next_actions_log:archived});
+    const newEntry = {id:`na_${uid()}`,text,date:date||null,completed:false};
+    const updatedNextActions = [newEntry,...(contact.next_actions||[])];
+    onUpdate({...contact, next_action:text, next_action_date:date||"", next_actions_log:archived, next_actions:updatedNextActions});
     showToast("Next action saved ✓");
   };
   const addTp = (tp) => {
@@ -617,7 +619,9 @@ function ContactDetail({contact,orgs,onClose,onUpdate,onEdit,showToast}) {
     if (tp.next_action) {
       const prevLog = contact.next_actions_log||[];
       const prevEntry = contact.next_action ? [{text:contact.next_action,date:contact.next_action_date||null,loggedAt:new Date().toISOString()},...prevLog] : prevLog;
-      onUpdate({...base, next_action:tp.next_action, next_action_date:tp.next_action_date||"", next_actions_log:prevEntry});
+      const newEntry = tp.next_action_date ? [{id:`na_${uid()}`,text:tp.next_action.trim(),date:tp.next_action_date,completed:false}] : [];
+      const updatedNextActions = [...newEntry,...(contact.next_actions||[])];
+      onUpdate({...base, next_action:tp.next_action, next_action_date:tp.next_action_date||"", next_actions_log:prevEntry, next_actions:updatedNextActions});
     } else {
       onUpdate(base);
     }
@@ -904,10 +908,11 @@ function DashboardView({contacts,orgs,setView,openContact,events,onUpdateContact
   const allActions = [];
   contacts.forEach(c=>{
     const actions = c.next_actions||[];
-    actions.filter(a=>!a.completed&&a.date).forEach(a=>{
+    const activeActions = actions.filter(a=>!a.completed&&a.date);
+    activeActions.forEach(a=>{
       allActions.push({type:"contact",contact:c,text:a.text,date:a.date,id:a.id});
     });
-    if((!actions.length)&&c.next_action&&c.next_action_date){
+    if(!activeActions.length && c.next_action && c.next_action_date){
       allActions.push({type:"contact",contact:c,text:c.next_action,date:c.next_action_date,id:c.id+"-na"});
     }
   });
@@ -938,8 +943,8 @@ function DashboardView({contacts,orgs,setView,openContact,events,onUpdateContact
 
   const [dashEditing,setDashEditing]=useState(null);
   const openDashEdit=(c)=>setDashEditing({...c});
-  const saveDashEdit=(updated)=>{
-    onUpdateContacts(contacts.map(c=>c.id===updated.id?updated:c));
+  const saveDashEdit=()=>{
+    onUpdateContacts(contacts.map(c=>c.id===dashEditing.id?dashEditing:c));
     setDashEditing(null);
     showToast("Contact saved ✓");
   };
