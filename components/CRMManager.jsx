@@ -1835,7 +1835,7 @@ function EventStatusTag({status}) {
 const BLANK_EVENT = () => ({
   id: `evt_${uid()}`,
   name: "", event_date: "", status: "upcoming",
-  location: "", description: "", contact_ids: [], confirmed_ids: [], notes: "",
+  location: "", description: "", recap: "", contact_ids: [], confirmed_ids: [], notes: "",
   checklist: [], next_actions: [], links: [],
 });
 
@@ -1924,6 +1924,7 @@ function EventEditPage({editing,setEditing,onSave,onCancel,contacts}) {
         <div className="fg"><label className="fl">Status</label><RadioGroup options={EVT_STATUS_OPTS} value={editing.status||"upcoming"} onChange={v=>setEditing({...editing,status:v})}/></div>
         <div className="fg"><label className="fl">Location</label><input className="fi" value={editing.location||""} onChange={e=>setEditing({...editing,location:e.target.value})}/></div>
         <div className="fg"><label className="fl">Description</label><textarea className="fta" rows={3} value={editing.description||""} onChange={e=>setEditing({...editing,description:e.target.value})}/></div>
+        <div className="fg"><label className="fl">Recap blurb <span style={{fontWeight:400,color:"var(--g400)"}}>· 2–3 sentences, paste-ready for the newsletter</span></label><textarea className="fta" rows={3} value={editing.recap||""} onChange={e=>setEditing({...editing,recap:e.target.value})} placeholder="Warm, specific, no jargon. Pulled into the monthly roundup by the newsletter tool once status is completed."/></div>
         <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={2} value={editing.notes||""} onChange={e=>setEditing({...editing,notes:e.target.value})}/></div>
       </>}
 
@@ -2079,12 +2080,15 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
   const ContactRow=({c})=>{
     const confirmed=(event.confirmed_ids||[]).includes(c.id);
     const initials=((c.first_name||"").charAt(0)+(c.last_name||"").charAt(0)).toUpperCase();
+    const types=(c.relationship_types&&c.relationship_types.length?c.relationship_types:[c.relationship_type]).filter(Boolean);
     return (
       <div onClick={()=>onContactClick&&onContactClick(c)} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 0",borderBottom:"1px solid var(--g100)",cursor:onContactClick?"pointer":"default"}}>
         <div style={{width:32,height:32,borderRadius:"50%",background:avatarBg(c),display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:"#fff",flexShrink:0}}>{initials}</div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:13,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.first_name} {c.last_name}</div>
-          <div style={{fontSize:11,color:"var(--g600)"}}>{c.title}</div>
+          {types.length>0
+            ? <div style={{display:"flex",flexWrap:"wrap",gap:3,marginTop:2}}>{types.map(t=><span key={t} className="type-tag">{REL_TYPES[t]||t}</span>)}</div>
+            : c.title&&<div style={{fontSize:11,color:"var(--g600)"}}>{c.title}</div>}
         </div>
         <button onClick={ev=>{ev.stopPropagation();onToggleConfirm(c.id);}} style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:20,border:"1.5px solid",cursor:"pointer",flexShrink:0,background:confirmed?"var(--cyan)":"transparent",color:confirmed?"#fff":"var(--g400)",borderColor:confirmed?"var(--cyan)":"var(--g300)"}}>
           {confirmed?"✓ Confirmed":"RSVP"}

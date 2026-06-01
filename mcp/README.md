@@ -25,6 +25,23 @@ These reuse the web app's Zod validators (`lib/schemas.js`) and the same read→
 | `complete_action` | Mark a contact's `next_actions[]` entry completed by id |
 | `update_relationship_status` | Change relationship status on a contact or org |
 
+**Creation + merge tools**
+
+Generate human-readable ids from the name on create (`ind_first_last` / `org_name`), or merge research into an existing record when an explicit `id` is given. Merge fills empty scalars only (unless `overwrite:true`), appends touchpoints (deduped), and unions `relationship_types` — verified data is never clobbered. A name collision without an id is rejected to prevent duplicates.
+
+| Tool | What it does |
+|---|---|
+| `create_or_update_contact` | Create a contact, or merge fields/touchpoints/types into an existing `ind_` record |
+| `create_or_update_org` | Create an org, or merge into an existing `org_` record |
+
+**Research + newsletter tools**
+
+| Tool | What it does |
+|---|---|
+| `check_existing` | Dedupe check: search contacts AND orgs by name fragment or Instagram handle |
+| `scaffold_from_research` | Land a full Research Brief (org first, then individuals with `org_id` auto-linked); per-record errors are non-fatal |
+| `assemble_newsletter` | Fill the monthly-roundup HTML from CRM data (recaps from completed events with a `recap` blurb, upcoming events, profile footer, optional spotlight); returns a summary + HTML, leaving subjective copy bracketed |
+
 **Resources**
 
 | Resource | Content |
