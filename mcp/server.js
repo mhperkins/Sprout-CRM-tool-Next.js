@@ -758,6 +758,34 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         },
       },
     },
+    {
+      name: "assemble_newsletter",
+      description:
+        "Assemble a review-ready monthly-roundup newsletter from the CRM. Fills the HTML template with recap blocks from completed events that have a `recap` blurb, upcoming-event blocks from future events, and footer/site details from the org profile. Returns a JSON summary (what was pulled + which [BRACKETS] still need a human) followed by the assembled HTML. Subjective copy (intro, spotlight blurb) is left bracketed.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          month: {
+            type: "string",
+            description:
+              'Override the masthead month label, e.g. "June 2026". Defaults to the current month and year.',
+          },
+          recap_limit: {
+            type: "number",
+            description: "Max completed-event recaps to include (default 4)",
+          },
+          upcoming_limit: {
+            type: "number",
+            description: "Max upcoming events to include (default 4)",
+          },
+          spotlight_contact_id: {
+            type: "string",
+            description:
+              "Contact (ind_...) to feature in the Member Spotlight. Fills the name; role/blurb stay bracketed for you to write.",
+          },
+        },
+      },
+    },
   ],
 }));
 
@@ -1252,6 +1280,166 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       return {
         content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
         isError: anyFail,
+      };
+    }
+
+    // ── assemble_newsletter ──────────────────────────────────────────────────
+    // Fill the monthly-roundup HTML template from live CRM data: recap blocks
+    // from completed events that have a recap blurb, upcoming-event blocks from
+    // future events, footer/site from the org profile, and (optionally) the
+    // spotlight name from a chosen contact. Subjective copy (intro, spotlight
+    // blurb, preview) is left bracketed and reported so the user finishes it.
+    if (name === "assemble_newsletter") {
+      const MONTHS_LONG = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December",
+      ];
+      const MONTHS_SHORT = [
+        "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+        "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
+      ];
+      const now = new Date();
+      const monthYear = args.month || `${MONTHS_LONG[now.getMonth()]} ${now.getFullYear()}`;
+      const monthName = monthYear.split(/\s+/)[0];
+      const recapLimit = args.recap_limit ?? 4;
+      const upcomingLimit = args.upcoming_limit ?? 4;
+
+      const esc = (s) =>
+        (s || "")
+          .toString()
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      const pill = (dstr) => {
+        const [, m, d] = (dstr || "").split("-").map((x) => x);
+        return { mon: MONTHS_SHORT[(+m || 1) - 1] || "", day: String(+d || "") };
+      };
+
+      const [events, profile] = await Promise.all([getEvents(), getProfile()]);
+
+      const recaps = events
+        .filter((e) => e.status === "completed" && (e.recap || "").trim())
+        .sort((a, b) => (b.event_date ?? "").localeCompare(a.event_date ?? ""))
+        .slice(0, recapLimit);
+
+      const upcoming = events
+        .filter((e) => e.status === "upcoming" && e.event_date && e.event_date >= today)
+        .sort((a, b) => (a.event_date ?? "").localeCompare(b.event_date ?? ""))
+        .slice(0, upcomingLimit);
+
+      // Brand accents rotate for visual rhythm (cyan, fuchsia, acid, banana).
+      const RECAP_BARS = ["#73C4D6", "#E10098", "#C6C902", "#FAD100"];
+      const EVT_PILLS = [
+        { bg: "#C6C902", fg: "#3a3d00" },
+        { bg: "#73C4D6", fg: "#0d3d49" },
+      ];
+
+      const recapBlock = (e, i) =>
+        `              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:18px; border-left:4px solid ${
+          RECAP_BARS[i % RECAP_BARS.length]
+        }; background-color:#F7F7F6; border-radius:0 8px 8px 0;">
+                <tr>
+                  <td style="padding:16px 18px;">
+                    <p style="margin:0 0 4px 0; font-size:17px; font-weight:900; color:#030000;">${esc(e.name)}</p>
+                    <p style="margin:0; font-size:14px; line-height:1.55; color:#4B5563;">${esc(e.recap)}</p>
+                  </td>
+                </tr>
+              </table>`;
+
+      const eventBlock = (e, i) => {
+        const { mon, day } = pill(e.event_date);
+        const p = EVT_PILLS[i % EVT_PILLS.length];
+        const meta = [e.location, e.description].filter(Boolean).join(" · ") || "[Time · Location · one-line description]";
+        return `              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+                <tr>
+                  <td width="64" valign="top" style="padding-right:14px;">
+                    <table role="presentation" width="56" cellpadding="0" cellspacing="0" style="background-color:${p.bg}; border-radius:10px;">
+                      <tr><td align="center" style="padding:8px 0 0 0; font-size:11px; font-weight:900; text-transform:uppercase; color:${p.fg};">${mon}</td></tr>
+                      <tr><td align="center" style="padding:0 0 8px 0; font-size:24px; font-weight:900; line-height:1; color:#030000;">${day}</td></tr>
+                    </table>
+                  </td>
+                  <td valign="top">
+                    <p style="margin:0 0 2px 0; font-size:16px; font-weight:900; color:#030000;">${esc(e.name)}</p>
+                    <p style="margin:0; font-size:13px; line-height:1.5; color:#4B5563;">${esc(meta)}</p>
+                  </td>
+                </tr>
+              </table>`;
+      };
+
+      const recapBlocks = recaps.length
+        ? recaps.map(recapBlock).join("\n\n")
+        : `              <!-- No completed events with a recap blurb were found. Add a recap on the event record, or fill this in manually. -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:18px; border-left:4px solid #73C4D6; background-color:#F7F7F6; border-radius:0 8px 8px 0;">
+                <tr><td style="padding:16px 18px;">
+                  <p style="margin:0 0 4px 0; font-size:17px; font-weight:900; color:#030000;">[EVENT NAME]</p>
+                  <p style="margin:0; font-size:14px; line-height:1.55; color:#4B5563;">[2–3 sentence recap]</p>
+                </td></tr>
+              </table>`;
+
+      const eventBlocks = upcoming.length
+        ? upcoming.map(eventBlock).join("\n\n")
+        : `              <!-- No upcoming events found in the CRM. -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+                <tr><td valign="top"><p style="margin:0; font-size:13px; color:#4B5563;">[No upcoming events — add some, or remove this section]</p></td></tr>
+              </table>`;
+
+      const templatePath = join(__dirname, "..", "docs", "newsletter", "01-monthly-roundup.html");
+      let html = readFileSync(templatePath, "utf8");
+
+      html = html
+        .replace(/<!-- RECAP BLOCK[\s\S]*\/RECAP BLOCK -->/, recapBlocks)
+        .replace(/<!-- EVENT BLOCK[\s\S]*\/EVENT BLOCK -->/, eventBlocks)
+        .replace(/\[MONTH YEAR\]/g, esc(monthYear))
+        .replace(/\[MONTH\]/g, esc(monthName));
+
+      // Footer + RSVP link from the org profile, if present.
+      if (profile.website) {
+        html = html
+          .replace(/\[WEBSITE\]/g, esc(profile.website))
+          .replace(/\[RSVP \/ EVENTS PAGE LINK\]/g, esc(profile.website));
+      }
+      if (profile.igHandle) {
+        const handle = profile.igHandle.startsWith("@") ? profile.igHandle : `@${profile.igHandle}`;
+        html = html.replace(/\[INSTAGRAM @handle\]/g, esc(handle));
+      }
+
+      // Spotlight name from a chosen contact; role/blurb stay bracketed.
+      let spotlightName = null;
+      if (args.spotlight_contact_id) {
+        const c = await findContact(args.spotlight_contact_id);
+        if (c) {
+          spotlightName = `${c.first_name} ${c.last_name}`.trim();
+          html = html
+            .replace(/\[NAME — e\.g\. Pat\]/g, esc(spotlightName))
+            .replace(/\[NAME\]/g, esc(spotlightName));
+          // No photo on file → drop the optional photo cell so there's no broken img.
+          html = html.replace(/<!-- Optional photo[\s\S]*?<\/td>\s*/, "");
+        }
+      }
+
+      // Match a single placeholder (newlines allowed within one; [^\]] stops at
+      // the first closing bracket so it never spans two), collapse whitespace.
+      const remaining = [
+        ...new Set(
+          (html.match(/\[[^\]]+\]/g) || []).map((s) => s.replace(/\s+/g, " ").trim())
+        ),
+      ];
+
+      const summary = {
+        month: monthYear,
+        recapsUsed: recaps.map((e) => ({ id: e.id, name: e.name, date: e.event_date })),
+        upcomingUsed: upcoming.map((e) => ({ id: e.id, name: e.name, date: e.event_date })),
+        spotlight: spotlightName,
+        remainingPlaceholders: remaining,
+        note:
+          "HTML follows in the next block. CRM-derived content is filled; bracketed items still need a human. Save the HTML and paste into Mailchimp (Code your own) or a Gmail draft.",
+      };
+
+      return {
+        content: [
+          { type: "text", text: JSON.stringify(summary, null, 2) },
+          { type: "text", text: html },
+        ],
       };
     }
 
