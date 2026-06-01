@@ -4,7 +4,7 @@ An MCP server that wraps the Sprout CRM's live Supabase database as tools Claude
 
 ## What it exposes
 
-**Tools**
+**Read tools**
 
 | Tool | What it does |
 |---|---|
@@ -13,6 +13,17 @@ An MCP server that wraps the Sprout CRM's live Supabase database as tools Claude
 | `get_contact_detail` | Full contact record with touchpoints and next actions |
 | `list_upcoming_actions` | All pending next actions across contacts, orgs, and events |
 | `list_events` | Upcoming events with contact and action counts |
+
+**Write tools**
+
+These reuse the web app's Zod validators (`lib/schemas.js`) and the same read→merge→validate→upsert pattern as `lib/services.js`, so the MCP and app share one source of truth. Invalid writes are rejected with the Zod error, not silently dropped.
+
+| Tool | What it does |
+|---|---|
+| `add_touchpoint` | Append a touchpoint to a contact or org; optional follow-up next action |
+| `set_next_action` | Set a contact's/org's next action (dual-field rule for contacts) |
+| `complete_action` | Mark a contact's `next_actions[]` entry completed by id |
+| `update_relationship_status` | Change relationship status on a contact or org |
 
 **Resources**
 
@@ -32,66 +43,59 @@ npm install
 
 ---
 
-## Connect to Claude Desktop
+## Connect to Claude Code (VS Code)
 
-### 1. Get your Supabase service role key
+This server is wired into the **Claude Code extension in VS Code** — not Claude Desktop. Wiring travels with the repo via the root `.mcp.json`; the secret key lives only in a gitignored `mcp/.env`.
 
-Open [Supabase Dashboard](https://supabase.com/dashboard) → your project → **Settings → API**.
-Copy the `service_role` secret key (starts with `eyJ...`). Use this — not the anon key — so the server can bypass RLS.
+### 1. Put the secret key in `mcp/.env`
 
-### 2. Add to claude_desktop_config.json
+Create `mcp/.env` (gitignored — `.env*` is already excluded):
 
-> **Windows Store version note:** If you installed Claude Desktop via the Setup installer (which creates a Windows Store / MSIX package), the "Edit Config" button opens the wrong file. The app reads from a virtualized path instead. Edit this file directly:
-> ```
-> C:\Users\<you>\AppData\Local\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude_desktop_config.json
-> ```
-> That file already has a `"preferences"` key — add `"mcpServers"` alongside it at the root level.
+```
+NEXT_PUBLIC_SUPABASE_URL=https://ixdnmjchvjzytyhmripc.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=<your sb_secret_... key>
+```
 
-Open Claude Desktop → **Settings → Developer → Edit Config**, and add:
+Get the key from [Supabase Dashboard](https://supabase.com/dashboard) → your project → **Settings → API keys**. Use a `sb_secret_...` key (not the publishable/anon key) so the server can bypass RLS. Legacy `eyJ...` JWT service-role keys are **disabled** on this project and will return `Legacy API keys are disabled`.
+
+`server.js` loads this file by explicit path (`config({ path: join(__dirname, ".env") })`), so it works regardless of the process working directory.
+
+### 2. Root `.mcp.json` registers the server (already committed)
+
+The repo root holds a `.mcp.json` that Claude Code auto-discovers when the project is opened — command + args only, no secret:
 
 ```json
 {
   "mcpServers": {
     "sprout-crm": {
       "command": "C:\\Program Files\\nodejs\\node.exe",
-      "args": ["C:/Users/maxwe/OneDrive/Desktop/Claude/Apps and Tools/sprout-crm-next/mcp/server.js"],
-      "env": {
-        "NEXT_PUBLIC_SUPABASE_URL": "https://ixdnmjchvjzytyhmripc.supabase.co",
-        "SUPABASE_SERVICE_ROLE_KEY": "YOUR_SERVICE_ROLE_KEY_HERE"
-      }
+      "args": ["mcp/server.js"]
     }
   }
 }
 ```
 
-### 3. Restart Claude Desktop
+### 3. Reload the VS Code window
 
-The server connects on startup. You should see "sprout-crm" listed in the MCP tools panel.
+Claude Code picks up `.mcp.json` on window reload. Approve the server if prompted; `sprout-crm` then appears in the MCP server list.
 
 ---
 
 ## Local testing (optional)
 
-Create `mcp/.env` with:
-
-```
-NEXT_PUBLIC_SUPABASE_URL=https://ixdnmjchvjzytyhmripc.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your-key-here
-```
-
-Then run:
+With `mcp/.env` in place (step 1 above), run a JSON-RPC smoke test over stdio:
 
 ```bash
 node server.js
 ```
 
-If it starts without throwing, the credentials are valid.
+If it starts without throwing, the credentials are valid. To confirm live data, pipe an `initialize` + `tools/call get_relationship_health` sequence into it and check for real counts rather than `Legacy API keys are disabled`.
 
 ---
 
 ## Demo conversation
 
-Open Claude Desktop and ask:
+In Claude Code, ask:
 
 > "What should I focus on this week for relationships?"
 
@@ -108,11 +112,11 @@ That sequence is the portfolio demo.
 ## Architecture
 
 ```
-Claude Desktop
+Claude Code (VS Code extension)
   ↕ MCP protocol (stdio)
 sprout-crm-next/mcp/server.js (Node.js)
   ↕ Supabase SDK (service role)
 Live Supabase database
 ```
 
-Transport is stdio — the server runs locally as a child process of Claude Desktop. No deployment needed.
+Transport is stdio — the server runs locally as a child process of Claude Code. No deployment needed.

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "sprout-crm": {
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": ["mcp/server.js"]
+    }
+  }
+}
