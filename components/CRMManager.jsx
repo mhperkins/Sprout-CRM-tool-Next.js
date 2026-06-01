@@ -1523,10 +1523,134 @@ function OutreachView({contacts,orgs}) {
 }
 
 /* ─── Import View ────────────────────────────────────────────────────────────── */
+/* ─── Spreadsheet merge helpers (paste from Google Sheets / CSV) ──────────────── */
+const NL_isEmpty   = (v) => v==null || (typeof v==="string" && v.trim()==="") || (Array.isArray(v)&&v.length===0);
+const NL_normEmail = (e) => (e==null?"":String(e)).trim().toLowerCase();
+const NL_validEmail= (e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(NL_normEmail(e));
+const NL_MERGE_FIELDS = ["first_name","last_name","phone","instagram_handle","website","notes"];
+
+// Parse pasted text. Google Sheets copy = tab-separated; CSV export = comma + optional quotes.
+function parseDelimited(text){
+  const clean=(text||"").replace(/\r\n?/g,"\n").trim();
+  if(!clean) return [];
+  const lines=clean.split("\n").filter(l=>l.trim()!=="");
+  if(!lines.length) return [];
+  const delim=lines[0].includes("\t")?"\t":",";
+  const parseLine=(line)=>{
+    const out=[]; let cur=""; let q=false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(q){
+        if(ch==='"'){ if(line[i+1]==='"'){cur+='"';i++;} else q=false; }
+        else cur+=ch;
+      } else if(ch==='"'){ q=true; }
+      else if(ch===delim){ out.push(cur); cur=""; }
+      else cur+=ch;
+    }
+    out.push(cur);
+    return out.map(s=>s.trim());
+  };
+  return lines.map(parseLine);
+}
+
+// Map each header column to a known field by fuzzy name match.
+function detectSheetFields(headers){
+  return headers.map(h=>{
+    const x=(h||"").toLowerCase();
+    if(/e-?mail/.test(x)) return "email";
+    if(/first|fname|given/.test(x)) return "first_name";
+    if(/last|lname|surname|family/.test(x)) return "last_name";
+    if(/insta|handle|\big\b/.test(x)) return "instagram_handle";
+    if(/phone|mobile|cell|tel/.test(x)) return "phone";
+    if(/web|site|url/.test(x)) return "website";
+    if(/note/.test(x)) return "notes";
+    if(/full ?name|^name$|contact ?name/.test(x)) return "full_name";
+    return null;
+  });
+}
+
+// Build a merge plan: new contacts to add + existing contacts with blanks filled.
+// Fill-blanks-only: never overwrites a field that already has a value. Keyed on email.
+function buildSheetPlan(text, contacts){
+  const rows=parseDelimited(text);
+  if(rows.length<2) return {error:"Need a header row plus at least one data row."};
+  const map=detectSheetFields(rows[0]);
+  if(!map.includes("email")) return {error:'No email column found. Add a column with "email" in its header.'};
+
+  // Dedupe rows within the sheet by email (fill-blanks across duplicates).
+  const bySheetEmail=new Map();
+  let skippedNoEmail=0;
+  for(let r=1;r<rows.length;r++){
+    const cells=rows[r];
+    const rec={};
+    map.forEach((f,ci)=>{ if(f) rec[f]=(cells[ci]||"").trim(); });
+    const email=NL_normEmail(rec.email);
+    if(!NL_validEmail(email)){ skippedNoEmail++; continue; }
+    if(NL_isEmpty(rec.first_name)&&!NL_isEmpty(rec.full_name)){
+      const parts=rec.full_name.trim().split(/\s+/);
+      rec.first_name=parts.shift()||"";
+      if(NL_isEmpty(rec.last_name)) rec.last_name=parts.join(" ");
+    }
+    delete rec.full_name;
+    if(bySheetEmail.has(email)){
+      const ex=bySheetEmail.get(email);
+      NL_MERGE_FIELDS.forEach(f=>{ if(NL_isEmpty(ex[f])&&!NL_isEmpty(rec[f])) ex[f]=rec[f]; });
+    } else { rec.email=email; bySheetEmail.set(email,rec); }
+  }
+
+  const existingByEmail=new Map();
+  contacts.forEach(c=>{ const e=NL_normEmail(c.email); if(e) existingByEmail.set(e,c); });
+
+  const toSave=[]; const details=[];
+  let added=0, updated=0, unchanged=0;
+  for(const [email,rec] of bySheetEmail){
+    const existing=existingByEmail.get(email);
+    const name=`${rec.first_name||""} ${rec.last_name||""}`.trim()||email;
+    if(existing){
+      const patch={}; const filled=[];
+      NL_MERGE_FIELDS.forEach(f=>{ if(NL_isEmpty(existing[f])&&!NL_isEmpty(rec[f])){ patch[f]=rec[f]; filled.push(f); }});
+      if(filled.length){ toSave.push({...existing,...patch}); updated++; details.push({name,email,action:"updated",filled}); }
+      else { unchanged++; details.push({name,email,action:"unchanged",filled:[]}); }
+    } else {
+      toSave.push({
+        id:`ind_${uid()}`, record_type:"individual",
+        first_name:rec.first_name||"", last_name:rec.last_name||"", email,
+        phone:rec.phone||"", instagram_handle:rec.instagram_handle||"", website:rec.website||"",
+        notes:rec.notes||"", relationship_status:"warm", relationship_types:[],
+        next_action:"", next_action_date:null, next_actions:[], touchpoints:[],
+        tags:[], interests:[], linked_grants:[],
+        financial_relationship:{has_given:false,total_given:0,grant_history:[]},
+        createdAt:new Date().toISOString(),
+      });
+      added++; details.push({name,email,action:"new",filled:[]});
+    }
+  }
+  return {toSave,summary:{added,updated,unchanged,skippedNoEmail,total:bySheetEmail.size},details};
+}
+
+// Export contacts that have an email as a Mailchimp-ready CSV.
+function downloadNewsletterCsv(contacts){
+  const withEmail=contacts.filter(c=>c.email&&String(c.email).trim());
+  const esc=(s)=>{ const v=(s==null?"":String(s)); return /[",\n]/.test(v)?`"${v.replace(/"/g,'""')}"`:v; };
+  const lines=[["First Name","Last Name","Email"].join(",")]
+    .concat(withEmail.map(c=>[esc(c.first_name),esc(c.last_name),esc(c.email)].join(",")));
+  const blob=new Blob([lines.join("\n")],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download="sprout-newsletter-list.csv";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  return withEmail.length;
+}
+
 function ImportView({contacts,orgs,onImportContact,onImportOrg,showToast}) {
+  const [mode,setMode]=useState("json");
   const [jsonText,setJsonText]=useState("");
   const [parsed,setParsed]=useState(null);
   const [parseError,setParseError]=useState("");
+  const [sheetText,setSheetText]=useState("");
+  const [sheetPlan,setSheetPlan]=useState(null);
+  const [sheetError,setSheetError]=useState("");
 
   const handleParse=()=>{
     setParseError(""); 
@@ -1559,9 +1683,69 @@ const rt=item.record_type||(item.first_name?"individual":"organization");
     setJsonText(""); setParsed(null);
   };
 
+  const handleSheetPreview=()=>{
+    setSheetError("");
+    const plan=buildSheetPlan(sheetText,contacts);
+    if(plan.error){ setSheetError(plan.error); setSheetPlan(null); return; }
+    setSheetPlan(plan);
+  };
+
+  const handleSheetMerge=()=>{
+    if(!sheetPlan||!sheetPlan.toSave.length){ showToast("Nothing new to merge",""); return; }
+    onImportContact(sheetPlan.toSave);
+    const s=sheetPlan.summary;
+    showToast(`Merged: ${s.added} added, ${s.updated} updated ✓`);
+    setSheetText(""); setSheetPlan(null);
+  };
+
   return (
     <div className="page">
-      <div className="pg-hd"><div><div className="pg-ttl">Import JSON</div><div className="pg-sub">Paste Claude-generated profiles directly into the CRM</div></div></div>
+      <div className="pg-hd">
+        <div><div className="pg-ttl">Import &amp; Merge</div><div className="pg-sub">Add contacts from JSON, or merge an email list from Google Sheets</div></div>
+        <button className="btn btn-ghost btn-sm" onClick={()=>{const n=downloadNewsletterCsv(contacts);showToast(`Exported ${n} contact(s) with email ✓`);}}>⬇ Export newsletter list (CSV)</button>
+      </div>
+      <div style={{display:"flex",gap:8,marginBottom:16}}>
+        <button className={`btn btn-sm ${mode==="json"?"btn-cyan":"btn-ghost"}`} onClick={()=>setMode("json")}>Paste JSON</button>
+        <button className={`btn btn-sm ${mode==="sheet"?"btn-cyan":"btn-ghost"}`} onClick={()=>setMode("sheet")}>Merge spreadsheet</button>
+      </div>
+
+      {mode==="sheet"&&(
+        <div className="card">
+          <div className="card-hd"><span className="card-ttl">Merge email list from Google Sheets</span></div>
+          <div className="card-bd">
+            <div className="info-banner" style={{marginBottom:14}}>
+              <strong>How to use:</strong> In your sheet, select all (Ctrl+A) and copy (Ctrl+C), then paste below — keep the header row. Rows are matched to existing contacts by <strong>email</strong>: new emails get added, and blank fields on existing contacts get filled in. Anything already filled is never overwritten. Rows without a valid email are skipped.
+            </div>
+            <div className={`import-zone ${sheetText?"active":""}`}>
+              <textarea className="import-ta" value={sheetText}
+                onChange={e=>{setSheetText(e.target.value);setSheetPlan(null);setSheetError("");}}
+                placeholder={"Paste rows from Google Sheets (tab-separated) or a CSV.\n\nFirst Name\tLast Name\tEmail\tInstagram\nJane\tSmith\tjane@example.com\t@jane\n..."}
+              />
+            </div>
+            {sheetError&&<p style={{fontSize:12,color:"#B91C1C",marginTop:8}}>⚠ {sheetError}</p>}
+            {sheetPlan&&(
+              <div className="preview-card">
+                <div className="preview-name">{sheetPlan.summary.added} new · {sheetPlan.summary.updated} updated · {sheetPlan.summary.unchanged} unchanged · {sheetPlan.summary.skippedNoEmail} skipped (no email)</div>
+                {sheetPlan.details.slice(0,12).map((d,i)=>(
+                  <div key={i} className="preview-meta" style={{marginTop:4}}>
+                    {d.action==="new"?"🟢 ":d.action==="updated"?"🔵 ":"⚪ "}
+                    {d.name} · {d.email}{d.filled.length?` · filled: ${d.filled.join(", ")}`:(d.action==="unchanged"?" · already complete":"")}
+                  </div>
+                ))}
+                {sheetPlan.details.length>12&&<div className="preview-meta" style={{marginTop:4,opacity:0.7}}>+{sheetPlan.details.length-12} more…</div>}
+              </div>
+            )}
+            <div style={{display:"flex",gap:8,marginTop:14}}>
+              {!sheetPlan
+                ? <button className="btn btn-cyan" onClick={handleSheetPreview} disabled={!sheetText.trim()}>Preview Merge</button>
+                : <button className="btn btn-acid" onClick={handleSheetMerge} disabled={!sheetPlan.toSave.length}>✓ Merge {sheetPlan.toSave.length} into CRM</button>}
+              {(sheetText||sheetPlan)&&<button className="btn btn-ghost btn-sm" onClick={()=>{setSheetText("");setSheetPlan(null);setSheetError("");}}>Clear</button>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {mode==="json"&&<>
       <div className="info-banner">
         <strong>How to use:</strong> Ask Claude to research a contact using the Session 1 prompt from <code>CRM_Session_Prompts.md</code>. Claude generates a JSON profile. Copy it, paste below, click Import. Accepts single records or arrays.
       </div>
@@ -1601,6 +1785,7 @@ const rt=item.record_type||(item.first_name?"individual":"organization");
           ))}
         </div>
       </div>
+      </>}
     </div>
   );
 }
