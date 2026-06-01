@@ -2,6 +2,12 @@
 
 ---
 
+## 2026-06-01 — Event contact list shows relationship type
+
+`ContactRow` in the event detail view (`components/CRMManager.jsx`) now renders each linked contact's relationship type(s) as `type-tag` chips under the name (e.g. Music, Attendee, Partner), reading `relationship_types` with a fallback to the legacy `relationship_type` string. Matches the styling already used in the contact table and detail panel. Falls back to `c.title` only when a contact has no types set. Used by both the contacts strip and the "Show all" modal, since both render through `ContactRow`.
+
+---
+
 ## 2026-06-01 — MCP Phase 4: creation/merge, research scaffolding, newsletter assembly
 
 Extended the MCP from 9 → 14 tools across the three threads requested: record creation + research-driven merge, research-brief scaffolding, and newsletter generation from CRM data. Added a `recap` field to events end to end. Every new tool was live-tested over stdio with throwaway records, then cleaned up (no test residue left in Supabase).
@@ -14,7 +20,7 @@ Extended the MCP from 9 → 14 tools across the three threads requested: record 
 
 **Docs synced:** `CLAUDE.md` (Current State, MCP tool tables 5→14, Files), `mcp/README.md` (new tool tables).
 
-**Still pending:** reload the VS Code window so Claude Code surfaces the 5 new tools in-client (all tests invoked the server directly over stdio).
+**Verified + merged:** reloaded the VS Code window; all 14 tools confirmed live in-client (`check_existing` returned real data). Merged via PR #1 (merge commit `9d845fb`) into `main`; the additive `recap` field is now on the production Vercel site (defaults to `""`, no data migration). The relationship-type-chips change rode along in the same commit.
 
 ---
 
