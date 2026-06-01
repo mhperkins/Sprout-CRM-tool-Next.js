@@ -103,6 +103,57 @@ source of truth for the UI merge pattern. Additional JSONB-only fields:
 
 ---
 
+## Table: `sprout_newsletters`
+
+> ⚠️ Status: **Table must be created in Supabase before saves persist.** The
+> read path (`fetchNewsletters`) returns `[]` gracefully if the table is missing,
+> so the Newsletter view loads either way; saves no-op until the table exists.
+> Run the DDL below in the Supabase SQL editor.
+
+```sql
+create table if not exists sprout_newsletters (
+  id         text primary key,
+  subject    text,
+  status     text,
+  send_date  date,
+  data       jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+```
+
+### SQL Columns (queryable / indexed)
+| Column       | Type        | Notes                              |
+|--------------|-------------|------------------------------------|
+| `id`         | text PK     | Prefix `nl_` (e.g. `nl_june_2026_roundup`) |
+| `subject`    | text        | Subject line                       |
+| `status`     | text        | Enum: `draft` `scheduled` `sent`   |
+| `send_date`  | date        | Scheduled/sent date. Nullable.     |
+| `created_at` | timestamptz |                                    |
+| `updated_at` | timestamptz |                                    |
+| `data`       | jsonb       | Full newsletter object             |
+
+### `data` JSONB Keys
+| Key                    | Type   | Notes                                            |
+|------------------------|--------|--------------------------------------------------|
+| `template`             | string | Enum: `monthly-roundup` `quick-hit`              |
+| `month`                | string | Display label, e.g. `June 2026`                  |
+| `field_values`         | object | `{ "[placeholder]": "user copy" }` — fill-ins    |
+| `spotlight_contact_id` | string | `ind_` id for the roundup spotlight. Nullable.   |
+| `recap_limit`          | number | Max auto-filled recap blocks (default 4)         |
+| `upcoming_limit`       | number | Max auto-filled upcoming-event blocks (default 4)|
+| `html`                 | string | Rendered HTML snapshot at last save              |
+
+### Merge Pattern
+Same bridge rule as the other tables: SQL columns (`subject`, `status`,
+`send_date`) override the JSONB blob on read; on write the full object lands in
+`data` with those three promoted. Validated by `NewsletterSchema` in
+[lib/schemas.js](../lib/schemas.js). The template engine and fill logic live in
+[lib/newsletter.js](../lib/newsletter.js), shared by the in-app Newsletter view
+(and available to the MCP `assemble_newsletter` tool).
+
+---
+
 ## Table: `sprout_profile`
 
 ### SQL Columns

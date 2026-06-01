@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-06-01 — In-app Newsletter page (store + fill-in-the-blanks editor)
+
+Built a Newsletter view in the app so past, current, and future issues live in the CRM with a workspace editor — not just as static template files driven by the MCP. Effort was medium (pattern-following CRUD + one new view); build passes clean.
+
+**New `lib/newsletter.js` — shared template engine.** Ported the `assemble_newsletter` fill logic out of the MCP server's Node/`fs` context so the browser can render templates. Holds both templates as JS strings (monthly-roundup, quick-hit), `buildNewsletter()` (CRM auto-fill of recap + upcoming-event blocks → extract remaining `[brackets]` → substitute the user's copy; empty fields keep their bracket visible), `extractPlaceholders`, `esc`, `defaultMonthYear`, and exported `TEMPLATES` metadata. The MCP's own `assemble_newsletter` was left untouched (still reads its template files) to avoid risk; the engine is now importable there later for one source of truth.
+
+**Data layer.** `NewsletterSchema` + `validateNewsletter` (`lib/schemas.js`); `fetchNewsletters` / `saveNewsletters` / `deleteNewsletterById` (`lib/services.js`) following the bridge-merge pattern (SQL columns `subject`/`status`/`send_date` promoted, full object in `data`). Fetch returns `[]` gracefully when the table is absent (`42P01`/`PGRST205`), so the view loads regardless. New table `sprout_newsletters` (id `nl_`-prefixed); DDL documented in `docs/CRM-db-schema.md` and **created in the `sprout-grant-tool` Supabase project** (`ixdnmjchvjzytyhmripc`).
+
+**`NewsletterView` + `NewsletterEditor` (`components/CRMManager.jsx`).** List grouped into Drafts / Scheduled / Sent (past, current, future). New → template picker → editor: left form (subject, status, send date, month, recap/upcoming caps, spotlight contact) + a live `<iframe srcDoc>` preview on the right. Every remaining `[placeholder]` renders as a labeled textarea ("fill in the blanks"). Monthly-roundup auto-pulls recaps (completed events with a `recap`) and upcoming events from live CRM data. "Copy HTML" → paste into Mailchimp; status is a manual label (no real send), and the 📰 nav item sits between Events and Outreach. Wired into `loadAll`, state, and save/delete handlers in the main component.
+
+**Note on shared Supabase project:** confirmed the CRM and its MCP both point at `ixdnmjchvjzytyhmripc` = the `sprout-grant-tool` project. Multiple tools are co-located there, separated only by the `sprout_` table prefix. A future migration to a per-tool project is just swapping the two env files (`.env.local`, `mcp/.env`) and recreating the `sprout_*` tables — no app code changes, since all DB access goes through `lib/services.js`.
+
+---
+
 ## 2026-06-01 — Event contact list shows relationship type
 
 `ContactRow` in the event detail view (`components/CRMManager.jsx`) now renders each linked contact's relationship type(s) as `type-tag` chips under the name (e.g. Music, Attendee, Partner), reading `relationship_types` with a fallback to the legacy `relationship_type` string. Matches the styling already used in the contact table and detail panel. Falls back to `c.title` only when a contact has no types set. Used by both the contacts strip and the "Show all" modal, since both render through `ContactRow`.

@@ -17,11 +17,15 @@ import {
   saveOrgs        as svcSaveOrgs,
   saveEvents      as svcSaveEvents,
   saveProfile     as svcSaveProfile,
+  fetchNewsletters,
+  saveNewsletters as svcSaveNewsletters,
   deleteContactById,
   deleteOrgById,
   deleteEventById,
+  deleteNewsletterById,
   DEFAULT_PROFILE,
 } from "../lib/services";
+import { buildNewsletter, TEMPLATES, defaultMonthYear } from "../lib/newsletter";
 
 /* ─── Styles ───────────────────────────────────────────────────────────────── */
 const STYLES = `
@@ -870,6 +874,7 @@ function Sidebar({view,setView,contacts,events,profile,onQuickLog}) {
     {id:"contacts",label:"Contacts",icon:"👤"},
     {id:"orgs",label:"Organizations",icon:"🏢"},
     {id:"events",label:"Events",icon:"🗓"},
+    {id:"newsletter",label:"Newsletter",icon:"📰"},
     {id:"outreach",label:"Outreach Log",icon:"📋"},
     {section:"Tools"},
     {id:"import",label:"Import JSON",icon:"⬇"},
@@ -1819,6 +1824,233 @@ function SettingsView({profile,onUpdate,showToast}) {
   );
 }
 
+/* ─── Newsletter View ────────────────────────────────────────────────────────── */
+const NL_STATUS_OPTS = [
+  {value:"draft",label:"Draft"},
+  {value:"scheduled",label:"Scheduled"},
+  {value:"sent",label:"Sent"},
+];
+const NL_STATUS_COLOR = {draft:"var(--acid-lt)",scheduled:"var(--cyan-lt)",sent:"var(--g200)"};
+const NL_STATUS_TEXT  = {draft:"#3a3d00",scheduled:"#155e6e",sent:"var(--g600)"};
+const NL_GROUPS = [
+  {status:"draft",     label:"Drafts",    hint:"In progress"},
+  {status:"scheduled", label:"Scheduled", hint:"Queued to send"},
+  {status:"sent",      label:"Sent",      hint:"Already out"},
+];
+
+function NlStatusTag({status}) {
+  return <span style={{background:NL_STATUS_COLOR[status]||"var(--g100)",color:NL_STATUS_TEXT[status]||"var(--g600)",fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:20,textTransform:"uppercase",letterSpacing:"0.05em",whiteSpace:"nowrap"}}>{status||"draft"}</span>;
+}
+
+const nlSlug = (s) => (s||"").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"").slice(0,40);
+
+function blankNewsletter(templateId, today) {
+  return {
+    id:null, subject:"", status:"draft", send_date:null,
+    template:templateId, month:defaultMonthYear(today),
+    field_values:{}, spotlight_contact_id:null,
+    recap_limit:4, upcoming_limit:4, html:"", _isNew:true,
+  };
+}
+
+function NewsletterView({newsletters,events,contacts,profile,onUpdate,onDelete,showToast}) {
+  const today = new Date().toISOString().slice(0,10);
+  const [mode,setMode]=useState("list");          // list | pick | edit
+  const [draft,setDraft]=useState(null);
+  const [confirmDel,setConfirmDel]=useState(null);
+
+  const startNew = (templateId) => { setDraft(blankNewsletter(templateId,today)); setMode("edit"); };
+  const openEdit = (n) => { setDraft({...n}); setMode("edit"); };
+  const backToList = () => { setDraft(null); setMode("list"); };
+
+  /* ── List ── */
+  if (mode==="list") {
+    return (
+      <div className="page">
+        <div className="pg-hd">
+          <div><div className="pg-ttl">Newsletter</div><div className="pg-sub">{newsletters.length} issue{newsletters.length!==1?"s":""} · past, current, and upcoming</div></div>
+          <button className="btn btn-blk" onClick={()=>setMode("pick")}>+ New Newsletter</button>
+        </div>
+
+        {newsletters.length===0 && (
+          <div className="card"><div className="card-bd" style={{textAlign:"center",padding:"40px 24px",color:"var(--g500)"}}>
+            <div style={{fontSize:30,marginBottom:10}}>📰</div>
+            <div style={{fontSize:14,fontWeight:700,color:"var(--g700)",marginBottom:4}}>No newsletters yet</div>
+            <div style={{fontSize:12,marginBottom:16}}>Start one from a template. Recaps and upcoming events auto-fill from the CRM.</div>
+            <button className="btn btn-acid btn-sm" onClick={()=>setMode("pick")}>+ New Newsletter</button>
+          </div></div>
+        )}
+
+        {NL_GROUPS.map(g=>{
+          const items=newsletters.filter(n=>(n.status||"draft")===g.status)
+            .sort((a,b)=>(b.send_date||b.month||"").localeCompare(a.send_date||a.month||""));
+          if(!items.length) return null;
+          return (
+            <div className="card" key={g.status}>
+              <div className="card-hd"><span className="card-ttl">{g.label}</span><span style={{fontSize:11,color:"var(--g500)"}}>{items.length} · {g.hint}</span></div>
+              <div className="card-bd" style={{display:"flex",flexDirection:"column",gap:8}}>
+                {items.map(n=>(
+                  <div key={n.id} className="overdue-row" style={{cursor:"pointer"}} onClick={()=>openEdit(n)}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:13,fontWeight:700,color:"var(--g800)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{n.subject||"(no subject)"}</div>
+                      <div style={{fontSize:11,color:"var(--g500)",marginTop:2}}>
+                        {(TEMPLATES.find(t=>t.id===n.template)?.name)||n.template} · {n.month||"no month"}{n.send_date?` · ${n.send_date}`:""}
+                      </div>
+                    </div>
+                    <NlStatusTag status={n.status}/>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  /* ── Template picker ── */
+  if (mode==="pick") {
+    return (
+      <div className="page">
+        <div className="pg-hd">
+          <div><div className="pg-ttl">Pick a template</div><div className="pg-sub">Choose a starting layout</div></div>
+          <button className="btn btn-ghost btn-sm" onClick={backToList}>← Cancel</button>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+          {TEMPLATES.map(t=>(
+            <div key={t.id} className="card" style={{cursor:"pointer"}} onClick={()=>startNew(t.id)}>
+              <div className="card-bd">
+                <div style={{fontSize:15,fontWeight:900,color:"var(--g800)",marginBottom:6}}>{t.name}</div>
+                <div style={{fontSize:12,lineHeight:1.5,color:"var(--g600)"}}>{t.blurb}</div>
+                <button className="btn btn-acid btn-sm" style={{marginTop:14}} onClick={(e)=>{e.stopPropagation();startNew(t.id);}}>Use this →</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Editor ── */
+  return <NewsletterEditor
+    draft={draft} setDraft={setDraft} today={today}
+    events={events} contacts={contacts} profile={profile} newsletters={newsletters}
+    onBack={backToList}
+    onSave={(rec)=>{ onUpdate(rec); showToast(rec._wasNew?"Newsletter created ✓":"Newsletter saved ✓"); backToList(); }}
+    onDelete={(id)=>setConfirmDel(id)}
+    confirmDel={confirmDel} setConfirmDel={setConfirmDel}
+    doDelete={(id)=>{ onDelete(id); setConfirmDel(null); backToList(); }}
+    showToast={showToast}
+  />;
+}
+
+function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newsletters,onBack,onSave,onDelete,confirmDel,setConfirmDel,doDelete,showToast}) {
+  const s=(k,v)=>setDraft(p=>({...p,[k]:v}));
+  const setField=(key,val)=>setDraft(p=>({...p,field_values:{...p.field_values,[key]:val}}));
+
+  const spotlight = draft.spotlight_contact_id ? contacts.find(c=>c.id===draft.spotlight_contact_id) : null;
+  const spotlightName = spotlight ? `${spotlight.first_name||""} ${spotlight.last_name||""}`.trim() : null;
+
+  const built = useMemo(()=>buildNewsletter({
+    templateId:draft.template, monthYear:draft.month, events, profile,
+    fieldValues:draft.field_values, spotlightName,
+    recapLimit:draft.recap_limit, upcomingLimit:draft.upcoming_limit, today,
+  }),[draft.template,draft.month,draft.field_values,draft.recap_limit,draft.upcoming_limit,events,profile,spotlightName,today]);
+
+  const isMonthly = draft.template==="monthly-roundup";
+
+  const handleSave = () => {
+    let id=draft.id;
+    let wasNew=false;
+    if(!id){
+      wasNew=true;
+      const base=`nl_${nlSlug(draft.month||"newsletter")}_${isMonthly?"roundup":"quick"}`;
+      id=base; let i=2;
+      while(newsletters.some(n=>n.id===id)){ id=`${base}_${i++}`; }
+    }
+    const {_isNew,_wasNew,...clean}=draft;
+    onSave({...clean,id,html:built.html,createdAt:draft.createdAt||new Date().toISOString(),_wasNew:wasNew});
+  };
+
+  const copyHtml = async () => {
+    try{ await navigator.clipboard.writeText(built.html); showToast("HTML copied — paste into Mailchimp ✓"); }
+    catch{ showToast("Copy failed — check console","err"); console.error("clipboard write failed"); }
+  };
+
+  return (
+    <div className="page">
+      <div className="pg-hd">
+        <div><div className="pg-ttl">{draft._isNew?"New newsletter":"Edit newsletter"}</div>
+          <div className="pg-sub">{TEMPLATES.find(t=>t.id===draft.template)?.name} · {built.placeholders.length} field{built.placeholders.length!==1?"s":""} to fill</div></div>
+        <div style={{display:"flex",gap:8}}>
+          <button className="btn btn-ghost btn-sm" onClick={onBack}>← Back</button>
+          {!draft._isNew&&<button className="btn btn-ghost btn-sm" onClick={()=>onDelete(draft.id)}>Delete</button>}
+          <button className="btn btn-ghost btn-sm" onClick={copyHtml}>Copy HTML</button>
+          <button className="btn btn-acid btn-sm" onClick={handleSave}>Save</button>
+        </div>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"minmax(0,380px) 1fr",gap:16,alignItems:"start"}}>
+
+        {/* ── Form ── */}
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          <div className="card"><div className="card-hd"><span className="card-ttl">Details</span></div><div className="card-bd">
+            <div className="fg"><label className="fl">Subject line</label><input className="fi" value={draft.subject} onChange={e=>s("subject",e.target.value)} placeholder="e.g. June at Sprout 🌱"/></div>
+            <div className="frow">
+              <div className="fg"><label className="fl">Status</label><select className="fi" value={draft.status} onChange={e=>s("status",e.target.value)}>{NL_STATUS_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
+              <div className="fg"><label className="fl">Send date</label><input type="date" className="fi" value={draft.send_date||""} onChange={e=>s("send_date",e.target.value||null)}/></div>
+            </div>
+            <div className="fg"><label className="fl">Month label</label><input className="fi" value={draft.month} onChange={e=>s("month",e.target.value)} placeholder="e.g. June 2026"/></div>
+          </div></div>
+
+          {isMonthly&&(
+            <div className="card"><div className="card-hd"><span className="card-ttl">Auto-fill from CRM</span></div><div className="card-bd">
+              <div style={{fontSize:11,color:"var(--g500)",marginBottom:10,lineHeight:1.5}}>
+                {built.recapsUsed.length} recap{built.recapsUsed.length!==1?"s":""} (completed events with a recap blurb) · {built.upcomingUsed.length} upcoming event{built.upcomingUsed.length!==1?"s":""} pulled in.
+              </div>
+              <div className="frow">
+                <div className="fg"><label className="fl">Max recaps</label><input type="number" min={0} max={8} className="fi" value={draft.recap_limit} onChange={e=>s("recap_limit",+e.target.value||0)}/></div>
+                <div className="fg"><label className="fl">Max upcoming</label><input type="number" min={0} max={8} className="fi" value={draft.upcoming_limit} onChange={e=>s("upcoming_limit",+e.target.value||0)}/></div>
+              </div>
+              <div className="fg"><label className="fl">Spotlight contact</label>
+                <select className="fi" value={draft.spotlight_contact_id||""} onChange={e=>s("spotlight_contact_id",e.target.value||null)}>
+                  <option value="">— none —</option>
+                  {contacts.slice().sort((a,b)=>`${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`)).map(c=>(
+                    <option key={c.id} value={c.id}>{`${c.first_name||""} ${c.last_name||""}`.trim()||c.id}</option>
+                  ))}
+                </select>
+              </div>
+            </div></div>
+          )}
+
+          <div className="card"><div className="card-hd"><span className="card-ttl">Fill in the blanks</span><span style={{fontSize:11,color:"var(--g500)"}}>{built.placeholders.length} left</span></div><div className="card-bd">
+            {built.placeholders.length===0
+              ? <div style={{fontSize:12,color:"var(--g500)"}}>Nothing left to fill — every placeholder is resolved. 🎉</div>
+              : <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                  {built.placeholders.map(ph=>(
+                    <div className="fg" key={ph.key}>
+                      <label className="fl" style={{textTransform:"none",letterSpacing:0,color:"var(--g600)",fontWeight:600}}>{ph.label}</label>
+                      <textarea className="fta" rows={2} value={draft.field_values[ph.key]||""} onChange={e=>setField(ph.key,e.target.value)} placeholder="Type your copy…"/>
+                    </div>
+                  ))}
+                </div>}
+          </div></div>
+        </div>
+
+        {/* ── Preview ── */}
+        <div className="card" style={{position:"sticky",top:16}}>
+          <div className="card-hd"><span className="card-ttl">Preview</span><span style={{fontSize:11,color:"var(--g500)"}}>live</span></div>
+          <div style={{height:"calc(100vh - 180px)",minHeight:480,background:"#F7F7F6",borderRadius:"0 0 10px 10px",overflow:"hidden"}}>
+            <iframe title="newsletter-preview" srcDoc={built.html} style={{width:"100%",height:"100%",border:"none"}}/>
+          </div>
+        </div>
+      </div>
+
+      {confirmDel&&<ConfirmModal message={`Delete "${draft.subject||"this newsletter"}"? This cannot be undone.`} onConfirm={()=>doDelete(confirmDel)} onCancel={()=>setConfirmDel(null)}/>}
+    </div>
+  );
+}
+
 /* ─── Events View ────────────────────────────────────────────────────────────── */
 const EVT_STATUS_OPTS = [
   {value:"upcoming",label:"Upcoming"},
@@ -2395,6 +2627,7 @@ export default function CRMApp() {
   const [contacts,setContacts]=useState([]);
   const [orgs,setOrgs]=useState([]);
   const [events,setEvents]=useState([]);
+  const [newsletters,setNewsletters]=useState([]);
   const [profile,setProfile]=useState(DEFAULT_PROFILE);
   const [toast,setToast]=useState(null);
   const [loading,setLoading]=useState(true);
@@ -2411,22 +2644,26 @@ const [
         { data: orgRows,     error: oErr },
         { data: eventRows,   error: evErr },
         { data: profileData, error: prErr },
+        { data: nlRows,      error: nlErr },
       ] = await Promise.all([
         fetchContacts(),
         fetchOrgs(),
         fetchEvents(),
         fetchProfile(),
+        fetchNewsletters(),
       ]);
 
       if (cErr) throw new Error(cErr);
       if (oErr) throw new Error(oErr);
       if (evErr) console.warn("fetchEvents warning:", evErr);
       if (prErr) console.warn("fetchProfile warning:", prErr);
+      if (nlErr) console.warn("fetchNewsletters warning:", nlErr);
 
       setContacts(contactRows);
       setOrgs(orgRows);
       setEvents(eventRows);
       setProfile(profileData);
+      setNewsletters(nlRows);
     } catch (err) {
       console.error("CRM load error:", err);
       setDbError(err.message || "Failed to load data from Supabase.");
@@ -2472,6 +2709,24 @@ const saveProfile = useCallback((u) => {
       if (error) { console.error("saveProfile:", error); showToast("Save failed — check console", "err"); }
     });
   }, [showToast]);
+
+  const saveNewsletter = useCallback((rec) => {
+    const u = newsletters.find(n=>n.id===rec.id)
+      ? newsletters.map(n=>n.id===rec.id?rec:n)
+      : [...newsletters, rec];
+    setNewsletters(u);
+    svcSaveNewsletters(u).then(({ error }) => {
+      if (error) { console.error("saveNewsletters:", error); showToast(`Save failed: ${error}`, "err"); }
+    });
+  }, [newsletters, showToast]);
+
+  const deleteNewsletter = useCallback(async (id) => {
+    const prev = newsletters;
+    setNewsletters(newsletters.filter(n=>n.id!==id)); // optimistic
+    const { error } = await deleteNewsletterById(id);
+    if (error) { console.error("deleteNewsletter:", error); showToast("Delete failed — check console","err"); setNewsletters(prev); }
+    else showToast("Newsletter deleted");
+  },[newsletters, showToast]);
 
   const importContact=useCallback((batch)=>{ const arr=Array.isArray(batch)?batch:[batch]; const u=[...contacts.filter(x=>!arr.find(c=>c.id===x.id)),...arr]; saveContacts(u); },[contacts,saveContacts]);
   const deleteContact=useCallback(async (id)=>{
@@ -2529,6 +2784,7 @@ if (dbError) return (
 {view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail} setView={setView}/>}
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
 {view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))}/>}
+        {view==="newsletter"&&<NewsletterView newsletters={newsletters} events={events} contacts={contacts} profile={profile} onUpdate={saveNewsletter} onDelete={deleteNewsletter} showToast={showToast}/>}
         {view==="outreach"&&<OutreachView contacts={contacts} orgs={orgs}/>}
         {view==="import"&&<ImportView contacts={contacts} orgs={orgs} onImportContact={importContact} onImportOrg={importOrg} showToast={showToast}/>}
         {view==="settings"&&<SettingsView profile={profile} onUpdate={saveProfile} showToast={showToast}/>}
