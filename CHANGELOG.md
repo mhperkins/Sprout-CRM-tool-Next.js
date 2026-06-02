@@ -2,6 +2,81 @@
 
 ---
 
+## 2026-06-01 — `/email-to-crm` skill + first live email→CRM pass + new `sprout_society` type
+
+First execution of the Email → CRM protocol end to end, plus the skill that wraps it and a schema change the run required.
+
+- **Built the `/email-to-crm` skill** (`.claude/skills/email-to-crm/SKILL.md`) — condensed runbook of the protocol doc, scope as `$ARGUMENTS`. Updated `docs/guides/email-to-crm-protocol.md`'s closing section from "not built yet" to point at the skill (doc remains source of truth).
+- **Live replied-to pass (last 14 days):** Gmail MCP now authenticated to `maxperkins@sproutsociety.org`. Two real human counterparties found (rest were automated weekly briefings to self). Previewed, then on confirmation: **created Danielle Kastenbaum** (`ind_danielle_kastenbaum`, co-founder Sprout Society, both emails, website, warm, `email_sourced`, 6/1 newsletter touchpoint) and **enriched existing Morgan Kuriloff** (`ind_mpvhkubvn2if` — added SB Nation title, 6/1 touchpoint). Net 52 → 53 contacts (Morgan already existed).
+- **New relationship type `sprout_society`** (label "Sprout Society"), added in all four required places: Zod enum `lib/schemas.js`, `REL_TYPES` in `CRMManager.jsx`, the two tool input-schema enums in `mcp/server.js`, and `docs/CRM-db-schema.md` (also backfilled the previously-missing `attendee`). Required two window reloads (Zod + server.js are loaded once at MCP start).
+- Not committed to git.
+
+---
+
+## 2026-06-01 — Standing convention: visual commit slide on every delivery
+
+No code change. Established a workflow preference: after every commit+push, also deliver a single self-contained HTML slide that visually details what was committed/pushed (cards/badges/icons + commit hash/branch, not plain bullets). Each slide is **built fresh to adapt to the specific commit** — no reusable template. Saved to memory as `commit-slide-on-delivery.md`. Trigger is an actual commit+push, not every chat turn; slides go in `docs/deliveries/` or `docs/guides/` with the path called out in the reply.
+
+---
+
+## 2026-06-01 — Email → CRM protocol doc (Gmail MCP + sprout-crm MCP orchestration)
+
+Wrote a manual-trigger workflow for pulling CRM data out of Gmail. Documentation only — **no code change** (no `server.js`, no app, no data layer).
+
+- **New file:** `docs/guides/email-to-crm-protocol.md`.
+- **Design decision (leads the doc):** the capability is orchestration between two already-connected MCPs — Gmail MCP reads (`search_threads`/`get_thread`/`list_labels`), Claude parses + dedupes, the existing `sprout-crm` MCP writes. Deliberately **no Gmail reading built into `server.js`** — that would add OAuth + a second auth surface to a stable 14-tool server for no functional gain. Doc states this so a future session won't "fix" it by adding server code.
+- **Four manual scopes**, each prompt → Gmail query → `check_existing` dedupe → preview → write: replied-to (`from:me newer_than:30d`), named person/thread, event-anchored (resolve `evt_` via `list_events`), label/date window (`label:` needs the ID from `list_labels`).
+- **Seven safety rules:** preview-before-write + wait for confirm, dedupe first, bulk-exclusion at the query layer, write-through-tools-never-raw-SQL, `YYYY-MM-DD` dates. Field-mapping cheat sheet built from the live tool schemas. Honest gap: no dedicated event↔contact RSVP write tool, so RSVPs log as touchpoints + flag for manual linkage.
+- Not committed to git.
+
+---
+
+## 2026-06-01 — Tutorial carousels: screenshot + "Ask Claude" MCP diagram per screen
+
+Converted each of the 6 screen sections in `docs/guides/getting-started-tutorial.html` into a 2-card carousel. No app code or data-layer change.
+
+- **Card 1** = the existing annotated screenshot (sticky-note drag-to-arrange still works). **Card 2** = an "Ask Claude" diagram showing the plain-English flow: *You type* (natural-language prompt) → *Behind the scenes* (the real MCP tool names that run) → *You get back* (the result).
+- **Per-screen MCP examples** use real tools: Dashboard (`get_relationship_health` + `list_upcoming_actions`), Contacts (`create_or_update_contact` + `set_next_action`), Orgs (`add_touchpoint` + `update_relationship_status`), Events (`list_events`), Newsletter (`assemble_newsletter`), Outreach (`search_contacts` + `get_contact_detail`).
+- **Navigation:** big circular black side arrows (fuchsia on hover, inset over the image edges), stretch-pill dot indicators, a live "Card 1/2 of 2" hint, and 45px touch-swipe support.
+- **Diagram layout (after iteration):** vertical stack with down-arrows; size hierarchy flipped so the two ends dominate — *You type* 46px Caveat, *You get back* 30px bold, *Behind the scenes* de-emphasized (small dimmed tool chips). Shared `.mcp-flow` CSS so all six slides update together.
+- Not committed to git.
+
+---
+
+## 2026-06-01 — Beginner picture tutorial (annotated sticky-note walkthrough)
+
+Built a self-contained, non-technical "first-time user" tour of the app with real screenshots and hand-drawn-style sticky-note callouts. No app code or data-layer change.
+
+- **New file:** `docs/guides/getting-started-tutorial.html`. Real screenshots captured by driving the live app with Playwright (added as a dev dependency), at 2× scale.
+- **Design:** brand palette + Lato/Caveat fonts; each screenshot is a full-width frame with colored sticky notes (tape + number badge + slight rotation) placed on the relevant elements. Includes a **drag-to-arrange** mode ("✏️ Arrange notes" toolbar) that saves note positions to `localStorage`, with Reset + Copy-layout.
+- **Slides (after iteration):** 1 Dashboard · 2 Contacts (merged list+detail: column labels over the dimmed list with Alexandra Galvis opened) · 3 Organizations (Barnun edit modal, Show-more expanded) · 4 Events (real 5/19 Show n Tell detail) · 5 Newsletter (fill-in-the-blanks editor + live preview) · 6 Outreach Log · then Daily basics (4 tasks, incl. the Log Touchpoint modal) · Word list. Import & Settings slide dropped per request.
+- User has since started extending it into a **carousel** (each screen → screenshot slide + an "ask Claude" diagram slide); CSS for that is in the file.
+- Not committed to git.
+
+---
+
+## 2026-06-01 — Added the official Supabase MCP server
+
+Registered the official Supabase MCP (`@supabase/mcp-server-supabase`) with Claude Code for direct SQL / schema access, alongside the existing `sprout-crm` MCP. No app code or data-layer change.
+
+- **`.mcp.json`:** new `supabase` server — `cmd /c npx -y @supabase/mcp-server-supabase@latest --project-ref=ixdnmjchvjzytyhmripc --access-token=${SUPABASE_ACCESS_TOKEN}`. Scoped to the project ref so it can't reach other Supabase projects; no secret committed (env-var expansion, per the global rule).
+- **Auth:** Supabase Personal Access Token (PAT, `sbp_`), not the service-role key (the MCP uses the management API). Stored in the `SUPABASE_ACCESS_TOKEN` Windows user env var. First PAT was rotated after it briefly appeared in a screenshot; the live one is the replacement.
+- **Verified** `list_tables` — all `sprout_*` tables visible (`sprout_contacts` 52, `sprout_orgs` 7, `sprout_events` 7, `sprout_newsletters` 0, `sprout_profile` 1). Reconfirmed shared-project debt with the social/QR/grant tools.
+- **Decision: do not create `sprout_posts`.** `PostSchema.platform` is `["ig","nl"]` — Instagram (out-of-scope separate tool) + newsletter (superseded by `sprout_newsletters`). The dead `PostSchema` + save path should be removed rather than filled.
+
+---
+
+## 2026-06-01 — How-to slide deck: MCP tools & workflows
+
+Built a self-contained HTML slide deck explaining the 14 MCP tools and the optimized everyday workflows, written for someone starting from zero on the CRM. No code or data-layer change.
+
+- **New file:** `docs/guides/mcp-tools-and-workflows.html` (new `docs/guides/` folder for how-to / reference material).
+- **17 slides:** what the CRM is → what an MCP tool is → the 14 tools by family (Read 5 / Write 4 / Create 2 / Research 3) → vocabulary (relationship ladder, cadence/next-action, readable IDs) → five workflows (morning health check, log interaction + follow-up, research → scaffold, bulk sheet merge, newsletter assembly) → rules of thumb → "say this → get that" cheat sheet.
+- **Styling:** brand palette + Lato pulled from the app's `STYLES`/`C` constants; arrow-key/space navigation, progress bar, slide counter. Pure HTML/CSS/JS, opens in any browser.
+- Not committed to git.
+
+---
+
 ## 2026-06-01 — In-app Newsletter page (store + fill-in-the-blanks editor)
 
 Built a Newsletter view in the app so past, current, and future issues live in the CRM with a workspace editor — not just as static template files driven by the MCP. Effort was medium (pattern-following CRUD + one new view); build passes clean.

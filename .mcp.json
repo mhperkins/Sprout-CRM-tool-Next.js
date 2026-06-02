@@ -3,6 +3,17 @@
     "sprout-crm": {
       "command": "C:\\Program Files\\nodejs\\node.exe",
       "args": ["mcp/server.js"]
+    },
+    "supabase": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--project-ref=ixdnmjchvjzytyhmripc",
+        "--access-token=${SUPABASE_ACCESS_TOKEN}"
+      ]
     }
   }
 }

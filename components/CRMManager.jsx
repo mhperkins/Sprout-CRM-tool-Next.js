@@ -293,7 +293,7 @@ const STYLES = `
 
 /* ─── Constants ─────────────────────────────────────────────────────────────── */
 const REL_STATUS = { cold:"Cold", cool:"Cool", warm:"Warm", active:"Active" };
-const REL_TYPES  = { music:"Music", art:"Art", event_host:"Event Host", community_builder:"Community Builder", partner:"Partner", attendee:"Attendee", other:"Other" };
+const REL_TYPES  = { music:"Music", art:"Art", event_host:"Event Host", community_builder:"Community Builder", partner:"Partner", attendee:"Attendee", sprout_society:"Sprout Society", other:"Other" };
 const ORG_CATS   = { funder:"Funder", partner:"Partner", vendor:"Vendor", media:"Media", government:"Government" };
 const CADENCE    = { active:30, warm:90, cool:120, cold:180 };
 const MONTHS     = ["January","February","March","April","May","June","July","August","September","October","November","December"];
