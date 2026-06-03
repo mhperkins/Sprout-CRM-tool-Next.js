@@ -2,6 +2,33 @@
 
 ---
 
+## 2026-06-03 — Contact segments: Community / Donors / Prospects tabs
+
+First **app code change** in several sessions. Split the Contacts page into three in-page tabs (segments) over the single `sprout_contacts` table — no new tables, no DB migration.
+
+- **Backend model:** new `segment` field on each contact (`"community" | "donor" | "prospect"`), stored in the `data` JSONB blob. Missing value reads as `"community"`, so all existing contacts auto-land in Community with zero migration. Added to **both** `lib/schemas.js` (`ContactSchema` enum, defaults to `community`) and the UI constants — the schemas-sync rule, or saves get silently dropped (the `sprout_society` lesson).
+- **One table, three filtered tabs:** the Contacts view renders one list scoped by an active `segment` state. Tab row (Community | Donors | Prospects) with live per-bucket counts; sidebar still shows a single "Contacts" item. Decided against separate tables (would fork services/schemas/MCP/dashboard for no gain).
+- **One bucket per contact, warn-don't-block:** Add + Edit modals both have a **Bucket** selector. On edit, moving a contact to a *different* bucket than where it started pops a confirm ("…currently in Community… moves them into Donors. Continue?"); cancel reverts, moving back to the original bucket doesn't warn. No hard constraint. Extended `ConfirmModal` with optional `title`/`confirmLabel`/`danger` (existing delete callers unaffected via defaults).
+- **New contacts** default to the active tab's bucket; "+ Add" button and counts are bucket-aware.
+- **Donor logic = manual label** (user's choice). `financial_relationship.has_given` is still present if auto-derivation from Givebutter giving is wanted later.
+- **Files:** `lib/schemas.js`, `components/CRMManager.jsx`. `npm run build` passes clean. Not committed yet.
+- **Follow-up:** MCP write tools (`create_or_update_contact`) and Import JSON don't set `segment` yet — those contacts default to Community. Add `segment` to the `mcp/server.js` inputSchemas if explicit MCP control is wanted.
+
+---
+
+## 2026-06-03 — Givebutter MCP connected + verified live
+
+Connected the **Givebutter MCP** end to end (the audience/email-contact integration planned 2026-06-02). **No app code or data change** — MCP registration + config only.
+
+- **Server:** community **johnnylinsf/givebutter-mcp** (65 tools, Bearer auth via `GIVEBUTTER_API_KEY`, stdio). Cloned outside the repo at `C:\Users\maxwe\mcp-servers\givebutter-mcp`, `npm install` + `npm run build` → `dist/index.js`. Not on npm, so `.mcp.json` points `node.exe` at the built entry (unlike our `npx -y` servers).
+- **Config:** added `givebutter` key to `.mcp.json` (`node dist/index.js`, env `GIVEBUTTER_API_KEY` via `${...}` expansion — no secret in git) + added `givebutter` to this project's `enabledMcpjsonServers` in `~/.claude.json`.
+- **Auth:** user had only a Givebutter **login**, not an API key — created one in the UI (Settings → Developers → API → New API key, `claude-code-crm`). Stored as a Windows User env var via `setx GIVEBUTTER_API_KEY` (same pattern as `DISCORD_TOKEN`); **full VS Code restart** to pick it up (setx-only-reaches-new-processes gotcha).
+- **Verified live (both smoke tests pass):** `list_contacts` → **30 real contacts** (2 pages; donations, tags, subscription status, addresses). `list_messages` → empty (0 Engage sends yet, expected).
+- **Data findings:** duplicate contacts present (Jodi Kaplan ×3, Danielle Karlik ×2) — dedupe before any sync. One contact tagged `DTD`. No `newsletter` tag or saved segment yet (UI-only, must be created once).
+- **⚠️ Loose ends:** (1) API key was pasted in chat → rotate + re-`setx` to clean. (2) No send API confirmed in practice — Engage send stays manual.
+
+---
+
 ## 2026-06-02 — Virtual Agency stood up + first employee (Communications Manager) + newsletter intake templates
 
 Docs/scaffolding only, **no app/data change**. Mirrored the Composer's Compass `virtual-agency/` setup into the CRM repo and built the first AI employee.

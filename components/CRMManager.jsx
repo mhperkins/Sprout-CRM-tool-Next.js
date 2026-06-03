@@ -294,6 +294,8 @@ const STYLES = `
 /* ─── Constants ─────────────────────────────────────────────────────────────── */
 const REL_STATUS = { cold:"Cold", cool:"Cool", warm:"Warm", active:"Active" };
 const REL_TYPES  = { music:"Music", art:"Art", event_host:"Event Host", community_builder:"Community Builder", partner:"Partner", attendee:"Attendee", sprout_society:"Sprout Society", other:"Other" };
+const SEGMENTS   = { community:"Community", donor:"Donors", prospect:"Prospects" };
+const SEGMENT_OPTS = [{value:"community",label:"Community"},{value:"donor",label:"Donor"},{value:"prospect",label:"Prospect"}];
 const ORG_CATS   = { funder:"Funder", partner:"Partner", vendor:"Vendor", media:"Media", government:"Government" };
 const CADENCE    = { active:30, warm:90, cool:120, cold:180 };
 const MONTHS     = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -384,10 +386,10 @@ function Modal({title,onClose,children,footer,wide}) {
 }
 
 /* ─── Confirm Modal ──────────────────────────────────────────────────────────── */
-function ConfirmModal({message,onConfirm,onCancel}) {
+function ConfirmModal({message,onConfirm,onCancel,title="Confirm Delete",confirmLabel="Delete",danger=true}) {
   return (
-    <Modal title="Confirm Delete" onClose={onCancel}
-      footer={<><button className="btn btn-ghost btn-sm" onClick={onCancel}>Cancel</button><button className="btn btn-danger btn-sm" onClick={onConfirm}>Delete</button></>}>
+    <Modal title={title} onClose={onCancel}
+      footer={<><button className="btn btn-ghost btn-sm" onClick={onCancel}>Cancel</button><button className={`btn ${danger?"btn-danger":"btn-blk"} btn-sm`} onClick={onConfirm}>{confirmLabel}</button></>}>
       <p style={{fontSize:13,lineHeight:1.7,color:"var(--g800)"}}>{message}</p>
     </Modal>
   );
@@ -1048,6 +1050,13 @@ function DashboardView({contacts,orgs,setView,openContact,events,onUpdateContact
 /* ─── Contact Edit Modal ─────────────────────────────────────────────────────── */
 function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,onNavigate,initialTab="overview"}) {
   const [eTab,setETab]=useState(initialTab);
+  const [origSegment]=useState(editing.segment||"community");
+  const [segConfirm,setSegConfirm]=useState(null);
+  const onSegmentClick=(v)=>{
+    if(v===(editing.segment||"community")) return;       // no change
+    if(v===origSegment){ setEditing({...editing,segment:v}); return; }  // moving back to original bucket — no warning
+    setSegConfirm(v);                                    // moving to a different bucket — warn, don't block
+  };
   const orgOpts=[{value:"",label:"— None —"},...orgs.map(o=>({value:o.id,label:o.name,meta:ORG_CATS[o.category]||o.category}))];
   const toggleEventLink = (evtId) => {
     const updated = events.map(ev=>{
@@ -1077,6 +1086,7 @@ function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,
         <div className="fg"><label className="fl">Instagram</label><input className="fi" value={editing.instagram_handle||""} onChange={e=>setEditing({...editing,instagram_handle:e.target.value})} placeholder="@handle"/></div>
         <div className="fg"><label className="fl">Organization</label><SearchSelect options={orgOpts} value={editing.org_id||""} onChange={v=>setEditing({...editing,org_id:v})}/></div>
         <div className="fg"><label className="fl">Status</label><RadioGroup options={STATUS_OPTS} value={editing.relationship_status||"cold"} onChange={v=>setEditing({...editing,relationship_status:v})}/></div>
+        <div className="fg"><label className="fl">Bucket <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(one at a time)</span></label><RadioGroup options={SEGMENT_OPTS} value={editing.segment||"community"} onChange={onSegmentClick}/></div>
         <div className="fg"><label className="fl">Type <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(select all that apply)</span></label>
           <div className="type-btn-group">
             {Object.entries(REL_TYPES).map(([v,l])=>{
@@ -1178,6 +1188,13 @@ function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,
           </div>
         </div>
       </>}
+      {segConfirm&&<ConfirmModal
+        title="Move bucket?"
+        confirmLabel={`Move to ${SEGMENTS[segConfirm]}`}
+        danger={false}
+        message={`${(editing.first_name||"This contact").trim()} is currently in ${SEGMENTS[origSegment]}. A contact lives in one bucket at a time, so this moves them out of ${SEGMENTS[origSegment]} and into ${SEGMENTS[segConfirm]}. Continue?`}
+        onConfirm={()=>{setEditing({...editing,segment:segConfirm});setSegConfirm(null);}}
+        onCancel={()=>setSegConfirm(null)}/>}
     </Modal>
   );
 }
@@ -1185,6 +1202,7 @@ function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,
 /* ─── Contacts View ──────────────────────────────────────────────────────────── */
 function ContactsView({contacts,orgs,events,onUpdate,onDelete,onUpdateEvents,showToast,pendingDetail,onPendingDetailConsumed,setView}) {
   const [search,setSearch]=useState("");
+  const [segment,setSegment]=useState("community");
   const [fType,setFType]=useState("all");
   const [fStatus,setFStatus]=useState("all");
   const [selected,setSelected]=useState(null);
@@ -1197,7 +1215,7 @@ useEffect(()=>{
     onPendingDetailConsumed();
   }
 },[pendingDetail, onPendingDetailConsumed]);
-const blank={first_name:"",last_name:"",org_id:"",email:"",phone:"",instagram_handle:"",website:"",relationship_types:[],relationship_status:"cold",notes:"",next_action:"",next_action_date:"",next_actions:[]};
+const blank={first_name:"",last_name:"",org_id:"",email:"",phone:"",instagram_handle:"",website:"",relationship_types:[],relationship_status:"cold",segment:"community",notes:"",next_action:"",next_action_date:"",next_actions:[]};
   const [nc,setNc]=useState(blank);
 
 // Pre-compute scores once per render, not once per table cell
@@ -1207,7 +1225,14 @@ const blank={first_name:"",last_name:"",org_id:"",email:"",phone:"",instagram_ha
     return m;
   }, [contacts]);
 
+  const segCounts=useMemo(()=>{
+    const m={community:0,donor:0,prospect:0};
+    contacts.forEach(c=>{ const s=c.segment||"community"; m[s]=(m[s]||0)+1; });
+    return m;
+  }, [contacts]);
+
   const filtered=useMemo(()=>contacts.filter(c=>{
+    if ((c.segment||"community")!==segment) return false;
     const name=`${c.first_name} ${c.last_name} ${c.title||""}`.toLowerCase();
     if (search&&!name.includes(search.toLowerCase())) return false;
     if (fType!=="all") {
@@ -1219,7 +1244,7 @@ const blank={first_name:"",last_name:"",org_id:"",email:"",phone:"",instagram_ha
     }
     if (fStatus!=="all"&&c.relationship_status!==fStatus) return false;
     return true;
-  }), [contacts, search, fType, fStatus]);
+  }), [contacts, segment, search, fType, fStatus]);
 
 const [editing,setEditing]=useState(null);
   const [editingTab,setEditingTab]=useState("overview"); // pre-select tab on open
@@ -1240,7 +1265,14 @@ const [editing,setEditing]=useState(null);
 
   return (
     <div className="page">
-      <div className="pg-hd"><div><div className="pg-ttl">Contacts</div><div className="pg-sub">{contacts.length} individuals · {contacts.filter(isOverdue).length} overdue</div></div><button className="btn btn-blk" onClick={()=>setAdding(true)}>+ Add Contact</button></div>
+      <div className="pg-hd"><div><div className="pg-ttl">Contacts</div><div className="pg-sub">{contacts.length} individuals · {contacts.filter(isOverdue).length} overdue</div></div><button className="btn btn-blk" onClick={()=>{setNc({...blank,segment});setAdding(true);}}>+ Add to {SEGMENTS[segment]}</button></div>
+      <div className="tabs">
+        {SEGMENT_OPTS.map(o=>(
+          <button key={o.value} className={`tab ${segment===o.value?"on":""}`} onClick={()=>{setSegment(o.value);setSelected(null);}}>
+            {SEGMENTS[o.value]} <span style={{opacity:0.55}}>({segCounts[o.value]||0})</span>
+          </button>
+        ))}
+      </div>
       <div className="filter-bar">
         <input className="fi" placeholder="Search name or title…" value={search} onChange={e=>setSearch(e.target.value)}/>
         <select className="fs" value={fType} onChange={e=>setFType(e.target.value)}><option value="all">All types</option>{Object.entries(REL_TYPES).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
@@ -1270,6 +1302,9 @@ const [editing,setEditing]=useState(null);
           <div className="fg"><label className="fl">Status</label>
             <RadioGroup options={STATUS_OPTS} value={nc.relationship_status} onChange={v=>setNc({...nc,relationship_status:v})}/>
           </div>
+          <div className="fg"><label className="fl">Bucket</label>
+            <RadioGroup options={SEGMENT_OPTS} value={nc.segment||"community"} onChange={v=>setNc({...nc,segment:v})}/>
+          </div>
           <button className="drawer-toggle" onClick={()=>setNcDrawer(d=>!d)}>{ncDrawer?"▾":"▸"} More details</button>
           {ncDrawer&&<><hr className="drawer-divider"/>
             <div className="frow">
@@ -1287,7 +1322,7 @@ const [editing,setEditing]=useState(null);
         </Modal>
       )}
       {contacts.length>0&&<div style={{fontSize:12,color:"var(--g600)",marginBottom:12,display:"flex",alignItems:"center",gap:6}}>
-        <span><strong style={{color:"var(--black)"}}>{filtered.length}</strong> of {contacts.length} contact{contacts.length!==1?"s":""} shown</span>
+        <span><strong style={{color:"var(--black)"}}>{filtered.length}</strong> of {segCounts[segment]||0} in {SEGMENTS[segment]}</span>
         {(search||fType!=="all"||fStatus!=="all")&&<span style={{fontSize:11,background:"var(--cyan-lt)",color:"#155e6e",padding:"1px 7px",borderRadius:10,fontWeight:700}}>filtered</span>}
       </div>}
       {filtered.length===0
