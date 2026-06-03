@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprout CRM — MCP Tools & Workflows</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#030000; --white:#F7F7F6; --cyan:#73C4D6; --fuchsia:#E10098;
+    --acid:#C6C902; --banana:#FAD100; --cyan-lt:#C7E7EF; --acid-lt:#E9E99A;
+    --fuchsia-lt:#FFCDF0; --banana-lt:#FEF4C1;
+    --g100:#F3F4F6; --g200:#E5E7EB; --g300:#D1D5DB; --g400:#9CA3AF; --g600:#4B5563; --g800:#1F2937;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    font-family:'Lato',sans-serif; background:var(--black); color:var(--white);
+    overflow:hidden;
+  }
+  .deck{height:100vh;width:100vw;position:relative;}
+  .slide{
+    position:absolute;inset:0;display:none;flex-direction:column;
+    padding:64px 80px 88px;animation:fade .35s ease;
+    background:radial-gradient(circle at 15% 15%, rgba(115,196,214,0.08), transparent 45%),
+               radial-gradient(circle at 85% 85%, rgba(225,0,152,0.07), transparent 45%),
+               var(--black);
+  }
+  .slide.active{display:flex;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  .kicker{font-size:13px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;}
+  h1{font-size:62px;font-weight:900;line-height:1.05;letter-spacing:-.02em;}
+  h2{font-size:40px;font-weight:900;line-height:1.1;letter-spacing:-.01em;margin-bottom:6px;}
+  .sub{font-size:20px;color:var(--g400);font-weight:400;margin-top:12px;max-width:60ch;line-height:1.5;}
+  p{font-size:19px;line-height:1.6;color:var(--g200);}
+  .accent{color:var(--banana);}
+  .accent-f{color:var(--fuchsia);}
+  .accent-a{color:var(--acid);}
+
+  .body{flex:1;display:flex;flex-direction:column;justify-content:center;}
+  .grid{display:grid;gap:18px;margin-top:24px;}
+  .g2{grid-template-columns:1fr 1fr;}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  .g4{grid-template-columns:repeat(4,1fr);}
+
+  .card{
+    background:rgba(247,247,246,0.04);border:1px solid rgba(247,247,246,0.09);
+    border-radius:14px;padding:20px 22px;
+  }
+  .card.lead{border-left:4px solid var(--cyan);}
+  .card.lead-f{border-left:4px solid var(--fuchsia);}
+  .card.lead-a{border-left:4px solid var(--acid);}
+  .card.lead-b{border-left:4px solid var(--banana);}
+  .card h3{font-size:17px;font-weight:900;margin-bottom:6px;}
+  .card code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;color:var(--banana);background:rgba(250,209,0,0.10);padding:1px 6px;border-radius:5px;}
+  .card .desc{font-size:14.5px;color:var(--g400);line-height:1.5;margin-top:4px;}
+
+  .tool-row{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid rgba(247,247,246,0.07);}
+  .tool-row:last-child{border-bottom:none;}
+  .tool-name{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;font-weight:700;color:var(--banana);white-space:nowrap;min-width:230px;}
+  .tool-desc{font-size:15px;color:var(--g200);line-height:1.45;}
+
+  .pill{display:inline-block;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;padding:4px 12px;border-radius:20px;}
+  .p-read{background:var(--cyan-lt);color:#0c4a57;}
+  .p-write{background:var(--banana-lt);color:#7a5c00;}
+  .p-create{background:var(--acid-lt);color:#3a3d00;}
+  .p-research{background:var(--fuchsia-lt);color:#8a005c;}
+
+  .flow{display:flex;align-items:stretch;gap:0;margin-top:30px;}
+  .step{flex:1;background:rgba(247,247,246,0.04);border:1px solid rgba(247,247,246,0.10);border-radius:12px;padding:18px 16px;position:relative;}
+  .step .n{font-size:13px;font-weight:900;color:var(--cyan);letter-spacing:.1em;}
+  .step h4{font-size:17px;font-weight:900;margin:6px 0;}
+  .step p{font-size:13.5px;color:var(--g400);line-height:1.45;}
+  .step code{display:inline-block;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--banana);margin-top:8px;line-height:1.5;}
+  .arrow{display:flex;align-items:center;color:var(--fuchsia);font-size:28px;font-weight:900;padding:0 10px;}
+
+  ul.clean{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:18px;}
+  ul.clean li{font-size:19px;line-height:1.5;padding-left:30px;position:relative;color:var(--g200);}
+  ul.clean li::before{content:"";position:absolute;left:0;top:9px;width:13px;height:13px;border-radius:3px;background:var(--acid);}
+  ul.clean li b{color:var(--white);}
+
+  .footer{position:absolute;bottom:30px;left:80px;right:80px;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--g600);}
+  .logo{font-weight:900;letter-spacing:-.01em;}
+  .logo .dot{color:var(--acid);}
+  .progress{position:absolute;bottom:0;left:0;height:4px;background:linear-gradient(90deg,var(--cyan),var(--fuchsia));transition:width .35s ease;}
+  .nav{position:absolute;bottom:26px;right:80px;display:flex;gap:8px;z-index:10;}
+  .nav button{background:rgba(247,247,246,0.06);border:1px solid rgba(247,247,246,0.15);color:var(--white);width:38px;height:38px;border-radius:9px;cursor:pointer;font-size:17px;font-family:'Lato';transition:.15s;}
+  .nav button:hover{background:rgba(247,247,246,0.15);}
+  .counter{position:absolute;bottom:34px;left:80px;font-size:13px;color:var(--g600);font-weight:700;letter-spacing:.05em;z-index:10;}
+
+  .big-num{font-size:120px;font-weight:900;line-height:1;color:var(--banana);}
+  .define{background:rgba(115,196,214,0.07);border:1px solid rgba(115,196,214,0.25);border-radius:14px;padding:26px 30px;margin-top:26px;}
+  .define b{color:var(--cyan);}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- 1 TITLE -->
+  <section class="slide active">
+    <div class="body">
+      <div class="kicker">Sprout Society · Relationship CRM</div>
+      <h1>The MCP Toolkit<br><span class="accent-f">&</span> Optimized Workflows</h1>
+      <p class="sub">How to drive the Sprout CRM straight from a chat with Claude — no clicking through screens. A start-from-zero guide to the 14 tools and the everyday workflows they unlock.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span>Use ← → arrow keys to navigate</span></div>
+  </section>
+
+  <!-- 2 WHAT IS THIS -->
+  <section class="slide">
+    <div class="kicker">Start here</div>
+    <h2>What you're looking at</h2>
+    <div class="body">
+      <div class="two">
+        <div>
+          <p>The <b style="color:#fff">Sprout CRM</b> tracks the people, organizations, and events behind a Brooklyn mental-wellness nonprofit. It lives as a web app, but it also speaks a second language: <span class="accent">MCP</span>.</p>
+          <p style="margin-top:18px">That means you can ask Claude in plain English to read and update the CRM, and it uses real tools to do it — safely, with the same rules the app enforces.</p>
+        </div>
+        <div class="grid g2" style="margin:0">
+          <div class="card lead"><h3>👤 Contacts</h3><div class="desc">Individuals you're building relationships with</div></div>
+          <div class="card lead-f"><h3>🏢 Orgs</h3><div class="desc">Partner organizations & venues</div></div>
+          <div class="card lead-a"><h3>📅 Events</h3><div class="desc">Gatherings, RSVPs, and recaps</div></div>
+          <div class="card lead-b"><h3>📊 Health</h3><div class="desc">Who's overdue for a check-in</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 3 WHAT IS AN MCP TOOL -->
+  <section class="slide">
+    <div class="kicker">The one concept to grasp</div>
+    <h2>What is an "MCP tool"?</h2>
+    <div class="body">
+      <div class="define">
+        <p style="font-size:22px"><b>MCP</b> lets Claude reach into a real system and do real work. Each <b>tool</b> is one specific action it can take — like "search contacts" or "log a touchpoint."</p>
+      </div>
+      <ul class="clean">
+        <li><b>You talk normally.</b> "Who haven't we followed up with?" Claude picks the right tool.</li>
+        <li><b>It's live data.</b> Tools read and write the same Supabase database the web app uses — changes show up everywhere instantly.</li>
+        <li><b>It's guarded.</b> Every write runs through the same validation as the app. Bad data is rejected, not saved.</li>
+        <li><b>It can't go rogue.</b> There are exactly 14 actions. No tool deletes records or does anything destructive.</li>
+      </ul>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 4 14 TOOLS AT A GLANCE -->
+  <section class="slide">
+    <div class="kicker">The map</div>
+    <h2>14 tools, 4 families</h2>
+    <p class="sub">Everything Claude can do, grouped by what it's for.</p>
+    <div class="body">
+      <div class="grid g4">
+        <div class="card lead"><span class="pill p-read">Read · 5</span><div class="desc" style="margin-top:12px">Look things up. Never change anything.</div></div>
+        <div class="card lead-b"><span class="pill p-write">Write · 4</span><div class="desc" style="margin-top:12px">Log interactions & move relationships forward.</div></div>
+        <div class="card lead-a"><span class="pill p-create">Create · 2</span><div class="desc" style="margin-top:12px">Add new records, or merge research in safely.</div></div>
+        <div class="card lead-f"><span class="pill p-research">Research · 3</span><div class="desc" style="margin-top:12px">Dedupe, scaffold from research, build the newsletter.</div></div>
+      </div>
+      <p style="margin-top:32px;color:var(--g400);font-size:17px">The next four slides walk through each family. You never memorize tool names — you describe the goal, Claude picks the tool.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 5 READ TOOLS -->
+  <section class="slide">
+    <div class="kicker"><span class="pill p-read">Read · 5</span></div>
+    <h2 style="margin-top:14px">Looking things up</h2>
+    <div class="body">
+      <div class="card" style="padding:8px 24px">
+        <div class="tool-row"><span class="tool-name">get_relationship_health</span><span class="tool-desc">The dashboard: counts by status, who's overdue, the next 20 actions due. Your "how are we doing?" tool.</span></div>
+        <div class="tool-row"><span class="tool-name">search_contacts</span><span class="tool-desc">Find people by name, relationship status, or relationship type.</span></div>
+        <div class="tool-row"><span class="tool-name">get_contact_detail</span><span class="tool-desc">The full file on one person — every touchpoint and next action.</span></div>
+        <div class="tool-row"><span class="tool-name">list_upcoming_actions</span><span class="tool-desc">Everything due within N days, across contacts, orgs, and events.</span></div>
+        <div class="tool-row"><span class="tool-name">list_events</span><span class="tool-desc">Events with their contact and action counts; filter by status.</span></div>
+      </div>
+      <p style="margin-top:22px;color:var(--g400);font-size:16px">💬 <i>"Give me the health snapshot"  ·  "Find warm contacts who are mentors"  ·  "What's due this week?"</i></p>
+      <p style="margin-top:12px;color:var(--cyan);font-size:15px">📧 <b>With the Gmail MCP:</b> <code style="color:var(--cyan);background:rgba(115,196,214,0.12)">check_existing</code> reads your inbox sender against contacts <i>and</i> orgs before anything is logged — the dedupe lookup that opens every email-to-CRM run.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 6 WRITE TOOLS -->
+  <section class="slide">
+    <div class="kicker"><span class="pill p-write">Write · 4</span></div>
+    <h2 style="margin-top:14px">Moving relationships forward</h2>
+    <div class="body">
+      <div class="card" style="padding:8px 24px">
+        <div class="tool-row"><span class="tool-name">add_touchpoint</span><span class="tool-desc">Log an interaction (call, DM, coffee) on a contact or org. Can set a follow-up in the same step.</span></div>
+        <div class="tool-row"><span class="tool-name">set_next_action</span><span class="tool-desc">Set what's next and when — the thing that makes someone show up on the dashboard.</span></div>
+        <div class="tool-row"><span class="tool-name">complete_action</span><span class="tool-desc">Check off a next action. The next-due date auto-advances to whatever's next.</span></div>
+        <div class="tool-row"><span class="tool-name">update_relationship_status</span><span class="tool-desc">Move someone along the ladder: cold → cool → warm → active.</span></div>
+      </div>
+      <p style="margin-top:22px;color:var(--g400);font-size:16px">💬 <i>"Log that I had coffee with Pat, follow up in 2 weeks"  ·  "Mark Jordan's intro email done"  ·  "Bump Sam to active"</i></p>
+      <p style="margin-top:12px;color:var(--cyan);font-size:15px">📧 <b>From a Gmail thread:</b> a reply you sent becomes an <code style="color:var(--cyan);background:rgba(115,196,214,0.12)">add_touchpoint</code> on that person; a promise inside it ("I'll send the deck") becomes a <code style="color:var(--cyan);background:rgba(115,196,214,0.12)">set_next_action</code> — both written straight from the email body.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 7 CREATE TOOLS -->
+  <section class="slide">
+    <div class="kicker"><span class="pill p-create">Create · 2</span></div>
+    <h2 style="margin-top:14px">Adding & merging records</h2>
+    <div class="body">
+      <div class="card" style="padding:8px 24px">
+        <div class="tool-row"><span class="tool-name">create_or_update_contact</span><span class="tool-desc">Add a new person, or merge new info into an existing one.</span></div>
+        <div class="tool-row"><span class="tool-name">create_or_update_org</span><span class="tool-desc">Same, for organizations.</span></div>
+      </div>
+      <div class="define" style="margin-top:26px">
+        <p style="font-size:19px"><b>The safety rule that matters:</b> merging is <b>fill-empty by default</b>. New facts fill blank fields, touchpoints get appended, relationship types combine — but <b>verified data is never overwritten</b> unless you explicitly say so. Leave the ID off and Claude refuses to create a duplicate of someone who already exists.</p>
+      </div>
+      <p style="margin-top:20px;color:var(--cyan);font-size:15px">📧 <b>From a Gmail thread:</b> a new human you emailed back becomes a fresh contact (status <span class="accent">cool</span>, tagged <code style="color:var(--cyan);background:rgba(115,196,214,0.12)">email_sourced</code>); a known contact writing from a new address gets <b>matched by name and merged</b> — never duplicated.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 8 RESEARCH TOOLS -->
+  <section class="slide">
+    <div class="kicker"><span class="pill p-research">Research · 3</span></div>
+    <h2 style="margin-top:14px">Research & newsletter</h2>
+    <div class="body">
+      <div class="card" style="padding:8px 24px">
+        <div class="tool-row"><span class="tool-name">check_existing</span><span class="tool-desc">Before adding anyone, search contacts AND orgs by name or Instagram handle so you never create a dupe.</span></div>
+        <div class="tool-row"><span class="tool-name">scaffold_from_research</span><span class="tool-desc">Drop a finished research brief straight into the CRM — org first, then people auto-linked to it.</span></div>
+        <div class="tool-row"><span class="tool-name">assemble_newsletter</span><span class="tool-desc">Build the monthly roundup HTML from live data: event recaps, upcoming events, profile footer. Subjective copy stays bracketed for you to write.</span></div>
+      </div>
+      <p style="margin-top:22px;color:var(--g400);font-size:16px">These three turn a research session — or a month of events — into finished records and a ready-to-send email.</p>
+      <p style="margin-top:12px;color:var(--cyan);font-size:15px">📧 <b>From a Gmail thread:</b> a multi-person email (intro, group reply, RSVP batch) drops in via <code style="color:var(--cyan);background:rgba(115,196,214,0.12)">scaffold_from_research</code> — org first, then each sender auto-linked — after <code style="color:var(--cyan);background:rgba(115,196,214,0.12)">check_existing</code> clears every name.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 8b SECOND MCP: GMAIL -->
+  <section class="slide">
+    <div class="kicker">A second connected server</div>
+    <h2>The Gmail MCP — your inbox as a source</h2>
+    <p class="sub">The CRM tools are one MCP. Gmail is a second one Claude can read. Together they turn email into records — no copy-paste.</p>
+    <div class="body">
+      <div class="flow">
+        <div class="step"><div class="n">READ</div><h4>Gmail MCP</h4><p>Searches threads and reads bodies. <b style="color:#fff">Read-only</b> — it never writes the CRM.</p><code>search_threads · get_thread</code></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">THINK</div><h4>Claude</h4><p>Parses senders, strips bulk mail, dedupes, and drafts a preview for you.</p><code>parse · dedupe · preview</code></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">WRITE</div><h4>Sprout CRM MCP</h4><p>Only after you confirm. The same 14 guarded tools do every write.</p><code>add_touchpoint · create_or_update…</code></div>
+      </div>
+      <div class="define" style="margin-top:24px">
+        <p style="font-size:18px"><b>Two guardrails make this safe:</b> Gmail can <b>only read</b> (it has no write path into the database), and Claude <b>always previews and waits for your OK</b> before a single record is written. Bulk/promo mail is filtered out at the search step.</p>
+      </div>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 9 KEY CONCEPTS -->
+  <section class="slide">
+    <div class="kicker">Before the workflows — three things to know</div>
+    <h2>The vocabulary</h2>
+    <div class="body">
+      <div class="grid g3">
+        <div class="card lead-f">
+          <h3>The relationship ladder</h3>
+          <div class="desc" style="font-size:15px">Everyone sits at one of four stages:<br><br><b style="color:#fff">cold → cool → warm → active</b><br><br>The goal is to move people rightward over time.</div>
+        </div>
+        <div class="card lead">
+          <h3>Cadence & "next action"</h3>
+          <div class="desc" style="font-size:15px">Each person has a <b style="color:#fff">next action + date</b>. When that date passes with nothing done, they go <b style="color:#fff">overdue</b> — that's what the health check surfaces. No next action = invisible.</div>
+        </div>
+        <div class="card lead-a">
+          <h3>Readable IDs</h3>
+          <div class="desc" style="font-size:15px">Records use human IDs, not random codes:<br><br><code style="color:var(--banana)">ind_jane_smith</code><br><code style="color:var(--banana)">org_brooklyn_arts</code><br><code style="color:var(--banana)">evt_spring_gala</code></div>
+        </div>
+      </div>
+      <p style="margin-top:28px;color:var(--g400);font-size:17px">You rarely type these — Claude generates them. But seeing one in a reply tells you exactly which record it touched.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 10 WORKFLOW SECTION DIVIDER -->
+  <section class="slide">
+    <div class="body" style="justify-content:center">
+      <div class="kicker">Part 2</div>
+      <h1>Six optimized<br>workflows</h1>
+      <p class="sub">The everyday jobs — each one a short conversation, not a click-through. This is where the tools earn their keep.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 11 WORKFLOW 1: MORNING CHECK -->
+  <section class="slide">
+    <div class="kicker">Workflow 1 · Daily</div>
+    <h2>The morning health check</h2>
+    <p class="sub">Open the day knowing exactly who needs you. 30 seconds, one question.</p>
+    <div class="body">
+      <div class="flow">
+        <div class="step"><div class="n">ASK</div><h4>"How's the CRM looking?"</h4><p>Plain question, no setup.</p><code>get_relationship_health</code></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">SEE</div><h4>Overdue + due soon</h4><p>Status counts and everyone past their follow-up date.</p><code>list_upcoming_actions</code></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">ACT</div><h4>Work the top of the list</h4><p>Pick the most overdue and pull their full file.</p><code>get_contact_detail</code></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">CLOSE</div><h4>Log it as you go</h4><p>Each follow-up done feeds the next workflow.</p><code>add_touchpoint</code></div>
+      </div>
+      <p style="margin-top:26px;color:var(--g400);font-size:16px">⚡ <b style="color:#fff">Why it's optimized:</b> three read tools chain into one answer. You never open the app or scan a table.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 12 WORKFLOW 2: LOG INTERACTION -->
+  <section class="slide">
+    <div class="kicker">Workflow 2 · Constant</div>
+    <h2>Log an interaction + set the follow-up</h2>
+    <p class="sub">The single most important habit. One sentence keeps the whole system honest.</p>
+    <div class="body">
+      <div class="two">
+        <div>
+          <p style="font-size:20px">💬 <i>"I grabbed coffee with Pat today — she's interested in volunteering. Remind me to send the volunteer packet in a week."</i></p>
+          <p style="margin-top:20px;color:var(--g400);font-size:16px">⚡ <b style="color:#fff">Why it's optimized:</b> one tool does two jobs — records what happened <i>and</i> schedules what's next. Pat can't fall through the cracks because she now has a dated next action.</p>
+        </div>
+        <div class="grid" style="gap:14px;margin:0">
+          <div class="card lead-b"><h3>1 · add_touchpoint</h3><div class="desc">Logs the coffee chat on Pat's record with today's date.</div></div>
+          <div class="card lead-b"><h3>2 · follow-up, same call</h3><div class="desc">"Send volunteer packet" lands as a next action dated +7 days — written to <i>both</i> fields the dashboard reads.</div></div>
+          <div class="card lead"><h3>Later · complete_action</h3><div class="desc">When you send it: "Mark Pat's packet done." Next-due date auto-advances.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 13 WORKFLOW 3: RESEARCH -> SCAFFOLD -->
+  <section class="slide">
+    <div class="kicker">Workflow 3 · Growth</div>
+    <h2>Research a new contact → into the CRM</h2>
+    <p class="sub">From an Instagram lead to a complete, linked record — without ever creating a duplicate.</p>
+    <div class="body">
+      <div class="flow">
+        <div class="step"><div class="n">1 · CHECK</div><h4>Already in here?</h4><p>Search by name or IG handle first.</p><code>check_existing</code></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">2 · RESEARCH</div><h4>Build the brief</h4><p>Claude follows the 7-phase research protocol to gather facts.</p><code>sprout://crm-protocol</code></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">3 · LAND IT</div><h4>One drop</h4><p>Org goes in first, then each person auto-links to it.</p><code>scaffold_from_research</code></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">4 · QUEUE</div><h4>Set first outreach</h4><p>Give the new contact a next action so they surface.</p><code>set_next_action</code></div>
+      </div>
+      <p style="margin-top:26px;color:var(--g400);font-size:16px">⚡ <b style="color:#fff">Why it's optimized:</b> the dedupe check is step 1, so research never produces a duplicate. A whole org + its people land in a single structured write.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 14 WORKFLOW 4: BULK MERGE -->
+  <section class="slide">
+    <div class="kicker">Workflow 4 · Periodic</div>
+    <h2>Bulk merge from sign-up sheets</h2>
+    <p class="sub">Turn Google Form responses into enriched contacts — additively, never destructively.</p>
+    <div class="body">
+      <div class="two">
+        <div>
+          <ul class="clean">
+            <li><b>Match on email first</b>, name as fallback — so existing people get enriched, not duplicated.</li>
+            <li><b>Fill blanks only.</b> A record that already has an email keeps it. New people come in as <span class="accent">warm</span>.</li>
+            <li><b>Re-run anytime.</b> The Form sheets keep growing; merging again just adds the newcomers.</li>
+          </ul>
+        </div>
+        <div class="card lead-a">
+          <h3 style="font-size:19px">Proven result</h3>
+          <p style="font-size:17px;margin-top:10px;color:var(--g200)">Last real merge of two Form sheets:</p>
+          <div class="big-num" style="font-size:72px;margin:12px 0">38 → 52</div>
+          <p style="font-size:15px;color:var(--g400)">contacts. 14 new, 9 enriched, 13 unchanged, <b style="color:var(--acid)">0 duplicates</b>.</p>
+        </div>
+      </div>
+      <p style="margin-top:22px;color:var(--g400);font-size:15px">Two front doors: paste a sheet into the app's <b style="color:#fff">Merge spreadsheet</b> mode, or have Claude pull it live via the Drive connection.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 15 WORKFLOW 5: NEWSLETTER -->
+  <section class="slide">
+    <div class="kicker">Workflow 5 · Monthly</div>
+    <h2>Assemble the newsletter</h2>
+    <p class="sub">A month of events becomes a ready-to-review email — built from data you already entered.</p>
+    <div class="body">
+      <div class="flow">
+        <div class="step"><div class="n">1 · RECAP</div><h4>Fill recap blurbs</h4><p>Add a short recap to each completed event.</p><code>create_or_update + recap</code></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">2 · ASSEMBLE</div><h4>"Build the roundup"</h4><p>Pulls recaps, upcoming events, and the org footer into the template.</p><code>assemble_newsletter</code></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">3 · REVIEW</div><h4>Fill the brackets</h4><p>Subjective copy stays in <code style="font-size:11px">[BRACKETS]</code> for a human voice.</p><code>edit HTML</code></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">4 · SEND</div><h4>Into Mailchimp</h4><p>Paste the finished HTML; export the contact list as CSV.</p><code>Export newsletter CSV</code></div>
+      </div>
+      <p style="margin-top:26px;color:var(--g400);font-size:16px">⚡ <b style="color:#fff">Why it's optimized:</b> the facts (who, when, what happened) come straight from the CRM. You only write the warmth, not the data.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 15b WORKFLOW 6: EMAIL -> CRM -->
+  <section class="slide">
+    <div class="kicker">Workflow 6 · On demand</div>
+    <h2>Email → CRM in one pass</h2>
+    <p class="sub">Catch the CRM up from your inbox. Run it by scope, review the preview, confirm — done. <code style="font-size:13px">/email-to-crm</code></p>
+    <div class="body">
+      <div class="flow">
+        <div class="step"><div class="n">1 · SCOPE</div><h4>Say what to pull</h4><p>"Replied-to, last 30 days" · "my thread with Alexandra" · "RSVPs for Show n Tell."</p><code>/email-to-crm …</code></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">2 · READ</div><h4>Gmail searches</h4><p>Pulls matching threads, bulk/promo mail stripped out automatically.</p><code>search_threads · get_thread</code></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">3 · PREVIEW</div><h4>Confirm the table</h4><p><i>name · email · new-or-existing · action.</i> Nothing writes until you say go.</p><code>check_existing</code></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">4 · WRITE</div><h4>Into the CRM</h4><p>New people created, known ones merged, each thread logged as a touchpoint.</p><code>create_or_update · add_touchpoint</code></div>
+      </div>
+      <p style="margin-top:24px;color:var(--g400);font-size:16px">⚡ <b style="color:#fff">Why it's optimized:</b> two MCPs, one sentence. Gmail finds the people, the CRM tools file them — and the preview-then-confirm step means it's never a blind import.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 16 BEST PRACTICES -->
+  <section class="slide">
+    <div class="kicker">Habits that keep it healthy</div>
+    <h2>Five rules of thumb</h2>
+    <div class="body">
+      <ul class="clean">
+        <li><b>Always leave a next action.</b> A contact with no dated next action is invisible to the dashboard.</li>
+        <li><b>Log the touchpoint while it's fresh.</b> One sentence to Claude beats a perfect note you never write.</li>
+        <li><b>Check before you create.</b> "Is this person already in here?" prevents almost every duplicate.</li>
+        <li><b>Trust fill-empty merging.</b> Re-running a merge or scaffold is safe — it never overwrites verified facts.</li>
+        <li><b>Describe goals, not tools.</b> Say what you want; let Claude pick from the 14. You never memorize a tool name.</li>
+      </ul>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 17 CHEAT SHEET / CLOSE -->
+  <section class="slide">
+    <div class="kicker">One-screen cheat sheet</div>
+    <h2>Say this → get that</h2>
+    <div class="body">
+      <div class="grid g2" style="gap:14px">
+        <div class="card lead"><h3>"How are we doing / who's overdue?"</h3><div class="desc">→ Health snapshot + overdue list</div></div>
+        <div class="card lead-b"><h3>"I just talked to ___, follow up in ___"</h3><div class="desc">→ Touchpoint logged + next action set</div></div>
+        <div class="card lead-b"><h3>"Mark ___'s task done"</h3><div class="desc">→ Action completed, date advances</div></div>
+        <div class="card lead-f"><h3>"Is ___ already in the CRM?"</h3><div class="desc">→ Dedupe search across contacts & orgs</div></div>
+        <div class="card lead-a"><h3>"Add this person / research this org"</h3><div class="desc">→ New record, or research scaffolded in</div></div>
+        <div class="card lead-f"><h3>"Build this month's newsletter"</h3><div class="desc">→ Roundup HTML from live data</div></div>
+        <div class="card lead"><h3>"/email-to-crm replied-to last 30 days"</h3><div class="desc">→ Inbox read, deduped, previewed, written</div></div>
+      </div>
+      <p style="margin-top:30px;font-size:22px;color:var(--white);font-weight:700">You don't operate the CRM. You <span class="accent-f">talk to it.</span></p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span>Fin</span></div>
+  </section>
+
+</div>
+
+<div class="counter" id="counter">01 / 17</div>
+<div class="nav">
+  <button onclick="go(-1)" aria-label="Previous">‹</button>
+  <button onclick="go(1)" aria-label="Next">›</button>
+</div>
+<div class="progress" id="progress"></div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  let i=0;
+  function render(){
+    slides.forEach((s,n)=>s.classList.toggle('active',n===i));
+    document.getElementById('counter').textContent=String(i+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+    document.getElementById('progress').style.width=((i+1)/slides.length*100)+'%';
+  }
+  function go(d){i=Math.max(0,Math.min(slides.length-1,i+d));render();}
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){go(1);e.preventDefault();}
+    if(e.key==='ArrowLeft'||e.key==='PageUp'){go(-1);e.preventDefault();}
+    if(e.key==='Home'){i=0;render();}
+    if(e.key==='End'){i=slides.length-1;render();}
+  });
+  render();
+</script>
+</body>
+</html>

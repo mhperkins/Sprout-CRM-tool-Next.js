@@ -2,6 +2,55 @@
 
 ---
 
+## 2026-06-02 — Virtual Agency stood up + first employee (Communications Manager) + newsletter intake templates
+
+Docs/scaffolding only, **no app/data change**. Mirrored the Composer's Compass `virtual-agency/` setup into the CRM repo and built the first AI employee.
+
+- **New folder `virtual-agency/`** mirroring Compass's pattern (folder-based system-prompt "subagents," invoked via `claude --system-prompt …` or the Agent tool — **not** `.claude/agents/` files). Structure: `virtual-agency.md` (org doc) + `employees/Communications/{system-prompts,sprints,briefs}/`.
+- **`virtual-agency.md`** — Sprout Society org doc: agent roster (Communications [first build], Grant Manager, CRM Manager, Social Media), Agile/PMBOK framework, shared-memory = the `sprout-crm` MCP, build order, Current State.
+- **Communications Manager (first employee)** — owns the newsletter/outbound voice. `system-prompts/communications-manager-system-prompt_v1.md` + `communications-manager-jobDescription.md`. Grounded in the real newsletter stack: starts every roundup from `assemble_newsletter`, fills brackets in Sprout voice, stages drafts in Gmail (Max sends). Carries Max's writing rules + a Sprout warm/non-corporate voice section + a flag-don't-invent rule for thin CRM data.
+- **Fill-in templates (the "info from me" the agent needs):** new `docs/newsletter/spotlight-template.md` (mirrors the existing `event-recap-template.md`; who → their thing → why now → human detail → paste-ready blurb, Pat Hopkins worked example). New per-issue intake form `virtual-agency/employees/Communications/briefs/_newsletter-intake-TEMPLATE.md` (recaps + spotlight + CTA + subject in one fillable doc) and a pre-filled `briefs/newsletter-2026-06.md` (CRM facts filled, only blurbs blank).
+- **Agent wired to the intake:** session protocol now reads `briefs/newsletter-<month>.md` as the authoritative source for subjective copy; hands Max the template to fill if none exists. README + job description updated to list the two new templates.
+- **CRM landscape pulled (for the June issue):** **zero events marked `completed`** (so `assemble_newsletter` returns no recaps) though several May events already happened (Show n Tell 5/19, Sprout Happy Hour 5/28, Community Coworking x3, Game Night 5/26); only true upcoming = Sprout n Tell 6/26. Decisions captured in the June brief: Monthly Roundup, spotlight = Pat Hopkins, CTA = become a member.
+
+---
+
+## 2026-06-02 — Sprout n Tell Vol. 1 recap (graphic blocks) in monthly roundup + Canva-limits finding
+
+Docs only, **no app/data change**. Built the inaugural Sprout n Tell recap as HTML, then learned where Canva automation stops.
+
+- **New files:** `docs/newsletter/SnTv1_monthly-roundup.html` (the deliverable — `01-monthly-roundup.html` with Sprout n Tell as the lead recap block) and `docs/newsletter/SnTv1_event-recap.html` (standalone, holds the IG caption). Source: `SnTv1_event-recap-template.md`.
+- **Two user corrections shaped it:** (1) it's a **monthly roundup** with the recap as **one block**, not a standalone event newsletter; (2) the recap must be **graphic text blocks, not prose** — rebuilt as a card with a black title bar, a clean photo placeholder box, and four color-coded chip rows (🎤 Live Music / 🎧 DJ Sets / 🎨 Art / 📸 Photo Booth) + a bold cap line. Shoutouts treated as the highlights; photos deferred to placeholders.
+- **Wrote fresh copy:** newsletter blurb (in the roundup) + IG caption (standalone file only).
+- **⚠️ Canva MCP finding (the durable lesson):** no automated path gives a design that is **both pixel-exact and fully editable**. `import-design-from-url` imports **flat/non-editable**; `generate-design` is **AI-interpreted** (editable but not exact — user rejected all candidates); `perform-editing-operations` edits **only pre-existing elements** (can't draw new shapes). Verified end to end: pushed HTML to throwaway branch `canva-import-sntv1` → imported to Canva design `DAHLehCW_7A` (flat). **User moved to Claude design (claude.ai)** with HTML + screenshots + a structured brief instead.
+- **Cleanup:** both recap files committed + pushed to **main** (commit `9bc1cfc`); throwaway branch `canva-import-sntv1` deleted local + remote. Flat Canva import `DAHLehCW_7A` left in the user's Canva account (harmless, delete via UI if wanted).
+
+---
+
+## 2026-06-02 — Givebutter ↔ Newsletter integration plan + setup doc
+
+Planning/research session for connecting **Givebutter** (Sprout Society's email-contact system of record) to the CRM, with the **Newsletter** as the anchor use case. **No code/data/config change** — produced one doc: `docs/guides/givebutter-mcp-setup.md`.
+
+- **Goal clarified across two passes:** not donor enrichment — the main function is the **Newsletter's email audience**. Send path = **Givebutter Engage** (replaces the "Copy HTML → Mailchimp" step); contact sync = **two-way, matched by email**.
+- **⚠️ Hard API constraint confirmed against the spec:** Givebutter has **no send endpoint** — Engage email sending is **UI-only**. `Messages` is **read-only** (list/get sent history). **No Segments API** (segments are a UI feature on tags/filters). **Contacts + tags are fully writable** (create/update, add/remove/**sync tags**). So the API does the *audience* half; the *send* stays a human action in Engage. No workaround exists.
+- **Chosen server:** community **[johnnylinsf/givebutter-mcp](https://github.com/johnnylinsf/givebutter-mcp)** — 65 tools, Bearer auth via `GIVEBUTTER_API_KEY`, stdio. **Not on npm** → needs `git clone` + `npm run build`, `.mcp.json` points `node` at `dist/index.js` (differs from our `npx -y` one-liners). Plan to clone outside the repo at `C:\Users\maxwe\mcp-servers\givebutter-mcp`.
+- **Workflow designed (MCP orchestration, no app code):** CRM builds HTML → sync/tag audience CRM⇄Givebutter (preview before write, dedupe via `check_existing`, mirrors `/email-to-crm`) → paste HTML into Engage + send to a tag/segment → read Messages to confirm. Two-way conflict rule: email is the match key, CRM owns relationship fields, Givebutter owns contactability.
+- **Blocked on the user creating an API key** (Settings → Developers → API → New API key; shown once). Then: `setx GIVEBUTTER_API_KEY` (full VS Code restart, not reload), clone+build, wire config + `enabledMcpjsonServers`.
+- **Layer 2 (deferred):** in-app "Sync audience to Givebutter" button, `givebutter_contact_id`/email-status on `sprout_contacts`, scheduled/webhook sync.
+
+---
+
+## 2026-06-02 — Shared-drive sheets → Slack `#sprout-links` (first `slack` MCP use)
+
+First real task on the new `slack` MCP: posted all 5 Google Sheets from the "Sprout Society Team" shared drive (`0AABHYS_tIU_6Uk9PVA`) as links into a new `#sprout-links` channel (`C0B7Y3GAPKK`). **No app/data change** — Drive→Slack orchestration only (`search_drive_files` mimeType filter → `conversations_add_message`).
+
+- **Mapped the stealth Slack MCP's limits:** no file upload (`files.upload`), no channel create (`conversations.create`), no message delete. So "sheets as actual files" is impossible on browser-token auth — post Drive links instead; the user created `#sprout-links` by hand. Real uploads/channel-creation would need a bot-token Slack app.
+- **Stale channel cache:** a just-created channel isn't in `channels_list` (roster cached at startup), but `conversations_add_message` resolves `#name` live and posts fine.
+- **Link formatting:** default `content_type` is `text/markdown`, where Slack's `<url|label>` renders literally. Use markdown `[label](url)` or Block Kit `mrkdwn` `<url|label>` for clickable titled links (used Block Kit).
+- User connected Slack's **official Google Drive app** (File Previews ON) so Drive links unfurl as rich cards. Decided **no Slack Workflows** needed — those are for unattended/scheduled automation; the MCP covers on-demand.
+
+---
+
 ## 2026-06-02 — Discord MCP re-established + verified live
 
 Restored the **`discord`** MCP and verified it end to end. At session start `.mcp.json` had **no `discord` entry** (only sprout-crm/supabase/google-workspace) and it was missing from `enabledMcpjsonServers` — despite an earlier same-day changelog entry. Re-added both, re-set `DISCORD_TOKEN`, and walked the full Developer Portal bot setup again. **No app/data change** — config only.

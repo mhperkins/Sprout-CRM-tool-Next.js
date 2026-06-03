@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sprout CRM: Getting Started (Picture Tutorial)</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#030000; --white:#F7F7F6; --cyan:#73C4D6; --fuchsia:#E10098;
+    --acid:#C6C902; --banana:#FAD100; --cyan-lt:#C7E7EF; --acid-lt:#E9E99A;
+    --fuchsia-lt:#FFCDF0; --banana-lt:#FEF4C1;
+    --g50:#F9FAFB; --g100:#F3F4F6; --g200:#E5E7EB; --g300:#D1D5DB;
+    --g400:#9CA3AF; --g600:#4B5563; --g800:#1F2937;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0; font-family:'Lato',-apple-system,sans-serif; color:var(--g800); background:var(--g100); line-height:1.6; font-size:18px; overflow-x:hidden}
+  .wrap{max-width:980px; margin:0 auto; padding:0 22px 120px}
+
+  /* Hero */
+  .hero{background:var(--black); color:var(--white); padding:64px 22px 56px; text-align:center; margin-bottom:48px; border-bottom:6px solid var(--acid)}
+  .hero .kick{color:var(--cyan); font-weight:700; letter-spacing:.18em; text-transform:uppercase; font-size:14px; margin-bottom:14px}
+  .hero h1{font-weight:900; font-size:clamp(34px,6vw,56px); margin:0 0 16px; line-height:1.05}
+  .hero p{max-width:640px; margin:0 auto; font-size:20px; color:var(--g300)}
+  .hero .badge{display:inline-block; margin-top:24px; background:var(--acid); color:var(--black); font-weight:900; padding:10px 20px; border-radius:999px; font-size:15px}
+
+  /* TOC */
+  .toc{background:#fff; border:1px solid var(--g200); border-radius:16px; padding:26px 30px; margin-bottom:54px; box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .toc h2{margin:0 0 14px; font-size:18px; text-transform:uppercase; letter-spacing:.08em; color:var(--g600)}
+  .toc ol{margin:0; padding-left:22px; columns:2; column-gap:40px}
+  .toc li{margin:7px 0; break-inside:avoid}
+  .toc a{color:var(--g800); text-decoration:none; font-weight:700}
+  .toc a:hover{color:var(--fuchsia); text-decoration:underline}
+
+  /* Sections */
+  section{margin-bottom:80px; scroll-margin-top:20px}
+  .part-label{display:block; width:fit-content; background:var(--fuchsia); color:#fff; font-weight:900; font-size:13px; letter-spacing:.1em; text-transform:uppercase; padding:6px 14px; border-radius:999px; margin:0 auto 18px}
+  h2.sec{font-weight:900; font-size:clamp(26px,4vw,38px); margin:0 0 6px; line-height:1.1; text-align:center}
+  .sec-sub{color:var(--g600); font-size:18px; margin:0 0 8px; text-align:center}
+  h3{font-weight:900; font-size:24px; margin:40px 0 4px}
+  .lead{font-size:19px}
+
+  /* Wide figure: full frame, room for notes */
+  .fig{position:relative; left:50%; transform:translateX(-50%); width:min(96vw,1320px); margin:18px 0 34px}
+  .fig.narrow{width:min(92vw,560px)}
+  .fig.narrow .sticky{font-size:16px; width:clamp(150px,180px,200px)}
+  .shot{position:relative; width:100%; border-radius:14px; box-shadow:0 14px 40px rgba(0,0,0,.18); background:#fff; overflow:visible}
+  .shot img{display:block; width:100%; height:auto; border-radius:14px; border:1px solid var(--g300)}
+
+  /* Sticky notes */
+  .sticky{
+    position:absolute; transform:translate(-50%,-50%);
+    width:clamp(170px,17vw,260px); padding:16px 16px 18px;
+    background:var(--banana-lt); color:var(--black);
+    font-family:'Lato',sans-serif; font-weight:700; font-size:19px; line-height:1.3;
+    box-shadow:4px 6px 14px rgba(0,0,0,.3); border-radius:11px; z-index:3;
+  }
+  .sticky::before{ /* tape */
+    content:""; position:absolute; top:-9px; left:50%; transform:translateX(-50%) rotate(-3deg);
+    width:46px; height:16px; background:rgba(255,255,255,.55); border:1px solid rgba(0,0,0,.06);
+  }
+  .sticky .n{
+    position:absolute; top:-14px; left:-14px; width:32px; height:32px; border-radius:50%;
+    background:var(--black); color:var(--acid); font-family:'Lato',sans-serif; font-weight:900;
+    font-size:17px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(0,0,0,.3)
+  }
+  .sticky:nth-of-type(2n){background:var(--cyan-lt)}
+  .sticky:nth-of-type(3n){background:var(--fuchsia-lt)}
+  .sticky:nth-of-type(4n){background:var(--acid-lt)}
+  .sticky:nth-of-type(5n){background:#FFE4B3}
+  figcaption{font-size:14px; color:var(--g400); margin-top:14px; text-align:center; font-style:italic}
+
+  /* Callout boxes */
+  .note{border-left:5px solid var(--cyan); background:var(--cyan-lt); padding:16px 20px; border-radius:0 12px 12px 0; margin:22px 0; font-size:16px}
+  .note.tip{border-color:var(--acid); background:var(--acid-lt)}
+  .note.warn{border-color:var(--fuchsia); background:var(--fuchsia-lt)}
+  .note b{display:block; margin-bottom:3px}
+  .plain-row{display:flex; gap:14px; margin:22px 0; flex-wrap:wrap}
+  .plain-row .note{flex:1 1 200px; margin:0}
+  @media(max-width:680px){ .plain-row{flex-direction:column} }
+
+  /* Steps */
+  .steps{counter-reset:step; margin:24px 0; padding:0; list-style:none}
+  .steps > li{position:relative; padding:4px 0 26px 56px; border-left:2px dashed var(--g300); margin-left:18px}
+  .steps > li:last-child{border-left:2px solid transparent}
+  .steps > li::before{counter-increment:step; content:counter(step); position:absolute; left:-19px; top:0; width:38px; height:38px; background:var(--black); color:var(--acid); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:18px}
+  .steps b{font-size:18px}
+
+  /* Glossary */
+  .gloss{display:grid; gap:14px}
+  .gloss div{background:#fff; border:1px solid var(--g200); border-radius:12px; padding:16px 18px}
+  .gloss dt{font-weight:900; font-size:18px; margin-bottom:2px}
+  .gloss dd{margin:0; color:var(--g600)}
+  .chip{display:inline-block; padding:2px 10px; border-radius:999px; font-size:13px; font-weight:900; vertical-align:middle; margin-right:4px}
+  .c-cold{background:var(--g200); color:var(--g600)} .c-cool{background:var(--cyan-lt); color:#1d6b7d}
+  .c-warm{background:var(--banana-lt); color:#8a6d00} .c-active{background:var(--acid); color:var(--black)}
+
+  .back{display:inline-block; margin-top:10px; font-size:14px; color:var(--g400); text-decoration:none}
+  .back:hover{color:var(--fuchsia)}
+  hr.div{border:none; border-top:2px solid var(--g200); margin:64px 0}
+  @media(max-width:680px){ .toc ol{columns:1} body{font-size:17px} .sticky{font-size:15px; width:clamp(120px,34vw,170px); padding:11px} }
+
+  /* Carousel: each screen is 2 slides: the screenshot, then the "ask Claude" diagram */
+  .carousel{position:relative; left:50%; transform:translateX(-50%); width:min(96vw,1320px); margin:18px 0 30px}
+  .carousel .viewport{overflow:hidden; border-radius:16px; padding:18px 12px 18px}
+  .carousel .track{display:flex; transition:transform .42s cubic-bezier(.4,.0,.2,1); will-change:transform}
+  .carousel .slide{flex:0 0 100%; min-width:100%; padding:0 4px; align-self:center}
+  .carousel .slide .shot{box-shadow:0 14px 40px rgba(0,0,0,.18)}
+  .carousel-arrow{position:absolute; top:48%; transform:translateY(-50%); z-index:18; width:62px; height:62px;
+    border-radius:50%; border:none; cursor:pointer; background:var(--black); color:var(--acid);
+    font-size:38px; font-weight:900; line-height:1; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 22px rgba(0,0,0,.34); transition:transform .15s, background .15s, color .15s}
+  .carousel-arrow:hover{transform:translateY(-50%) scale(1.09); background:var(--fuchsia); color:#fff}
+  .carousel-arrow span{display:block; margin-top:-5px}
+  .carousel-arrow.prev{left:6px}
+  .carousel-arrow.next{right:6px}
+  .carousel-dots{display:flex; gap:10px; justify-content:center; margin-top:14px}
+  .carousel-dots button{height:12px; width:12px; border-radius:50%; border:none; background:var(--g300); cursor:pointer; padding:0; transition:width .2s, background .2s}
+  .carousel-dots button.active{background:var(--fuchsia); width:32px; border-radius:999px}
+  .carousel-hint{text-align:center; font-size:14px; color:var(--g400); margin-top:6px}
+  .carousel-hint b{color:var(--fuchsia)}
+
+  /* "Ask Claude" diagram slide */
+  .mcp-card{background:#fff; border:1px solid var(--g200); border-radius:16px; box-shadow:0 14px 40px rgba(0,0,0,.12); padding:40px 38px 46px; height:100%}
+  .mcp-head{font-weight:900; font-size:44px; margin:0 0 34px; text-align:center; color:var(--g800); line-height:1.15;
+    background:var(--acid-lt); border:3px solid var(--acid); border-radius:18px; padding:26px 30px 30px}
+  .mcp-head.email{background:var(--cyan-lt); border-color:var(--cyan)}
+  .mcp-badge{display:inline-block; background:var(--acid); color:var(--black); font-size:16px; font-weight:900; letter-spacing:.07em; text-transform:uppercase; padding:7px 16px; border-radius:999px; margin-right:10px; vertical-align:middle}
+  .mcp-badge.email{background:var(--cyan)}
+  .mcp-step.process .stage{font-size:12px; font-weight:900; letter-spacing:.1em; text-transform:uppercase; color:var(--g600); margin-top:6px}
+  .mcp-step.process .stage:first-of-type{margin-top:0}
+  .mcp-step.process .stage .gm{color:#1d6b7d}
+  .mcp-step.process .stage .cr{color:#8a6d00}
+  .mcp-flow{display:flex; flex-direction:column; align-items:stretch; gap:6px; max-width:760px; margin:0 auto}
+  .mcp-step{border-radius:18px; display:flex; flex-direction:column; gap:12px}
+  /* Monochromatic ramps: Ask Claude cards = acid green (light→dark), inbox cards = cyan */
+  .mcp-step.prompt{background:#F4F4CE; border:3px solid #DDDE7A; padding:34px 34px}
+  .mcp-step.process{background:#E9E99A; border:3px solid #C6C902; padding:18px 22px; opacity:.92}
+  .mcp-step.output{background:#D7D94B; border:3px solid #A9AB00; padding:34px 34px}
+  .mcp-card:has(.mcp-head.email) .mcp-step.prompt{background:#E2F2F7; border-color:#A6D9E5}
+  .mcp-card:has(.mcp-head.email) .mcp-step.process{background:#C7E7EF; border-color:#73C4D6}
+  .mcp-card:has(.mcp-head.email) .mcp-step.output{background:#A6D8E4; border-color:#4FA6BB}
+  .mcp-step-label{font-size:15px; font-weight:900; letter-spacing:.12em; text-transform:uppercase; color:var(--g600)}
+  .mcp-step.process .mcp-step-label{font-size:12px}
+  .mcp-bubble{font-family:'Lato',sans-serif; font-size:30px; font-weight:700; color:var(--g800); line-height:1.25}
+  .mcp-mid{font-family:'Lato',sans-serif; font-size:26px; font-weight:900; color:var(--g800); text-align:center; padding:6px 0}
+  .mcp-tool{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:15px; font-weight:700; background:var(--black); color:var(--acid); padding:7px 12px; border-radius:8px; word-break:break-word}
+  .mcp-sub{font-size:14px; color:var(--g600); font-style:italic; margin-top:2px}
+  .mcp-out{font-size:30px; font-weight:800; color:var(--g800); line-height:1.34}
+  .mcp-arrow{display:flex; align-items:center; justify-content:center; font-size:40px; font-weight:900; color:var(--g400); transform:rotate(90deg); line-height:1; padding:2px 0}
+  @media(max-width:760px){
+    .mcp-card{padding:26px 20px 32px}
+    .mcp-head{font-size:30px; padding:18px 18px 22px}
+    .mcp-step.prompt, .mcp-step.output{padding:24px 22px}
+    .mcp-bubble{font-size:24px}
+    .mcp-out{font-size:24px}
+    .carousel .viewport{padding:40px 6px 16px}
+  }
+
+  /* Arrange-notes toolbar */
+  #bar{position:fixed; top:14px; right:14px; z-index:50; display:flex; gap:8px; align-items:center;
+    background:#fff; border:1px solid var(--g300); border-radius:999px; padding:7px 10px 7px 14px;
+    box-shadow:0 6px 18px rgba(0,0,0,.18); font-size:14px; font-weight:700}
+  #bar button{font:inherit; cursor:pointer; border:none; border-radius:999px; padding:7px 13px; background:var(--g100); color:var(--g800)}
+  #bar button:hover{background:var(--g200)}
+  #bar .on{background:var(--acid); color:var(--black)}
+  #bar .hide{display:none}
+  #bar .hint{color:var(--g400); font-weight:400; font-size:12px}
+  body.editing .sticky{cursor:grab; outline:2px dashed rgba(225,0,152,.7); outline-offset:2px}
+  body.editing .sticky:active{cursor:grabbing}
+  body.editing .shot{outline:2px solid var(--cyan)}
+  @media print{ #bar{display:none} }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="kick">Sprout Society CRM</div>
+  <h1>A Picture Tour for First-Time Users</h1>
+  <p>No tech experience needed. Every screen is labeled with sticky notes. Just scroll top to bottom.</p>
+  <div class="badge">📖 About 8 minutes</div>
+</div>
+
+<div class="wrap">
+
+  <span class="part-label">Part 1: A tour of every screen</span>
+
+  <!-- DASHBOARD -->
+  <section id="dashboard">
+    <h2 class="sec">1. The Dashboard</h2>
+    <p class="sec-sub">Your home screen. It answers: "What needs me today?"</p>
+    <div class="carousel">
+      <div class="viewport"><div class="track">
+        <div class="slide">
+          <div class="shot">
+            <img src="tutorial-shots/dashboard.png" alt="Dashboard">
+            <div class="sticky" style="left:9%; top:55%"><span class="n">1</span>Your menu: click to switch screens</div>
+            <div class="sticky" style="left:70%; top:7%"><span class="n">2</span>Today at a glance</div>
+            <div class="sticky" style="left:30%; top:53%"><span class="n">3</span>What's coming up</div>
+            <div class="sticky" style="left:79%; top:53%"><span class="n">4</span>Who to contact next</div>
+            <div class="sticky" style="left:74%; top:80%"><span class="n">5</span>Late: do these first</div>
+            <div class="sticky" style="left:17%; top:84%"><span class="n">6</span>Log a chat from any screen</div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="mcp-card">
+            <p class="mcp-head"><span class="mcp-badge">⚡ Ask Claude</span>Skip the dashboard: just ask what needs you</p>
+            <div class="mcp-flow">
+              <div class="mcp-step prompt">
+                <div class="mcp-step-label">You type</div>
+                <div class="mcp-bubble">"What needs my attention this week?"</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step process">
+                <div class="mcp-mid">Sprout Society CRM</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step output">
+                <div class="mcp-step-label">You get back</div>
+                <div class="mcp-out">"3 contacts are overdue, 5 actions are due, and Show n Tell is in 4 days. Want me to draft the reminders?"</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="mcp-card">
+            <p class="mcp-head email"><span class="mcp-badge email">📧 From your inbox</span>Catch the CRM up from your email</p>
+            <div class="mcp-flow">
+              <div class="mcp-step prompt">
+                <div class="mcp-step-label">You type</div>
+                <div class="mcp-bubble">"Give me a list of everyone who I've responded and not responded to in the last two weeks."</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step process">
+                <div class="mcp-mid">Sprout Society CRM</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step output">
+                <div class="mcp-step-label">You get back</div>
+                <div class="mcp-out">"I have created folders for both categories and placed the appropriate email chains in each one. Let me know if you'd like me to draft responses for any or all."</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <button class="carousel-arrow prev" aria-label="Previous card"><span>‹</span></button>
+      <button class="carousel-arrow next" aria-label="Next card"><span>›</span></button>
+      <div class="carousel-dots"><button class="active" aria-label="The screen"></button><button aria-label="Ask Claude"></button><button aria-label="From your inbox"></button></div>
+      <div class="carousel-hint">Card 1 of 3: tap <b>›</b> to see the Claude shortcuts</div>
+    </div>
+    <div class="plain-row">
+      <div class="note tip"><b>🖥️ The screen</b>Your daily home base: overdue people, upcoming events, and what to do next.</div>
+      <div class="note tip"><b>⚡ Ask Claude</b>Ask "what needs me this week?" and get the rundown without clicking.</div>
+      <div class="note tip"><b>📧 From your inbox</b>Claude sorts who you've replied to (and haven't) into folders.</div>
+    </div>
+  </section>
+
+  <!-- CONTACTS -->
+  <section id="contacts">
+    <h2 class="sec">2. Contacts</h2>
+    <p class="sec-sub">Your full list of people (dimmed behind). Each column tells you something at a glance: click anyone to open their full record.</p>
+    <div class="carousel">
+      <div class="viewport"><div class="track">
+        <div class="slide">
+          <div class="shot">
+            <img src="tutorial-shots/contact-detail.png" alt="Contacts list with one contact opened">
+            <div class="sticky" style="left:25%; top:32%"><span class="n">1</span>Type</div>
+            <div class="sticky" style="left:42%; top:43%"><span class="n">2</span>Org affiliation</div>
+            <div class="sticky" style="left:55%; top:55%"><span class="n">3</span>Status</div>
+            <div class="sticky" style="left:70%; top:24%"><span class="n">4</span>Next action</div>
+            <div class="sticky" style="left:48%; top:70%"><span class="n">5</span>Contact health</div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="mcp-card">
+            <p class="mcp-head"><span class="mcp-badge">⚡ Ask Claude</span>Add a person without filling out a single field</p>
+            <div class="mcp-flow">
+              <div class="mcp-step prompt">
+                <div class="mcp-step-label">You type</div>
+                <div class="mcp-bubble">"Add Alina from barnun happy hour. She's an artist interested in SnT."</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step process">
+                <div class="mcp-mid">Sprout Society CRM</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step output">
+                <div class="mcp-step-label">You get back</div>
+                <div class="mcp-out">New contact created and suggested next action. Let me know if you'd like to add or change anything.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="mcp-card">
+            <p class="mcp-head email"><span class="mcp-badge email">📧 From your inbox</span>Turn the people you email into contacts</p>
+            <div class="mcp-flow">
+              <div class="mcp-step prompt">
+                <div class="mcp-step-label">You type</div>
+                <div class="mcp-bubble">"Add everyone I've emailed back over the last month."</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step process">
+                <div class="mcp-mid">Sprout Society CRM</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step output">
+                <div class="mcp-step-label">You get back</div>
+                <div class="mcp-out">New people added as <b>cool</b> leads, anyone already in the CRM <b>merged not duplicated</b>. Promo and newsletter mail skipped.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <button class="carousel-arrow prev" aria-label="Previous card"><span>‹</span></button>
+      <button class="carousel-arrow next" aria-label="Next card"><span>›</span></button>
+      <div class="carousel-dots"><button class="active" aria-label="The screen"></button><button aria-label="Ask Claude"></button><button aria-label="From your inbox"></button></div>
+      <div class="carousel-hint">Card 1 of 3: tap <b>›</b> to see the Claude shortcuts</div>
+    </div>
+    <div class="plain-row">
+      <div class="note tip"><b>🖥️ The screen</b>Everyone you know, with their type, status, and next step at a glance.</div>
+      <div class="note tip"><b>⚡ Ask Claude</b>Add someone in plain English; Claude fills the record and suggests a follow-up.</div>
+      <div class="note tip"><b>📧 From your inbox</b>Turn everyone you've emailed into contacts: merged, not duplicated.</div>
+    </div>
+  </section>
+
+  <!-- ORGS -->
+  <section id="orgs">
+    <h2 class="sec">3. Organizations</h2>
+    <p class="sec-sub">Same idea as Contacts, but for groups: venues, funders, partners. Click one, then Edit to update it.</p>
+    <div class="carousel">
+      <div class="viewport"><div class="track">
+        <div class="slide">
+          <div class="shot">
+            <img src="tutorial-shots/org-barnun-edit.png" alt="Editing the Barnun organization">
+            <div class="sticky" style="left:30%; top:24%"><span class="n">1</span>Name, website &amp; socials</div>
+            <div class="sticky" style="left:28%; top:46%"><span class="n">2</span>What kind of group</div>
+            <div class="sticky" style="left:62%; top:53%"><span class="n">3</span>How warm (cold → active)</div>
+            <div class="sticky" style="left:62%; top:70%"><span class="n">4</span>Phone, email &amp; notes</div>
+            <div class="sticky" style="left:68%; top:85%"><span class="n">5</span>Save your changes</div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="mcp-card">
+            <p class="mcp-head"><span class="mcp-badge">⚡ Ask Claude</span>Log a win on a group in one sentence</p>
+            <div class="mcp-flow">
+              <div class="mcp-step prompt">
+                <div class="mcp-step-label">You type</div>
+                <div class="mcp-bubble">"Barnun agreed to host a spring event. Create an event for this on 6/30. Suggest a checklist and add anyone associated with Barnun to the contact list."</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step process">
+                <div class="mcp-mid">Sprout Society CRM</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step output">
+                <div class="mcp-step-label">You get back</div>
+                <div class="mcp-out">Event page created, and here is the link. I also added the Google Sheets associated with this event to the links section. Let me know if you'd like anything else.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="mcp-card">
+            <p class="mcp-head email"><span class="mcp-badge email">📧 From your inbox</span>File an email thread onto the right group</p>
+            <div class="mcp-flow">
+              <div class="mcp-step prompt">
+                <div class="mcp-step-label">You type</div>
+                <div class="mcp-bubble">"Draft a newsletter advertisement for the Barnun spring event."</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step process">
+                <div class="mcp-mid">Sprout Society CRM</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step output">
+                <div class="mcp-step-label">You get back</div>
+                <div class="mcp-out">A draft is saved in Newsletter drafts on the app. Feel free to edit and send. Or ask me to send it at a scheduled time.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <button class="carousel-arrow prev" aria-label="Previous card"><span>‹</span></button>
+      <button class="carousel-arrow next" aria-label="Next card"><span>›</span></button>
+      <div class="carousel-dots"><button class="active" aria-label="The screen"></button><button aria-label="Ask Claude"></button><button aria-label="From your inbox"></button></div>
+      <div class="carousel-hint">Card 1 of 3: tap <b>›</b> to see the Claude shortcuts</div>
+    </div>
+    <div class="plain-row">
+      <div class="note tip"><b>🖥️ The screen</b>Groups you work with: venues, funders, partners, and how warm each is.</div>
+      <div class="note tip"><b>⚡ Ask Claude</b>Log a win or spin up an event for a group in one sentence.</div>
+      <div class="note tip"><b>📧 From your inbox</b>Turn a group thread into a saved newsletter or outreach draft.</div>
+    </div>
+  </section>
+
+  <!-- EVENTS -->
+  <section id="events">
+    <h2 class="sec">4. Events</h2>
+    <p class="sec-sub">Every gathering Sprout runs or attends. Click one to open it. Here's a real event.</p>
+    <div class="carousel">
+      <div class="viewport"><div class="track">
+        <div class="slide">
+          <div class="shot">
+            <img src="tutorial-shots/event-showntell.png" alt="Show n Tell event detail">
+            <div class="sticky" style="left:34%; top:9%"><span class="n">1</span>Name, date &amp; status</div>
+            <div class="sticky" style="left:78%; top:9%"><span class="n">2</span>Who's coming: RSVPs</div>
+            <div class="sticky" style="left:32%; top:24%"><span class="n">3</span>Description &amp; links</div>
+            <div class="sticky" style="left:42%; top:60%"><span class="n">4</span>Your planning checklist</div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="mcp-card">
+            <p class="mcp-head"><span class="mcp-badge">⚡ Ask Claude</span>Get the state of your events without opening them</p>
+            <div class="mcp-flow">
+              <div class="mcp-step prompt">
+                <div class="mcp-step-label">You type</div>
+                <div class="mcp-bubble">"Create a repeated Sprout n Tell event the fourth Friday of every month for the next 3 months."</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step process">
+                <div class="mcp-mid">Sprout Society CRM</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step output">
+                <div class="mcp-step-label">You get back</div>
+                <div class="mcp-out">Done. Let me know if you want to add any specific checklist or contacts. Or I can create suggested checklists to start from.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="mcp-card">
+            <p class="mcp-head email"><span class="mcp-badge email">📧 From your inbox</span>Pull RSVPs straight out of your email</p>
+            <div class="mcp-flow">
+              <div class="mcp-step prompt">
+                <div class="mcp-step-label">You type</div>
+                <div class="mcp-bubble">"Find the RSVPs for Show n Tell in my inbox."</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step process">
+                <div class="mcp-mid">Sprout Society CRM</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step output">
+                <div class="mcp-step-label">You get back</div>
+                <div class="mcp-out">Each "I'll be there" matched to a contact (new ones created), the RSVP logged against <b>Show n Tell</b>.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <button class="carousel-arrow prev" aria-label="Previous card"><span>‹</span></button>
+      <button class="carousel-arrow next" aria-label="Next card"><span>›</span></button>
+      <div class="carousel-dots"><button class="active" aria-label="The screen"></button><button aria-label="Ask Claude"></button><button aria-label="From your inbox"></button></div>
+      <div class="carousel-hint">Card 1 of 3: tap <b>›</b> to see the Claude shortcuts</div>
+    </div>
+    <div class="plain-row">
+      <div class="note tip"><b>🖥️ The screen</b>Each gathering with its date, RSVPs, description, and planning checklist.</div>
+      <div class="note tip"><b>⚡ Ask Claude</b>Create events (even repeating ones) and get a starter checklist.</div>
+      <div class="note tip"><b>📧 From your inbox</b>Pull RSVPs out of email and log them against the event.</div>
+    </div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section id="newsletter">
+    <h2 class="sec">5. Newsletter</h2>
+    <p class="sec-sub">Build your email newsletter right inside the CRM. Fill in the blanks on the left and watch it come together on the right.</p>
+    <div class="carousel">
+      <div class="viewport"><div class="track">
+        <div class="slide">
+          <div class="shot">
+            <img src="tutorial-shots/newsletter-editor.png" alt="Newsletter editor with live preview">
+            <div class="sticky" style="left:16%; top:14%"><span class="n">1</span>Title, status &amp; date</div>
+            <div class="sticky" style="left:16%; top:50%"><span class="n">2</span>Auto-fills your events</div>
+            <div class="sticky" style="left:16%; top:82%"><span class="n">3</span>Type your words in the blanks</div>
+            <div class="sticky" style="left:62%; top:9%"><span class="n">4</span>Live preview: updates as you type</div>
+            <div class="sticky" style="left:75%; top:4%"><span class="n">5</span>Copy → paste into Mailchimp</div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="mcp-card">
+            <p class="mcp-head"><span class="mcp-badge">⚡ Ask Claude</span>Get a first draft built from your real data</p>
+            <div class="mcp-flow">
+              <div class="mcp-step prompt">
+                <div class="mcp-step-label">You type</div>
+                <div class="mcp-bubble">"Start this month's newsletter for me."</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step process">
+                <div class="mcp-mid">Sprout Society CRM</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step output">
+                <div class="mcp-step-label">You get back</div>
+                <div class="mcp-out">A draft with recaps &amp; events already filled in. Only the <b>[bracketed]</b> personal notes left for you.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="mcp-card">
+            <p class="mcp-head email"><span class="mcp-badge email">📧 From your inbox</span>Send the finished newsletter to everyone</p>
+            <div class="mcp-flow">
+              <div class="mcp-step prompt">
+                <div class="mcp-step-label">You type</div>
+                <div class="mcp-bubble">"Send the approved newsletter to our whole contact list."</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step process">
+                <div class="mcp-mid">Sprout Society CRM</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step output">
+                <div class="mcp-step-label">You get back</div>
+                <div class="mcp-out">"Done. Submitted through Mailchimp. Here's a link to the submission page."</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <button class="carousel-arrow prev" aria-label="Previous card"><span>‹</span></button>
+      <button class="carousel-arrow next" aria-label="Next card"><span>›</span></button>
+      <div class="carousel-dots"><button class="active" aria-label="The screen"></button><button aria-label="Ask Claude"></button><button aria-label="From your inbox"></button></div>
+      <div class="carousel-hint">Card 1 of 3: tap <b>›</b> to see the Claude shortcuts</div>
+    </div>
+    <div class="plain-row">
+      <div class="note tip"><b>1. Pick a layout</b>Choose one of the ready-made newsletter templates.</div>
+      <div class="note tip"><b>2. Fill the blanks</b>Type your words into the empty <b>[bracketed]</b> spots.</div>
+      <div class="note tip"><b>3. Copy HTML</b>Copy it out and paste into Mailchimp to send.</div>
+    </div>
+  </section>
+
+  <!-- OUTREACH -->
+  <section id="outreach">
+    <h2 class="sec">6. Outreach Log</h2>
+    <p class="sec-sub">One running feed of every conversation, across everyone.</p>
+    <div class="carousel">
+      <div class="viewport"><div class="track">
+        <div class="slide">
+          <div class="shot">
+            <img src="tutorial-shots/outreach.png" alt="Outreach log">
+            <div class="sticky" style="left:25%; top:8%"><span class="n">1</span>Search past chats</div>
+            <div class="sticky" style="left:80%; top:38%"><span class="n">2</span>Who + what happened</div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="mcp-card">
+            <p class="mcp-head"><span class="mcp-badge">⚡ Ask Claude</span>Recall your history with anyone, instantly</p>
+            <div class="mcp-flow">
+              <div class="mcp-step prompt">
+                <div class="mcp-step-label">You type</div>
+                <div class="mcp-bubble">"When did I last talk to Maya, and about what?"</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step process">
+                <div class="mcp-mid">Sprout Society CRM</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step output">
+                <div class="mcp-step-label">You get back</div>
+                <div class="mcp-out">"You DM'd <b>Maya</b> on May 20 about the pottery collab. She's a warm lead. Follow-up is due Friday."</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="mcp-card">
+            <p class="mcp-head email"><span class="mcp-badge email">📧 From your inbox</span>Your email history becomes outreach history</p>
+            <div class="mcp-flow">
+              <div class="mcp-step prompt">
+                <div class="mcp-step-label">You type</div>
+                <div class="mcp-bubble">"Log my latest email exchange with Maya."</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step process">
+                <div class="mcp-mid">Sprout Society CRM</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step output">
+                <div class="mcp-step-label">You get back</div>
+                <div class="mcp-out">The email lands in this feed as a dated touchpoint, so the log holds your DMs, calls, <b>and</b> emails in one place.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <button class="carousel-arrow prev" aria-label="Previous card"><span>‹</span></button>
+      <button class="carousel-arrow next" aria-label="Next card"><span>›</span></button>
+      <div class="carousel-dots"><button class="active" aria-label="The screen"></button><button aria-label="Ask Claude"></button><button aria-label="From your inbox"></button></div>
+      <div class="carousel-hint">Card 1 of 3: tap <b>›</b> to see the Claude shortcuts</div>
+    </div>
+    <div class="plain-row">
+      <div class="note tip"><b>🖥️ The screen</b>One running feed of every conversation, across everyone.</div>
+      <div class="note tip"><b>⚡ Ask Claude</b>Ask when you last spoke to someone and what it was about.</div>
+      <div class="note tip"><b>📧 From your inbox</b>Logged emails join your DMs and calls in the same history.</div>
+    </div>
+    <p>Entries appear here automatically each time you log a touchpoint. It's just for reading back over your history.</p>
+  </section>
+
+  <!-- IMPORT -->
+  <section id="import">
+    <h2 class="sec">7. Import &amp; Merge</h2>
+    <p class="sec-sub">Bring people in by the batch: paste a JSON record, or merge an email list from a spreadsheet.</p>
+    <div class="carousel">
+      <div class="viewport"><div class="track">
+        <div class="slide">
+          <div class="shot">
+            <img src="tutorial-shots/import.png" alt="Import & Merge screen">
+            <div class="sticky" style="left:22%; top:21%"><span class="n">1</span>Two ways in: paste JSON or merge a sheet</div>
+            <div class="sticky" style="left:40%; top:40%"><span class="n">2</span>Paste a record here</div>
+            <div class="sticky" style="left:20%; top:61%"><span class="n">3</span>Preview before anything saves</div>
+            <div class="sticky" style="left:62%; top:84%"><span class="n">4</span>Field cheat-sheet</div>
+            <div class="sticky" style="left:86%; top:8%"><span class="n">5</span>Export your email list as CSV</div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="mcp-card">
+            <p class="mcp-head"><span class="mcp-badge">⚡ Ask Claude</span>Import a whole list without touching JSON</p>
+            <div class="mcp-flow">
+              <div class="mcp-step prompt">
+                <div class="mcp-step-label">You type</div>
+                <div class="mcp-bubble">"Here's a spreadsheet of 40 people from our last event. Add them all."</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step process">
+                <div class="mcp-mid">Sprout Society CRM</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step output">
+                <div class="mcp-step-label">You get back</div>
+                <div class="mcp-out">"Imported <b>38 new contacts</b> as cool leads, 2 <b>merged</b> with existing records. None duplicated."</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="mcp-card">
+            <p class="mcp-head email"><span class="mcp-badge email">📧 From your inbox</span>Turn an emailed sign-up list into contacts</p>
+            <div class="mcp-flow">
+              <div class="mcp-step prompt">
+                <div class="mcp-step-label">You type</div>
+                <div class="mcp-bubble">"Add the attendee list from the Eventbrite email into contacts."</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step process">
+                <div class="mcp-mid">Sprout Society CRM</div>
+              </div>
+              <div class="mcp-arrow">→</div>
+              <div class="mcp-step output">
+                <div class="mcp-step-label">You get back</div>
+                <div class="mcp-out">"Parsed <b>24 attendees</b> from the email and added them, merging anyone already on file."</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <button class="carousel-arrow prev" aria-label="Previous card"><span>‹</span></button>
+      <button class="carousel-arrow next" aria-label="Next card"><span>›</span></button>
+      <div class="carousel-dots"><button class="active" aria-label="The screen"></button><button aria-label="Ask Claude"></button><button aria-label="From your inbox"></button></div>
+      <div class="carousel-hint">Card 1 of 3: tap <b>›</b> to see the Claude shortcuts</div>
+    </div>
+    <div class="plain-row">
+      <div class="note tip"><b>🖥️ The screen</b>Bulk-add from pasted JSON, or merge an email list from Google Sheets.</div>
+      <div class="note tip"><b>⚡ Ask Claude</b>Hand Claude a list and it imports everyone, merging duplicates.</div>
+      <div class="note tip"><b>📧 From your inbox</b>Turn an emailed attendee or sign-up list straight into contacts.</div>
+    </div>
+  </section>
+
+
+</div>
+
+<div id="bar">
+  <button id="toggle">✏️ Arrange notes</button>
+  <button id="copy" class="hide">📋 Copy layout</button>
+  <button id="reset" class="hide">↺ Reset</button>
+  <span id="hint" class="hint hide">Drag any note. Saved automatically.</span>
+</div>
+
+<script>
+(function(){
+  // Carousels: each screen has 2 slides (screenshot + "ask Claude" diagram)
+  document.querySelectorAll('.carousel').forEach(function(c){
+    var track = c.querySelector('.track');
+    var slides = c.querySelectorAll('.slide');
+    var dots = c.querySelectorAll('.carousel-dots button');
+    var hint = c.querySelector('.carousel-hint');
+    var prev = c.querySelector('.carousel-arrow.prev');
+    var next = c.querySelector('.carousel-arrow.next');
+    var i = 0;
+    function go(n){
+      i = (n + slides.length) % slides.length;
+      track.style.transform = 'translateX(' + (-i*100) + '%)';
+      dots.forEach(function(d,di){ d.classList.toggle('active', di===i); });
+      if(hint){
+        var total = slides.length;
+        var tip = i < total-1 ? 'tap <b>&rsaquo;</b> for the next card' : 'tap <b>&lsaquo;</b> to go back';
+        hint.innerHTML = 'Card ' + (i+1) + ' of ' + total + ': ' + tip;
+      }
+    }
+    prev.addEventListener('click', function(){ go(i-1); });
+    next.addEventListener('click', function(){ go(i+1); });
+    dots.forEach(function(d,di){ d.addEventListener('click', function(){ go(di); }); });
+    // Swipe on touch
+    var x0=null;
+    c.querySelector('.viewport').addEventListener('touchstart', function(e){ x0 = e.touches[0].clientX; }, {passive:true});
+    c.querySelector('.viewport').addEventListener('touchend', function(e){
+      if(x0===null) return;
+      var dx = e.changedTouches[0].clientX - x0; x0 = null;
+      if(Math.abs(dx) > 45){ go(dx < 0 ? i+1 : i-1); }
+    }, {passive:true});
+    go(0);
+  });
+
+  // Give every sticky a stable id: <section>-<number>
+  document.querySelectorAll('.shot .sticky').forEach(function(s){
+    var sec = s.closest('section'); var n = s.querySelector('.n');
+    s.dataset.key = (sec?sec.id:'x') + '-' + (n?n.textContent.trim():'?');
+  });
+
+  var STORE = 'sproutTutorialNotePos';
+  function load(){ try{ return JSON.parse(localStorage.getItem(STORE)||'{}'); }catch(e){ return {}; } }
+  function save(o){ try{ localStorage.setItem(STORE, JSON.stringify(o)); }catch(e){} }
+
+  // Apply any saved positions on load
+  var pos = load();
+  document.querySelectorAll('.shot .sticky').forEach(function(s){
+    var p = pos[s.dataset.key];
+    if(p){ s.style.left = p.left; s.style.top = p.top; }
+  });
+
+  var editing = false, drag = null;
+  var body = document.body;
+  var toggle = document.getElementById('toggle');
+  var copyBtn = document.getElementById('copy');
+  var resetBtn = document.getElementById('reset');
+
+  toggle.addEventListener('click', function(){
+    editing = !editing;
+    body.classList.toggle('editing', editing);
+    toggle.classList.toggle('on', editing);
+    toggle.textContent = editing ? '✓ Done' : '✏️ Arrange notes';
+    [copyBtn,resetBtn,document.getElementById('hint')].forEach(function(el){ el.classList.toggle('hide', !editing); });
+  });
+
+  function onDown(e){
+    if(!editing) return;
+    var s = e.target.closest('.sticky'); if(!s) return;
+    e.preventDefault();
+    var shot = s.closest('.shot');
+    var sr = shot.getBoundingClientRect();
+    var nr = s.getBoundingClientRect();
+    var cx = nr.left + nr.width/2, cy = nr.top + nr.height/2;
+    drag = { s:s, shot:shot, sr:sr, dx: cx - e.clientX, dy: cy - e.clientY };
+    s.style.zIndex = 20;
+    s.setPointerCapture && s.setPointerCapture(e.pointerId);
+  }
+  function onMove(e){
+    if(!drag) return;
+    var sr = drag.shot.getBoundingClientRect();
+    var left = (e.clientX + drag.dx - sr.left)/sr.width*100;
+    var top  = (e.clientY + drag.dy - sr.top )/sr.height*100;
+    left = Math.max(0, Math.min(100, left));
+    top  = Math.max(0, Math.min(100, top));
+    drag.s.style.left = left.toFixed(1)+'%';
+    drag.s.style.top  = top.toFixed(1)+'%';
+  }
+  function onUp(){
+    if(!drag) return;
+    drag.s.style.zIndex = '';
+    var o = load();
+    o[drag.s.dataset.key] = { left: drag.s.style.left, top: drag.s.style.top };
+    save(o);
+    drag = null;
+  }
+  document.addEventListener('pointerdown', onDown);
+  document.addEventListener('pointermove', onMove);
+  document.addEventListener('pointerup', onUp);
+
+  resetBtn.addEventListener('click', function(){
+    if(confirm('Reset all notes to their original positions?')){
+      localStorage.removeItem(STORE); location.reload();
+    }
+  });
+
+  // Copy the current layout as ready-to-paste inline styles (for baking into the file)
+  copyBtn.addEventListener('click', function(){
+    var lines = [];
+    document.querySelectorAll('.shot .sticky').forEach(function(s){
+      lines.push(s.dataset.key + '  ->  left:' + s.style.left + '; top:' + s.style.top + ';');
+    });
+    var txt = lines.join('\n');
+    navigator.clipboard.writeText(txt).then(
+      function(){ copyBtn.textContent='✓ Copied!'; setTimeout(function(){copyBtn.textContent='📋 Copy layout';},1500); },
+      function(){ alert(txt); }
+    );
+  });
+})();
+</script>
+</body>
+</html>

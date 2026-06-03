@@ -8,17 +8,17 @@ Keep it short. This should take 2 minutes, not 20.
 
 ## Recap form (copy this block per event)
 
-**Event:** [event name]
+**Event:** [name]
 **Date:** [YYYY-MM-DD]
-**Where:** [venue]
+**Where:** [location]
 
 **The hook** _(one sentence — what was the energy / why did it matter?)_
-[one sentence]
+[e.g. "Our biggest Show n Tell yet — the room was packed with musicians, artists, and first-timers."]
 
 **Highlights** _(2–4 bullets — specific moments, not a play-by-play)_
-- [moment]
-- [moment]
-- [moment]
+- [e.g. Live set from Tristan Normal Again]
+- [e.g. Pat's DJ set with live vocals closed the night]
+- [e.g. Art booths from Potters in Crime and Bob Greco]
 
 **Shoutouts** _(performers, hosts, volunteers to thank by name)_
 - [names]

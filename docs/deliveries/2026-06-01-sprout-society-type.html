@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — sprout_society type + email→CRM</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Lato',sans-serif; background:#0f1117; color:#1a1a1a;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:32px;
+  }
+  .slide {
+    width:100%; max-width:920px; background:#f7f6f2; border-radius:24px;
+    box-shadow:0 24px 70px rgba(0,0,0,.5); overflow:hidden;
+  }
+  .hd {
+    background:linear-gradient(120deg,#1f7a4d 0%,#2fa968 100%); color:#fff;
+    padding:30px 38px; display:flex; justify-content:space-between; align-items:flex-start; gap:20px;
+  }
+  .hd h1 { font-size:27px; font-weight:900; line-height:1.15; letter-spacing:-.4px; }
+  .hd .sub { font-size:14px; opacity:.92; margin-top:7px; font-weight:400; }
+  .commit {
+    text-align:right; font-size:12.5px; line-height:1.7; white-space:nowrap;
+    background:rgba(255,255,255,.13); border-radius:12px; padding:11px 15px;
+  }
+  .commit b { font-size:15px; font-family:ui-monospace,Menlo,monospace; letter-spacing:.5px; }
+  .commit .br { display:inline-block; background:rgba(255,255,255,.22); border-radius:6px; padding:1px 8px; font-weight:700; }
+  .body { padding:30px 38px 38px; }
+  .lead { font-size:16px; color:#3a4a40; margin-bottom:22px; line-height:1.5; }
+  .lead b { color:#1f7a4d; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .card {
+    background:#fff; border:1px solid #e4e2da; border-radius:16px; padding:18px 20px;
+    box-shadow:0 2px 6px rgba(0,0,0,.04);
+  }
+  .card.full { grid-column:1 / -1; }
+  .card h3 { font-size:15px; font-weight:900; display:flex; align-items:center; gap:9px; margin-bottom:11px; color:#1a2620; }
+  .ico { width:26px; height:26px; border-radius:8px; display:inline-grid; place-items:center; font-size:15px; flex:none; }
+  .ico.g { background:#dff3e7; } .ico.b { background:#e3edff; } .ico.y { background:#fdf0d5; } .ico.p { background:#efe6fb; }
+  .files { display:flex; flex-wrap:wrap; gap:7px; }
+  .chip {
+    font-family:ui-monospace,Menlo,monospace; font-size:12px; background:#f1f4f0;
+    border:1px solid #dfe6df; border-radius:7px; padding:4px 9px; color:#2a3a30;
+  }
+  .chip .t { color:#1f7a4d; font-weight:700; }
+  ul { list-style:none; }
+  li { font-size:13.5px; line-height:1.55; padding-left:20px; position:relative; margin-bottom:6px; color:#33433a; }
+  li::before { content:"✓"; position:absolute; left:0; color:#2fa968; font-weight:900; }
+  .badge { display:inline-block; font-size:11px; font-weight:700; border-radius:20px; padding:2px 10px; margin-left:6px; }
+  .badge.new { background:#dff3e7; color:#1f7a4d; }
+  .badge.local { background:#fdf0d5; color:#9a6a00; }
+  .ft {
+    margin-top:22px; padding-top:16px; border-top:1px dashed #d3d0c6;
+    display:flex; justify-content:space-between; align-items:center; font-size:12.5px; color:#6b6f66;
+  }
+  .ft .stat b { color:#1f7a4d; font-size:15px; }
+  .deploy { background:#1a1a1a; color:#fff; border-radius:8px; padding:5px 12px; font-weight:700; font-size:12px; }
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="hd">
+      <div>
+        <h1>“Sprout Society” relationship type<br>+ Email&nbsp;→&nbsp;CRM protocol live</h1>
+        <div class="sub">First end-to-end email→CRM pass · new internal-team tag wired everywhere it has to match</div>
+      </div>
+      <div class="commit">
+        <b>5532833</b><br>
+        <span class="br">main</span><br>
+        9 files · +293 / −5
+      </div>
+    </div>
+
+    <div class="body">
+      <p class="lead">Added a new <b>sprout_society</b> relationship type and committed the <b>email→CRM protocol</b>. Pulled the last 14 days of replies into the CRM along the way (52 → 53 contacts).</p>
+
+      <div class="grid">
+        <div class="card">
+          <h3><span class="ico g">🏷️</span> New type <span class="badge new">sprout_society</span></h3>
+          <p style="font-size:13px;color:#55605a;margin-bottom:10px;">Label “Sprout Society” — tags internal team. Synced in all enum points:</p>
+          <div class="files">
+            <span class="chip"><span class="t">Zod</span> lib/schemas.js</span>
+            <span class="chip"><span class="t">REL_TYPES</span> CRMManager.jsx</span>
+            <span class="chip"><span class="t">×2 inputSchema</span> mcp/server.js</span>
+            <span class="chip"><span class="t">doc</span> CRM-db-schema.md</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><span class="ico b">📥</span> Live email → CRM pass</h3>
+          <ul>
+            <li>Gmail authed to <b>maxperkins@sproutsociety.org</b></li>
+            <li>Created <b>Danielle Kastenbaum</b> (new)</li>
+            <li>Enriched <b>Morgan Kuriloff</b> (existing)</li>
+            <li>52 → 53 contacts · previewed before write</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3><span class="ico p">⚡</span> /email-to-crm skill <span class="badge local">local only</span></h3>
+          <ul>
+            <li>Condensed runbook, scope as <b>$ARGUMENTS</b></li>
+            <li>Lives in <b>.claude/</b> (gitignored — not shipped)</li>
+            <li>Protocol doc now committed as source of truth</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3><span class="ico y">📦</span> Bundled prior work</h3>
+          <ul>
+            <li>Supabase MCP entry in <b>.mcp.json</b></li>
+            <li>Playwright dev dependency</li>
+            <li>Changelog + current-state sync</li>
+          </ul>
+        </div>
+
+        <div class="card full">
+          <h3><span class="ico g">🧠</span> Lesson captured</h3>
+          <p style="font-size:13.5px;color:#33433a;line-height:1.55;">A new enum value needs <b>both</b> the Zod schema (loaded at MCP start) <b>and</b> the <code>server.js</code> tool inputSchemas — then a window reload — or the write is silently rejected. Two reloads were needed this session before the type stuck.</p>
+        </div>
+      </div>
+
+      <div class="ft">
+        <div class="stat"><b>+293</b> / −5 across <b>9</b> files</div>
+        <div>2026-06-01 · Sprout CRM Next</div>
+        <div class="deploy">▲ Vercel auto-deploy</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

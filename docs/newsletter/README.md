@@ -8,8 +8,10 @@ Low-effort, regular sends. The goal is brand visibility, not a magnum opus. Fill
 |------|-------------|
 | `01-monthly-roundup.html` | The main monthly send. Recaps + upcoming events + membership CTA + member spotlight. |
 | `02-quick-hit.html` | A fast between-issues send. One recap, one upcoming event, one CTA. ~60 seconds to fill. |
+| `event-recap-template.md` | Fill-in form for capturing each event's recap blurb. |
+| `spotlight-template.md` | Fill-in form for capturing a member spotlight blurb. |
 
-Both are 600px, table-based, inline-styled HTML that render in Gmail, Apple Mail, Outlook, and Mailchimp.
+The two `.html` files are 600px, table-based, inline-styled HTML that render in Gmail, Apple Mail, Outlook, and Mailchimp.
 
 ## Recommended workflow (Mailchimp, free tier)
 
