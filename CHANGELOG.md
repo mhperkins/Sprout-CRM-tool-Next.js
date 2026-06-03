@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-06-03 — Givebutter contacts imported into the Donors tab
+
+Data-only pass (no app code change). Pulled the full Givebutter contact + transaction set via the `givebutter` MCP and loaded **26 records** into the Donors segment, each assigned to its actual campaign.
+
+- **Source:** `list_contacts` (30 contacts, 2 pages), `list_transactions` (24 transactions, 2 pages), `list_campaigns` (5). Campaign per donor came from the **transaction record** (not guessed). `total_contributions` confirmed to be in **cents** (matches `last_donation_amount` dollars); used the transaction `amount` (dollars) for `financial_relationship.total_given`.
+- **Write path:** the MCP `create_or_update_contact` tool exposes no `segment`/`campaign`/`financial_relationship` params, so the import ran through a throwaway `scripts/import-donors.mjs` that mirrors `saveContacts` exactly — same `validateContact` (Zod) gate + SQL-column promotion (`id, record_type, first/last, email, relationship_status, next_action_date, data`) — upserting `sprout_contacts` with the **service-role key** (RLS-safe). All 26 validated clean (0 skips). Script deleted after the run.
+- **Per donor:** `segment="donor"`, `campaign` + `campaign_id`, `relationship_status="warm"`, `financial_relationship {has_given, total_given, grant_history:[]}`, address + alt-contacts in `notes`, and a dated `touchpoint` ("Donated $X to <campaign> via Givebutter") carrying their giving-space message where present.
+- **Dedupe (CRM side):** Jodi Kaplan ×3 → 1 `ind_jodi_kaplan` (kept the record with the gift + address; alt phone in notes); Danielle Karlik ×2 → 1 `ind_danielle_karlik` (alt email `dcoren11@gmail.com` + alt phone in notes). **Danielle Kastenbaum skipped** — staff, already `ind_danielle_kastenbaum`, $0. Household links noted: Adam↔Chelsea Lieb (shared email), Madeleine Kassimir↔Maddee Siegel (shared phone).
+- **Zero-dollar contacts:** Chelsea Lieb + Maddee Siegel imported as `cold`, no campaign, `has_given:false` (in the donor system, no gift recorded).
+- **Reconciliation:** Sprout Society x Designs that Donate = **23 donors / $1,735** — an exact match to the campaign's reported `raised`/`donors`. Support Sprout Society = 1 / $10 (Pranav Kadam).
+- **⚠️ Open:** the 3 Jodi + 2 Danielle duplicates still exist **in Givebutter itself** (only the CRM was deduped); the Givebutter API key was exposed in chat earlier and should be rotated.
+
+---
+
 ## 2026-06-03 — Affiliations: contacts link to orgs AND events as badges
 
 App code change + a data pass. Renamed the contact "Organization" link to **"Affiliation"** and turned it into a multi-select of organizations and/or events, shown as badges. Builds on the same-day contact-segments + campaign work (all still uncommitted).
