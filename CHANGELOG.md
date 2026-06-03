@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-06-03 — First live IG import (21 records) + dedupe/merge pass
+
+Data-only (no app code). Max imported the first real batch of Instagram deep-dive JSONs — 6 orgs + 15 individuals from the @sproutsocietyorg follower scrape — then asked for validation and a dupe check. Found and resolved 3 cross-id duplicates against earlier May scans.
+
+- **Validation first:** ran all 21 records through the real `validateContact`/`validateOrg` Zod gates (throwaway script, mirroring the import path with the forced `segment:"prospect"`). **21/21 valid, 0 skipped.** Enums, `YYYY-MM-DD` dates, `next_actions[]` shape, `email:null`, org role tokens in `tags` — all clean.
+- **Dupe check (via `check_existing` on all 21 handles):** 18 clean, **3 collisions** — each an old May record under an auto-id colliding with the new clean-slug import. The import only dedupes on **exact `id`**, so auto-id (`org_mph7megb6x54`) vs slug (`org_bar_nun`) couldn't collide → duplicates. In every case the *old* record held the true relationship and the new import had wrongly reset it to a fresh prospect.
+- **Merged 3 → kept the clean slugs, folded in the real history, deleted 4 stray rows:**
+  - **Bar Nun** (`org_bar_nun`): status → `active`; folded in the Sprout Happy Hour collab (1×/month) + "sober events in Brooklyn" + the 5/12 touchpoint. Deleted `org_mph7megb6x54`, `org_mp2wv8ddgsq2`.
+  - **Avi Ash** (`ind_avi_ash`): → **Community**/`active`; folded in the 5/19 Show n Tell Reddit history, 2 touchpoints, the Danielle next-action log. Deleted `ind_mossl72vzb75`.
+  - **Aliana** (`ind_aliana_cozy`): → **Community**; preserved her "Follow up about SnT" (6/05) action + dry-happy-hour note alongside the new collage outreach. Deleted `ind_mpn2uirwwq20`.
+  - Net: Avi + Aliana correctly left Prospects (already engaged).
+- **Name placeholders (Max's call):** the 3 no-name records were kept (not dupes) with their IG handle copied into `first_name` until real names surface — `ind_polo_bear` → `@poloirpcu`, `ind_rsri` → `@melodysri21`, `ind_zinnergy` → `@zinnergy`.
+- **Method:** all merges/deletes via `supabase` MCP `execute_sql` (targeted `jsonb_set` to preserve every other field + keep promoted SQL columns in sync; verified survivors before deleting). No app code changed.
+- **Open idea:** extend the donor cross-check into a general handle/email pre-check in the Import preview so *any* existing match (not just donors) gets flagged before it creates a cross-id duplicate.
+
+---
+
 ## 2026-06-03 — Imports all land in Prospects + one-click "Move to" bucket changer
 
 App code change (`components/CRMManager.jsx`; `npm run build` passes; uncommitted at session start, committed by this update). Simplified how the import routes contacts across the Community/Donor/Prospect buckets, and added a fast way to reclassify afterward.

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — First IG Import + Dedupe/Merge</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --black:#1a1a1a; --cyan:#1fb6c9; --cyan-lt:#d7f3f7; --banana:#ffd84d; --banana-lt:#fff4cf;
+    --acid:#9be15d; --fuchsia:#e84a8a; --g100:#f1f3f4; --g200:#e3e6e8; --g400:#9aa3a8; --g600:#5b6469; --g800:#2c3338;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',sans-serif;background:linear-gradient(135deg,#eef9fb 0%,#fff7e0 100%);color:var(--g800);padding:46px 30px;min-height:100vh;display:flex;justify-content:center}
+  .slide{width:100%;max-width:1000px;background:#fff;border-radius:24px;box-shadow:0 18px 60px rgba(0,0,0,.12);overflow:hidden}
+  .hd{background:var(--black);color:#fff;padding:30px 40px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px}
+  .hd h1{font-size:26px;font-weight:900;letter-spacing:-.5px}
+  .hd .sub{color:var(--banana);font-weight:700;font-size:14px;margin-top:6px}
+  .meta{text-align:right;font-size:12px;color:var(--g400);line-height:1.7}
+  .meta .hash{font-family:ui-monospace,Menlo,monospace;color:var(--acid);font-weight:700;font-size:13px}
+  .meta .branch{display:inline-block;background:#2c3338;color:var(--cyan);padding:2px 9px;border-radius:10px;font-weight:700;margin-top:3px}
+  .meta .tag{display:inline-block;background:#3a2c00;color:var(--banana);padding:2px 9px;border-radius:10px;font-weight:700;margin-top:3px}
+  .body{padding:32px 40px 38px}
+  .stripe{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:26px}
+  .stat{flex:1;min-width:120px;border:1.5px solid var(--g200);border-radius:14px;padding:14px 16px;text-align:center}
+  .stat .n{font-size:28px;font-weight:900;color:var(--black);line-height:1}
+  .stat .l{font-size:11px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.5px;margin-top:6px}
+  .stat.good .n{color:#3f9142}
+  .stat.warn .n{color:var(--fuchsia)}
+  h2{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.7px;color:var(--g600);margin:6px 0 13px}
+  .merge{border:1.5px solid var(--g200);border-radius:14px;padding:16px 18px;margin-bottom:12px;position:relative}
+  .merge h3{font-size:15px;font-weight:900;color:var(--black);margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .merge p{font-size:13px;line-height:1.55;color:var(--g600)}
+  .merge code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--g100);padding:1px 6px;border-radius:5px;color:var(--black);font-weight:700}
+  .pill{font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;padding:3px 10px;border-radius:14px}
+  .p-comm{background:var(--cyan-lt);color:#0d6e7d}
+  .p-act{background:#eafbe0;color:#477f1f}
+  .del{color:var(--fuchsia);font-weight:800}
+  .note{background:var(--banana-lt);border-radius:12px;padding:14px 18px;margin-top:18px;font-size:13px;line-height:1.6;color:#6b5300}
+  .note b{color:var(--black)}
+  .ft{margin-top:24px;border-top:1.5px solid var(--g100);padding-top:15px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--g400)}
+  .ft b{color:var(--g800)}
+  .ok{color:#477f1f;font-weight:800}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="hd">
+    <div>
+      <h1>First live Instagram import → CRM, deduped + merged</h1>
+      <div class="sub">Sprout CRM Next · @sproutsocietyorg follower batch</div>
+    </div>
+    <div class="meta">
+      <div class="hash">data-only · execute_sql</div>
+      <div class="branch">main</div>
+      <div class="tag">no app code</div>
+      <div>2026-06-03</div>
+    </div>
+  </div>
+  <div class="body">
+
+    <div class="stripe">
+      <div class="stat"><div class="n">21</div><div class="l">records imported</div></div>
+      <div class="stat good"><div class="n">21/21</div><div class="l">Zod-valid</div></div>
+      <div class="stat warn"><div class="n">3</div><div class="l">dupes merged</div></div>
+      <div class="stat warn"><div class="n">4</div><div class="l">stray rows deleted</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">names placeheld</div></div>
+    </div>
+
+    <h2>The 3 duplicates — old record held the real relationship</h2>
+
+    <div class="merge">
+      <h3>🏢 Bar Nun <span class="pill p-act">→ active</span> <code>org_bar_nun</code></h3>
+      <p>Kept the rich deep-dive bio; folded in the live <b>Sprout Happy Hour collab (1×/month)</b> + "sober events in Brooklyn" + the 5/12 touchpoint. <span class="del">Deleted org_mph7megb6x54 + org_mp2wv8ddgsq2.</span></p>
+    </div>
+    <div class="merge">
+      <h3>👤 Avi Ash <span class="pill p-comm">→ Community</span> <span class="pill p-act">active</span> <code>ind_avi_ash</code></h3>
+      <p>Folded in the 5/19 Show n Tell Reddit history, 2 touchpoints, and the Danielle next-action log. <span class="del">Deleted ind_mossl72vzb75.</span></p>
+    </div>
+    <div class="merge">
+      <h3>👤 Aliana <span class="pill p-comm">→ Community</span> <code>ind_aliana_cozy</code></h3>
+      <p>Preserved her "Follow up about SnT" (6/05) action + dry-happy-hour note alongside the new collage outreach. <span class="del">Deleted ind_mpn2uirwwq20.</span></p>
+    </div>
+
+    <div class="note">
+      <b>Root cause:</b> the Import view only dedupes on exact <code>id</code> — old May records used auto-ids (<code>org_mph7megb6x54</code>) while the new imports used clean slugs (<code>org_bar_nun</code>), so the same entity couldn't collide. <b>Avi + Aliana correctly left Prospects</b> (already-engaged community). <b>Names placeheld:</b> <code>@poloirpcu</code> · <code>@melodysri21</code> · <code>@zinnergy</code> → first_name, until real names surface.
+    </div>
+
+    <div class="ft">
+      <div><b>Method:</b> targeted jsonb_set merges (promoted columns kept in sync) · survivors verified before deletes</div>
+      <div><span class="ok">✓ 0 stray rows remain</span> · <b>CHANGELOG committed + pushed</b></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
