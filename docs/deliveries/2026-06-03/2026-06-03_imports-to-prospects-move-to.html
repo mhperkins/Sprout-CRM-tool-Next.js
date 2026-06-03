@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Imports to Prospects + Move-to</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --black:#1a1a1a; --cyan:#1fb6c9; --cyan-lt:#d7f3f7; --banana:#ffd84d; --banana-lt:#fff4cf;
+    --acid:#9be15d; --fuchsia:#e84a8a; --g100:#f1f3f4; --g200:#e3e6e8; --g400:#9aa3a8; --g600:#5b6469; --g800:#2c3338;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',sans-serif;background:linear-gradient(135deg,#eef9fb 0%,#fff7e0 100%);color:var(--g800);padding:48px 32px;min-height:100vh;display:flex;justify-content:center}
+  .slide{width:100%;max-width:980px;background:#fff;border-radius:24px;box-shadow:0 18px 60px rgba(0,0,0,.12);overflow:hidden}
+  .hd{background:var(--black);color:#fff;padding:30px 40px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px}
+  .hd h1{font-size:27px;font-weight:900;letter-spacing:-.5px}
+  .hd .sub{color:var(--banana);font-weight:700;font-size:14px;margin-top:6px}
+  .meta{text-align:right;font-size:12px;color:var(--g400);line-height:1.7}
+  .meta .hash{font-family:ui-monospace,Menlo,monospace;color:var(--acid);font-weight:700;font-size:13px}
+  .meta .branch{display:inline-block;background:#2c3338;color:var(--cyan);padding:2px 9px;border-radius:10px;font-weight:700;margin-top:3px}
+  .body{padding:34px 40px 40px}
+  .lead{font-size:15px;line-height:1.6;color:var(--g600);margin-bottom:26px}
+  .lead b{color:var(--black)}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .card{border:1.5px solid var(--g200);border-radius:16px;padding:20px 22px;position:relative}
+  .card.full{grid-column:1/-1}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.6px;padding:5px 12px;border-radius:20px;margin-bottom:13px}
+  .c-prospect{background:var(--cyan-lt);color:#0d6e7d}
+  .c-donor{background:var(--banana-lt);color:#8a6a00}
+  .c-ui{background:#eafbe0;color:#477f1f}
+  .c-note{background:#fde7f0;color:#b0285e}
+  .card h3{font-size:16px;font-weight:900;color:var(--black);margin-bottom:9px}
+  .card p{font-size:13.5px;line-height:1.6;color:var(--g600)}
+  .card code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--g100);padding:1px 6px;border-radius:5px;color:var(--black);font-weight:700}
+  .flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .pill{font-size:12px;font-weight:800;padding:7px 14px;border-radius:12px;border:1.5px solid var(--g200)}
+  .pill.on{background:var(--cyan);color:#fff;border-color:var(--cyan)}
+  .arr{color:var(--g400);font-weight:900;font-size:16px}
+  .ft{margin-top:26px;border-top:1.5px solid var(--g100);padding-top:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--g400)}
+  .ft b{color:var(--g800)}
+  .ok{color:#477f1f;font-weight:800}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="hd">
+    <div>
+      <h1>Imports → Prospects, plus a one-click bucket mover</h1>
+      <div class="sub">Sprout CRM Next · contact-segment routing</div>
+    </div>
+    <div class="meta">
+      <div class="hash">c6764ef</div>
+      <div class="branch">main</div>
+      <div>2026-06-03</div>
+    </div>
+  </div>
+  <div class="body">
+    <p class="lead">With Contacts split into <b>Community / Donors / Prospects</b>, the import needed to know where each person lands. Orgs are trivial (no segment). The answer for people, kept deliberately simple: <b>every import goes to Prospects</b>, then you reclassify by hand in one click.</p>
+
+    <div class="cards">
+      <div class="card">
+        <span class="chip c-prospect">① Default rule</span>
+        <h3>All imports land in Prospects</h3>
+        <p><code>prepareImportItem</code> forces <code>segment:"prospect"</code> on every imported individual, overriding whatever the JSON says. A fresh follower scrape is by definition a list of prospects — no decision tree for the research surface to follow.</p>
+      </div>
+      <div class="card">
+        <span class="chip c-donor">② Donor cross-check</span>
+        <h3>Auto-upgrade known donors</h3>
+        <p>Before validation, each person is matched against existing CRM donors (the 26 Givebutter donors) by <b>id, email, or @handle</b>. A match flips prospect → donor and shows <code>matched existing donor → Donors</code> in the preview.</p>
+      </div>
+      <div class="card full">
+        <span class="chip c-ui">③ Move-to control</span>
+        <h3>Reclassify in one click — no modal, no save</h3>
+        <p>A new <b>Bucket: [current] · Move to ▾</b> line sits at the top of the contact detail panel. Pick another bucket → instant move + toast. Triage now happens right after you read the person, instead of three clicks deep in the Edit modal.</p>
+        <div class="flow">
+          <span class="pill on">Prospects</span>
+          <span class="arr">→</span>
+          <span class="pill">Community</span>
+          <span class="arr">／</span>
+          <span class="pill">Donors</span>
+          <span class="arr">·</span>
+          <span style="font-size:12px;color:var(--g400);font-weight:700">one tap, reversible</span>
+        </div>
+      </div>
+      <div class="card full">
+        <span class="chip c-note">Heads up</span>
+        <h3>Re-importing resets the bucket</h3>
+        <p>Re-importing an existing contact by id resets them to Prospect unless they match a donor. Intended for the fresh-follower pipe. The IG deep-dive contract docs no longer need to stamp <code>segment</code> — a one-line edit for next time those docs are touched.</p>
+      </div>
+    </div>
+
+    <div class="ft">
+      <div><b>Changed:</b> components/CRMManager.jsx · CHANGELOG.md</div>
+      <div><span class="ok">✓ npm run build passes</span> · <b>committed + pushed to main</b></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
