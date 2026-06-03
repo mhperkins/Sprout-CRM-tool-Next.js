@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Instagram → CRM Import Pipe</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Lato',sans-serif;background:#0e1a16;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px;}
+  .slide{width:980px;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.45);}
+  .hd{background:#0e1a16;color:#fff;padding:30px 40px;display:flex;align-items:flex-start;justify-content:space-between;}
+  .hd .ttl{font-size:29px;font-weight:900;letter-spacing:-0.5px;}
+  .hd .ttl .accent{color:#c6f432;}
+  .hd .sub{font-size:13px;color:#8fa39b;margin-top:5px;font-weight:700;}
+  .hd .meta{text-align:right;}
+  .hd .hash{font-family:monospace;font-size:12px;background:#1c2e27;color:#c6f432;padding:7px 13px;border-radius:8px;border:1px solid #2c4339;}
+  .hd .branch{font-size:11px;color:#8fa39b;margin-top:7px;font-weight:700;}
+  .bd{padding:32px 40px 36px;}
+  .lead{font-size:15px;color:#3a4d45;line-height:1.55;margin-bottom:14px;}
+  .lead b{color:#0e1a16;}
+  .flow{display:flex;align-items:stretch;gap:10px;margin-bottom:24px;}
+  .flow .step{flex:1;background:#f6f9f7;border:1.5px solid #e3e9e6;border-radius:11px;padding:13px 15px;}
+  .flow .step .n{font-size:10px;font-weight:900;color:#155e6e;letter-spacing:0.5px;text-transform:uppercase;}
+  .flow .step .t{font-size:13px;font-weight:900;color:#0e1a16;margin:4px 0 3px;}
+  .flow .step .x{font-size:11.5px;color:#54665d;line-height:1.45;}
+  .flow .arrow{display:flex;align-items:center;color:#c6f432;font-size:22px;font-weight:900;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px;}
+  .card{border:1.5px solid #e3e9e6;border-radius:12px;padding:15px 18px;}
+  .card .ic{font-size:17px;margin-bottom:7px;}
+  .card .ct{font-size:14px;font-weight:900;color:#0e1a16;margin-bottom:6px;}
+  .card .cx{font-size:12.5px;color:#54665d;line-height:1.5;}
+  .card .cx code{background:#f0f4f2;padding:1px 5px;border-radius:4px;font-size:11px;color:#155e6e;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+  .chip{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;background:#eef3f0;color:#2f463d;}
+  .chip.role{background:#d6f3fa;color:#155e6e;}
+  .data{background:#f6f9f7;border-left:4px solid #c6f432;border-radius:0 10px 10px 0;padding:14px 18px;margin-bottom:22px;}
+  .data .dt{font-size:13px;font-weight:900;color:#0e1a16;margin-bottom:6px;}
+  .data .dx{font-size:12.5px;color:#54665d;line-height:1.6;}
+  .data .dx b{color:#0e1a16;}
+  .data .dx code{background:#fff;border:1px solid #e3e9e6;padding:1px 5px;border-radius:4px;font-size:11px;color:#155e6e;}
+  .ft{display:flex;align-items:center;justify-content:space-between;border-top:1.5px solid #e3e9e6;padding-top:15px;}
+  .ft .files{font-size:11.5px;color:#54665d;line-height:1.7;}
+  .ft .files code{font-family:monospace;color:#0e1a16;font-weight:700;}
+  .badge{font-size:11px;font-weight:900;padding:6px 13px;border-radius:20px;background:#c6f432;color:#0e1a16;white-space:nowrap;}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="hd">
+      <div>
+        <div class="ttl">Instagram <span class="accent">→</span> CRM Import Pipe</div>
+        <div class="sub">Two-surface workflow + hardened import + org type tags</div>
+      </div>
+      <div class="meta">
+        <span class="hash">fef3e91</span>
+        <div class="branch">branch: main</div>
+      </div>
+    </div>
+    <div class="bd">
+      <div class="lead">
+        The IG Graph API can't enumerate followers or search users, so the browsing stays in <b>Claude in Chrome</b> (authenticated session, reads the DOM). This project becomes the <b>clean landing zone</b>: a spec its JSON must follow, plus an import path that catches every silent failure.
+      </div>
+
+      <div class="flow">
+        <div class="step"><div class="n">Surface 1</div><div class="t">🌐 Claude in Chrome</div><div class="x">Drives the logged-in IG session, researches handles, emits CRM-shaped JSON per spec.</div></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">Contract</div><div class="t">📄 Import spec</div><div class="x">Schema-valid fields + allowed enums only; rich context into notes / touchpoints.</div></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">Surface 2</div><div class="t">🌱 This CRM</div><div class="x">Dedupe via check_existing, validate loudly, auto-heal, write.</div></div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <div class="ic">🛡️</div>
+          <div class="ct">Silent drops → loud preview</div>
+          <div class="cx">Import preview now runs the real Zod validators per record: <b>✓ ready / ✗ will be skipped</b> with the exact field error, instead of records vanishing inside <code>saveContacts</code>.</div>
+        </div>
+        <div class="card">
+          <div class="ic">↻</div>
+          <div class="ct">Auto-heal enum slips</div>
+          <div class="cx">Predictable mistakes fixed before validation, each shown as "↻ auto-fixed":</div>
+          <div class="chips"><span class="chip">musician→music</span><span class="chip">arts→art</span><span class="chip">community builder→community_builder</span><span class="chip">host→event_host</span></div>
+        </div>
+        <div class="card">
+          <div class="ic">🏷️</div>
+          <div class="ct">New <code>tags</code> field</div>
+          <div class="cx">Added to Contact + Org schemas — closes a latent bug where <code>ImportView</code> passed tags but Zod stripped them every import. Now persisted + filterable.</div>
+        </div>
+        <div class="card">
+          <div class="ic">🏢</div>
+          <div class="ct">Org type tags</div>
+          <div class="cx">New Type column on the Orgs list + Type picker on Add/Edit modals — same chips as the Contacts list:</div>
+          <div class="chips"><span class="chip role">Music</span><span class="chip role">Art</span><span class="chip role">Event Host</span><span class="chip role">Community Builder</span></div>
+        </div>
+      </div>
+
+      <div class="data">
+        <div class="dt">⭐ One role, both record types</div>
+        <div class="dx">The four high-signal roles <b>auto-mirror</b> from a contact's <code>relationship_types</code> into <code>tags</code>; orgs (no relationship_types field) store the same tokens in <code>tags</code> directly. So one filter value — <code>event_host</code> or <code>community_builder</code> — surfaces <b>both people and orgs</b>. <code>partner</code> / <code>attendee</code> / <code>other</code> stay low-signal and untagged.</div>
+      </div>
+
+      <div class="ft">
+        <div class="files">
+          <code>lib/schemas.js</code> · <code>components/CRMManager.jsx</code> · <code>docs/guides/instagram-to-crm-import-spec.md</code><br>
+          Verified against real schemas · <code>npm run build</code> ✓ · stacks on segments + campaign + affiliations
+        </div>
+        <span class="badge">SHIPPED ✓</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
