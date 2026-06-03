@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-06-03 — Imports all land in Prospects + one-click "Move to" bucket changer
+
+App code change (`components/CRMManager.jsx`; `npm run build` passes; uncommitted at session start, committed by this update). Simplified how the import routes contacts across the Community/Donor/Prospect buckets, and added a fast way to reclassify afterward.
+
+- **The question:** with three contact lists now, how does the import know where to put each person? Orgs are easy (they have no segment, they just land in Orgs). The community-vs-prospect-vs-donor split is the hard one because the three buckets are knowable in different ways (donor = a verifiable money fact; community = already engaged; prospect = a target you haven't built the relationship with yet).
+- **Decision = keep it dead simple:** **all imports land in `prospect`.** No per-record segment logic in the JSON, no decision tree for the research surface to follow. `prepareImportItem` now forces `segment:"prospect"` on every imported individual, overriding whatever the JSON says. A fresh follower scrape is by definition a list of prospects.
+- **Givebutter donor cross-check (harmless bonus):** before validation, each imported person is matched against existing CRM donors (the 26 from the Givebutter import live in the CRM as `segment:"donor"`). A match by **id, email, or @handle** auto-upgrades prospect → donor and shows it in the preview as a heal note (`matched existing donor → Donors`). Catches the rare re-import of someone who already gave.
+- **New "Move to ▾" control in the contact detail panel:** a `Bucket: [current]  Move to ▾` line under the status row. Click → pick one of the other two buckets → instant move + toast, no modal, no save, no confirm (deliberate single action, reversible). The Edit-modal Bucket selector (with its confirm) still exists for when you're already editing. Triage now happens in one click after reading the person, instead of three clicks deep in the Edit modal.
+- **Consequence flagged:** re-importing an existing contact by id resets their bucket to prospect unless they match a donor. For the fresh-follower pipe that's the intended behavior.
+
+---
+
 ## 2026-06-03 — IG deep-dive JSON contract doc + where CRM research actually runs
 
 Docs only, no app code or data change. New `docs/guides/ig-deep-dive-json-contract.md`. The session clarified a platform reality and produced a Desktop-readable output contract for the Instagram research workflow.

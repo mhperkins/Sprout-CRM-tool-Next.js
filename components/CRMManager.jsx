@@ -654,6 +654,14 @@ function ContactDetail({contact,orgs,events,onClose,onUpdate,onEdit,showToast}) 
   const [notesExpanded, setNotesExpanded] = useState(false);
   const [naExpanded, setNaExpanded] = useState(false);
   const [addingAction, setAddingAction] = useState(false);
+  const [segMenuOpen, setSegMenuOpen] = useState(false);
+  const curSegment = contact.segment || "community";
+  const moveSegment = (v) => {
+    setSegMenuOpen(false);
+    if (v === curSegment) return;
+    onUpdate({...contact, segment:v});
+    showToast(`Moved to ${SEGMENTS[v]} ✓`);
+  };
   useEffect(()=>{ const h=(e)=>{ if(e.key==="Escape") onClose(); }; document.addEventListener("keydown",h); return ()=>document.removeEventListener("keydown",h); },[onClose]);
   const affOrgIds = (contact.org_ids&&contact.org_ids.length)?contact.org_ids:(contact.org_id?[contact.org_id]:[]);
   const affOrgs = orgs.filter(o=>affOrgIds.includes(o.id));
@@ -732,6 +740,23 @@ function ContactDetail({contact,orgs,events,onClose,onUpdate,onEdit,showToast}) 
         </div>
         <div className="dp-body">
           <div className="dp-row"><RelTag status={contact.relationship_status}/><div style={{display:"flex",gap:4,flexWrap:"wrap"}}>{(contact.relationship_types&&contact.relationship_types.length?contact.relationship_types:[contact.relationship_type]).filter(Boolean).map(t=><span key={t} className="type-tag">{REL_TYPES[t]||t}</span>)}</div></div>
+          <div className="dp-row" style={{display:"flex",alignItems:"center",gap:8}}>
+            <span style={{fontSize:11,fontWeight:700,color:"var(--g600)"}}>Bucket:</span>
+            <span style={{fontSize:12,fontWeight:700,background:"var(--g100)",color:"var(--g800)",padding:"3px 10px",borderRadius:12}}>{SEGMENTS[curSegment]}</span>
+            <div style={{position:"relative"}}>
+              <button className="btn btn-ghost btn-xs" onClick={()=>setSegMenuOpen(o=>!o)}>Move to ▾</button>
+              {segMenuOpen&&<>
+                <div style={{position:"fixed",inset:0,zIndex:10}} onClick={()=>setSegMenuOpen(false)}/>
+                <div style={{position:"absolute",top:"100%",left:0,marginTop:4,background:"#fff",border:"1px solid var(--g200)",borderRadius:8,boxShadow:"0 6px 20px rgba(0,0,0,0.12)",zIndex:11,minWidth:130,overflow:"hidden"}}>
+                  {SEGMENT_OPTS.filter(o=>o.value!==curSegment).map(o=>(
+                    <button key={o.value} onClick={()=>moveSegment(o.value)} style={{display:"block",width:"100%",textAlign:"left",padding:"8px 12px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--g800)"}}
+                      onMouseEnter={e=>e.currentTarget.style.background="var(--g100)"}
+                      onMouseLeave={e=>e.currentTarget.style.background="none"}>{SEGMENTS[o.value]}</button>
+                  ))}
+                </div>
+              </>}
+            </div>
+          </div>
           <div className="dp-section">
             <div className="dp-sect-lbl">Contact Details</div>
             {contact.email&&<div className="dp-field"><strong>Email:</strong> <a href={`mailto:${contact.email}`} style={{color:"var(--cyan)"}}>{contact.email}</a></div>}
@@ -1856,7 +1881,8 @@ function prepareImportItem(item) {
   const rt = item.record_type || (item.first_name ? "individual" : "organization");
   if (rt === "individual") {
     const rawId = item.id || uid(); const id = rawId.startsWith("ind_") ? rawId : `ind_${rawId}`;
-    return { rt, record:{...item, record_type:"individual", id, touchpoints:item.touchpoints||[], tags:item.tags||[], interests:item.interests||[], linked_grants:item.linked_grants||[], createdAt:item.createdAt||new Date().toISOString()} };
+    // All imports land in Prospects — the bucket gets refined by hand (or the donor cross-check below) afterward.
+    return { rt, record:{...item, record_type:"individual", id, segment:"prospect", touchpoints:item.touchpoints||[], tags:item.tags||[], interests:item.interests||[], linked_grants:item.linked_grants||[], createdAt:item.createdAt||new Date().toISOString()} };
   }
   const rawId = item.id || uid(); const id = rawId.startsWith("org_") ? rawId : `org_${rawId}`;
   return { rt, record:{...item, record_type:"organization", id, touchpoints:item.touchpoints||[], tags:item.tags||[], financial_relationship:item.financial_relationship||{has_given:false,total_given:0,grant_history:[]}, createdAt:item.createdAt||new Date().toISOString()} };
@@ -1871,6 +1897,23 @@ function ImportView({contacts,orgs,onImportContact,onImportOrg,showToast}) {
   const [sheetPlan,setSheetPlan]=useState(null);
   const [sheetError,setSheetError]=useState("");
 
+  // Existing donors (mostly from the Givebutter import) live in the CRM as segment:"donor".
+  // An imported person who matches one — by id, email, or @handle — is upgraded prospect → donor.
+  const donorKeys=(()=>{
+    const norm=s=>String(s||"").trim().toLowerCase().replace(/^@/,"");
+    const ids=new Set(), emails=new Set(), handles=new Set();
+    contacts.forEach(c=>{ if((c.segment||"community")!=="donor") return;
+      if(c.id) ids.add(c.id);
+      if(c.email) emails.add(norm(c.email));
+      if(c.instagram_handle) handles.add(norm(c.instagram_handle));
+    });
+    return { ids, emails, handles, norm };
+  })();
+  const matchesDonor=(r)=>{
+    const {ids,emails,handles,norm}=donorKeys;
+    return (r.id&&ids.has(r.id))||(r.email&&emails.has(norm(r.email)))||(r.instagram_handle&&handles.has(norm(r.instagram_handle)));
+  };
+
   const handleParse=()=>{
     setParseError("");
     try {
@@ -1881,6 +1924,7 @@ function ImportView({contacts,orgs,onImportContact,onImportOrg,showToast}) {
           return { valid:false, rt:"?", record:raw, heals:[], error:{fieldErrors:{record:["Missing record_type or identifying field (first_name/name)"]}}, display:"(unidentified record)" };
         const { record:normalized, heals }=normalizeImportRecord(raw);
         const { rt, record }=prepareImportItem(normalized);
+        if (rt==="individual"&&record.segment==="prospect"&&matchesDonor(record)) { record.segment="donor"; heals.push("matched existing donor → Donors"); }
         const { error }=rt==="individual"?validateContact(record):validateOrg(record);
         const display=rt==="individual"
           ? `👤 ${`${record.first_name||"?"} ${record.last_name||""}`.trim()}`
