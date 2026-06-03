@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-06-03 — Instagram → CRM import pipe: spec, tags field, hardened import, org type tags
+
+App code + docs change (`lib/schemas.js`, `components/CRMManager.jsx`, new guide). `npm run build` passes. Designed the **two-surface workflow** for bringing Instagram followers into the CRM and hardened the import path that receives them. **Not committed before this entry** — stacks on the three prior same-day uncommitted changes (segments, donor campaign selector, affiliations).
+
+- **Why two-surface, not a rebuild:** investigated how the user previously scraped IG ("through web search" turned out to be **Claude in Chrome** driving their logged-in session and reading the DOM — not Composio, not the API, not a hosted scraper). The official IG Graph API blocks follower enumeration and user search entirely; `business_discovery` only reads other Business accounts' public posts. Conclusion: keep the browsing in **Claude in Chrome** (more accurate — authenticated session + adaptive profile visits; Playwright would share the same DOM-virtualization ceiling and add an auth handicap), and make **this project the clean landing zone**.
+- **Import spec** (`docs/guides/instagram-to-crm-import-spec.md`, new): the exact JSON contract Claude in Chrome must emit so records land with zero silent loss. Documents the two silent-failure modes (Zod strips unknown keys; invalid enum drops the whole record), the org/contact/touchpoint shapes, the dual `next_action`/`next_actions[]` rule, dedupe-via-`check_existing`, and a priority-classification table. Verified the example JSON against the real schemas with a throwaway script (deleted).
+- **`tags` field** added to `ContactSchema` + `OrgSchema`. Closes a latent bug: `ImportView` already passed `tags` through, but neither schema had the field, so Zod silently stripped every tag on every import. Now free-form labels (`instagram_sourced`, `nyc`, `wellness`) and role tokens persist and are filterable. Additive, non-enum — no schemas-sync risk, defaults to `[]`.
+- **Import view hardened** (the landmine fix): the preview now runs the real Zod validators per record and shows **✓ ready / ✗ will be skipped** with the field error, instead of silently dropping records in `saveContacts`. Added an **auto-heal** layer (`normalizeImportRecord`) that fixes predictable enum slips before validation — `musician→music`, `artist/arts→art`, `community builder→community_builder`, `host/organizer→event_host`, plus `segment`/`status`/`category` synonyms and legacy singular `relationship_type→relationship_types[]`. Each fix shows as "↻ auto-fixed:"; unmappable roles coerce to `other` (record survives) rather than dropping. Import button reports skipped count and is disabled when nothing valid.
+- **Priority roles across people AND orgs:** the four high-signal roles (`music`, `art`, `event_host`, `community_builder`) auto-mirror from a contact's `relationship_types` into `tags`. Orgs (no `relationship_types` field) store the same tokens in `tags` directly, so one filter value spans both record types. `partner`/`attendee`/`other` stay low-signal/untagged.
+- **Org type tags (UI):** new **Type column** on the Orgs list rendering role chips with the same `type-tag` styling + `REL_TYPES` labels the Contacts list uses (reads `o.tags`, role tokens only). Added the same multi-select **Type picker** (Music / Art / Event Host / Community Builder, via new `ORG_ROLE_TAGS` constant) to the org Add + Edit modals, toggling tokens in `tags`. `tags:[]` added to the org blank state.
+
+---
+
 ## 2026-06-03 — Comms Manager proofed the Sprout n Tell IG caption + first retro loop
 
 Virtual-agency work, no app code or CRM data change. Ran the Instagram caption for the first Sprout n Tell through the **Communications Manager** agent (spawned via the Agent tool with its `_v1` system prompt), then closed the retro loop into the prompt.

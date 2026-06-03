@@ -26,6 +26,7 @@ import {
   DEFAULT_PROFILE,
 } from "../lib/services";
 import { buildNewsletter, TEMPLATES, defaultMonthYear } from "../lib/newsletter";
+import { validateContact, validateOrg } from "../lib/schemas";
 
 /* ─── Styles ───────────────────────────────────────────────────────────────── */
 const STYLES = `
@@ -294,6 +295,8 @@ const STYLES = `
 /* ─── Constants ─────────────────────────────────────────────────────────────── */
 const REL_STATUS = { cold:"Cold", cool:"Cool", warm:"Warm", active:"Active" };
 const REL_TYPES  = { music:"Music", art:"Art", event_host:"Event Host", community_builder:"Community Builder", partner:"Partner", attendee:"Attendee", sprout_society:"Sprout Society", other:"Other" };
+// High-signal role tags shared by contacts AND orgs (orgs store these in `tags`, since they have no relationship_types). Tokens match REL_TYPES so one filter spans both.
+const ORG_ROLE_TAGS = [["music","Music"],["art","Art"],["event_host","Event Host"],["community_builder","Community Builder"]];
 const SEGMENTS   = { community:"Community", donor:"Donors", prospect:"Prospects" };
 const SEGMENT_OPTS = [{value:"community",label:"Community"},{value:"donor",label:"Donor"},{value:"prospect",label:"Prospect"}];
 // Givebutter campaigns — synced via the givebutter MCP (list_campaigns). Refresh when campaigns change.
@@ -1505,6 +1508,14 @@ function OrgEditModal({editingOrg,setEditingOrg,onSave}) {
         <div className="fg"><label className="fl">Category</label>
           <SearchSelect options={Object.entries(ORG_CATS).map(([v,l])=>({value:v,label:l}))} value={editingOrg.category||"funder"} onChange={v=>setEditingOrg({...editingOrg,category:v})}/>
         </div>
+        <div className="fg"><label className="fl">Type <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(select all that apply)</span></label>
+          <div className="type-btn-group">
+            {ORG_ROLE_TAGS.map(([v,l])=>{
+              const tags=editingOrg.tags||[]; const on=tags.includes(v);
+              return <button key={v} className={`type-btn ${on?"on":""}`} onClick={()=>setEditingOrg({...editingOrg,tags:on?tags.filter(t=>t!==v):[...tags,v]})}>{l}</button>;
+            })}
+          </div>
+        </div>
         <div className="fg"><label className="fl">Status</label>
           <RadioGroup options={STATUS_OPTS_NO_DECLINED} value={editingOrg.relationship_status||"cold"} onChange={v=>setEditingOrg({...editingOrg,relationship_status:v})}/>
         </div>
@@ -1533,7 +1544,7 @@ function OrgsView({orgs,contacts,onUpdate,onDelete,showToast}) {
   const [fStatus,setFStatus]=useState("all");
   const [selected,setSelected]=useState(null);
   const [adding,setAdding]=useState(false);
-const blank={name:"",category:"funder",website:"",instagram_handle:"",phone:"",email:"",relationship_status:"cold",notes:"",next_action:"",next_action_date:"",primary_contact_id:""};
+const blank={name:"",category:"funder",website:"",instagram_handle:"",phone:"",email:"",relationship_status:"cold",tags:[],notes:"",next_action:"",next_action_date:"",primary_contact_id:""};
   const [no,setNo]=useState(blank);
   const [noDrawer,setNoDrawer]=useState(false);
 
@@ -1577,6 +1588,14 @@ const [editingOrg,setEditingOrg]=useState(null);
           <div className="fg"><label className="fl">Category</label>
             <SearchSelect options={Object.entries(ORG_CATS).map(([v,l])=>({value:v,label:l}))} value={no.category} onChange={v=>setNo({...no,category:v})}/>
           </div>
+          <div className="fg"><label className="fl">Type <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(select all that apply)</span></label>
+            <div className="type-btn-group">
+              {ORG_ROLE_TAGS.map(([v,l])=>{
+                const tags=no.tags||[]; const on=tags.includes(v);
+                return <button key={v} className={`type-btn ${on?"on":""}`} onClick={()=>setNo({...no,tags:on?tags.filter(t=>t!==v):[...tags,v]})}>{l}</button>;
+              })}
+            </div>
+          </div>
           <div className="fg"><label className="fl">Status</label>
             <RadioGroup options={STATUS_OPTS_NO_DECLINED} value={no.relationship_status} onChange={v=>setNo({...no,relationship_status:v})}/>
           </div>
@@ -1593,11 +1612,12 @@ const [editingOrg,setEditingOrg]=useState(null);
       )}
       {filtered.length===0
         ? <div className="empty"><div className="empty-ico">🏢</div><div className="empty-ttl">No organizations</div><div className="empty-txt">Add organizations manually or import JSON from Claude.</div></div>
-        : <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Organization</th><th>Category</th><th>Status</th><th>Next Action</th><th>Given</th><th></th></tr></thead><tbody>
+        : <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Organization</th><th>Category</th><th>Type</th><th>Status</th><th>Next Action</th><th>Given</th><th></th></tr></thead><tbody>
             {filtered.map(o=>{
               return <tr key={o.id} onClick={()=>setSelected(o.id)}>
                 <td><div style={{fontWeight:700}}>{o.name}</div><div style={{fontSize:11,color:"var(--g400)"}}>{o.website||""}</div></td>
                 <td><span className="type-tag">{ORG_CATS[o.category]||o.category}</span></td>
+                <td><div style={{display:"flex",flexWrap:"wrap",gap:3}}>{(o.tags||[]).filter(t=>REL_TYPES[t]).map(t=><span key={t} className="type-tag">{REL_TYPES[t]}</span>)}</div></td>
                 <td><RelTag status={o.relationship_status}/></td>
                 <td style={{maxWidth:160,fontSize:11,color:"var(--g600)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.next_action||"—"}</td>
 <td style={{fontSize:12}}>{o.financial_relationship?.has_given?fmtMoney(o.financial_relationship.total_given):<span style={{color:"var(--g400)"}}>—</span>}</td>
@@ -1782,6 +1802,66 @@ function downloadNewsletterCsv(contacts){
   return withEmail.length;
 }
 
+/* ─── Import normalization (auto-heal common enum slips before Zod drops the record) ─── */
+const _RELTYPE_MAP = {
+  art:"art", arts:"art", artist:"art", artists:"art", "visual art":"art", "visual artist":"art", "visual artists":"art", "fine art":"art", painter:"art", designer:"art",
+  music:"music", musician:"music", musicians:"music", "music artist":"music", musical:"music", dj:"music", band:"music",
+  event_host:"event_host", "event host":"event_host", "event-host":"event_host", host:"event_host", organizer:"event_host", organiser:"event_host",
+  partner:"partner", partners:"partner",
+  community_builder:"community_builder", "community builder":"community_builder", "community-builder":"community_builder", builder:"community_builder", "community organizer":"community_builder",
+  attendee:"attendee", attendees:"attendee", guest:"attendee",
+  sprout_society:"sprout_society", "sprout society":"sprout_society",
+  other:"other",
+};
+const _SEGMENT_MAP = { community:"community", communities:"community", "community member":"community", donor:"donor", donors:"donor", prospect:"prospect", prospects:"prospect", lead:"prospect", leads:"prospect" };
+const _STATUS_MAP = { cold:"cold", cool:"cool", warm:"warm", active:"active", hot:"active", lukewarm:"cool", new:"cold" };
+const _CATEGORY_MAP = { funder:"funder", funders:"funder", sponsor:"funder", partner:"partner", partners:"partner", vendor:"vendor", vendors:"vendor", media:"media", press:"media", government:"government", gov:"government", govt:"government" };
+const _norm = s => String(s ?? "").trim().toLowerCase().replace(/\s+/g," ");
+
+function normalizeImportRecord(raw) {
+  const heals=[]; const r={...raw};
+  // legacy singular relationship_type -> plural array (matches the in-app placeholder + older exports)
+  if (r.relationship_type && !r.relationship_types) { r.relationship_types=[r.relationship_type]; delete r.relationship_type; heals.push("relationship_type → relationship_types[]"); }
+  // relationship_types: map synonyms; anything unmappable becomes "other" (record survives, heal is shown — never a silent drop)
+  if (r.relationship_types != null) {
+    const arr = Array.isArray(r.relationship_types) ? r.relationship_types : [r.relationship_types];
+    const mapped = arr.map(v => {
+      const m = _RELTYPE_MAP[_norm(v)];
+      if (m) { if (m !== v) heals.push(`type "${v}"→"${m}"`); return m; }
+      heals.push(`type "${v}"→"other"`); return "other";
+    });
+    r.relationship_types = [...new Set(mapped)];
+  }
+  // segment / relationship_status / category: map synonyms; unknown -> drop the key so the schema default applies (heal shown)
+  const coerce = (key, map, label) => {
+    if (r[key] == null || r[key] === "") return;
+    const m = map[_norm(r[key])];
+    if (m) { if (m !== r[key]) heals.push(`${label} "${r[key]}"→"${m}"`); r[key]=m; }
+    else { heals.push(`${label} "${r[key]}" dropped → default`); delete r[key]; }
+  };
+  coerce("segment", _SEGMENT_MAP, "segment");
+  coerce("relationship_status", _STATUS_MAP, "status");
+  coerce("category", _CATEGORY_MAP, "category");
+  // auto-mirror the high-signal roles into tags so one filter surfaces both contacts AND orgs
+  const PRIORITY_ROLES=["music","art","event_host","community_builder"];
+  if (Array.isArray(r.relationship_types) && r.relationship_types.length) {
+    const tags=Array.isArray(r.tags)?[...r.tags]:[];
+    const add=r.relationship_types.filter(t=>PRIORITY_ROLES.includes(t)&&!tags.includes(t));
+    if (add.length) { r.tags=[...tags,...add]; heals.push(`tagged role(s): ${add.join(", ")}`); }
+  }
+  return { record:r, heals };
+}
+
+function prepareImportItem(item) {
+  const rt = item.record_type || (item.first_name ? "individual" : "organization");
+  if (rt === "individual") {
+    const rawId = item.id || uid(); const id = rawId.startsWith("ind_") ? rawId : `ind_${rawId}`;
+    return { rt, record:{...item, record_type:"individual", id, touchpoints:item.touchpoints||[], tags:item.tags||[], interests:item.interests||[], linked_grants:item.linked_grants||[], createdAt:item.createdAt||new Date().toISOString()} };
+  }
+  const rawId = item.id || uid(); const id = rawId.startsWith("org_") ? rawId : `org_${rawId}`;
+  return { rt, record:{...item, record_type:"organization", id, touchpoints:item.touchpoints||[], tags:item.tags||[], financial_relationship:item.financial_relationship||{has_given:false,total_given:0,grant_history:[]}, createdAt:item.createdAt||new Date().toISOString()} };
+}
+
 function ImportView({contacts,orgs,onImportContact,onImportOrg,showToast}) {
   const [mode,setMode]=useState("json");
   const [jsonText,setJsonText]=useState("");
@@ -1792,33 +1872,34 @@ function ImportView({contacts,orgs,onImportContact,onImportOrg,showToast}) {
   const [sheetError,setSheetError]=useState("");
 
   const handleParse=()=>{
-    setParseError(""); 
+    setParseError("");
     try {
       const obj=JSON.parse(jsonText.trim());
       const items=Array.isArray(obj)?obj:[obj];
-      items.forEach(item=>{ if (!item.record_type&&!item.first_name&&!item.name) throw new Error("Missing record_type or identifying field (first_name/name)"); });
-      setParsed(items);
+      const results=items.map(raw=>{
+        if (!raw.record_type&&!raw.first_name&&!raw.name)
+          return { valid:false, rt:"?", record:raw, heals:[], error:{fieldErrors:{record:["Missing record_type or identifying field (first_name/name)"]}}, display:"(unidentified record)" };
+        const { record:normalized, heals }=normalizeImportRecord(raw);
+        const { rt, record }=prepareImportItem(normalized);
+        const { error }=rt==="individual"?validateContact(record):validateOrg(record);
+        const display=rt==="individual"
+          ? `👤 ${`${record.first_name||"?"} ${record.last_name||""}`.trim()}`
+          : `🏢 ${record.name||"?"}`;
+        return { valid:!error, rt, record, heals, error, display };
+      });
+      setParsed(results);
     } catch(e) { setParseError(e.message); setParsed(null); }
   };
 
   const handleImport=()=>{
     if (!parsed) return;
-    const newContacts=[]; const newOrgs=[];
-    parsed.forEach(item=>{
-const rt=item.record_type||(item.first_name?"individual":"organization");
-      if (rt==="individual") {
-        const rawId = item.id || uid();
-        const id = rawId.startsWith("ind_") ? rawId : `ind_${rawId}`;
-        newContacts.push({...item,record_type:"individual",id,touchpoints:item.touchpoints||[],tags:item.tags||[],interests:item.interests||[],linked_grants:item.linked_grants||[],createdAt:item.createdAt||new Date().toISOString()});
-      } else {
-        const rawId = item.id || uid();
-        const id = rawId.startsWith("org_") ? rawId : `org_${rawId}`;
-        newOrgs.push({...item,record_type:"organization",id,touchpoints:item.touchpoints||[],tags:item.tags||[],financial_relationship:item.financial_relationship||{has_given:false,total_given:0,grant_history:[]},createdAt:item.createdAt||new Date().toISOString()});
-      }
-    });
+    const valid=parsed.filter(r=>r.valid);
+    const newContacts=valid.filter(r=>r.rt==="individual").map(r=>r.record);
+    const newOrgs=valid.filter(r=>r.rt==="organization").map(r=>r.record);
     if (newContacts.length) onImportContact(newContacts);
     if (newOrgs.length) onImportOrg(newOrgs);
-    showToast(`Imported: ${newContacts.length} contact(s), ${newOrgs.length} org(s) ✓`);
+    const dropped=parsed.length-valid.length;
+    showToast(`Imported ${newContacts.length} contact(s), ${newOrgs.length} org(s)${dropped?` · ${dropped} skipped (invalid)`:""} ✓`);
     setJsonText(""); setParsed(null);
   };
 
@@ -1898,20 +1979,31 @@ const rt=item.record_type||(item.first_name?"individual":"organization");
             />
           </div>
           {parseError&&<p style={{fontSize:12,color:"#B91C1C",marginTop:8}}>⚠ {parseError}</p>}
-          {parsed&&(
+          {parsed&&(()=>{
+            const ok=parsed.filter(r=>r.valid).length; const bad=parsed.length-ok;
+            return (
             <div className="preview-card">
-              <div className="preview-name">{parsed.length} record(s) ready to import</div>
+              <div className="preview-name">{ok} record(s) ready{bad?` · ${bad} will be skipped (invalid)`:""}</div>
               {parsed.map((item,i)=>(
-                <div key={i} className="preview-meta" style={{marginTop:4}}>
-                  {item.record_type==="individual"||item.first_name
-                    ? `👤 ${item.first_name} ${item.last_name} · ${item.relationship_type||""} · ${item.relationship_status||"cold"}`
-                    : `🏢 ${item.name} · ${item.category||""} · ${item.relationship_status||"cold"}`}
+                <div key={i} className="preview-meta" style={{marginTop:6}}>
+                  <div style={{color:item.valid?"var(--g800)":"#B91C1C",fontWeight:item.valid?400:700}}>
+                    {item.valid?"✓":"✗"} {item.display}{item.valid?"":" — will be skipped"}
+                  </div>
+                  {!item.valid&&item.error&&(
+                    <div style={{fontSize:11,color:"#B91C1C",marginLeft:18}}>
+                      {Object.entries(item.error.fieldErrors||{}).map(([k,v])=>`${k}: ${Array.isArray(v)?v.join("; "):v}`).join(" · ")}
+                    </div>
+                  )}
+                  {item.heals&&item.heals.length>0&&(
+                    <div style={{fontSize:11,color:"#92760C",marginLeft:18}}>↻ auto-fixed: {item.heals.join(" · ")}</div>
+                  )}
                 </div>
               ))}
             </div>
-          )}
+            );
+          })()}
           <div style={{display:"flex",gap:8,marginTop:14}}>
-            {!parsed?<button className="btn btn-cyan" onClick={handleParse} disabled={!jsonText.trim()}>Preview Import</button>:<button className="btn btn-acid" onClick={handleImport}>✓ Import into CRM</button>}
+            {!parsed?<button className="btn btn-cyan" onClick={handleParse} disabled={!jsonText.trim()}>Preview Import</button>:<button className="btn btn-acid" onClick={handleImport} disabled={!parsed.some(r=>r.valid)}>✓ Import {parsed.filter(r=>r.valid).length} into CRM</button>}
             {(jsonText||parsed)&&<button className="btn btn-ghost btn-sm" onClick={()=>{setJsonText("");setParsed(null);setParseError("");}}>Clear</button>}
           </div>
         </div>
