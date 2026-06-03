@@ -14,6 +14,38 @@
         "--project-ref=ixdnmjchvjzytyhmripc",
         "--access-token=${SUPABASE_ACCESS_TOKEN}"
       ]
+    },
+    "google-workspace": {
+      "command": "C:\\Users\\maxwe\\.local\\bin\\workspace-mcp.exe",
+      "args": [
+        "--tools",
+        "gmail",
+        "drive",
+        "calendar",
+        "docs",
+        "sheets"
+      ],
+      "env": {
+        "GOOGLE_CLIENT_SECRET_PATH": "C:\\Users\\maxwe\\.google-workspace-mcp\\client_secret.json",
+        "OAUTHLIB_INSECURE_TRANSPORT": "1",
+        "WORKSPACE_MCP_PORT": "8000"
+      }
+    },
+    "discord": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "mcp-discord"],
+      "env": {
+        "DISCORD_TOKEN": "${DISCORD_TOKEN}"
+      }
+    },
+    "slack": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "slack-mcp-server@latest", "--transport", "stdio"],
+      "env": {
+        "SLACK_MCP_XOXC_TOKEN": "${SLACK_MCP_XOXC_TOKEN}",
+        "SLACK_MCP_XOXD_TOKEN": "${SLACK_MCP_XOXD_TOKEN}",
+        "SLACK_MCP_ADD_MESSAGE_TOOL": "true"
+      }
     }
   }
 }

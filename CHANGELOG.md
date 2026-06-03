@@ -2,6 +2,96 @@
 
 ---
 
+## 2026-06-02 — Discord MCP re-established + verified live
+
+Restored the **`discord`** MCP and verified it end to end. At session start `.mcp.json` had **no `discord` entry** (only sprout-crm/supabase/google-workspace) and it was missing from `enabledMcpjsonServers` — despite an earlier same-day changelog entry. Re-added both, re-set `DISCORD_TOKEN`, and walked the full Developer Portal bot setup again. **No app/data change** — config only.
+
+- **Re-added** `discord` to `.mcp.json` (`cmd /c npx -y mcp-discord`, token via `${DISCORD_TOKEN}`) and to the project's `enabledMcpjsonServers` in `~/.claude.json`.
+- **Bot/server already existed** from earlier today: app "Russel Sprout" (#2412), guild "Sprout Society" `1511441473512669244`, #general `1511441476561801410`. Re-confirmed the 3 privileged intents + minimal-perm invite.
+- **Confirmed the `setx` → full-restart flow works:** after fully quitting and reopening VS Code, the server auto-logged-in at startup and `discord_get_server_info` returned the live guild (5 members). A window *reload* alone left `${DISCORD_TOKEN}` blank (extension host reuses the old env) — and manual `discord_login` re-runs timed out / fought the auth-once-at-startup lifecycle.
+- **⚠️ Token re-pasted in chat → still needs a Reset Token** + re-`setx` + full restart.
+
+---
+
+## 2026-06-02 — Discord MCP connected (real bot)
+
+Registered a **`discord`** MCP server with Claude Code so Claude can read+write Discord. Created a Discord server + bot from scratch and verified live end to end (read #general, send, delete). **No app/data change** — config only.
+
+- **Server:** barryyip0625 `mcp-discord` (npm) over stdio, launched `cmd /c npx -y mcp-discord` (same pattern as supabase/slack). 22 tools: read/send/edit/delete messages, threads, reactions, webhooks, roles, members, channels.
+- **Registered in** project `.mcp.json` as **`discord`**, token via `${DISCORD_TOKEN}` expansion (no secret in git). Added `discord` to the project's `enabledMcpjsonServers` in `~/.claude.json`. Not a reserved name — loaded normally.
+- **Auth — real Discord bot** (contrast with Slack's browser token): app "Russel Sprout" in the Discord Developer Portal, all 3 privileged gateway intents enabled (Message Content, Server Members, Presence), invited with minimal perms (no Administrator). Bot token stored as Windows User env var `DISCORD_TOKEN` via `setx`.
+- **New server, not the Slack community:** the Sprout Society channels live in **Slack**; this Discord "Sprout Society" guild (`1511441473512669244`) was created fresh just to host the bot.
+- **⚠️ `setx` only reaches new processes** — a window reload is NOT enough to pick up `DISCORD_TOKEN`; **fully quit and reopen VS Code**, then the bot auto-logs-in. Verified live after restart: `get_server_info` + `read_messages` + `send` + `delete_message`.
+- **⚠️ Token was pasted in chat → should be reset** (Reset Token, re-`setx`, full restart).
+
+---
+
+## 2026-06-02 — Slack MCP connected (browser-token / stealth mode)
+
+Registered a **`slack`** MCP server with Claude Code so Claude can read+write Slack. Verified live (`channels_list` returned the workspace). All 5 project MCP servers green. **No app/data change** — config only.
+
+- **Server:** korotovsky `slack-mcp-server@latest` over `--transport stdio`, launched `cmd /c npx -y …` (same pattern as supabase/discord). 15 tools incl. search, channels, DMs, history. Posting enabled via `SLACK_MCP_ADD_MESSAGE_TOOL=true` (all channels; can be scoped to channel IDs or dropped for read-only).
+- **Registered in** project `.mcp.json` as **`slack`**, env via `${SLACK_MCP_XOXC_TOKEN}` + `${SLACK_MCP_XOXD_TOKEN}` expansion (no secrets in git). Added `slack` to the project's `enabledMcpjsonServers` in `~/.claude.json`.
+- **Auth — stealth/browser token (no Slack admin needed):** `xoxc` pulled from `localStorage.localConfig_v2` token (Console), `xoxd` from the `d` cookie (Application → Cookies, URL-encoded, stored verbatim). Both stored as **Windows User env vars** via `setx` (same mechanism as `SUPABASE_ACCESS_TOKEN`).
+- **⚠️ Browser tokens expire** as Slack rotates the session — when Slack tools start failing auth, re-pull both and re-`setx`, then reload the window. The tradeoff for skipping an admin-approved Slack app.
+- **⚠️ stdio binds no port** — `SLACK_MCP_PORT` is SSE/HTTP-only. "Connecting…" in `/mcp` after a reload is just npx cold-start, not a port conflict.
+- Also noted: a `discord` MCP entry (`mcp-discord`, `${DISCORD_TOKEN}`) is present in `.mcp.json`.
+
+---
+
+## 2026-06-02 — Multi-account Google Workspace MCP (Gmail/Drive/Calendar/Docs/Sheets)
+
+Stood up a new MCP server that holds **multiple @sproutsociety.org accounts at once**, read+write. Two accounts connected and verified live (maxperkins@, hello@).
+
+- **Server:** Taylor Wilsdon's `workspace-mcp` (PyPI), installed persistently via `uv tool install --python 3.12 workspace-mcp` → fixed launcher at `C:\Users\maxwe\.local\bin\workspace-mcp.exe`. Persistent install chosen over `uvx`-at-spawn to remove the editor-launch cold-start/PATH fragility.
+- **Registered in** project `.mcp.json` as **`google-workspace`**, args `--tools gmail drive calendar docs sheets`, env points at gitignored OAuth creds + `OAUTHLIB_INSECURE_TRANSPORT=1` + `WORKSPACE_MCP_PORT=8000`. Also added to the project's `enabledMcpjsonServers`.
+- **OAuth:** Google Cloud project "Sprout Workspace MCP", **Web application** client, redirect `http://localhost:8000/oauth2callback`, consent screen **Internal**. Client secret stored gitignored at `C:\Users\maxwe\.google-workspace-mcp\client_secret.json` (outside repo).
+- **Account model:** per-user OAuth (each teammate runs `start_google_auth` once, token caches per email). Not service-account/domain-wide delegation — Max is not a Workspace super-admin.
+- **⚠️ The gotcha that cost an hour:** the server name **`workspace` is RESERVED** in Claude Code — an entry named `workspace` in `.mcp.json` is **silently dropped** on every load (the `/mcp` panel just omits it). Surfaced only via `claude mcp list` ("reserved MCP server name and was not loaded"). Renaming the key to `google-workspace` fixed it instantly. **Lesson:** when a server won't appear in `/mcp`, run `claude mcp list` first to see config-level warnings.
+- Validated: Gmail search + Drive list both return live data for each account.
+
+---
+
+## 2026-06-02 — Picture tutorial: de-em-dashed, reworded MCP cards, trimmed Part 2 + glossary
+
+Edited `docs/guides/getting-started-tutorial.html` only. **No code/data change** — docs only, not committed.
+
+- **Removed every em-dash in the file** (title, CSS comments, all display copy, and the JS-generated `Card X of N` hint). Each was restructured into a colon, period, or comma per the no-em-dash rule — not swapped for a comma.
+- **Reworded five "Ask Claude" / "From your inbox" carousel cards** to match new prompt/response copy:
+  - **Inbox / Catch up:** "Give me a list of everyone who I've responded and not responded to in the last two weeks." → "I have created folders for both categories and placed the appropriate email chains in each one. Let me know if you'd like me to draft responses for any or all."
+  - **Add a person:** "Add Alina from barnun happy hour. She's an artist interested in SnT." → "New contact created and suggested next action. Let me know if you'd like to add or change anything."
+  - **Orgs / log a win:** "Barnun agreed to host a spring event. Create an event for this on 6/30. Suggest a checklist and add anyone associated with Barnun to the contact list." → "Event page created, and here is the link. I also added the Google Sheets associated with this event to the links section. Let me know if you'd like anything else."
+  - **File an email thread (now newsletter):** "Draft a newsletter advertisement for the Barnun spring event." → "A draft is saved in Newsletter drafts on the app. Feel free to edit and send. Or ask me to send it at a scheduled time." (Card title still reads "File an email thread onto the right group" — flagged to user, retitle pending.)
+  - **Events:** "Create a repeated Sprout n Tell event the fourth Friday of every month for the next 3 months." → "Done. Let me know if you want to add any specific checklist or contacts. Or I can create suggested checklists to start from."
+  - Fixed typos along the way (Srpout→Sprout, youd→you'd, save→saved, lowercase i→I).
+- **Deleted the entire "Part 2: Daily basics" section** (The 4 things you'll actually do, ① morning check, ② find a person, ③ log a conversation w/ Log Touchpoint screenshot, ④ follow-up reminder).
+- **Deleted the "Reference / Word list, in plain English" glossary section** (incl. the "That's the whole app." closing note and Back-to-top link).
+
+---
+
+## 2026-06-01 — Tutorial decks: Gmail MCP woven into both guides
+
+Documented how the newly-connected **Gmail MCP** interacts with the CRM tools, across the two HTML guides. **No code/data change** — docs only.
+
+- **Getting-started picture tutorial** (`docs/guides/getting-started-tutorial.html`): added a 3rd carousel card — **"📧 From your inbox"** — to the 5 email-relevant screens (Dashboard, Contacts, Orgs, Events, Outreach). Each card's "behind the scenes" box shows the two-MCP handoff: **① Gmail reads** (`search_threads`/`get_thread`) → **② Sprout CRM writes** (`check_existing` + `add_touchpoint`/`create_or_update_contact`), with preview-before-save called out. Newsletter left at 2 cards (send-side, not an inbox read). Added cyan email-badge + `.stage` styles, a third nav dot per updated carousel, a dynamic `Card X of N` hint (replacing the hardcoded "of 2"), and an intro note explaining the three cards.
+- **MCP tools & workflows deck** (`docs/guides/mcp-tools-and-workflows.html`): also updated earlier in the session before the picture tutorial was identified as the intended target — added Gmail tie-in lines to the 4 tool-family slides, a new "Gmail MCP — your inbox as a source" concept slide, a new "Email → CRM in one pass" workflow slide (Five → Six workflows), and an `/email-to-crm` cheat-sheet row.
+- Not committed to git.
+
+---
+
+## 2026-06-01 — Drive sheets → contact enrichment pass (28 contacts)
+
+Scanned the two Sprout Society Drive spreadsheets and merged new detail into existing CRM contacts. **No code change** — data-only, all writes through the `sprout-crm` MCP merge tool (`create_or_update_contact`).
+
+- **Sheets read (read-only, not modified):** `Sprout Society - Check-In (Responses)` (pronouns, neighborhood/zip, how-heard, what-they-want, accessibility) and `Show N Tell - Interest Form (Responses)` (showcase details, guests, contact info).
+- **Process:** pulled all 52 contacts, fetched full detail on the 36 matched records to read existing notes, then merged with `overwrite:true` on notes only (existing notes preserved, new lines appended — other scalars untouched). Matched on name/email.
+- **28 contacts updated.** Beyond notes: filled **Greg Smith**'s empty email (`info@gregsmithgroup.com`) + phone, added **Alexandra Galvis**'s website (`alexandragalvis.com`), fixed **Michael Ne Jame**'s first-name spelling (`Micahel` → `Michael`).
+- The 6/1 check-in cluster (`ind_mpvhkubv*`) had only stub notes — these gained the full check-in detail. Showcasers gained medium/format specifics (Aidan, Bob, Tim, Franklin, Rachel, Michael).
+- **8 skipped** (Javey, Robert DePippo, Julia Rudy, Jim Wang, Caroline, Sefriyel, George Curran, Leah Ward Rankin) — sheet rows only confirmed data already present.
+- Not committed to git.
+
+---
+
 ## 2026-06-01 — `/email-to-crm` skill + first live email→CRM pass + new `sprout_society` type
 
 First execution of the Email → CRM protocol end to end, plus the skill that wraps it and a schema change the run required.
