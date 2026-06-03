@@ -46,6 +46,13 @@
         "SLACK_MCP_XOXD_TOKEN": "${SLACK_MCP_XOXD_TOKEN}",
         "SLACK_MCP_ADD_MESSAGE_TOOL": "true"
       }
+    },
+    "givebutter": {
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": ["C:\\Users\\maxwe\\mcp-servers\\givebutter-mcp\\dist\\index.js"],
+      "env": {
+        "GIVEBUTTER_API_KEY": "${GIVEBUTTER_API_KEY}"
+      }
     }
   }
 }

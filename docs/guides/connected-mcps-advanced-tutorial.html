@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprout CRM — What You Can Ask For Now</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#030000; --white:#F7F7F6; --cyan:#73C4D6; --fuchsia:#E10098;
+    --acid:#C6C902; --banana:#FAD100; --cyan-lt:#C7E7EF;
+    --g200:#E5E7EB; --g400:#9CA3AF; --g600:#4B5563;
+    --slack:#E01E5A; --discord:#5865F2; --give:#00B289;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{font-family:'Lato',sans-serif; background:var(--black); color:var(--white); overflow:hidden;}
+  .deck{height:100vh;width:100vw;position:relative;}
+  .slide{
+    position:absolute;inset:0;display:none;flex-direction:column;
+    padding:70px 90px 96px;animation:fade .35s ease;
+    background:radial-gradient(circle at 15% 12%, rgba(115,196,214,0.08), transparent 45%),
+               radial-gradient(circle at 85% 88%, rgba(225,0,152,0.07), transparent 45%),
+               var(--black);
+  }
+  .slide.active{display:flex;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  .kicker{font-size:14px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:18px;}
+  h1{font-size:72px;font-weight:900;line-height:1.04;letter-spacing:-.02em;}
+  h2{font-size:52px;font-weight:900;line-height:1.08;letter-spacing:-.01em;}
+  .sub{font-size:23px;color:var(--g400);font-weight:400;margin-top:20px;max-width:60ch;line-height:1.5;}
+  .body{flex:1;display:flex;flex-direction:column;justify-content:center;}
+  .accent-f{color:var(--fuchsia);} .accent-c{color:var(--cyan);} .accent{color:var(--banana);}
+
+  .brandbar{display:flex;gap:16px;align-items:center;margin-bottom:8px;}
+  .dotb{width:24px;height:24px;border-radius:50%;display:inline-block;}
+
+  /* use-case quote cards */
+  .asks{display:flex;flex-direction:column;gap:18px;margin-top:34px;max-width:1000px;}
+  .ask{
+    display:flex;align-items:center;gap:22px;
+    background:rgba(247,247,246,0.04);border:1px solid rgba(247,247,246,0.09);
+    border-left:5px solid var(--cyan);border-radius:14px;padding:22px 26px;
+  }
+  .ask .q{font-size:25px;font-weight:700;color:var(--white);line-height:1.3;}
+  .ask .q em{font-style:normal;color:var(--g400);font-weight:400;}
+  .quote{font-size:34px;line-height:1;color:var(--g600);font-weight:900;flex-shrink:0;}
+
+  /* workflow flow */
+  .flow{display:flex;align-items:stretch;gap:0;margin-top:40px;}
+  .step{flex:1;background:rgba(247,247,246,0.04);border:1px solid rgba(247,247,246,0.10);border-radius:14px;padding:24px 18px;text-align:center;}
+  .step .n{font-size:30px;font-weight:900;color:var(--cyan);}
+  .step h4{font-size:19px;font-weight:900;margin:10px 0 8px;line-height:1.2;}
+  .step p{font-size:15px;color:var(--g400);line-height:1.4;}
+  .arrow{display:flex;align-items:center;color:var(--fuchsia);font-size:34px;font-weight:900;padding:0 12px;}
+  .youtype{display:block;font-size:13px;color:var(--banana);font-weight:700;margin-top:10px;font-style:italic;line-height:1.35;}
+
+  .footer{position:absolute;bottom:32px;left:90px;right:90px;display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--g600);}
+  .logo{font-weight:900;} .logo .dot{color:var(--acid);}
+  .progress{position:absolute;bottom:0;left:0;height:5px;background:linear-gradient(90deg,var(--cyan),var(--fuchsia));transition:width .35s ease;}
+  .nav{position:absolute;bottom:28px;right:90px;display:flex;gap:9px;z-index:10;}
+  .nav button{background:rgba(247,247,246,0.06);border:1px solid rgba(247,247,246,0.15);color:var(--white);width:42px;height:42px;border-radius:10px;cursor:pointer;font-size:18px;font-family:'Lato';transition:.15s;}
+  .nav button:hover{background:rgba(247,247,246,0.15);}
+  .counter{position:absolute;bottom:36px;left:90px;font-size:14px;color:var(--g600);font-weight:700;letter-spacing:.05em;z-index:10;}
+  .note{margin-top:34px;font-size:18px;color:var(--g400);max-width:62ch;line-height:1.5;}
+  .note b{color:var(--white);}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- 1 TITLE -->
+  <section class="slide active">
+    <div class="body">
+      <div class="kicker">Sprout Society</div>
+      <h1>Just ask.<br><span class="accent-f">Here's what's possible.</span></h1>
+      <p class="sub">You don't click through menus or learn any tools. You type what you want in plain words, and it happens. These are the things you can now ask for.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span>Use ← → arrow keys</span></div>
+  </section>
+
+  <!-- 2 HOW IT WORKS (the only "concept" slide, kept tiny) -->
+  <section class="slide">
+    <div class="body">
+      <div class="kicker">The whole idea</div>
+      <h2>Type it like you'd say it.</h2>
+      <p class="sub">No buttons to find, no settings to learn. If you can describe it in a sentence, you can do it. The next slides are just examples of what to say.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 3 SLACK -->
+  <section class="slide">
+    <div class="brandbar"><span class="dotb" style="background:var(--slack)"></span><div class="kicker" style="margin:0">Talk to your team's Slack</div></div>
+    <div class="body">
+      <h2>Share &amp; catch up in Slack</h2>
+      <div class="asks">
+        <div class="ask" style="border-left-color:var(--slack)"><span class="quote">“</span><div class="q">Post the newsletter link in <em>#sprout-links</em>.</div></div>
+        <div class="ask" style="border-left-color:var(--slack)"><span class="quote">“</span><div class="q">What did people say about Show n Tell in <em>#social</em>?</div></div>
+        <div class="ask" style="border-left-color:var(--slack)"><span class="quote">“</span><div class="q">Drop a reminder about Friday's event in the main channel.</div></div>
+      </div>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 4 DISCORD -->
+  <section class="slide">
+    <div class="brandbar"><span class="dotb" style="background:var(--discord)"></span><div class="kicker" style="margin:0">Use the Sprout Discord bot</div></div>
+    <div class="body">
+      <h2>Announce things on Discord</h2>
+      <div class="asks">
+        <div class="ask" style="border-left-color:var(--discord)"><span class="quote">“</span><div class="q">Have the bot announce our next event.</div></div>
+        <div class="ask" style="border-left-color:var(--discord)"><span class="quote">“</span><div class="q">Start a thread for Sprout n Tell questions.</div></div>
+        <div class="ask" style="border-left-color:var(--discord)"><span class="quote">“</span><div class="q">Post a welcome message for new members.</div></div>
+      </div>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 5 GIVEBUTTER — AUDIENCE -->
+  <section class="slide">
+    <div class="brandbar"><span class="dotb" style="background:var(--give)"></span><div class="kicker" style="margin:0">Your email list in Givebutter</div></div>
+    <div class="body">
+      <h2>Get your email list ready</h2>
+      <div class="asks">
+        <div class="ask" style="border-left-color:var(--give)"><span class="quote">“</span><div class="q">Tidy up my email list and flag any duplicates.</div></div>
+        <div class="ask" style="border-left-color:var(--give)"><span class="quote">“</span><div class="q">Tag everyone who should get the newsletter.</div></div>
+        <div class="ask" style="border-left-color:var(--give)"><span class="quote">“</span><div class="q">Add this new person to my contacts.</div></div>
+      </div>
+      <p class="note">When the list is ready, you do the actual send inside Givebutter with one click — then ask <b>“did it go out?”</b> to confirm.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 6 GIVEBUTTER — DONATIONS -->
+  <section class="slide">
+    <div class="brandbar"><span class="dotb" style="background:var(--give)"></span><div class="kicker" style="margin:0">Your donations in Givebutter</div></div>
+    <div class="body">
+      <h2>See who's giving</h2>
+      <div class="asks">
+        <div class="ask" style="border-left-color:var(--give)"><span class="quote">“</span><div class="q">Who donated this month?</div></div>
+        <div class="ask" style="border-left-color:var(--give)"><span class="quote">“</span><div class="q">Who gave around our last event?</div></div>
+        <div class="ask" style="border-left-color:var(--give)"><span class="quote">“</span><div class="q">Show me our recurring donors.</div></div>
+      </div>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 7 WORKFLOW DIVIDER -->
+  <section class="slide">
+    <div class="body" style="justify-content:center">
+      <div class="kicker">Putting it together</div>
+      <h1>Two everyday jobs,<br><span class="accent-c">start to finish.</span></h1>
+      <p class="sub">Each one is just a short back-and-forth. Here's the whole thing, step by step.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 8 WORKFLOW A: NEWSLETTER -->
+  <section class="slide">
+    <div class="kicker">Send the monthly newsletter</div>
+    <h2 style="font-size:42px">From a blank page to everyone's inbox</h2>
+    <div class="body">
+      <div class="flow">
+        <div class="step"><div class="n">1</div><h4>Build it</h4><p>The draft fills itself in from your events.</p><span class="youtype">“Build this month's newsletter.”</span></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">2</div><h4>Prep the list</h4><p>Your contacts get tidied and tagged.</p><span class="youtype">“Get my email list ready.”</span></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">3</div><h4>Send it</h4><p>One click inside Givebutter — that part's yours.</p><span class="youtype">click “Send”</span></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">4</div><h4>Share it</h4><p>Posted to your Slack and Discord.</p><span class="youtype">“Share it with the community.”</span></div>
+      </div>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span></span></div>
+  </section>
+
+  <!-- 9 WORKFLOW B: EVENT -->
+  <section class="slide">
+    <div class="kicker">Run an event</div>
+    <h2 style="font-size:42px">From "let's host one" to thank-yous sent</h2>
+    <div class="body">
+      <div class="flow">
+        <div class="step"><div class="n">1</div><h4>Add it</h4><p>The event goes on the books.</p><span class="youtype">“Add our next event.”</span></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">2</div><h4>Spread the word</h4><p>Announced on Slack and Discord.</p><span class="youtype">“Announce it everywhere.”</span></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">3</div><h4>Track who's coming</h4><p>RSVPs from your inbox get filed.</p><span class="youtype">“Who RSVP'd?”</span></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">4</div><h4>Thank givers</h4><p>See who donated and follow up.</p><span class="youtype">“Who gave? Remind me to thank them.”</span></div>
+      </div>
+      <p class="note">And the recap you write here is what fills next month's newsletter — back to Job #1.</p>
+    </div>
+    <div class="footer"><span class="logo">Sprout<span class="dot">.</span></span><span>Fin</span></div>
+  </section>
+
+</div>
+
+<div class="counter" id="counter">01 / 09</div>
+<div class="nav">
+  <button onclick="go(-1)" aria-label="Previous">‹</button>
+  <button onclick="go(1)" aria-label="Next">›</button>
+</div>
+<div class="progress" id="progress"></div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  let i=0;
+  function render(){
+    slides.forEach((s,n)=>s.classList.toggle('active',n===i));
+    document.getElementById('counter').textContent=String(i+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+    document.getElementById('progress').style.width=((i+1)/slides.length*100)+'%';
+  }
+  function go(d){i=Math.max(0,Math.min(slides.length-1,i+d));render();}
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){go(1);e.preventDefault();}
+    if(e.key==='ArrowLeft'||e.key==='PageUp'){go(-1);e.preventDefault();}
+    if(e.key==='Home'){i=0;render();}
+    if(e.key==='End'){i=slides.length-1;render();}
+  });
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Contact Segments</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --black:#111;--g800:#2a2a2a;--g600:#555;--g400:#999;--g200:#e3e3e3;--g100:#f0f0f0;--g50:#f8f8f8;
+    --cyan:#19a7c4;--cyan-lt:#d6f1f8;--acid:#c6f432;--banana:#ffd23f;--fuchsia:#e3338b;--mint:#1fb98a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Lato',sans-serif;background:#cfd9dd;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:32px;color:var(--black);}
+  .slide{width:960px;background:#fff;border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,0.25);overflow:hidden;}
+  .hd{background:var(--black);color:#fff;padding:28px 36px;display:flex;justify-content:space-between;align-items:flex-start;}
+  .hd-l .eyebrow{font-size:11px;font-weight:900;letter-spacing:0.16em;text-transform:uppercase;color:var(--acid);}
+  .hd-l h1{font-size:30px;font-weight:900;margin-top:6px;line-height:1.1;}
+  .hd-l .sub{font-size:13px;color:var(--g400);margin-top:8px;}
+  .hd-r{text-align:right;flex-shrink:0;padding-left:24px;}
+  .badge{display:inline-block;background:var(--mint);color:#062d22;font-size:11px;font-weight:900;letter-spacing:0.08em;text-transform:uppercase;padding:5px 12px;border-radius:20px;}
+  .hash{font-family:'SF Mono',Consolas,monospace;font-size:13px;color:#fff;margin-top:12px;}
+  .hash b{color:var(--banana);}
+  .body{padding:32px 36px;}
+  .lead{font-size:15px;line-height:1.6;color:var(--g800);margin-bottom:24px;}
+  .lead b{color:var(--black);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+  .card{border:1.5px solid var(--g200);border-radius:14px;padding:18px 20px;background:var(--g50);}
+  .card .ico{font-size:22px;}
+  .card h3{font-size:14px;font-weight:900;margin:8px 0 6px;}
+  .card p{font-size:12.5px;line-height:1.55;color:var(--g600);}
+  .card code{font-family:'SF Mono',Consolas,monospace;font-size:11.5px;background:var(--cyan-lt);color:#0c5468;padding:1px 6px;border-radius:5px;}
+  .tabs-demo{display:flex;gap:6px;margin:14px 0 4px;}
+  .tabchip{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.06em;padding:6px 14px;border-radius:8px 8px 0 0;border-bottom:3px solid transparent;color:var(--g400);background:var(--g100);}
+  .tabchip.on{color:var(--black);background:#fff;border-bottom-color:var(--cyan);border:1.5px solid var(--g200);border-bottom:3px solid var(--cyan);}
+  .files{border-top:1.5px solid var(--g200);padding-top:18px;}
+  .files .lbl{font-size:11px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:var(--g400);margin-bottom:10px;}
+  .frow{display:flex;align-items:center;gap:10px;font-size:13px;padding:5px 0;}
+  .frow .ft{font-family:'SF Mono',Consolas,monospace;font-size:12px;color:var(--g800);}
+  .frow .fd{font-size:11.5px;color:var(--g400);margin-left:auto;}
+  .pill{font-size:10px;font-weight:900;padding:2px 8px;border-radius:10px;background:var(--banana);color:#3a2e00;}
+  .foot{background:var(--g50);border-top:1.5px solid var(--g200);padding:16px 36px;font-size:12px;color:var(--g600);display:flex;justify-content:space-between;align-items:center;}
+  .foot b{color:var(--black);}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="hd">
+      <div class="hd-l">
+        <div class="eyebrow">Sprout CRM Next · Delivery</div>
+        <h1>Contact Segments</h1>
+        <div class="sub">Community / Donors / Prospects tabs on the Contacts page</div>
+      </div>
+      <div class="hd-r">
+        <span class="badge">Pushed to main</span>
+        <div class="hash">commit <b>8c47e58</b></div>
+        <div class="hash" style="color:var(--g400);font-size:11px;">2026-06-03</div>
+      </div>
+    </div>
+
+    <div class="body">
+      <p class="lead">Split the Contacts page into three in-page tabs over the <b>single <code style="font-family:monospace">sprout_contacts</code> table</b> — no new tables, no DB migration. Existing contacts auto-land in Community.</p>
+
+      <div class="tabs-demo">
+        <span class="tabchip on">Community (30)</span>
+        <span class="tabchip">Donors (0)</span>
+        <span class="tabchip">Prospects (0)</span>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <div class="ico">🗂️</div>
+          <h3>One table, filtered views</h3>
+          <p>New <code>segment</code> field (community · donor · prospect) lives in the <code>data</code> JSONB blob. A missing value reads as <b>community</b>, so every existing contact lands there with <b>zero migration</b>.</p>
+        </div>
+        <div class="card">
+          <div class="ico">🔒</div>
+          <h3>One bucket per contact</h3>
+          <p>Add + Edit modals carry a Bucket selector. Moving a contact to a <b>different</b> bucket pops a confirm — <b>warn, don't block</b>. Override or cancel; moving back doesn't warn.</p>
+        </div>
+        <div class="card">
+          <div class="ico">✅</div>
+          <h3>Schemas in sync</h3>
+          <p>Added to <b>both</b> the Zod <code>ContactSchema</code> (default community) and the UI constants — or saves silently drop. Default = manual donor labels.</p>
+        </div>
+        <div class="card">
+          <div class="ico">🏗️</div>
+          <h3>Build clean</h3>
+          <p><code>npm run build</code> passes. New contacts default to the active tab's bucket; tab counts are live. Verified locally at <code>localhost:3000</code>.</p>
+        </div>
+      </div>
+
+      <div class="files">
+        <div class="lbl">Files changed · 3 files, +70 −7</div>
+        <div class="frow"><span class="ft">components/CRMManager.jsx</span><span class="pill">UI</span><span class="fd">tabs · selectors · warn-on-move</span></div>
+        <div class="frow"><span class="ft">lib/schemas.js</span><span class="pill">schema</span><span class="fd">segment enum on ContactSchema</span></div>
+        <div class="frow"><span class="ft">CHANGELOG.md</span><span class="pill">docs</span><span class="fd">dated entry</span></div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>branch <b>main</b> → <b>1afbd79..8c47e58</b></span>
+      <span>Follow-up: wire <b>segment</b> into MCP / Import paths</span>
+    </div>
+  </div>
+</body>
+</html>

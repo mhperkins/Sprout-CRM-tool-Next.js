@@ -2,6 +2,31 @@
 
 ---
 
+## 2026-06-03 — Affiliations: contacts link to orgs AND events as badges
+
+App code change + a data pass. Renamed the contact "Organization" link to **"Affiliation"** and turned it into a multi-select of organizations and/or events, shown as badges. Builds on the same-day contact-segments + campaign work (all still uncommitted).
+
+- **Data pass first (no code):** the 13 untyped event-attendee contacts got `relationship_types:["attendee"]` + a note recording the event attended and what they want (only from check-in data; "not specified" where blank). Added to their event's attendee list: 11 walk-ins → **Show n Tell** `evt_mordmhe4e6nj` (23→34 `contact_ids`), Remy Litvin + Kingsley Udoyi → **Sprout Happy Hour** `evt_mph6ux3tk6un` (1→3). Event-membership edits went through `execute_sql` on the `data.contact_ids` blob (no MCP event-write tool exists); contact type/notes went through the `create_or_update_contact` MCP tool. Flagged that Kingsley's check-in is dated 5/26, not the 5/28 happy hour.
+- **Design decisions (asked, user chose):** (1) event affiliations **reuse the existing `event.contact_ids` attendance link** — one source of truth, the 🗓/✓ badges + RSVP screens stay in sync (vs. a separate list that could drift); (2) orgs become **multiple** (`org_ids` array) vs. the old single link; (3) rename scope = **contact views only** (the Organizations section keeps its name).
+- **Data model:** new `org_ids` array on `ContactSchema` (JSONB). Legacy `org_id` SQL column kept and mirrors `org_ids[0]` for backward compat + the MCP. `lib/services.js` migrates `org_id → org_ids` on read (`mergeContact`) and re-mirrors `org_ids[0] → org_id` column on write (`saveContacts`). **Zero migration** — existing single-org contacts auto-upgrade on read.
+- **New `AffiliationField` component** (`CRMManager.jsx`): removable chips (🏢 orgs cyan, 🗓 events banana) + a search dropdown grouped into **Organizations** / **Events** sections, multi-select. Wired into Add modal (events staged in `_pendingEventIds`, applied to `event.contact_ids` on save), Edit modal (live toggle via existing `toggleEventLink`), the detail panel (new "Affiliations" section), and the contact table (column renamed Organization→Affiliation, renders org chips; events already show as name-adjacent 🗓/✓ badges).
+- **Files:** `lib/schemas.js`, `lib/services.js`, `components/CRMManager.jsx`. `npm run build` passes clean. Not committed yet.
+- **Follow-up:** MCP `create_or_update_contact` still takes single `org_id` (works, migrates on read) — add a multi-org param if explicit MCP control is wanted.
+
+---
+
+## 2026-06-03 — Donor campaign selector (synced from Givebutter)
+
+App code change. Added a **Campaign** field to the donor segment, pulled from the live Givebutter campaign list. Builds on the same-day contact-segments work (still uncommitted).
+
+- **New fields on `ContactSchema`:** `campaign` (title string) + hidden `campaign_id` (stable Givebutter id). Both in `lib/schemas.js`. Used `z.string()` for `campaign`, **not** a strict enum, deliberately: a campaign renamed/removed in Givebutter would otherwise fail validation and silently drop the contact (the silent-validation invariant). `campaign_id` survives a rename, so a future donor→campaign auto-sync has a stable key.
+- **Sync model = synced static list** (user's choice over a live API route). `CAMPAIGN_OPTS` constant in `CRMManager.jsx` holds the 5 campaigns pulled via the `givebutter` MCP (`list_campaigns`), each with its `id`. The deployed browser app can't reach the MCP, so this is refreshed manually ("refresh the campaign list" → re-pull + update the constant). No new API route, no API key in the app env.
+- **Campaigns synced (id):** Powered by Community (643783, unpublished), Support Sprout Society (634555), Sprout Society Membership (635382), Sprout Society Membership Scholarship (642585), Sprout Society x Designs that Donate (619527, event).
+- **UI:** searchable `SearchSelect` dropdown (value = title) in both Add + Edit contact modals, shown **only when Bucket = Donor**. Selecting a campaign sets `campaign` + `campaign_id` together via a `campaignIdFor()` lookup. The id never shows in the UI; it's written to the `data` JSONB blob.
+- **Files:** `lib/schemas.js`, `components/CRMManager.jsx`. `npm run build` passes clean. Not committed yet.
+
+---
+
 ## 2026-06-03 — Contact segments: Community / Donors / Prospects tabs
 
 First **app code change** in several sessions. Split the Contacts page into three in-page tabs (segments) over the single `sprout_contacts` table — no new tables, no DB migration.

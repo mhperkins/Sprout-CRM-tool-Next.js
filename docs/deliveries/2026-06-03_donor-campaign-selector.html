@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Donor Campaign Selector</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Lato',sans-serif;background:#0e1116;color:#1a1d23;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:32px;}
+  .slide{width:960px;background:#fffdf7;border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.45);}
+  .hd{background:linear-gradient(135deg,#1a1d23 0%,#2a2f3a 100%);color:#fff;padding:30px 40px;display:flex;align-items:center;justify-content:space-between;}
+  .hd .ttl{font-size:27px;font-weight:900;letter-spacing:-.5px;}
+  .hd .ttl .leaf{color:#FEDC5E;}
+  .hd .sub{font-size:13px;color:#b9c0cc;margin-top:5px;font-weight:700;}
+  .badge{background:#FEDC5E;color:#1a1d23;font-size:12px;font-weight:900;padding:7px 14px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;}
+  .body{padding:34px 40px 14px;}
+  .lead{font-size:15px;line-height:1.55;color:#3a4150;margin-bottom:24px;}
+  .lead b{color:#1a1d23;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;}
+  .card{border:1.5px solid #e6e2d4;border-radius:13px;padding:17px 18px;background:#fff;}
+  .card .ic{font-size:19px;margin-bottom:7px;}
+  .card .ct{font-size:14px;font-weight:900;color:#1a1d23;margin-bottom:5px;}
+  .card .cd{font-size:12.5px;line-height:1.5;color:#5a626f;}
+  .card code{background:#f3f0e6;padding:1px 6px;border-radius:5px;font-size:11.5px;font-weight:700;color:#9a5a00;}
+  .campaigns{background:#fcf8ec;border:1.5px solid #f0e8cf;border-radius:13px;padding:16px 18px;margin-bottom:22px;}
+  .campaigns .lbl{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.6px;color:#9a7b1a;margin-bottom:11px;}
+  .crow{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:13px;border-bottom:1px dashed #ece3c8;}
+  .crow:last-child{border-bottom:none;}
+  .crow .cid{font-family:monospace;font-size:11px;color:#8a8270;background:#fff;border:1px solid #ece3c8;padding:1px 7px;border-radius:5px;margin-left:auto;}
+  .crow .nm{font-weight:700;color:#2a2f3a;}
+  .crow .tag{font-size:10px;font-weight:900;color:#b06a00;text-transform:uppercase;}
+  .ft{background:#1a1d23;color:#cfd5df;padding:16px 40px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;}
+  .ft .hash{font-family:monospace;color:#FEDC5E;font-weight:700;}
+  .ft .files{color:#8b93a1;}
+  .pill{display:inline-block;background:#23c168;color:#fff;font-size:11px;font-weight:900;padding:3px 10px;border-radius:12px;margin-left:8px;}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="hd">
+      <div>
+        <div class="ttl">Donor Campaign Selector <span class="leaf">🌱</span></div>
+        <div class="sub">Sprout CRM Next · synced from Givebutter</div>
+      </div>
+      <div class="badge">Shipped</div>
+    </div>
+    <div class="body">
+      <div class="lead">
+        Donors can now be tagged to a <b>Givebutter campaign</b>. The field appears <b>only when a contact's Bucket = Donor</b>, in both the Add and Edit modals, as a searchable dropdown synced from your live campaign list.
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="ic">🎯</div>
+          <div class="ct">Two new fields</div>
+          <div class="cd"><code>campaign</code> (title, shown) + a hidden <code>campaign_id</code> (stable Givebutter id) on every contact record.</div>
+        </div>
+        <div class="card">
+          <div class="ic">🛡️</div>
+          <div class="ct">Rename-proof by design</div>
+          <div class="cd"><code>campaign</code> is a free string, not an enum — a renamed Givebutter campaign never fails validation and silently drops the contact.</div>
+        </div>
+        <div class="card">
+          <div class="ic">🔁</div>
+          <div class="ct">Synced static list</div>
+          <div class="cd">The dropdown lives in <code>CAMPAIGN_OPTS</code>, refreshed on request. The browser app can't reach the MCP, so no API key in the app.</div>
+        </div>
+        <div class="card">
+          <div class="ic">🔑</div>
+          <div class="ct">Future-ready key</div>
+          <div class="cd">The hidden id is the stable key for a future donor→campaign auto-sync against actual Givebutter giving.</div>
+        </div>
+      </div>
+      <div class="campaigns">
+        <div class="lbl">5 campaigns synced from Givebutter</div>
+        <div class="crow"><span class="nm">Powered by Community</span><span class="tag">unpublished</span><span class="cid">643783</span></div>
+        <div class="crow"><span class="nm">Support Sprout Society</span><span class="cid">634555</span></div>
+        <div class="crow"><span class="nm">Sprout Society Membership</span><span class="cid">635382</span></div>
+        <div class="crow"><span class="nm">Sprout Society Membership Scholarship</span><span class="cid">642585</span></div>
+        <div class="crow"><span class="nm">Sprout Society x Designs that Donate</span><span class="tag">event</span><span class="cid">619527</span></div>
+      </div>
+    </div>
+    <div class="ft">
+      <div>committed to <b style="color:#fff;">main</b><span class="pill">build ✓</span></div>
+      <div class="files">lib/schemas.js · components/CRMManager.jsx</div>
+    </div>
+  </div>
+</body>
+</html>

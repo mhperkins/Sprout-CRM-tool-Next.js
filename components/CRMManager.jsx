@@ -296,6 +296,17 @@ const REL_STATUS = { cold:"Cold", cool:"Cool", warm:"Warm", active:"Active" };
 const REL_TYPES  = { music:"Music", art:"Art", event_host:"Event Host", community_builder:"Community Builder", partner:"Partner", attendee:"Attendee", sprout_society:"Sprout Society", other:"Other" };
 const SEGMENTS   = { community:"Community", donor:"Donors", prospect:"Prospects" };
 const SEGMENT_OPTS = [{value:"community",label:"Community"},{value:"donor",label:"Donor"},{value:"prospect",label:"Prospect"}];
+// Givebutter campaigns — synced via the givebutter MCP (list_campaigns). Refresh when campaigns change.
+// `id` is the stable Givebutter campaign id, stored hidden alongside the title (survives a rename).
+const CAMPAIGN_OPTS = [
+  {value:"",label:"— None —",id:""},
+  {value:"Powered by Community",label:"Powered by Community",id:"643783"},
+  {value:"Support Sprout Society",label:"Support Sprout Society",id:"634555"},
+  {value:"Sprout Society Membership",label:"Sprout Society Membership",id:"635382"},
+  {value:"Sprout Society Membership Scholarship",label:"Sprout Society Membership Scholarship",id:"642585"},
+  {value:"Sprout Society x Designs that Donate",label:"Sprout Society x Designs that Donate",id:"619527"},
+];
+const campaignIdFor = (title) => CAMPAIGN_OPTS.find(o=>o.value===title)?.id || "";
 const ORG_CATS   = { funder:"Funder", partner:"Partner", vendor:"Vendor", media:"Media", government:"Government" };
 const CADENCE    = { active:30, warm:90, cool:120, cold:180 };
 const MONTHS     = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -471,6 +482,62 @@ function SearchSelect({options,value,onChange,placeholder,disabled}) {
   );
 }
 
+/* ─── Affiliation Field (multi-select badges: orgs + events, grouped dropdown) ── */
+// Affiliations are "badges": an organization OR an event the contact is tied to.
+// Org badges live on contact.org_ids; event badges are membership in event.contact_ids.
+function AffiliationField({orgs,events,orgIds,eventIds,onToggleOrg,onToggleEvent,placeholder}) {
+  const [open,setOpen]=useState(false);
+  const [query,setQuery]=useState("");
+  const ref=useRef(null);
+  useEffect(()=>{
+    const h=(e)=>{ if(ref.current&&!ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown",h);
+    return ()=>document.removeEventListener("mousedown",h);
+  },[]);
+  useEffect(()=>{ if(!open) setQuery(""); },[open]);
+  const q=query.toLowerCase();
+  const orgMatches=(orgs||[]).filter(o=>(o.name||"").toLowerCase().includes(q));
+  const evtMatches=(events||[]).filter(ev=>(ev.name||"").toLowerCase().includes(q));
+  const selOrgs=(orgs||[]).filter(o=>orgIds.includes(o.id));
+  const selEvts=(events||[]).filter(ev=>eventIds.includes(ev.id));
+  const chip=(key,icon,label,bg,fg,onRemove)=>(
+    <span key={key} style={{display:"inline-flex",alignItems:"center",gap:4,background:bg,color:fg,fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:12}}>
+      <span style={{fontSize:10}}>{icon}</span>{label}
+      <span onMouseDown={e=>{e.preventDefault();e.stopPropagation();onRemove();}} title="Remove" style={{cursor:"pointer",fontWeight:900,marginLeft:1,opacity:0.65}}>✕</span>
+    </span>
+  );
+  const opt=(on,onClick,label,meta)=>(
+    <div className={`ss-opt ${on?"selected":""}`} onMouseDown={e=>{e.preventDefault();onClick();}}>
+      <span style={{display:"inline-block",width:14,fontWeight:900,color:"var(--cyan)"}}>{on?"✓":""}</span>{label}
+      {meta&&<span style={{fontSize:10,color:"var(--g400)",marginLeft:6}}>{meta}</span>}
+    </div>
+  );
+  return (
+    <div className="ss-wrap" ref={ref}>
+      {(selOrgs.length>0||selEvts.length>0)&&<div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:6}}>
+        {selOrgs.map(o=>chip(o.id,"🏢",o.name,"var(--cyan-lt)","#155e6e",()=>onToggleOrg(o.id)))}
+        {selEvts.map(ev=>chip(ev.id,"🗓",ev.name||"(Unnamed)","var(--banana-lt)","#7a5c00",()=>onToggleEvent(ev.id)))}
+      </div>}
+      <input className="ss-input" readOnly={!open} value={open?query:""}
+        placeholder={placeholder||"Add organization or event…"}
+        onFocus={()=>{setOpen(true);setQuery("");}}
+        onChange={e=>setQuery(e.target.value)}/>
+      {open&&(
+        <div className="ss-drop">
+          <div style={{fontSize:10,fontWeight:800,letterSpacing:0.4,textTransform:"uppercase",color:"var(--g400)",padding:"7px 10px 3px"}}>Organizations</div>
+          {orgMatches.length===0
+            ? <div className="ss-empty">No organizations</div>
+            : orgMatches.map(o=><div key={o.id}>{opt(orgIds.includes(o.id),()=>onToggleOrg(o.id),o.name,ORG_CATS[o.category]||o.category)}</div>)}
+          <div style={{fontSize:10,fontWeight:800,letterSpacing:0.4,textTransform:"uppercase",color:"var(--g400)",padding:"7px 10px 3px",borderTop:"1px solid var(--g100)",marginTop:2}}>Events</div>
+          {evtMatches.length===0
+            ? <div className="ss-empty">No events</div>
+            : evtMatches.map(ev=><div key={ev.id}>{opt(eventIds.includes(ev.id),()=>onToggleEvent(ev.id),ev.name||"(Unnamed)",fmtDate(ev.event_date))}</div>)}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Touchpoint Log ─────────────────────────────────────────────────────────── */
 function TouchpointList({touchpoints,onAdd,onEdit}) {
   const [adding,setAdding] = useState(false);
@@ -579,13 +646,16 @@ function AddActionModal({onSave,onClose}) {
 }
 
 /* ─── Contact Detail Panel ───────────────────────────────────────────────────── */
-function ContactDetail({contact,orgs,onClose,onUpdate,onEdit,showToast}) {
+function ContactDetail({contact,orgs,events,onClose,onUpdate,onEdit,showToast}) {
   const mouseDownTarget = useRef(null);
   const [notesExpanded, setNotesExpanded] = useState(false);
   const [naExpanded, setNaExpanded] = useState(false);
   const [addingAction, setAddingAction] = useState(false);
   useEffect(()=>{ const h=(e)=>{ if(e.key==="Escape") onClose(); }; document.addEventListener("keydown",h); return ()=>document.removeEventListener("keydown",h); },[onClose]);
-  const org = orgs.find(o=>o.id===contact.org_id);
+  const affOrgIds = (contact.org_ids&&contact.org_ids.length)?contact.org_ids:(contact.org_id?[contact.org_id]:[]);
+  const affOrgs = orgs.filter(o=>affOrgIds.includes(o.id));
+  const affEvents = (events||[]).filter(ev=>(ev.contact_ids||[]).includes(contact.id));
+  const org = affOrgs[0];
   const LINE_H = 1.7, FONT = 12, MAX_LINES = 6;
   const notesClamp = !notesExpanded ? {overflow:"hidden",display:"-webkit-box",WebkitLineClamp:MAX_LINES,WebkitBoxOrient:"vertical"} : {};
   const notesIsLong = (contact.notes||"").split("\n").length > MAX_LINES || (contact.notes||"").length > 420;
@@ -666,6 +736,13 @@ function ContactDetail({contact,orgs,onClose,onUpdate,onEdit,showToast}) {
             {contact.instagram_handle&&<div className="dp-field"><strong>Instagram:</strong> {contact.instagram_handle}</div>}
             {contact.website&&<div className="dp-field"><strong>Website:</strong> <a href={contact.website} target="_blank" rel="noreferrer" style={{color:"var(--cyan)"}}>{contact.website}</a></div>}
           </div>
+          {(affOrgs.length>0||affEvents.length>0)&&<div className="dp-section">
+            <div className="dp-sect-lbl">Affiliations</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+              {affOrgs.map(o=><span key={o.id} style={{display:"inline-flex",alignItems:"center",gap:4,background:"var(--cyan-lt)",color:"#155e6e",fontSize:11,fontWeight:700,padding:"3px 9px",borderRadius:12}}>🏢 {o.name}</span>)}
+              {affEvents.map(ev=><span key={ev.id} style={{display:"inline-flex",alignItems:"center",gap:4,background:"var(--banana-lt)",color:"#7a5c00",fontSize:11,fontWeight:700,padding:"3px 9px",borderRadius:12}}>🗓 {ev.name||"(Unnamed)"}</span>)}
+            </div>
+          </div>}
           <div className="dp-section">
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
               <div className="dp-sect-lbl" style={{marginBottom:0,paddingBottom:0,borderBottom:"none"}}>Next Action</div>
@@ -1042,7 +1119,7 @@ function DashboardView({contacts,orgs,setView,openContact,events,onUpdateContact
 
       </div>
       {dashEditing&&<ContactEditModal editing={dashEditing} setEditing={setDashEditing} onSave={saveDashEdit} orgs={orgs} events={events||[]} onUpdateEvents={onUpdateEvents} onNavigate={setView}/>}
-      {dashContact&&<ContactDetail contact={contacts.find(c=>c.id===dashContact.id)||dashContact} orgs={orgs} onClose={()=>setDashContact(null)} onUpdate={(updated)=>{onUpdateContacts(contacts.map(c=>c.id===updated.id?updated:c));setDashContact(updated);showToast("Contact saved ✓");}} onEdit={()=>{setDashEditing({...dashContact});setDashContact(null);}} showToast={showToast}/>}
+      {dashContact&&<ContactDetail contact={contacts.find(c=>c.id===dashContact.id)||dashContact} orgs={orgs} events={events||[]} onClose={()=>setDashContact(null)} onUpdate={(updated)=>{onUpdateContacts(contacts.map(c=>c.id===updated.id?updated:c));setDashContact(updated);showToast("Contact saved ✓");}} onEdit={()=>{setDashEditing({...dashContact});setDashContact(null);}} showToast={showToast}/>}
     </div>
   );
 }
@@ -1057,7 +1134,6 @@ function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,
     if(v===origSegment){ setEditing({...editing,segment:v}); return; }  // moving back to original bucket — no warning
     setSegConfirm(v);                                    // moving to a different bucket — warn, don't block
   };
-  const orgOpts=[{value:"",label:"— None —"},...orgs.map(o=>({value:o.id,label:o.name,meta:ORG_CATS[o.category]||o.category}))];
   const toggleEventLink = (evtId) => {
     const updated = events.map(ev=>{
       const ids=ev.contact_ids||[];
@@ -1084,9 +1160,16 @@ function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,
           <div className="fg"><label className="fl">Phone</label><input className="fi" value={editing.phone||""} onChange={e=>setEditing({...editing,phone:e.target.value})}/></div>
         </div>
         <div className="fg"><label className="fl">Instagram</label><input className="fi" value={editing.instagram_handle||""} onChange={e=>setEditing({...editing,instagram_handle:e.target.value})} placeholder="@handle"/></div>
-        <div className="fg"><label className="fl">Organization</label><SearchSelect options={orgOpts} value={editing.org_id||""} onChange={v=>setEditing({...editing,org_id:v})}/></div>
+        <div className="fg"><label className="fl">Affiliation <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(organizations &amp; events)</span></label>
+          <AffiliationField orgs={orgs} events={events}
+            orgIds={editing.org_ids||(editing.org_id?[editing.org_id]:[])}
+            eventIds={linkedEventIds}
+            onToggleOrg={(id)=>{const cur=editing.org_ids||(editing.org_id?[editing.org_id]:[]);const next=cur.includes(id)?cur.filter(x=>x!==id):[...cur,id];setEditing({...editing,org_ids:next,org_id:next[0]||""});}}
+            onToggleEvent={toggleEventLink}/>
+        </div>
         <div className="fg"><label className="fl">Status</label><RadioGroup options={STATUS_OPTS} value={editing.relationship_status||"cold"} onChange={v=>setEditing({...editing,relationship_status:v})}/></div>
         <div className="fg"><label className="fl">Bucket <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(one at a time)</span></label><RadioGroup options={SEGMENT_OPTS} value={editing.segment||"community"} onChange={onSegmentClick}/></div>
+        {editing.segment==="donor"&&<div className="fg"><label className="fl">Campaign <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(Givebutter)</span></label><SearchSelect options={CAMPAIGN_OPTS} value={editing.campaign||""} onChange={v=>setEditing({...editing,campaign:v,campaign_id:campaignIdFor(v)})} placeholder="Search campaigns…"/></div>}
         <div className="fg"><label className="fl">Type <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(select all that apply)</span></label>
           <div className="type-btn-group">
             {Object.entries(REL_TYPES).map(([v,l])=>{
@@ -1215,7 +1298,7 @@ useEffect(()=>{
     onPendingDetailConsumed();
   }
 },[pendingDetail, onPendingDetailConsumed]);
-const blank={first_name:"",last_name:"",org_id:"",email:"",phone:"",instagram_handle:"",website:"",relationship_types:[],relationship_status:"cold",segment:"community",notes:"",next_action:"",next_action_date:"",next_actions:[]};
+const blank={first_name:"",last_name:"",org_id:"",org_ids:[],_pendingEventIds:[],email:"",phone:"",instagram_handle:"",website:"",relationship_types:[],relationship_status:"cold",segment:"community",notes:"",next_action:"",next_action_date:"",next_actions:[]};
   const [nc,setNc]=useState(blank);
 
 // Pre-compute scores once per render, not once per table cell
@@ -1252,8 +1335,16 @@ const [editing,setEditing]=useState(null);
   const [quickLog,setQuickLog]=useState(null); // contact id or null
 
   const addContact=()=>{
-    const c={...nc,record_type:"individual",id:`ind_${uid()}`,touchpoints:[],financial_relationship:{has_given:false,total_given:0},createdAt:new Date().toISOString()};
-    onUpdate([...contacts,c]); setNc(blank); setAdding(false); showToast("Contact added ✓");
+    const id=`ind_${uid()}`;
+    const {_pendingEventIds,...rest}=nc;
+    const orgIds=rest.org_ids||(rest.org_id?[rest.org_id]:[]);
+    const c={...rest,record_type:"individual",id,org_ids:orgIds,org_id:orgIds[0]||"",touchpoints:[],financial_relationship:{has_given:false,total_given:0},createdAt:new Date().toISOString()};
+    onUpdate([...contacts,c]);
+    // Apply staged event affiliations: add the new contact to each event's attendee list.
+    if(_pendingEventIds&&_pendingEventIds.length&&onUpdateEvents){
+      onUpdateEvents((events||[]).map(ev=>_pendingEventIds.includes(ev.id)?{...ev,contact_ids:[...(ev.contact_ids||[]),id]}:ev));
+    }
+    setNc(blank); setAdding(false); showToast("Contact added ✓");
   };
 
   const saveEdit=()=>{
@@ -1286,8 +1377,12 @@ const [editing,setEditing]=useState(null);
             <div className="fg"><label className="fl">First Name *</label><input className="fi" value={nc.first_name} onChange={e=>setNc({...nc,first_name:e.target.value})} autoFocus/></div>
             <div className="fg"><label className="fl">Last Name *</label><input className="fi" value={nc.last_name} onChange={e=>setNc({...nc,last_name:e.target.value})}/></div>
           </div>
-          <div className="fg"><label className="fl">Organization</label>
-            <SearchSelect options={[{value:"",label:"— None —"},...orgs.map(o=>({value:o.id,label:o.name,meta:ORG_CATS[o.category]||o.category}))]} value={nc.org_id} onChange={v=>setNc({...nc,org_id:v})} placeholder="Search organizations…"/>
+          <div className="fg"><label className="fl">Affiliation <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(organizations &amp; events)</span></label>
+            <AffiliationField orgs={orgs} events={events}
+              orgIds={nc.org_ids||(nc.org_id?[nc.org_id]:[])}
+              eventIds={nc._pendingEventIds||[]}
+              onToggleOrg={(id)=>{const cur=nc.org_ids||(nc.org_id?[nc.org_id]:[]);const next=cur.includes(id)?cur.filter(x=>x!==id):[...cur,id];setNc({...nc,org_ids:next,org_id:next[0]||""});}}
+              onToggleEvent={(id)=>{const cur=nc._pendingEventIds||[];const next=cur.includes(id)?cur.filter(x=>x!==id):[...cur,id];setNc({...nc,_pendingEventIds:next});}}/>
           </div>
           <div className="fg"><label className="fl">Type <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(select all that apply)</span></label>
             <div className="type-btn-group">
@@ -1305,6 +1400,9 @@ const [editing,setEditing]=useState(null);
           <div className="fg"><label className="fl">Bucket</label>
             <RadioGroup options={SEGMENT_OPTS} value={nc.segment||"community"} onChange={v=>setNc({...nc,segment:v})}/>
           </div>
+          {nc.segment==="donor"&&<div className="fg"><label className="fl">Campaign <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(Givebutter)</span></label>
+            <SearchSelect options={CAMPAIGN_OPTS} value={nc.campaign||""} onChange={v=>setNc({...nc,campaign:v,campaign_id:campaignIdFor(v)})} placeholder="Search campaigns…"/>
+          </div>}
           <button className="drawer-toggle" onClick={()=>setNcDrawer(d=>!d)}>{ncDrawer?"▾":"▸"} More details</button>
           {ncDrawer&&<><hr className="drawer-divider"/>
             <div className="frow">
@@ -1328,10 +1426,11 @@ const [editing,setEditing]=useState(null);
       {filtered.length===0
         ? <div className="empty"><div className="empty-ico">👤</div><div className="empty-ttl">{contacts.length===0?"No contacts yet":"No results"}</div><div className="empty-txt">{contacts.length===0?"Add contacts manually or import JSON profiles from Claude.":"Try adjusting your filters."}</div></div>
       : <div className="tbl-wrap"><table className="tbl">
-            <thead><tr><th>Name</th><th>Type</th><th>Organization</th><th>Status</th><th>Next Action</th><th>Health</th><th></th></tr></thead>
+            <thead><tr><th>Name</th><th>Type</th><th>Affiliation</th><th>Status</th><th>Next Action</th><th>Health</th><th></th></tr></thead>
             <tbody>
 {filtered.map(c=>{
-              const org=orgs.find(o=>o.id===c.org_id);
+              const cOrgIds=(c.org_ids&&c.org_ids.length)?c.org_ids:(c.org_id?[c.org_id]:[]);
+              const cOrgs=orgs.filter(o=>cOrgIds.includes(o.id));
               const { score, overdue: od } = contactMeta[c.id] || { score:0, overdue:false };              return <tr key={c.id} onClick={()=>setSelected(c.id)}>
                 <td>{(()=>{
                   const cEvts=(events||[]).filter(ev=>(ev.contact_ids||[]).includes(c.id));
@@ -1347,7 +1446,7 @@ const [editing,setEditing]=useState(null);
                   </div>;
                 })()}</td>
                 <td><div style={{display:"flex",flexWrap:"wrap",gap:3}}>{(c.relationship_types&&c.relationship_types.length?c.relationship_types:[c.relationship_type]).filter(Boolean).map(t=><span key={t} className="type-tag">{REL_TYPES[t]||t}</span>)}</div></td>
-                <td style={{fontSize:12,color:"var(--g600)"}}>{org?.name||"—"}</td>
+                <td style={{fontSize:12,color:"var(--g600)"}}>{cOrgs.length?<div style={{display:"flex",flexWrap:"wrap",gap:3}}>{cOrgs.map(o=><span key={o.id} style={{display:"inline-flex",alignItems:"center",gap:3,background:"var(--cyan-lt)",color:"#155e6e",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:10}}>🏢 {o.name}</span>)}</div>:"—"}</td>
                 <td><RelTag status={c.relationship_status}/></td>
                 <td style={{maxWidth:160,fontSize:11,color:"var(--g600)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.next_action||"—"}</td>
                 <td style={{padding:"12px 14px"}}>
@@ -1368,7 +1467,7 @@ const [editing,setEditing]=useState(null);
             })}
 </tbody></table></div>
       }
-{sel&&<ContactDetail contact={sel} orgs={orgs} onClose={()=>setSelected(null)} onUpdate={updateContact} onEdit={()=>setEditing({...sel})} showToast={showToast}/>}
+{sel&&<ContactDetail contact={sel} orgs={orgs} events={events||[]} onClose={()=>setSelected(null)} onUpdate={updateContact} onEdit={()=>setEditing({...sel})} showToast={showToast}/>}
 {quickLog!==null&&<QuickLogModal
         contacts={contacts}
         initialContactId={quickLog}
