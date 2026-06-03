@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprout CRM — Open-Web Enrichment Pass</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --leaf:#3f9b46; --leaf-dk:#2f7437; --banana:#f6c343; --ink:#1d2b22;
+    --paper:#f4f8f2; --card:#ffffff; --cyan:#2bb3c0; --line:#dfe9dc; --muted:#6b7d70;
+    --rose:#d8694e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',system-ui,sans-serif;background:radial-gradient(1200px 600px at 80% -10%,#e7f4e6 0%,var(--paper) 55%);color:var(--ink);padding:40px 28px;min-height:100vh}
+  .wrap{max-width:1080px;margin:0 auto}
+  .top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .sprout{width:40px;height:40px;border-radius:11px;background:var(--leaf);display:grid;place-items:center;color:#fff;font-size:22px;box-shadow:0 6px 16px rgba(63,155,70,.35)}
+  h1{font-size:31px;font-weight:900;letter-spacing:-.5px}
+  .sub{color:var(--muted);font-size:15px;margin:8px 0 22px}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px}
+  .badge{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+  .badge.green{background:var(--leaf);color:#fff;border-color:var(--leaf)}
+  .badge.banana{background:var(--banana);color:#5a4b10;border-color:var(--banana)}
+  .badge.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 16px;text-align:center;box-shadow:0 4px 14px rgba(31,43,34,.05)}
+  .stat .n{font-size:34px;font-weight:900;color:var(--leaf-dk);line-height:1}
+  .stat .l{font-size:12.5px;color:var(--muted);margin-top:7px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+  .section-title{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--leaf-dk);margin:26px 4px 12px}
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 17px;box-shadow:0 4px 14px rgba(31,43,34,.05)}
+  .card h3{font-size:16px;font-weight:900;display:flex;align-items:center;gap:8px;margin-bottom:4px}
+  .card .who{font-size:12px;color:var(--cyan);font-weight:700;font-family:ui-monospace,Menlo,Consolas,monospace;margin-bottom:8px}
+  .card p{font-size:13.5px;color:#33473a;line-height:1.5}
+  .card .win{display:inline-block;margin-top:9px;font-size:11.5px;font-weight:800;color:var(--leaf-dk);background:#e9f6e8;border:1px solid #cfe9cd;border-radius:8px;padding:3px 9px}
+  .flags{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:4px}
+  .flag{border-radius:16px;padding:16px 17px;border:1px solid;box-shadow:0 4px 14px rgba(31,43,34,.05)}
+  .flag.warn{background:#fff6ed;border-color:#f3d8b8}
+  .flag.look{background:#eef9fb;border-color:#c7e9ee}
+  .flag h3{font-size:14.5px;font-weight:900;margin-bottom:5px}
+  .flag p{font-size:13px;line-height:1.5;color:#3a4a40}
+  .foot{margin-top:26px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border-top:1px dashed var(--line);padding-top:14px}
+  .foot .meta{font-size:12px;color:var(--muted)}
+  .foot .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;color:var(--ink)}
+  .pill-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px}
+  .pill{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;background:#eef4ec;border:1px solid var(--line);color:#3a4a40}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="sprout">🌱</div>
+    <h1>Open-Web Enrichment — Imported IG Prospects &amp; Orgs</h1>
+  </div>
+  <div class="sub">Independent off-IG research on the freshly imported follower batch, merged back into the existing CRM records. Data-only — no app code, no new rows.</div>
+
+  <div class="badges">
+    <span class="badge green">Data-only</span>
+    <span class="badge">sprout-crm MCP · merge tools</span>
+    <span class="badge banana">6 parallel research agents</span>
+    <span class="badge">WebSearch / WebFetch</span>
+    <span class="badge mono">all merged:true</span>
+  </div>
+
+  <div class="grid">
+    <div class="stat"><div class="n">13</div><div class="l">records enriched</div></div>
+    <div class="stat"><div class="n">10&nbsp;/&nbsp;3</div><div class="l">contacts / orgs</div></div>
+    <div class="stat"><div class="n">3</div><div class="l">new public emails found</div></div>
+  </div>
+  <div class="grid">
+    <div class="stat"><div class="n">0</div><div class="l">duplicates created</div></div>
+    <div class="stat"><div class="n">1</div><div class="l">surname confirmed (Staton)</div></div>
+    <div class="stat"><div class="n">2</div><div class="l">flags raised for Max</div></div>
+  </div>
+
+  <div class="section-title">★ Best finds</div>
+  <div class="cards">
+    <div class="card">
+      <h3>🏃 Jesse Staton</h3>
+      <div class="who">ind_jesse_goldenarmy · @goldenarmyfitness_j</div>
+      <p>Surname <b>confirmed</b> (Jesse Staton, male). Founder/CEO of <b>Golden Army Fitness LLC</b>, Brooklyn. "Soul Aligned" is a content series, not a business; also runs a "Readers" literacy + mental-wellness initiative. Press in Disrupt + CanvasRebel.</p>
+      <span class="win">last_name set → "Staton"</span>
+    </div>
+    <div class="card">
+      <h3>🎭 Kyra Bowie</h3>
+      <div class="who">ind_kyra_bowie · @kyrabowie</div>
+      <p>Public <b>email kyrabowie@gmail.com</b> + site. AEA stage manager with a full credit list; Transcend Streaming producer (accessible/hybrid theater).</p>
+      <span class="win">email + website filled</span>
+    </div>
+    <div class="card">
+      <h3>🎨 Aliana — Cozy By Aliana</h3>
+      <div class="who">ind_aliana_cozy · @cozybyaliana</div>
+      <p>Public <b>email cozybyaliana@gmail.com</b> + Big Cartel shop. SUNY Oneonta (Digital Art + Psychology). <b>Long Island confirmed — no Brooklyn dates</b> (geo gap real). Surname still unknown.</p>
+      <span class="win">email + shop filled</span>
+    </div>
+    <div class="card">
+      <h3>🍸 Bar Nun</h3>
+      <div class="who">org_bar_nun · @barnun.life</div>
+      <p>"The Bar Nun Life LLC", founder <b>Cullie Poseria</b>. Contact <b>namaste@barnun.life / 929-295-6644</b>. Recurring free "Dry Social" events (next 6/7) — confirms a live dry-happy-hour partner.</p>
+      <span class="win">email + phone + site filled</span>
+    </div>
+    <div class="card">
+      <h3>🎪 Floorwork Arts Collective</h3>
+      <div class="who">org_floorwork_collective · @floorworkco</div>
+      <p>Brooklyn interdisciplinary theatre collective, founded Spring 2024. Co-founder <b>Mara Einson is already a CRM contact</b> → linked as primary contact.</p>
+      <span class="win">primary_contact_id linked</span>
+    </div>
+    <div class="card">
+      <h3>🖼 + more enriched</h3>
+      <div class="who">Avi Ash · Jonathan Puente · Fabian Guhl</div>
+      <p>Avi Ash (Bed-Stuy, born ~1992, $1,250–3,000 band). Jonathan Puente (NY/LA/London, AD/Elle Decor/NYFW press). Fabian Guhl (full name Fabian-Carlos Guhl, "Harmonic Water Flow"/Watsu).</p>
+      <div class="pill-row"><span class="pill">notes + touchpoints</span><span class="pill">websites filled</span></div>
+    </div>
+  </div>
+
+  <div class="section-title">⚑ Flags for Max</div>
+  <div class="flags">
+    <div class="flag warn">
+      <h3>⚠️ Comadre Crafts — likely wrong handle</h3>
+      <p><b>@comadrecrafts</b> resolves to a <b>San Diego, CA</b> maker pop-up (Krysta Hughes &amp; Patricia Nieves), not a Brooklyn org. Probably a name-only triage match. Record flagged — re-confirm the handle from the original scrape before any outreach.</p>
+    </div>
+    <div class="flag look">
+      <h3>🔎 Polo Bear — do not conflate</h3>
+      <p>Don't merge <b>@poloirpcu</b> with "AC2BSK", a separate documented Bushwick "Polo" muralist. No off-IG identity found for @poloirpcu itself — its details live on IG only.</p>
+    </div>
+  </div>
+
+  <div class="section-title">Thin off-IG (need the browser surface)</div>
+  <div class="pill-row" style="margin:0 4px">
+    <span class="pill">Lauren Wax — etc.pr behind IG bio link</span>
+    <span class="pill">Haley Sumner</span>
+    <span class="pill">Havi Tatu</span>
+    <span class="pill">Polo Bear</span>
+  </div>
+
+  <div class="foot">
+    <div class="meta">Each record: blank email/website/phone filled · dated <span class="mono">WEB ENRICHMENT</span> notes block · <span class="mono">[research]</span> touchpoint logged. Nothing fabricated; unconfirmed items flagged.</div>
+    <div class="meta">branch <span class="mono">main</span> · commit <span class="mono">__COMMIT__</span></div>
+  </div>
+</div>
+</body>
+</html>

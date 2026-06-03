@@ -2,6 +2,26 @@
 
 ---
 
+## 2026-06-03 — Open-web enrichment pass on the imported IG prospects + orgs
+
+Data-only (no app code). After the first IG import landed, the Desktop research flagged that some accounts (Polo Bear, Havi Tatu, the `@goldenarmyfitness_j` "Staton" lead) have off-IG web footprints. Max asked for an independent research pass on all the new prospects + orgs. This is the complementary half of the two-surface split: Desktop+Chrome reads IG directly; Claude Code in VS Code reads the open web.
+
+- **Method:** pulled the 15 imported prospects + 3 orgs from the CRM (handles + notes), ran **6 parallel research agents** (WebSearch/WebFetch) over clustered targets, each told to report only source-cited facts and never fabricate a name/email/location.
+- **Write path:** merged every verified finding into the **existing** records via the `sprout-crm` MCP merge tools (all returned `merged:true`, no new rows). Each record got blank `email`/`website`/`phone` filled, a dated `— WEB ENRICHMENT (open web, 2026-06-03)` block appended to `notes`, and a `[research]` touchpoint logged.
+- **Best finds:**
+  - **Jesse Staton** (`ind_jesse_goldenarmy`) — surname **confirmed** (Jesse Staton, male; not "Jessica"); founder/CEO **Golden Army Fitness LLC**, Brooklyn; "Soul Aligned" = a content series, not a business; runs a "Readers" literacy + mental-wellness initiative (strong Sprout fit); press in Disrupt + CanvasRebel. Set `last_name="Staton"`.
+  - **Kyra Bowie** (`ind_kyra_bowie`) — public **email kyrabowie@gmail.com** + site; AEA stage manager, full credit list, Transcend Streaming producer.
+  - **Aliana / Cozy By Aliana** (`ind_aliana_cozy`) — **email cozybyaliana@gmail.com** + Big Cartel shop; SUNY Oneonta (Digital Art + Psychology); **Long Island confirmed, no Brooklyn dates** (geo gap real); surname still unknown.
+  - **Bar Nun** (`org_bar_nun`) — "The Bar Nun Life LLC", founder **Cullie Poseria**, **namaste@barnun.life / 929-295-6644**, recurring free "Dry Social" events (next 6/7) — confirms a live dry-happy-hour partner.
+  - **Floorwork Arts Collective** (`org_floorwork_collective`) — Brooklyn interdisciplinary theatre collective, founded Spring 2024; co-founder **Mara Einson is an existing CRM contact** (`ind_mpvhkubvmyq9`) → linked as `primary_contact_id`.
+  - Also enriched **Avi Ash** (Bed-Stuy, born ~1992, $1,250–3,000 price band), **Jonathan Puente** (NY/LA/London reach, AD/Elle Decor/NYFW press), **Fabian Guhl** (full name Fabian-Carlos Guhl, "Harmonic Water Flow"/Watsu, Oceanic Ventures Retreats).
+- **Two flags raised:**
+  - ⚠️ **Comadre Crafts** (`org_comadre_crafts`) — the handle `@comadrecrafts` resolves to a **San Diego, CA** maker pop-up (Krysta Hughes & Patricia Nieves), not a Brooklyn org. Likely a name-only triage mismatch; record flagged, Max to re-confirm the handle before any outreach.
+  - 🔎 **Polo Bear** (`ind_polo_bear`) — do **not** conflate `@poloirpcu` with "AC2BSK", a separate documented Bushwick "Polo" muralist; no off-IG identity found for `@poloirpcu` itself.
+- **Thin off-IG (need the browser surface):** Lauren Wax (etc.pr's site/email/clients aren't publicly indexed — behind the IG bio link), Haley Sumner, Havi Tatu, Polo Bear — details live on IG/YouTube only.
+
+---
+
 ## 2026-06-03 — First live IG import (21 records) + dedupe/merge pass
 
 Data-only (no app code). Max imported the first real batch of Instagram deep-dive JSONs — 6 orgs + 15 individuals from the @sproutsocietyorg follower scrape — then asked for validation and a dupe check. Found and resolved 3 cross-id duplicates against earlier May scans.
