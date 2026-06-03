@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — IG Deep-Dive JSON Contract</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --green:#2e7d32; --green-dark:#1b5e20; --leaf:#66bb6a; --banana:#ffd54f;
+    --ink:#1c2b1e; --muted:#5b6b5d; --cream:#f6f9f2; --card:#ffffff; --line:#e3ecdd;
+    --cyan:#26a69a; --rose:#c2185b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',system-ui,sans-serif;background:linear-gradient(135deg,#eef5e8,#e3f0ea);color:var(--ink);padding:40px 24px;display:flex;justify-content:center}
+  .slide{width:100%;max-width:1040px;background:var(--card);border-radius:22px;box-shadow:0 18px 50px rgba(27,94,32,.16);overflow:hidden}
+  .head{background:linear-gradient(120deg,var(--green-dark),var(--green) 60%,var(--leaf));color:#fff;padding:34px 40px 30px}
+  .eyebrow{font-size:13px;letter-spacing:.16em;text-transform:uppercase;opacity:.9;font-weight:700}
+  .head h1{font-size:30px;font-weight:900;margin-top:8px;line-height:1.15}
+  .head p{margin-top:10px;font-size:15px;opacity:.95;max-width:760px}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .badge{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:6px 12px;border-radius:999px;font-size:12.5px;font-weight:700}
+  .badge.banana{background:var(--banana);color:#5a4500;border-color:transparent}
+  .body{padding:32px 40px 38px}
+  .lead{font-size:15.5px;color:var(--muted);line-height:1.55;margin-bottom:24px}
+  .lead b{color:var(--ink)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;background:var(--cream)}
+  .card h3{font-size:14px;font-weight:900;display:flex;align-items:center;gap:9px;margin-bottom:9px}
+  .ic{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:15px;background:var(--green);color:#fff;flex:none}
+  .ic.cy{background:var(--cyan)} .ic.ba{background:var(--banana);color:#5a4500} .ic.ro{background:var(--rose)}
+  .card p{font-size:13.4px;color:var(--muted);line-height:1.5}
+  .card code{background:#eaf2e4;color:var(--green-dark);padding:1px 6px;border-radius:5px;font-size:12px;font-weight:700}
+  .flow{margin-top:22px;border:1px dashed var(--line);border-radius:14px;padding:18px;background:#fff}
+  .flow h3{font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:var(--green-dark);margin-bottom:14px;font-weight:900}
+  .steps{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap}
+  .step{flex:1;min-width:170px;border:1px solid var(--line);border-radius:11px;padding:12px 13px;background:var(--cream)}
+  .step .n{font-size:11px;font-weight:900;color:#fff;background:var(--leaf);border-radius:6px;padding:2px 8px;display:inline-block;margin-bottom:7px}
+  .step .who{font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase}
+  .step .who.chrome{color:var(--rose)} .step .who.code{color:var(--cyan)}
+  .step p{font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:3px}
+  .arrow{align-self:center;color:var(--leaf);font-weight:900;font-size:20px}
+  .foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-top:26px;padding-top:18px;border-top:1px solid var(--line)}
+  .commit{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:var(--green-dark);background:#eaf2e4;padding:8px 14px;border-radius:9px;font-weight:700}
+  .file{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;color:var(--muted)}
+  .pill{font-size:12px;font-weight:800;color:#fff;background:var(--green);padding:6px 12px;border-radius:999px}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="head">
+      <div class="eyebrow">Sprout CRM Next · Delivery · 2026-06-03</div>
+      <h1>IG Deep-Dive JSON Contract + where CRM research actually runs</h1>
+      <p>Settled the surface split for the Instagram pipeline and shipped a Desktop-readable output contract so deep-dive research lands in the CRM with zero silent data loss.</p>
+      <div class="badges">
+        <span class="badge">Docs only</span>
+        <span class="badge">No app code change</span>
+        <span class="badge">No data change</span>
+        <span class="badge banana">1 new guide</span>
+      </div>
+    </div>
+
+    <div class="body">
+      <p class="lead">Max asked Claude Code to scrape recent IG followers and save a triage sheet. The real finding: <b>Claude Code in VS Code can't scrape Instagram</b> — it has no browser bridge. The scrape + deep research run in <b>Claude Desktop + Claude in Chrome</b>; this project is the <b>landing zone</b> (filter, dedupe, import).</p>
+
+      <div class="grid">
+        <div class="card">
+          <h3><span class="ic ro">🌐</span>Research surface = Desktop + Chrome</h3>
+          <p>Only the Chrome extension can drive the logged-in IG session and read the virtualized followers modal. A plain <code>WebFetch</code> can't log in or render it. So scraping &amp; deep dives live there.</p>
+        </div>
+        <div class="card">
+          <h3><span class="ic cy">🛬</span>Landing zone = Claude Code (VS Code)</h3>
+          <p>Takes the returned JSON, runs <code>check_existing</code> per handle, <b>merges</b> dupes instead of duplicating, and imports the rest through the hardened Import view.</p>
+        </div>
+        <div class="card">
+          <h3><span class="ic">📄</span>New doc: ig-deep-dive-json-contract.md</h3>
+          <p>Self-contained restatement of the import contract for the research project to consume: the two silent-failure modes, full org + contact examples, the enum table, dual next-action rule, touchpoint shape.</p>
+        </div>
+        <div class="card">
+          <h3><span class="ic ba">🪤</span>The traps it spells out</h3>
+          <p>Wrong enum = whole record silently dropped. Doc flags <code>arts</code>, <code>musician</code>, <code>photographer</code>, <code>community builder</code> (with a space). Thin accounts → leave out, never fabricate.</p>
+        </div>
+      </div>
+
+      <div class="flow">
+        <h3>The settled workflow</h3>
+        <div class="steps">
+          <div class="step"><span class="n">1</span><div class="who chrome">Desktop + Chrome</div><p>Scrape followers → lean triage sheet (handle / name / type-fit / why).</p></div>
+          <div class="arrow">→</div>
+          <div class="step"><span class="n">2</span><div class="who">Max</div><p>Verify the sheet, pick the keepers worth pursuing.</p></div>
+          <div class="arrow">→</div>
+          <div class="step"><span class="n">3</span><div class="who chrome">Desktop + Chrome</div><p>Deep-research <b>only keepers</b> → emit JSON per this contract.</p></div>
+          <div class="arrow">→</div>
+          <div class="step"><span class="n">4</span><div class="who code">Claude Code</div><p><code>check_existing</code> → merge dupes → import the rest.</p></div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <span class="commit" id="commit">main · committed + pushed</span>
+        <span class="file">docs/guides/ig-deep-dive-json-contract.md</span>
+        <span class="pill">Deep dives only on verified keepers</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

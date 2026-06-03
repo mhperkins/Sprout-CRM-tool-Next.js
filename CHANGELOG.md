@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-03 — IG deep-dive JSON contract doc + where CRM research actually runs
+
+Docs only, no app code or data change. New `docs/guides/ig-deep-dive-json-contract.md`. The session clarified a platform reality and produced a Desktop-readable output contract for the Instagram research workflow.
+
+- **Where IG research runs (the clarification):** Max asked Claude Code (VS Code) to scrape @sproutsocietyorg's recent followers and save a triage sheet. **Claude Code in VS Code cannot scrape Instagram** — it has no browser bridge (no browser-control tool, no MCP to point at; a plain WebFetch can't log into IG or render its virtualized followers modal). **The scrape + deep research must run in Claude Desktop, which is wired to the Claude-in-Chrome extension** — that's the surface driving the logged-in IG session and reading the DOM (what "through web search" always meant). Division of labor: **Desktop+Chrome = research/scrape surface; Claude Code (VS Code) = landing zone** (filter, `check_existing` dedupe, import).
+- **Settled workflow order:** (1) Desktop+Chrome scrapes followers → lean triage sheet. (2) Max verifies, picks keepers. (3) Desktop+Chrome deep-researches **only the keepers** and emits import-ready JSON (its research protocol drives the research; our contract defines the output shape). (4) JSON comes back to Claude Code → `check_existing` per handle → merge dupes, import the rest. Triage sheet first, deep dives only on verified keepers; never import unverified people.
+- **New doc — `docs/guides/ig-deep-dive-json-contract.md`:** a self-contained, Desktop-readable restatement of the import JSON contract so the research project can consume it without reading the codebase. Covers the two silent-failure modes (Zod strips unknown keys; one invalid enum drops the whole record), full org + contact examples using real accounts from Max's scrape, the allowed-enum table with the common traps (`arts`, `musician`, `photographer`, `community builder` with a space), ID format, priority-role→`tags` mirroring (orgs have only `tags` for roles), the mandatory dual `next_action`/`next_actions[]` rule, touchpoint shape, the "fold tier/confidence into notes trailer" rule, and a "thin/unsure accounts → leave out, don't fabricate" section. Companion to `instagram-to-crm-import-spec.md`, but written for the research surface rather than this project.
+- **Live-run status:** Desktop produced a ~20-row triage sheet (e.g. `@floorworkco`, `@barnun.life`, `@jonathanpuentephoto`, `@cozzybyaliana`, `@comadrecrafts` flagged art/event_host/org; most others "no visible signal"). Deep dives happen in Desktop next; JSON returns here for dedupe + import.
+
+---
+
 ## 2026-06-03 — Deliveries organized into date subfolders
 
 Housekeeping + convention change, no app code or data change. Reorganized `docs/deliveries/` so every delivery slide lives in a per-day subfolder.
