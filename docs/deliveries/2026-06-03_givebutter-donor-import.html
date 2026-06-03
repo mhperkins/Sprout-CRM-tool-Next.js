@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Givebutter Donor Import</title>
+<style>
+  :root{
+    --ink:#1f2418; --paper:#fffdf5; --banana:#FEF4C1; --leaf:#3f7d3b; --leaf-d:#2c5a29;
+    --cyan:#0e7c86; --amber:#b5751a; --rose:#a23b52; --line:#e6e1cf; --muted:#6f7363;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato','Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,#f4f1e2,#e9eedd);color:var(--ink);
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px}
+  .slide{width:min(960px,100%);background:var(--paper);border-radius:22px;overflow:hidden;
+    box-shadow:0 24px 60px rgba(40,60,30,.22);border:1px solid var(--line)}
+  .head{background:linear-gradient(120deg,var(--leaf-d),var(--leaf));color:#fff;padding:30px 38px;position:relative}
+  .head .seed{position:absolute;right:26px;top:22px;font-size:42px;opacity:.9}
+  .kick{font-size:12.5px;letter-spacing:2.5px;text-transform:uppercase;opacity:.85;font-weight:700}
+  .head h1{font-size:30px;margin-top:6px;font-weight:800;line-height:1.15}
+  .head p{margin-top:8px;font-size:14.5px;opacity:.92;max-width:640px}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .chip{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.32);border-radius:999px;
+    padding:5px 13px;font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .body{padding:28px 38px 34px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+  .stat{background:var(--banana);border:1px solid #ecdf9d;border-radius:14px;padding:16px 14px;text-align:center}
+  .stat .n{font-size:30px;font-weight:800;color:var(--leaf-d);line-height:1}
+  .stat .l{font-size:11.5px;color:var(--muted);font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:.5px}
+  .sect{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:1.4px;color:var(--leaf-d);
+    margin:0 0 12px;display:flex;align-items:center;gap:8px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+  .card{border:1px solid var(--line);border-radius:14px;padding:15px 17px;background:#fff}
+  .card h3{font-size:14.5px;display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .card ul{list-style:none;font-size:13px;color:#3a3f31;line-height:1.55}
+  .card li{padding-left:16px;position:relative;margin-bottom:4px}
+  .card li::before{content:'›';position:absolute;left:2px;color:var(--leaf);font-weight:800}
+  .b{font-weight:700;color:var(--ink)}
+  .recon{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:24px}
+  .rcard{flex:1;min-width:200px;border-radius:14px;padding:16px 18px;border:1px solid var(--line)}
+  .rcard.match{background:#eef6ea;border-color:#cfe6c6}
+  .rcard .t{font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+  .rcard .v{font-size:22px;font-weight:800;color:var(--leaf-d);margin-top:5px}
+  .rcard .s{font-size:12px;color:var(--muted);margin-top:4px}
+  .flags{background:#fdf3f0;border:1px solid #f0d4cc;border-radius:14px;padding:14px 18px}
+  .flags h3{font-size:13.5px;color:var(--rose);display:flex;align-items:center;gap:7px;margin-bottom:7px}
+  .flags li{font-size:12.5px;color:#6b3540;list-style:none;padding-left:16px;position:relative;margin-bottom:4px;line-height:1.5}
+  .flags li::before{content:'⚠';position:absolute;left:0;font-size:11px}
+  .foot{border-top:1px solid var(--line);padding:16px 38px;display:flex;justify-content:space-between;
+    align-items:center;background:#faf7ea;font-size:12.5px;color:var(--muted)}
+  .hash{font-family:'Consolas',monospace;background:var(--ink);color:var(--banana);padding:4px 10px;border-radius:7px;font-weight:700}
+  @media(max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="head">
+      <div class="seed">🌱</div>
+      <div class="kick">Sprout CRM Next · Delivery</div>
+      <h1>Givebutter Contacts → Donors Tab</h1>
+      <p>All 30 Givebutter contacts pulled, deduped, and loaded into the Donors segment — each donor assigned to the campaign from their actual transaction record.</p>
+      <div class="meta">
+        <span class="chip">📅 2026-06-03</span>
+        <span class="chip">🗂 Data-only · no app code</span>
+        <span class="chip">🔌 givebutter MCP → Supabase</span>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="grid">
+        <div class="stat"><div class="n">30</div><div class="l">Pulled</div></div>
+        <div class="stat"><div class="n">26</div><div class="l">Records loaded</div></div>
+        <div class="stat"><div class="n">24</div><div class="l">Donors</div></div>
+        <div class="stat"><div class="n">$1,745</div><div class="l">Total given</div></div>
+      </div>
+
+      <h2 class="sect">📦 What landed</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>💚 Per-donor enrichment</h3>
+          <ul>
+            <li><span class="b">segment = donor</span> + correct <span class="b">campaign</span> & campaign_id</li>
+            <li><span class="b">financial_relationship</span> with amount given</li>
+            <li>Address + alt contacts in <span class="b">notes</span></li>
+            <li>Dated <span class="b">touchpoint</span> with their donor message</li>
+            <li>relationship_status = <span class="b">warm</span></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🧹 Dedupe & judgment</h3>
+          <ul>
+            <li>Jodi Kaplan <span class="b">×3 → 1</span>, Danielle Karlik <span class="b">×2 → 1</span></li>
+            <li>Danielle Kastenbaum <span class="b">skipped</span> (staff, $0)</li>
+            <li>Households flagged: Lieb (email), Kassimir/Siegel (phone)</li>
+            <li>2 zero-dollar contacts → <span class="b">cold</span>, no campaign</li>
+            <li>Written via <span class="b">saveContacts</span> shape (Zod-validated)</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2 class="sect">✅ Reconciliation — matches Givebutter exactly</h2>
+      <div class="recon">
+        <div class="rcard match">
+          <div class="t">Designs that Donate</div>
+          <div class="v">23 donors · $1,735</div>
+          <div class="s">= campaign raised / donors ✓</div>
+        </div>
+        <div class="rcard match">
+          <div class="t">Support Sprout Society</div>
+          <div class="v">1 donor · $10</div>
+          <div class="s">Pranav Kadam ✓</div>
+        </div>
+        <div class="rcard">
+          <div class="t">No campaign</div>
+          <div class="v">2 contacts · $0</div>
+          <div class="s">Chelsea Lieb · Maddee Siegel</div>
+        </div>
+      </div>
+
+      <div class="flags">
+        <h3>Open follow-ups</h3>
+        <ul>
+          <li>The 3 Jodi + 2 Danielle duplicates still exist <span class="b">in Givebutter</span> (only the CRM was deduped).</li>
+          <li>Givebutter API key was exposed in chat earlier — rotate it.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>CHANGELOG committed + pushed to <span class="b">main</span></span>
+      <span class="hash">1216479</span>
+    </div>
+  </div>
+</body>
+</html>

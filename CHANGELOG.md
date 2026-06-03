@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-03 — Comms Manager proofed the Sprout n Tell IG caption + first retro loop
+
+Virtual-agency work, no app code or CRM data change. Ran the Instagram caption for the first Sprout n Tell through the **Communications Manager** agent (spawned via the Agent tool with its `_v1` system prompt), then closed the retro loop into the prompt.
+
+- **Proof + alternates:** Comms flagged the caption's issues (hype words "HUGE"/"amazing", all-caps shouting, stiff "if/then" CTA, "Sprout n Tell's" wrong apostrophe → "Sprout n Tells", "signup" → "sign up"; no em dashes present) and delivered a clean revision. On request it produced 3 alternates (short/punchy, warm/reflective, recurring-detail-first). Max chose the **first revision** (recap + thank-you angle).
+- **New work-log convention:** created `virtual-agency/employees/Communications/work-log.md` — an append-only ledger for small one-off deliverables (caption proofs, quick edits) that don't merit a `sprints/` file. Logged this entry with the selected copy. Distinction recorded: `sprints/` = planned multi-task work, `briefs/` = per-issue newsletter intake, `work-log.md` = ad-hoc deliverables.
+- **Retro loop into the system prompt:** captured *why* the chosen caption beat the alternates (anchored in the real event vs. describing the concept; concrete physical image over abstract praise; gratitude naming real actions; CTA woven into the warmth, not bolted on) and promoted those four durable lessons into a new **"Learned style preferences (retro notes)"** section under Sprout Voice in `communications-manager-system-prompt_v1.md`. The work log holds the case file; the system prompt is what actually trains future copy (the agent doesn't read the log between sessions).
+- **Files:** `virtual-agency/employees/Communications/work-log.md` (new), `virtual-agency/employees/Communications/system-prompts/communications-manager-system-prompt_v1.md`.
+
+---
+
 ## 2026-06-03 — Givebutter contacts imported into the Donors tab
 
 Data-only pass (no app code change). Pulled the full Givebutter contact + transaction set via the `givebutter` MCP and loaded **26 records** into the Donors segment, each assigned to its actual campaign.
