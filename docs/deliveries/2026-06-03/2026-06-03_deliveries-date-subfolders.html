@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Deliveries into date subfolders</title>
+<style>
+  :root{
+    --leaf:#3f8f4f; --leaf-dark:#2c6b39; --banana:#f4c542; --cyan:#2bb3c0;
+    --ink:#1f2a24; --muted:#5d6b62; --paper:#f7faf5; --card:#ffffff; --line:#e3ece0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',-apple-system,Segoe UI,Roboto,sans-serif;background:var(--paper);
+    color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px}
+  .slide{width:920px;max-width:100%;background:var(--card);border-radius:22px;
+    box-shadow:0 20px 60px rgba(31,42,36,.14);overflow:hidden;border:1px solid var(--line)}
+  .head{background:linear-gradient(135deg,var(--leaf),var(--leaf-dark));color:#fff;padding:34px 40px;position:relative}
+  .head .tag{display:inline-block;background:rgba(255,255,255,.18);padding:5px 13px;border-radius:999px;
+    font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .head h1{font-size:30px;margin-top:14px;font-weight:800;line-height:1.15}
+  .head p{margin-top:8px;font-size:15px;opacity:.92}
+  .leaf{position:absolute;right:34px;top:28px;font-size:46px;opacity:.9}
+  .body{padding:34px 40px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px}
+  .card h3{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:12px;font-weight:800}
+  .tree{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;line-height:1.9;color:var(--ink)}
+  .tree .folder{color:var(--leaf-dark);font-weight:700}
+  .tree .muted{color:var(--muted)}
+  .badge{display:inline-block;background:var(--banana);color:#5a4500;font-weight:700;font-size:11px;
+    padding:2px 9px;border-radius:999px;margin-left:6px}
+  ul.notes{list-style:none}
+  ul.notes li{padding:9px 0;border-bottom:1px dashed var(--line);font-size:14.5px;display:flex;gap:10px;align-items:flex-start}
+  ul.notes li:last-child{border-bottom:none}
+  ul.notes li .ic{color:var(--leaf);font-weight:800}
+  .foot{display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:20px 40px;background:var(--paper);border-top:1px solid var(--line);flex-wrap:wrap}
+  .chip{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:#eef5ea;border:1px solid var(--line);
+    padding:6px 12px;border-radius:8px;color:var(--leaf-dark);font-weight:700}
+  .chip b{color:var(--ink)}
+  .pill{background:var(--cyan);color:#fff;font-weight:800;font-size:12px;padding:6px 14px;border-radius:999px}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="head">
+      <span class="leaf">🌱</span>
+      <span class="tag">Housekeeping · Convention</span>
+      <h1>Deliveries organized into date subfolders</h1>
+      <p>Every delivery slide now lives in <b>docs/deliveries/&lt;YYYY-MM-DD&gt;/</b></p>
+    </div>
+
+    <div class="body">
+      <div class="grid">
+        <div class="card">
+          <h3>New structure</h3>
+          <div class="tree">
+            <span class="muted">docs/</span><br>
+            └─ <span class="folder">deliveries/</span><br>
+            &nbsp;&nbsp;&nbsp;├─ <span class="folder">2026-06-01/</span><span class="badge">1</span><br>
+            &nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└─ sprout-society-type.html<br>
+            &nbsp;&nbsp;&nbsp;└─ <span class="folder">2026-06-03/</span><span class="badge">6</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ contact-segments.html<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ donor-campaign-selector.html<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ affiliations.html<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ givebutter-donor-import.html<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ comms-caption-retro.html<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ instagram-import-pipe.html<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ deliveries-date-subfolders.html <span class="muted">← this</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>What changed</h3>
+          <ul class="notes">
+            <li><span class="ic">✓</span><span>Moved existing flat slides into per-day folders with <b>git&nbsp;mv</b> — history preserved.</span></li>
+            <li><span class="ic">✓</span><span>CLAUDE.md <b>step 4</b> of the End-of-Session Protocol now points at the dated folder.</span></li>
+            <li><span class="ic">✓</span><span>Standing delivery-slide note updated to match.</span></li>
+            <li><span class="ic">→</span><span>First delivery of a day <b>creates</b> that day's folder; the rest drop in beside it.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span class="pill">main · pushed</span>
+      <span class="chip"><b>files:</b> CHANGELOG.md · docs/deliveries/**</span>
+      <span class="chip"><b>scope:</b> docs only — no app / data change</span>
+    </div>
+  </div>
+</body>
+</html>

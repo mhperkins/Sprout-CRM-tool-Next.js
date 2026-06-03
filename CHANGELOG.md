@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-06-03 — Deliveries organized into date subfolders
+
+Housekeeping + convention change, no app code or data change. Reorganized `docs/deliveries/` so every delivery slide lives in a per-day subfolder.
+
+- **Reorg:** moved the existing flat slides into `docs/deliveries/<YYYY-MM-DD>/` — `2026-06-01/` (1 slide) and `2026-06-03/` (Instagram-import-pipe + the day's other slides). Moves done with `git mv`; tree clean.
+- **Convention updated** in CLAUDE.md (gitignored, local): End-of-Session Protocol **step 4** and the standing delivery-slide note now say to save the slide to `docs/deliveries/<YYYY-MM-DD>/`, creating the folder on the day's first delivery. All deliveries from the same day live in that day's folder.
+
+---
+
 ## 2026-06-03 — Instagram → CRM import pipe: spec, tags field, hardened import, org type tags
 
 App code + docs change (`lib/schemas.js`, `components/CRMManager.jsx`, new guide). `npm run build` passes. Designed the **two-surface workflow** for bringing Instagram followers into the CRM and hardened the import path that receives them. **Not committed before this entry** — stacks on the three prior same-day uncommitted changes (segments, donor campaign selector, affiliations).
