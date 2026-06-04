@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-06-04 — UNRESOLVED: featured newsletter image still renders gigantic (handoff to a fresh convo)
+
+Debugging session. The compact newsletter editor preview still renders an uploaded Featured photo at full natural height (spilling past the email-card edges). All fixes failed from the user's POV — handing off.
+
+**Code changes that ARE on disk + committed/pushed (and proven correct):**
+- `lib/newsletter.js`: featured `<img>` `height:auto` → fixed **200px window** with `object-fit:cover; object-position:center; max-width:544px`, wrapped in a `<td height="200" style="height:200px">`; empty placeholder shares the same 200px cell. Upcoming-event card img → `height:140px; object-fit:cover`. (200px version supersedes the earlier 260px in `3e4186a`.)
+- Verified the disk code is correct: a `node` import of `buildNewsletter({templateId:'monthly-roundup-compact', fieldValues:{featuredPhoto:...}})` returns HTML containing exactly `height:200px; object-fit:cover; max-width:544px`. Routing confirmed: `buildNewsletter` → `buildCompact` at `lib/newsletter.js:464`.
+
+**Failed remediation attempts (none changed the user's preview):**
+1. Hard-refresh (Ctrl+Shift+R) to bust the `built` `useMemo` cache.
+2. Suspected broken compile serving a stale build — ruled out (editor renders fine).
+3. Killed the node process on port 3000, deleted `.next/cache`, restarted `npm run dev` fresh — still broken.
+
+**Key clue:** the rendered image exceeds `max-width:544px` and ignores `height` — behavior the current disk code cannot produce → the preview is executing code different from disk (stale/baked HTML), not a CSS problem.
+
+**Strongest untested lead for next convo:** a large **uncommitted** refactor of `NewsletterView` in `components/CRMManager.jsx` (templates-on-top landing; `mode` `list|pick|edit` → `list|edit`; added `startNew()`). Verify the preview iframe still reads the live `built.html` (recomputed `useMemo`) and not a stale baked `draft.html`. Decisive test: drop a temporary visible marker into `buildCompact`'s featured block and reload — if it doesn't appear, the preview isn't running current `buildCompact`. Also confirm the browser is on localhost:3000, not the deployed Vercel site. `components/CRMManager.jsx` left uncommitted for the user to finish.
+
 ## 2026-06-03 — Compact newsletter: render Headline + Intro greeting block (+ Polish key / grant-tool build diagnosis)
 
 App code change (`lib/newsletter.js`). Effort: diagnose medium / fix low.

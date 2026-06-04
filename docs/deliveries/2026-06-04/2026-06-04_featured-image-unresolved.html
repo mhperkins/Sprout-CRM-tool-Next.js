@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Handoff · Featured image bug unresolved</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --paper:#ffffff; --g100:#F7F7F6; --g200:#ECECEA; --g500:#7a7a76; --g600:#56544f;
+    --cyan:#73C4D6; --fuchsia:#E10098; --acid:#C6F135; --banana:#FFE14D; --red:#E0245E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Lato',Helvetica,Arial,sans-serif;background:#1a1a1a;color:var(--ink);
+       min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;}
+  .slide{width:100%;max-width:960px;background:var(--paper);border-radius:18px;overflow:hidden;
+         box-shadow:0 24px 60px rgba(0,0,0,.5);}
+  .top{height:6px;background:linear-gradient(90deg,var(--red),var(--fuchsia),var(--banana));}
+  .hd{padding:32px 40px 18px;}
+  .kicker{font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--red);}
+  h1{font-size:30px;font-weight:900;line-height:1.15;margin-top:10px;}
+  .sub{font-size:14.5px;color:var(--g600);margin-top:10px;line-height:1.55;}
+  .body{padding:4px 40px 28px;}
+  .sec-ttl{font-size:12px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--g500);
+           margin:22px 0 10px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .card{background:var(--g100);border:1px solid var(--g200);border-radius:12px;padding:16px 18px;}
+  .card h3{font-size:15px;font-weight:900;margin-bottom:5px;}
+  .card p{font-size:13px;color:var(--g600);line-height:1.5;}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#fff;
+        border:1px solid var(--g200);border-radius:5px;padding:1px 6px;}
+  ul.tries{list-style:none;display:flex;flex-direction:column;gap:8px;}
+  ul.tries li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--g600);line-height:1.5;
+              background:#fff;border:1px solid var(--g200);border-radius:9px;padding:10px 13px;}
+  .x{color:var(--red);font-weight:900;flex-shrink:0;}
+  .lead{background:#FFF6DA;border:1px solid var(--banana);border-radius:12px;padding:16px 18px;margin-top:8px;}
+  .lead h3{font-size:15px;font-weight:900;margin-bottom:6px;}
+  .lead p{font-size:13.5px;color:#5b4e1f;line-height:1.55;}
+  .lead b{color:var(--ink);}
+  .ft{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;
+      padding:16px 40px 28px;border-top:1px solid var(--g200);margin-top:18px;}
+  .ft .meta{font-size:12px;color:var(--g500);}
+  .pill{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:700;
+        background:var(--ink);color:var(--banana);padding:5px 11px;border-radius:6px;}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="top"></div>
+    <div class="hd">
+      <div class="kicker">Sprout CRM · Handoff · 2026-06-04</div>
+      <h1>🔴 Featured newsletter image still renders gigantic</h1>
+      <p class="sub">Every fix this session failed from the user's view. Handing off to a fresh conversation with the full attempt log and the strongest untested lead. Effort: diagnose high / fix low.</p>
+    </div>
+
+    <div class="body">
+      <div class="grid2">
+        <div class="card">
+          <h3>Symptom</h3>
+          <p>In the compact newsletter editor (<span class="mono">monthly-roundup-compact</span>), an uploaded Featured photo renders at full natural height and <b>spills past the white email-card edges</b>.</p>
+        </div>
+        <div class="card">
+          <h3>Decisive clue</h3>
+          <p>The image exceeds <span class="mono">max-width:544px</span> and ignores <span class="mono">height</span> — behavior the current disk code <b>cannot produce</b>. The preview is running code different from disk.</p>
+        </div>
+      </div>
+
+      <div class="sec-ttl">Disk code is correct + pushed (proven)</div>
+      <div class="card">
+        <p><span class="mono">lib/newsletter.js</span>: featured <span class="mono">&lt;img&gt;</span> locked to a fixed <b>200px window</b> (<span class="mono">height:200px; object-fit:cover; object-position:center; max-width:544px</span>), empty placeholder shares the same cell. A <span class="mono">node</span> render of <span class="mono">buildNewsletter()</span> for the compact id returns exactly that HTML. Routing confirmed: <span class="mono">buildNewsletter → buildCompact</span> at <span class="mono">newsletter.js:464</span>; preview is <span class="mono">&lt;iframe srcDoc={built.html}&gt;</span> (<span class="mono">CRMManager.jsx:2269</span>).</p>
+      </div>
+
+      <div class="sec-ttl">Attempts that failed</div>
+      <ul class="tries">
+        <li><span class="x">✗</span><span>Hard-refresh (Ctrl+Shift+R) to bust the <span class="mono">built</span> useMemo cache.</span></li>
+        <li><span class="x">✗</span><span>Suspected a broken compile serving a stale build — ruled out, the editor renders fine.</span></li>
+        <li><span class="x">✗</span><span>Killed the port-3000 node process, deleted <span class="mono">.next/cache</span>, restarted <span class="mono">npm run dev</span> fresh (Ready in 342ms) — still broken.</span></li>
+      </ul>
+
+      <div class="sec-ttl">Strongest untested lead → start here next convo</div>
+      <div class="lead">
+        <h3>Is the preview showing baked <span class="mono">draft.html</span> instead of live <span class="mono">built.html</span>?</h3>
+        <p>There is a large <b>uncommitted</b> refactor of <span class="mono">NewsletterView</span> in <span class="mono">CRMManager.jsx</span> (templates-on-top landing; <span class="mono">mode list|pick|edit → list|edit</span>; added <span class="mono">startNew()</span>). If the refactor or the autosave/restore path routes the iframe to a saved <span class="mono">draft.html</span> generated by old code, the preview stays stale no matter what <span class="mono">buildCompact</span> does. <b>Decisive test:</b> drop a temporary visible marker (e.g. <span class="mono">XXNEWXX</span>) into the featured block, reload — if it never appears, the preview isn't running current <span class="mono">buildCompact</span>. Also confirm the browser is on <span class="mono">localhost:3000</span>, not the deployed Vercel site.</p>
+      </div>
+    </div>
+
+    <div class="ft">
+      <div class="meta">newsletter.js fix committed + pushed · CRMManager.jsx refactor left uncommitted · dev server running</div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span class="pill">branch: main</span>
+        <span class="pill" id="hash">commit: pending</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
