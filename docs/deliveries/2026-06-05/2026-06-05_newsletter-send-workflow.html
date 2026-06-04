@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Newsletter Send Workflow</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{ --blk:#030000; --off:#F7F7F6; --acid:#C6C902; --fuchsia:#E10098; --cyan:#73C4D6; --banana:#FAD100; --g500:#6b6b66; --g700:#3a3a38; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:'Lato',Helvetica,Arial,sans-serif; background:var(--off); color:var(--blk); padding:40px 20px; }
+  .wrap{ max-width:920px; margin:0 auto; }
+  .masthead{ display:flex; justify-content:space-between; align-items:flex-end; border-bottom:4px solid var(--acid); padding-bottom:14px; margin-bottom:22px; }
+  .masthead h1{ font-size:30px; font-weight:900; line-height:1.1; }
+  .masthead .sub{ font-size:13px; color:var(--g500); margin-top:6px; }
+  .meta{ text-align:right; font-size:12px; color:var(--g500); line-height:1.7; }
+  .meta b{ color:var(--blk); }
+  .pill{ display:inline-block; font-size:11px; font-weight:900; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:.05em; }
+  .flow{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:18px 0 26px; }
+  .step{ font-size:13px; font-weight:900; padding:8px 14px; border-radius:8px; }
+  .arrow{ color:var(--g500); font-weight:900; }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .card{ background:#fff; border:1px solid #ECECEA; border-radius:12px; padding:18px 20px; }
+  .card .tag{ font-size:11px; font-weight:900; letter-spacing:.1em; text-transform:uppercase; margin-bottom:8px; }
+  .card h3{ font-size:17px; font-weight:900; margin-bottom:8px; }
+  .card p,.card li{ font-size:13.5px; line-height:1.6; color:var(--g700); }
+  .card ul{ padding-left:18px; }
+  .card li{ margin-bottom:5px; }
+  .full{ grid-column:1 / -1; }
+  .files code{ background:var(--off); border:1px solid #ECECEA; border-radius:5px; padding:2px 7px; font-size:12px; font-weight:700; margin-right:6px; display:inline-block; margin-top:6px; }
+  .foot{ margin-top:26px; text-align:center; font-size:12px; color:var(--g500); }
+  .chk{ color:var(--fuchsia); font-weight:900; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div>
+      <h1>Newsletter Send Workflow</h1>
+      <div class="sub">May "Monthly Sprout" written + imported, then a full in-app send pipeline</div>
+    </div>
+    <div class="meta">
+      <div>commit <b>d81387a</b></div>
+      <div>branch <b>main</b></div>
+      <div>2026-06-05 · <b>npm run build ✓</b></div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <span class="step" style="background:#ECECEA;color:#6b6b66;">Draft</span>
+    <span class="arrow">→</span>
+    <span class="step" style="background:var(--banana);color:#3a3000;">Pending</span>
+    <span class="arrow">→</span>
+    <span class="step" style="background:var(--acid);color:#3a3d00;">Approved</span>
+    <span class="arrow">→</span>
+    <span class="step" style="background:var(--blk);color:var(--banana);">Sent</span>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="tag" style="color:var(--cyan);">✍️ Wrote the issue</div>
+      <h3>May "Monthly Sprout"</h3>
+      <p>Communications Manager agent tightened Max's brain-dump into Sprout-voice copy from the filled intake brief, fixed typos, left blanks blank. Imported as a real compact-template draft <b>nl_may_2026_roundup</b>, spotlight = Pat Hopkins.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag" style="color:var(--fuchsia);">🔗 Template polish</div>
+      <h3>Link · fluid · footer</h3>
+      <ul>
+        <li>Clickable <b>"Sign up / RSVP →"</b> button on upcoming events (Show N Tell form wired)</li>
+        <li>Fluid width (<code style="font-size:11px;">100% / max 600px</code>): no more phone horizontal-scroll</li>
+        <li>Working <b>mailto unsubscribe</b> footer (CAN-SPAM)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="tag" style="color:#3a3d00;">✉️ Test send</div>
+      <h3>To typed addresses</h3>
+      <p>Available in Pending. Type any addresses, fire the current draft to just them, subject prefixed <b>[TEST]</b>. Verified live: a self-send to hello@ landed.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag" style="color:#3a3000;">🚀 Send to list</div>
+      <h3>Bucket blast</h3>
+      <p>Unlocks at <b>Approved</b>. Pick All / Community / Donors / Prospects with live email counts. Recipients resolved server-side, BCC'd in batches of 45. Auto-flips to Sent.</p>
+    </div>
+
+    <div class="card full">
+      <div class="tag" style="color:var(--cyan);">🔒 How it sends · security</div>
+      <p>New <b>app/api/send</b> route sends as <b>hello@sproutsociety.org</b> via the Gmail API, reusing the existing Workspace OAuth refresh token (<code style="font-size:11px;">gmail.send</code> scope) so there is <b>no new API key</b>. The route is gated by <b>NEWSLETTER_SEND_SECRET</b> (the app is public + unauthenticated) and list-mode recipients are resolved from the CRM server-side, so it can never be aimed at arbitrary addresses. <span class="chk">Verified:</span> 200 + delivered on a real test; 401 on wrong/missing passphrase.</p>
+      <div class="files">
+        <code>app/api/send/route.js (new)</code>
+        <code>components/CRMManager.jsx</code>
+        <code>lib/newsletter.js</code>
+        <code>lib/schemas.js</code>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    Next: confirm <b>NEWSLETTER_SEND_SECRET</b> on Vercel + redeploy, then approve and send the May issue. 🌱
+  </div>
+
+</div>
+</body>
+</html>
