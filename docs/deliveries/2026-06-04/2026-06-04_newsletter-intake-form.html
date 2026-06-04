@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Monthly Sprout Intake Form</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Lato',Helvetica,Arial,sans-serif; background:#030000;
+    color:#030000; padding:48px 20px; display:flex; justify-content:center;
+  }
+  .slide {
+    width:100%; max-width:920px; background:#F7F7F6; border-radius:20px;
+    overflow:hidden; box-shadow:0 24px 80px rgba(0,0,0,.5);
+  }
+  .head {
+    background:#030000; color:#F7F7F6; padding:34px 40px 30px;
+    border-bottom:6px solid #C6C902;
+  }
+  .kicker {
+    font-size:13px; font-weight:900; letter-spacing:.18em; text-transform:uppercase;
+    color:#C6C902; margin-bottom:10px;
+  }
+  .head h1 { font-size:30px; font-weight:900; line-height:1.15; letter-spacing:-.01em; }
+  .head p { font-size:15px; color:#cfcfca; margin-top:10px; max-width:680px; line-height:1.5; }
+  .meta {
+    display:flex; flex-wrap:wrap; gap:8px; margin-top:18px;
+  }
+  .chip {
+    font-size:12px; font-weight:700; padding:6px 12px; border-radius:999px;
+    background:rgba(255,255,255,.08); color:#F7F7F6; border:1px solid rgba(255,255,255,.16);
+  }
+  .chip b { color:#C6C902; font-weight:900; }
+  .body { padding:34px 40px 40px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .card {
+    background:#fff; border:1px solid #e6e6e2; border-radius:14px; padding:20px 22px;
+  }
+  .card.full { grid-column:1 / -1; }
+  .card .tag {
+    display:inline-block; font-size:11px; font-weight:900; text-transform:uppercase;
+    letter-spacing:.08em; padding:4px 10px; border-radius:6px; margin-bottom:12px;
+  }
+  .t-cyan { background:#73C4D6; color:#04323d; }
+  .t-fuchsia { background:#E10098; color:#fff; }
+  .t-acid { background:#C6C902; color:#1f2000; }
+  .t-banana { background:#FAD100; color:#2a2200; }
+  .card h2 { font-size:17px; font-weight:900; margin-bottom:8px; }
+  .card p { font-size:14px; line-height:1.55; color:#3a3a38; }
+  .card ul { margin:8px 0 0 0; padding-left:18px; }
+  .card li { font-size:13.5px; line-height:1.6; color:#3a3a38; margin-bottom:4px; }
+  .card li b { color:#030000; }
+  .flow {
+    grid-column:1 / -1; display:flex; align-items:stretch; gap:0; flex-wrap:wrap;
+    background:#030000; border-radius:14px; padding:20px 16px; margin-top:2px;
+  }
+  .step { flex:1; min-width:150px; padding:6px 14px; color:#F7F7F6; }
+  .step .n { font-size:11px; font-weight:900; color:#C6C902; letter-spacing:.1em; }
+  .step h3 { font-size:14px; font-weight:900; margin:4px 0 4px; }
+  .step p { font-size:12.5px; line-height:1.5; color:#bdbdb8; }
+  .arrow { display:flex; align-items:center; color:#C6C902; font-size:22px; font-weight:900; }
+  .foot {
+    display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center;
+    gap:12px; margin-top:26px; padding-top:20px; border-top:1px solid #e0e0db;
+    font-size:13px; color:#6b6b66;
+  }
+  .foot code {
+    background:#030000; color:#C6C902; padding:4px 10px; border-radius:6px;
+    font-weight:700; font-family:ui-monospace,Menlo,Consolas,monospace;
+  }
+  .foot .ok { color:#1f7a3d; font-weight:900; }
+  @media (max-width:680px){ .grid{ grid-template-columns:1fr; } .head h1{ font-size:24px; } }
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="head">
+      <div class="kicker">🌱 Delivery · Communications</div>
+      <h1>Monthly Sprout — Newsletter Intake Form</h1>
+      <p>A markdown intake mapped 1:1 to the live compact newsletter, plus a Comms agent that turns a brain-dump into clean copy and never guesses.</p>
+      <div class="meta">
+        <span class="chip">Branch <b>main</b></span>
+        <span class="chip">Commit <b>3e160ea</b></span>
+        <span class="chip">Docs only · <b>no app/data change</b></span>
+        <span class="chip">Effort <b>medium</b></span>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="grid">
+
+        <div class="card">
+          <span class="tag t-cyan">New template</span>
+          <h2>Intake mapped to the real newsletter</h2>
+          <p>Rewrote the intake to match the compact <b>Monthly Sprout</b> sections (<code style="font-size:12px">COMPACT_SECTIONS</code>) field for field:</p>
+          <ul>
+            <li>Headline · Intro / thank-you</li>
+            <li>Featured event (title / recap / photo)</li>
+            <li>Coworking (note + Thursday happy hour)</li>
+            <li>Membership ask</li>
+            <li>Spotlight (name / blurb / photo)</li>
+            <li>Upcoming + Past events (repeatable)</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <span class="tag t-fuchsia">Agent rules</span>
+          <h2>Brain-dump in, punchy out</h2>
+          <p>Comms agent system prompt now says, in writing:</p>
+          <ul>
+            <li><b>Expect a messy dump</b>, not finished copy. Tighten it into clear, concise, punchy Sprout voice.</li>
+            <li><b>Never guess.</b> No source = leave the section blank.</li>
+            <li>End every draft with a <b>"Couldn't fill — need from you"</b> list, one ask per gap.</li>
+            <li>Tighten the words, <b>never invent the facts.</b></li>
+          </ul>
+        </div>
+
+        <div class="card full">
+          <span class="tag t-banana">First real use</span>
+          <h2>May 2026 issue captured live</h2>
+          <p>Max filled the template into <b>SnTv1_newsletter-intake-TEMPLATE.md</b>: Sprout n Tell Vol.1 featured, Barnun happy hour + Co-Work as past events, Pat Hopkins (Proactive Panic) spotlight, Sprout n Tell Vol.2 on 6/26 upcoming. The blank reusable template was restored so the copy-and-fill workflow keeps working. The existing SnT event-recap form feeds the Featured / Past recap lines.</p>
+        </div>
+
+        <div class="flow">
+          <div class="step">
+            <div class="n">STEP 1</div>
+            <h3>Recap form</h3>
+            <p>Capture each event right after it happens (already existed).</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="step">
+            <div class="n">STEP 2</div>
+            <h3>Brain-dump intake</h3>
+            <p>Drop messy notes into the monthly form. Blank = unknown.</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="step">
+            <div class="n">STEP 3</div>
+            <h3>Agent drafts</h3>
+            <p>Comms writes a tight first draft, flags every gap.</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="step">
+            <div class="n">STEP 4</div>
+            <h3>Max reviews</h3>
+            <p>Fill the flagged gaps, approve, stage the send.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="foot">
+        <span>4 files · +214 / −49 · <span class="ok">committed + pushed ✓</span></span>
+        <code>main · 3e160ea</code>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
