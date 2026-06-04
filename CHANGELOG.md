@@ -2,6 +2,14 @@
 
 ---
 
+## 2026-06-03 — Fix: cap newsletter photo blocks to fixed-height banners
+
+App code change (`lib/newsletter.js` only). An uploaded featured photo was rendering at full natural height and dominating the page.
+
+- **Featured photo** in `buildCompact()`: was `width:100%; height:auto` (a tall portrait ran floor-to-ceiling) → now a fixed **260px** banner with `object-fit:cover`.
+- **Upcoming-event card photo** in `compactUpCard()`: same fix → fixed **140px** banner with `object-fit:cover`, so a portrait can't blow out the 2-up card.
+- `object-fit:cover` renders in the in-app preview and modern email clients; older Outlook ignores it and shows the bounded box. Spotlight (64×64) and past-row (max-160px) images were already bounded — unchanged.
+
 ## 2026-06-03 — Web & Graphic Designer employee + in-app compact newsletter (template, section editor, Comms "Polish" AI, image uploads)
 
 App code + data-infra change. `npm run build` passes.

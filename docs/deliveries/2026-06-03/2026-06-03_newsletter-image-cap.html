@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Newsletter image cap</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --paper:#ffffff; --g100:#F7F7F6; --g200:#ECECEA; --g500:#7a7a76; --g600:#56544f;
+    --cyan:#73C4D6; --fuchsia:#E10098; --acid:#C6F135; --banana:#FFE14D;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Lato',Helvetica,Arial,sans-serif;background:#1a1a1a;color:var(--ink);
+       min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;}
+  .slide{width:100%;max-width:920px;background:var(--paper);border-radius:18px;overflow:hidden;
+         box-shadow:0 24px 60px rgba(0,0,0,.5);}
+  .top{height:6px;background:linear-gradient(90deg,var(--cyan),var(--fuchsia),var(--acid),var(--banana));}
+  .hd{padding:34px 40px 22px;}
+  .kicker{font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--fuchsia);}
+  h1{font-size:33px;font-weight:900;line-height:1.15;margin-top:10px;color:var(--ink);}
+  .sub{font-size:15px;color:var(--g600);margin-top:10px;line-height:1.5;}
+  .body{padding:6px 40px 30px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;}
+  .card{background:var(--g100);border:1px solid var(--g200);border-radius:12px;padding:20px 20px;}
+  .card .tag{display:inline-block;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
+             padding:4px 10px;border-radius:4px;margin-bottom:12px;}
+  .t-cyan{background:var(--cyan);color:#0d3d49;}
+  .t-fuchsia{background:var(--fuchsia);color:#fff;}
+  .card h3{font-size:17px;font-weight:900;margin-bottom:6px;}
+  .card p{font-size:13.5px;color:var(--g600);line-height:1.55;}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#fff;
+        border:1px solid var(--g200);border-radius:5px;padding:1px 6px;color:var(--ink);}
+  .beforeafter{display:flex;gap:10px;margin-top:14px;align-items:center;}
+  .ba{flex:1;border-radius:8px;padding:12px;text-align:center;font-size:12px;font-weight:700;}
+  .before{background:#fff;border:1px dashed #d9b3c6;color:#a3266e;}
+  .after{background:var(--acid);color:var(--ink);}
+  .arrow{font-size:20px;color:var(--g500);font-weight:900;}
+  .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;}
+  .chip{font-size:12px;font-weight:700;padding:6px 12px;border-radius:20px;background:#fff;
+        border:1px solid var(--g200);color:var(--g600);}
+  .ft{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;
+      padding:18px 40px 30px;border-top:1px solid var(--g200);margin-top:6px;}
+  .ft .meta{font-size:12px;color:var(--g500);}
+  .ft .hash{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:700;
+            background:var(--ink);color:var(--banana);padding:5px 11px;border-radius:6px;}
+  .file{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--g600);margin-top:16px;}
+  .file b{color:var(--ink);}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="top"></div>
+    <div class="hd">
+      <div class="kicker">Sprout CRM · Delivery · 2026-06-03</div>
+      <h1>Featured newsletter photo capped to a banner 🖼</h1>
+      <p class="sub">An uploaded featured photo was rendering at full natural height and taking over the whole page. Now the photo blocks are fixed-height banners that crop cleanly.</p>
+    </div>
+
+    <div class="body">
+      <div class="beforeafter">
+        <div class="ba before">Portrait photo<br>ran floor-to-ceiling<br>(<span class="mono">height:auto</span>)</div>
+        <div class="arrow">→</div>
+        <div class="ba after">Tidy fixed-height banner<br>(<span class="mono">object-fit:cover</span>)</div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <span class="tag t-fuchsia">Featured photo</span>
+          <h3>260px banner</h3>
+          <p><span class="mono">buildCompact()</span> — was <span class="mono">width:100%; height:auto</span>, so a tall portrait filled the page. Now a fixed <b>260px</b> band that fills the width and crops with <span class="mono">object-fit:cover</span>.</p>
+        </div>
+        <div class="card">
+          <span class="tag t-cyan">Upcoming card photo</span>
+          <h3>140px banner</h3>
+          <p><span class="mono">compactUpCard()</span> — same fix at <b>140px</b>, so a portrait can't blow out the 2-up event card either.</p>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="chip">✓ Renders in app preview</span>
+        <span class="chip">✓ Modern email clients</span>
+        <span class="chip">Outlook → bounded box fallback</span>
+        <span class="chip">Spotlight + past-row already bounded</span>
+      </div>
+
+      <div class="file">Changed: <b>lib/newsletter.js</b> &nbsp;·&nbsp; one-number height tweak if 260/140 feels off</div>
+    </div>
+
+    <div class="ft">
+      <div class="meta">Diagnose medium / fix low · single-file template tweak · no data change</div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span class="hash">branch: main</span>
+        <span class="hash" id="hash">commit: pending</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
