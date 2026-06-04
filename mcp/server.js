@@ -302,6 +302,7 @@ async function applyContactInput(args) {
       args.other_description,
       overwrite
     ),
+    how_heard: fillScalar(base.how_heard, args.how_heard, overwrite),
     notes: fillScalar(base.notes, args.notes, overwrite),
     relationship_types: unionArr(
       base.relationship_types,
@@ -628,6 +629,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
             description: "Unioned with any existing types on a merge",
           },
           other_description: { type: "string" },
+          how_heard: {
+            type: "string",
+            description: "How they heard about Sprout Society (referral, event, social) — from the Check-In form, etc.",
+          },
           notes: { type: "string" },
           next_action: { type: "string" },
           next_action_date: { type: "string", description: "YYYY-MM-DD" },

@@ -2,6 +2,24 @@
 
 ---
 
+## 2026-06-03 — "How did you hear about us" contact field + key-links reference memory
+
+App code + data + memory change (`lib/schemas.js`, `components/CRMManager.jsx`, `mcp/server.js`; `npm run build` passes).
+
+**New `how_heard` field (referral/attribution):**
+- Added `how_heard` (optional string, JSONB-only, defaults `""`) to `ContactSchema`.
+- Surfaced in the **Add** modal, **Edit** modal, and **detail panel** ("How they heard:").
+- **Sheet/CSV importer** now auto-detects a "how did you hear / referral / source" column (`detectSheetFields`), merges it (`NL_MERGE_FIELDS`), and sets it on new imported records.
+- **MCP** `create_or_update_contact` accepts `how_heard` (input schema + `applyContactInput` merge via `fillScalar`). Requires a window reload before the running server picks it up.
+- **Populated 14 existing contacts** from the Sprout Society Check-In (Responses) sheet, matched by email, via one `jsonb_set` batch (no SQL column to sync). Skipped the Test row and a junk "." answer.
+
+**Reference memory — org links:**
+- Created `memory/sprout-key-links.md` cataloguing 18 links pulled from the master "Sprout Society - Links" Google Doc, the `#sprout-links`/`#sprout` Slack channels, and Givebutter `get_campaign`: membership, scholarship, Luma, Discord, 6 Google Forms, 7 key Drive files. Indexed in `MEMORY.md`.
+
+**Follow-ups:** referral-name answers (Cody, Izzy, Jesse, etc.) map to existing contacts but are stored as literal text — a future pass could resolve them into a referral graph.
+
+---
+
 ## 2026-06-03 — Donor contact list shows Campaign (Givebutter) instead of Affiliation
 
 App code change (`components/CRMManager.jsx` only; `npm run build` passes). Display-only — no data-side change. The **Campaign** field (visible) + hidden **`campaign_id`** (rename-proof Givebutter key in the `data` JSONB blob, never rendered) were already built a prior session and already populated on every donor at import time, so this session only added the two display surfaces.

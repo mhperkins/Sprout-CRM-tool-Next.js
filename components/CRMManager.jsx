@@ -763,6 +763,7 @@ function ContactDetail({contact,orgs,events,onClose,onUpdate,onEdit,showToast}) 
             {contact.phone&&<div className="dp-field"><strong>Phone:</strong> {contact.phone}</div>}
             {contact.instagram_handle&&<div className="dp-field"><strong>Instagram:</strong> {contact.instagram_handle}</div>}
             {contact.website&&<div className="dp-field"><strong>Website:</strong> <a href={contact.website} target="_blank" rel="noreferrer" style={{color:"var(--cyan)"}}>{contact.website}</a></div>}
+            {contact.how_heard&&<div className="dp-field"><strong>How they heard:</strong> {contact.how_heard}</div>}
           </div>
           {curSegment==="donor"&&contact.campaign&&<div className="dp-section">
             <div className="dp-sect-lbl">Campaign <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(Givebutter)</span></div>
@@ -1192,6 +1193,7 @@ function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,
           <div className="fg"><label className="fl">Phone</label><input className="fi" value={editing.phone||""} onChange={e=>setEditing({...editing,phone:e.target.value})}/></div>
         </div>
         <div className="fg"><label className="fl">Instagram</label><input className="fi" value={editing.instagram_handle||""} onChange={e=>setEditing({...editing,instagram_handle:e.target.value})} placeholder="@handle"/></div>
+        <div className="fg"><label className="fl">How did you hear about us</label><input className="fi" value={editing.how_heard||""} onChange={e=>setEditing({...editing,how_heard:e.target.value})} placeholder="Referral, event, social…"/></div>
         <div className="fg"><label className="fl">Affiliation <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(organizations &amp; events)</span></label>
           <AffiliationField orgs={orgs} events={events}
             orgIds={editing.org_ids||(editing.org_id?[editing.org_id]:[])}
@@ -1330,7 +1332,7 @@ useEffect(()=>{
     onPendingDetailConsumed();
   }
 },[pendingDetail, onPendingDetailConsumed]);
-const blank={first_name:"",last_name:"",org_id:"",org_ids:[],_pendingEventIds:[],email:"",phone:"",instagram_handle:"",website:"",relationship_types:[],relationship_status:"cold",segment:"community",notes:"",next_action:"",next_action_date:"",next_actions:[]};
+const blank={first_name:"",last_name:"",org_id:"",org_ids:[],_pendingEventIds:[],email:"",phone:"",instagram_handle:"",website:"",how_heard:"",relationship_types:[],relationship_status:"cold",segment:"community",notes:"",next_action:"",next_action_date:"",next_actions:[]};
   const [nc,setNc]=useState(blank);
 
 // Pre-compute scores once per render, not once per table cell
@@ -1443,6 +1445,7 @@ const [editing,setEditing]=useState(null);
             </div>
             <div className="fg"><label className="fl">Instagram</label><input className="fi" value={nc.instagram_handle||""} onChange={e=>setNc({...nc,instagram_handle:e.target.value})} placeholder="@handle"/></div>
             <div className="fg"><label className="fl">Website</label><input className="fi" value={nc.website||""} onChange={e=>setNc({...nc,website:e.target.value})} placeholder="https://example.org"/></div>
+            <div className="fg"><label className="fl">How did you hear about us</label><input className="fi" value={nc.how_heard||""} onChange={e=>setNc({...nc,how_heard:e.target.value})} placeholder="Referral, event, social…"/></div>
             <div className="frow">
               <div className="fg"><label className="fl">Next Action</label><input className="fi" value={nc.next_action} onChange={e=>setNc({...nc,next_action:e.target.value})}/></div>
               <div className="fg"><label className="fl">Due Date</label><input type="date" className="fi" value={nc.next_action_date} onChange={e=>setNc({...nc,next_action_date:e.target.value})}/></div>
@@ -1717,7 +1720,7 @@ function OutreachView({contacts,orgs}) {
 const NL_isEmpty   = (v) => v==null || (typeof v==="string" && v.trim()==="") || (Array.isArray(v)&&v.length===0);
 const NL_normEmail = (e) => (e==null?"":String(e)).trim().toLowerCase();
 const NL_validEmail= (e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(NL_normEmail(e));
-const NL_MERGE_FIELDS = ["first_name","last_name","phone","instagram_handle","website","notes"];
+const NL_MERGE_FIELDS = ["first_name","last_name","phone","instagram_handle","website","how_heard","notes"];
 
 // Parse pasted text. Google Sheets copy = tab-separated; CSV export = comma + optional quotes.
 function parseDelimited(text){
@@ -1753,6 +1756,7 @@ function detectSheetFields(headers){
     if(/insta|handle|\big\b/.test(x)) return "instagram_handle";
     if(/phone|mobile|cell|tel/.test(x)) return "phone";
     if(/web|site|url/.test(x)) return "website";
+    if(/how.*(hear|heard|find|found)|hear about|referr|source/.test(x)) return "how_heard";
     if(/note/.test(x)) return "notes";
     if(/full ?name|^name$|contact ?name/.test(x)) return "full_name";
     return null;
@@ -1806,6 +1810,7 @@ function buildSheetPlan(text, contacts){
         id:`ind_${uid()}`, record_type:"individual",
         first_name:rec.first_name||"", last_name:rec.last_name||"", email,
         phone:rec.phone||"", instagram_handle:rec.instagram_handle||"", website:rec.website||"",
+        how_heard:rec.how_heard||"",
         notes:rec.notes||"", relationship_status:"warm", relationship_types:[],
         next_action:"", next_action_date:null, next_actions:[], touchpoints:[],
         tags:[], interests:[], linked_grants:[],
