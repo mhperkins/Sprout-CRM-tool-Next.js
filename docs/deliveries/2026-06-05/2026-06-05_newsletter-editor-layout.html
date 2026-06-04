@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Newsletter editor layout</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1a1a1a; --acid:#c6f135; --banana:#ffd84d; --fuchsia:#e83e8c; --cyan:#3ecfdc;
+    --paper:#faf9f5; --card:#ffffff; --g200:#e5e5e2; --g500:#7a7a76; --g600:#54544f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',sans-serif;background:var(--paper);color:var(--ink);
+    padding:40px 20px;line-height:1.5;display:flex;justify-content:center}
+  .slide{width:100%;max-width:880px}
+  .hd{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .tag{font-size:12px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;
+    background:var(--acid);color:var(--ink);padding:5px 12px;border-radius:999px}
+  .date{font-size:13px;color:var(--g500);font-weight:700}
+  h1{font-size:34px;font-weight:900;line-height:1.12;margin:14px 0 6px}
+  .sub{font-size:16px;color:var(--g600);margin-bottom:26px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{background:var(--card);border:1px solid var(--g200);border-radius:14px;
+    padding:20px 22px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .card.full{grid-column:1 / -1}
+  .ct{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:900;
+    letter-spacing:1px;text-transform:uppercase;color:var(--g500);margin-bottom:12px}
+  .dot{width:11px;height:11px;border-radius:3px;flex:none}
+  .d-fuchsia{background:var(--fuchsia)} .d-cyan{background:var(--cyan)}
+  .d-banana{background:var(--banana)} .d-ink{background:var(--ink)}
+  .card h2{font-size:19px;font-weight:900;margin-bottom:8px}
+  .card p{font-size:14.5px;color:var(--g600)}
+  .card p code{background:var(--paper);border:1px solid var(--g200);border-radius:5px;
+    padding:1px 6px;font-size:13px;font-family:ui-monospace,Menlo,monospace}
+  ul{list-style:none;margin-top:10px}
+  ul li{font-size:14px;color:var(--g600);padding:4px 0 4px 22px;position:relative}
+  ul li::before{content:"→";position:absolute;left:0;color:var(--fuchsia);font-weight:900}
+  .foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:26px;
+    padding-top:18px;border-top:2px solid var(--g200)}
+  .pill{font-size:12.5px;font-weight:700;padding:5px 13px;border-radius:999px;
+    border:1px solid var(--g200);background:#fff;color:var(--g600)}
+  .pill b{color:var(--ink)}
+  .hash{font-family:ui-monospace,Menlo,monospace;background:var(--ink);color:var(--acid)}
+  .layout{display:flex;gap:10px;margin-top:6px}
+  .col{border:2px dashed var(--g200);border-radius:10px;padding:12px 10px;font-size:12px;
+    font-weight:700;color:var(--g600);text-align:center}
+  .col.left{flex:0 0 38%} .col.right{flex:1}
+  .box{background:var(--paper);border:1px solid var(--g200);border-radius:7px;
+    padding:7px 4px;margin:5px 0;font-size:11.5px}
+  .box.hi{background:var(--acid);border-color:var(--acid);color:var(--ink);font-weight:900}
+  .box.send{background:var(--fuchsia);border-color:var(--fuchsia);color:#fff;font-weight:900}
+  .box.prev{background:var(--cyan);border-color:var(--cyan);color:var(--ink);font-weight:900;padding:18px 4px}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="hd">
+    <span class="tag">Delivered</span>
+    <span class="date">2026-06-05 · Sprout CRM Next</span>
+  </div>
+  <h1>Newsletter editor: Send card on the right,<br>preview that fits the whole template</h1>
+  <p class="sub">A single-file UI layout pass on the in-app newsletter editor. Effort: low.</p>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="ct"><span class="dot d-fuchsia"></span>Send card → right column</div>
+      <h2>Sections sit near the top now</h2>
+      <p>The Send card used to live in the left form column between <b>Details</b> and <b>Sections</b>, pushing the fill-in fields way down. It now sits in a new right-side column above the preview.</p>
+      <ul>
+        <li>Left column: Details → Auto-fill → Sections</li>
+        <li>Test send + Send-to-list now side by side</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="ct"><span class="dot d-cyan"></span>Preview auto-sizes</div>
+      <h2>Fits the full newsletter</h2>
+      <p>The iframe was capped at <code>calc(100vh - 180px)</code> with an inner scrollbar. A <code>fitPreview()</code> now reads <code>scrollHeight</code> on every <code>onLoad</code> and sets the height to match.</p>
+      <ul>
+        <li>No inner scrollbar — the page scrolls</li>
+        <li>Grows when content runs longer; re-measures as you type</li>
+      </ul>
+    </div>
+
+    <div class="card full">
+      <div class="ct"><span class="dot d-banana"></span>The new layout</div>
+      <div class="layout">
+        <div class="col left">LEFT
+          <div class="box">Details</div>
+          <div class="box hi">Sections ↑ near top</div>
+        </div>
+        <div class="col right">RIGHT
+          <div class="box send">Send (Test · List)</div>
+          <div class="box prev">Preview · full template ↕</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <span class="pill">file <b>components/CRMManager.jsx</b></span>
+    <span class="pill">build <b>✓ passes</b></span>
+    <span class="pill">branch <b>main</b></span>
+    <span class="pill hash">b3036f4</span>
+  </div>
+</div>
+</body>
+</html>
