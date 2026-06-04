@@ -2332,6 +2332,16 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
   const [testTo,setTestTo]=useState("");
   const [listSeg,setListSeg]=useState("all");
   const [sending,setSending]=useState("");   // "" | "test" | "list"
+  // Auto-size the preview iframe to its content so the whole template shows without an inner
+  // scrollbar; the page scrolls instead. Re-measures on every srcDoc reload (i.e. as you type).
+  const previewRef=useRef(null);
+  const [previewH,setPreviewH]=useState(700);
+  const fitPreview=()=>{
+    try{
+      const doc=previewRef.current&&previewRef.current.contentDocument;
+      if(doc){ const h=doc.documentElement.scrollHeight||doc.body.scrollHeight; if(h) setPreviewH(h); }
+    }catch{}
+  };
   async function runPolish(fieldId,label,current,apply){
     if(!current||!current.trim()){ showToast("Write some notes first","err"); return; }
     setBusy(b=>({...b,[fieldId]:"polish"}));
@@ -2511,36 +2521,6 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
             <div className="fg"><label className="fl">Month label</label><input className="fi" value={draft.month} onChange={e=>s("month",e.target.value)} placeholder="e.g. June 2026"/></div>
           </div></div>
 
-          {/* ── Send ── */}
-          <div className="card"><div className="card-hd"><span className="card-ttl">Send</span><span style={{fontSize:11,color:"var(--g500)"}}>via hello@sproutsociety.org</span></div><div className="card-bd">
-            <div className="fg"><label className="fl">Send passphrase</label><input type="password" className="fi" value={sendSecret} onChange={e=>setSendSecret(e.target.value)} placeholder="required to send" autoComplete="off"/></div>
-
-            <div style={{marginTop:4}}>
-              <label className="fl">Test send</label>
-              <div style={{fontSize:11,color:"var(--g500)",margin:"2px 0 6px",lineHeight:1.5}}>Send this draft to specific addresses (subject prefixed <b>[TEST]</b>). Comma or space separated.</div>
-              <input className="fi" value={testTo} onChange={e=>setTestTo(e.target.value)} placeholder="you@example.com, friend@example.com"/>
-              <button className="btn btn-ghost btn-sm" style={{marginTop:8}} disabled={sending==="test"} onClick={()=>doSend("test")}>{sending==="test"?"Sending…":"✉️ Send test"}</button>
-            </div>
-
-            <div style={{borderTop:"1px solid var(--g200)",margin:"14px 0"}}/>
-
-            <div>
-              <label className="fl">Send to list</label>
-              <div style={{fontSize:11,color:"var(--g500)",margin:"2px 0 6px",lineHeight:1.5}}>Goes to every contact in the bucket with an email. Enabled once the issue is <b>Approved</b>.</div>
-              <div className="frow">
-                <div className="fg"><select className="fi" value={listSeg} onChange={e=>setListSeg(e.target.value)}>
-                  <option value="all">All buckets</option>
-                  <option value="community">Community</option>
-                  <option value="donor">Donors</option>
-                  <option value="prospect">Prospects</option>
-                </select></div>
-                <div style={{fontSize:12,color:"var(--g600)",alignSelf:"center",whiteSpace:"nowrap"}}>{segCount(listSeg)} with email</div>
-              </div>
-              <button className="btn btn-acid btn-sm" style={{marginTop:8}} disabled={draft.status!=="approved"||sending==="list"} onClick={()=>doSend("list")}>{sending==="list"?"Sending…":"🚀 Send to list"}</button>
-              {draft.status!=="approved"&&<div style={{fontSize:11,color:"var(--g500)",marginTop:6}}>Set status to <b>Approved</b> above to enable.</div>}
-            </div>
-          </div></div>
-
           {isMonthly&&(
             <div className="card"><div className="card-hd"><span className="card-ttl">Auto-fill from CRM</span></div><div className="card-bd">
               <div style={{fontSize:11,color:"var(--g500)",marginBottom:10,lineHeight:1.5}}>
@@ -2657,11 +2637,45 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
           </div></div>
         </div>
 
-        {/* ── Preview ── */}
-        <div className="card" style={{position:"sticky",top:16}}>
-          <div className="card-hd"><span className="card-ttl">Preview</span><span style={{fontSize:11,color:"var(--g500)"}}>live</span></div>
-          <div style={{height:"calc(100vh - 180px)",minHeight:480,background:"#F7F7F6",borderRadius:"0 0 10px 10px",overflow:"hidden"}}>
-            <iframe title="newsletter-preview" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" srcDoc={previewHtml} style={{width:"100%",height:"100%",border:"none"}}/>
+        {/* ── Right column: Send + Preview ── */}
+        <div style={{display:"flex",flexDirection:"column",gap:16}}>
+
+          {/* ── Send ── */}
+          <div className="card"><div className="card-hd"><span className="card-ttl">Send</span><span style={{fontSize:11,color:"var(--g500)"}}>via hello@sproutsociety.org</span></div><div className="card-bd">
+            <div className="fg"><label className="fl">Send passphrase</label><input type="password" className="fi" value={sendSecret} onChange={e=>setSendSecret(e.target.value)} placeholder="required to send" autoComplete="off"/></div>
+
+            <div className="frow" style={{alignItems:"flex-start"}}>
+              <div style={{flex:1}}>
+                <label className="fl">Test send</label>
+                <div style={{fontSize:11,color:"var(--g500)",margin:"2px 0 6px",lineHeight:1.5}}>Send this draft to specific addresses (subject prefixed <b>[TEST]</b>). Comma or space separated.</div>
+                <input className="fi" value={testTo} onChange={e=>setTestTo(e.target.value)} placeholder="you@example.com, friend@example.com"/>
+                <button className="btn btn-ghost btn-sm" style={{marginTop:8}} disabled={sending==="test"} onClick={()=>doSend("test")}>{sending==="test"?"Sending…":"✉️ Send test"}</button>
+              </div>
+
+              <div style={{flex:1}}>
+                <label className="fl">Send to list</label>
+                <div style={{fontSize:11,color:"var(--g500)",margin:"2px 0 6px",lineHeight:1.5}}>Goes to every contact in the bucket with an email. Enabled once the issue is <b>Approved</b>.</div>
+                <div className="frow">
+                  <div className="fg"><select className="fi" value={listSeg} onChange={e=>setListSeg(e.target.value)}>
+                    <option value="all">All buckets</option>
+                    <option value="community">Community</option>
+                    <option value="donor">Donors</option>
+                    <option value="prospect">Prospects</option>
+                  </select></div>
+                  <div style={{fontSize:12,color:"var(--g600)",alignSelf:"center",whiteSpace:"nowrap"}}>{segCount(listSeg)} with email</div>
+                </div>
+                <button className="btn btn-acid btn-sm" style={{marginTop:8}} disabled={draft.status!=="approved"||sending==="list"} onClick={()=>doSend("list")}>{sending==="list"?"Sending…":"🚀 Send to list"}</button>
+                {draft.status!=="approved"&&<div style={{fontSize:11,color:"var(--g500)",marginTop:6}}>Set status to <b>Approved</b> above to enable.</div>}
+              </div>
+            </div>
+          </div></div>
+
+          {/* ── Preview ── */}
+          <div className="card">
+            <div className="card-hd"><span className="card-ttl">Preview</span><span style={{fontSize:11,color:"var(--g500)"}}>live · full template</span></div>
+            <div style={{height:previewH,minHeight:480,background:"#F7F7F6",borderRadius:"0 0 10px 10px",overflow:"hidden"}}>
+              <iframe ref={previewRef} title="newsletter-preview" onLoad={fitPreview} sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" srcDoc={previewHtml} style={{width:"100%",height:"100%",border:"none"}}/>
+            </div>
           </div>
         </div>
       </div>

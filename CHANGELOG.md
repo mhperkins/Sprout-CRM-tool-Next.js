@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-05 — Newsletter editor layout: Send card moved right, preview auto-sizes to the full template
+
+App code only (`components/CRMManager.jsx`). Effort: low (single-file UI layout change). `npm run build` passes.
+
+Two layout fixes to the newsletter editor (`NewsletterEditor`):
+
+- **Send card moved to the right column.** It used to sit in the left form column between Details and Sections, pushing the section-fill fields far down. The left column is now Details → (Auto-fill) → Sections, so the sections sit near the top. The Send card now lives in a new right-side column above the preview, with Test send and Send-to-list laid out side by side (the right column is wide enough).
+- **Preview fits the whole template.** The iframe was capped at `calc(100vh - 180px)` with an inner scrollbar. Added a `previewRef` + `previewH` state and a `fitPreview()` that reads the document `scrollHeight` on each `onLoad`; the container height now equals the content height (min 480), so the entire newsletter shows with no inner scrollbar. The page scrolls instead, and the preview grows automatically when the filled-in version runs longer than the empty template. Re-measures live as you type.
+
+---
+
 ## 2026-06-05 — Non-techy newsletter tutorial with real annotated screenshots
 
 Docs only, no app code or data change. Effort: medium.
