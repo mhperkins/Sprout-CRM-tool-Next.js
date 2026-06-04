@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery · Newsletter Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#0a0a0a;--paper:#f4f4f1;--acid:#c6c902;--banana:#fad100;--fuchsia:#e5009e;--cyan:#22b6c4;--g600:#4b5563;--g500:#6b7280;--g200:#e5e7eb;--g100:#f3f4f6}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Lato',sans-serif;background:var(--ink);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:30px}
+  .slide{width:100%;max-width:980px;background:var(--paper);color:var(--ink);border-radius:22px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.5)}
+  .top{background:var(--ink);color:#fff;padding:30px 38px;border-bottom:6px solid var(--acid);display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px}
+  .top .kick{font-size:12px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--banana)}
+  .top h1{margin:8px 0 0;font-size:30px;font-weight:900;line-height:1.1}
+  .top .leaf{font-size:34px}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .badge{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:700}
+  .badge.acid{background:var(--acid);color:var(--ink);border:none}
+  .body{padding:30px 38px 36px}
+  .lead{font-size:16px;color:var(--g600);margin:0 0 22px;max-width:720px}
+  .lead b{color:var(--ink)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.grid{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--g200);border-radius:14px;padding:18px 20px}
+  .card h3{margin:0 0 10px;font-size:15px;font-weight:900;display:flex;align-items:center;gap:8px}
+  .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .d-fu{background:var(--fuchsia)}.d-cy{background:var(--cyan)}.d-ac{background:var(--acid)}.d-bk{background:var(--ink)}
+  .card ul{margin:0;padding-left:18px}
+  .card li{font-size:13.5px;color:var(--g600);margin-bottom:6px;line-height:1.45}
+  .card li b{color:var(--ink)}
+  .flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .stg{background:var(--g100);border-radius:8px;padding:6px 11px;font-size:12px;font-weight:800}
+  .stg.sent{background:var(--ink);color:var(--banana)}
+  .arw{color:#cbd0d6;font-weight:900}
+  .files{margin-top:18px;background:#fff;border:1px solid var(--g200);border-radius:14px;padding:16px 20px}
+  .files .ttl{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--g500);margin-bottom:10px}
+  .frow{display:flex;align-items:center;gap:10px;font-size:13.5px;padding:4px 0}
+  .frow code{background:var(--g100);border-radius:5px;padding:2px 7px;font-size:12.5px}
+  .star{color:var(--fuchsia);font-weight:900}
+  .foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:22px;padding-top:18px;border-top:1px dashed var(--g200);font-size:12.5px;color:var(--g500)}
+  .foot code{background:var(--ink);color:var(--banana);border-radius:6px;padding:3px 9px;font-weight:700}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="top">
+      <div>
+        <div class="kick">Sprout CRM · Delivery · 2026-06-05</div>
+        <h1>Newsletter Tutorial — for non-techy users</h1>
+        <div class="badges">
+          <span class="badge acid">Docs only</span>
+          <span class="badge">Effort: medium</span>
+          <span class="badge">10 steps · 10 screenshots</span>
+          <span class="badge">No app code change</span>
+        </div>
+      </div>
+      <div class="leaf">🌱</div>
+    </div>
+
+    <div class="body">
+      <p class="lead">A plain-English HTML walkthrough of the newsletter feature for people who have <b>never seen the app</b>. Real annotated screenshots captured from the running app — no jargon, just click-by-click. Includes a <b>portable single-file version</b> with every image baked in, so it opens or emails anywhere.</p>
+
+      <div class="grid">
+        <div class="card">
+          <h3><span class="dot d-fu"></span> What it walks through</h3>
+          <ul>
+            <li><b>Pick a template</b> — Monthly Roundup vs Quick Hit</li>
+            <li><b>The editor</b> — worksheet left, live preview right</li>
+            <li><b>Write sections</b> — the ✨ Polish &amp; 🖼 Add image buttons</li>
+            <li><b>Test on yourself first</b>, then approve &amp; send to a list</li>
+            <li><b>Find it again</b> under Saved newsletters</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3><span class="dot d-cy"></span> How it was built</h3>
+          <ul>
+            <li>Drove the <b>live dev server</b> with Playwright to capture 10 hi-res shots</li>
+            <li><b>Numbered pins</b> (percentage-positioned, so they scale) + plain legends</li>
+            <li>Sprout palette — ink / acid / banana / fuchsia / cyan, Lato</li>
+            <li>Inliner baked images to <b>base64</b> → 0.95 MB portable file</li>
+            <li>Both throwaway scripts deleted after</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h3><span class="dot d-ac"></span> The four stages, shown as a visual rail</h3>
+        <div class="flow">
+          <span class="stg">Draft</span><span class="arw">→</span>
+          <span class="stg">Pending</span><span class="arw">→</span>
+          <span class="stg">Approved</span><span class="arw">→</span>
+          <span class="stg sent">Sent</span>
+        </div>
+      </div>
+
+      <div class="files">
+        <div class="ttl">Files shipped</div>
+        <div class="frow"><span class="star">★</span><code>docs/guides/newsletter-tutorial-portable.html</code> <span style="color:var(--g500)">— the shareable one (images embedded)</span></div>
+        <div class="frow">📄 <code>docs/guides/newsletter-tutorial.html</code> <span style="color:var(--g500)">— lighter, reads from the shots folder</span></div>
+        <div class="frow">🖼 <code>docs/guides/newsletter-shots/</code> <span style="color:var(--g500)">— 10 PNG screenshots</span></div>
+      </div>
+
+      <div class="foot">
+        <span>Committed + pushed to <b>main</b> · github.com/mhperkins/Sprout-CRM-tool-Next.js</span>
+        <code>57c0422</code>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
