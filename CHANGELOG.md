@@ -2,6 +2,12 @@
 
 ---
 
+## 2026-06-03 — Sheet reconciliation pass (analysis only, no changes)
+
+Deduped the three real contact sheets surfaced by the links pull against the live CRM roster (~130 contacts, matched by email): **Check-In (21 rows), Show N Tell – Interest Form (23 rows), Luma Attendees/Subscribers (45 rows) → 0 net-new contacts.** Everyone with real contact info is already in the CRM. The Luma sheet is the original donor/member base; Show N Tell "guest names" are headcount notes, not leads. Flagged (not acted on): a Luma row with display name "Tyler Ricci" but first/last "Jake Fleshner". `sprout_newest_followers` excluded per Max — it's an IG triage sheet, not contacts. No code or data change.
+
+---
+
 ## 2026-06-03 — "How did you hear about us" contact field + key-links reference memory
 
 App code + data + memory change (`lib/schemas.js`, `components/CRMManager.jsx`, `mcp/server.js`; `npm run build` passes).
