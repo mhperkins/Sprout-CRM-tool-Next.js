@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-06-04 — Monthly Sprout newsletter intake form + Comms agent brain-dump/don't-guess workflow
+
+Virtual-agency docs only (no app code or CRM data change). Effort: medium.
+
+**Goal:** pair the existing SnT event-recap form with a monthly newsletter intake form so Max brain-dumps and the Communications agent writes a clean first draft, filling what it can, leaving unknowns blank, never guessing, and flagging the gaps.
+
+**Changes:**
+- **Rewrote** `virtual-agency/employees/Communications/briefs/_newsletter-intake-TEMPLATE.md` to map 1:1 to the live compact **Monthly Sprout** template (`COMPACT_SECTIONS` in `lib/newsletter.js`): headline, intro/thank-you, featured event (title/recap/photo), coworking (note + Thursday happy hour), membership ask, community spotlight (name/blurb/photo), upcoming events (repeat), past events (repeat). The old version mapped to the retired classic roundup. Every field instructs: brain-dump messy notes, leave unknowns blank, do not guess.
+- **Updated** `communications-manager-system-prompt_v1.md`: tooling table points at the compact template + the section-mapped intake; Newsletter Draft Protocol rewritten with two hard rules — (a) input is a stream-of-consciousness dump to be tightened into clear/concise/punchy Sprout-voice copy without inventing facts, and (b) never guess: leave blank and end with a "Couldn't fill — need from you" list. Output Standards + Session Workflow aligned (dropped the old bracket-fill/ask-before-inventing lines).
+- **Added** `briefs/SnTv1_newsletter-intake-TEMPLATE.md` — Max's filled May 2026 intake (Sprout n Tell Vol.1 featured; Barnun happy hour + Co-Work past; Pat Hopkins spotlight; Sprout n Tell Vol.2 6/26 upcoming). The blank reusable `_newsletter-intake-TEMPLATE.md` was restored so the copy-the-template workflow persists.
+
+---
+
 ## 2026-06-04 — Newsletter preview: fix "See more events" hijacking the pane + make every link work + add Instagram button
 
 App + template change (`components/CRMManager.jsx` + `lib/newsletter.js`; `npm run build` passes). Effort: diagnose medium / fix low.

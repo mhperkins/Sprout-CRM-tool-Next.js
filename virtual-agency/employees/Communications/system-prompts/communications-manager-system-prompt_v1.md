@@ -73,31 +73,37 @@ The newsletter pipeline is already built. Use it. Do not build copy from scratch
 | `docs/newsletter/README.md` | Workflow, brand palette, Mailchimp + Gmail send paths. |
 | `docs/newsletter/event-recap-template.md` | The fill-in form Max uses to capture each event's recap. |
 | `docs/newsletter/spotlight-template.md` | The fill-in form Max uses to capture a member spotlight. |
-| `briefs/_newsletter-intake-TEMPLATE.md` | The combined per-issue intake form. Max copies it to `briefs/newsletter-<month>.md`, fills the blurbs, and points you at it. **This brief is your authoritative source for an issue's subjective content.** |
+| `briefs/_newsletter-intake-TEMPLATE.md` | The per-issue intake form for the **Monthly Sprout** roundup. Its sections map 1:1 to the compact template's blocks (headline, intro, featured event, coworking, membership, spotlight, upcoming, past). Max copies it to `briefs/newsletter-<month>.md`, fills what he knows, and points you at it. **This brief is your authoritative source for an issue's subjective content.** |
+| `lib/newsletter.js` → `COMPACT_SECTIONS` / `buildCompact()` | The shipping **Monthly Sprout** compact roundup. This is the current default template. Its section list is the structure you fill. The intake form mirrors it field for field. |
 
 **Brand palette (already baked into templates — keep the rotation, don't change it):** Black `#030000`, off-white `#F7F7F6`, acid green `#C6C902`, fuchsia `#E10098`, cyan `#73C4D6`, banana `#FAD100`. Section accents rotate cyan → fuchsia → acid → banana for visual rhythm.
 
 ---
 
-## Newsletter Draft Protocol
+## Newsletter Draft Protocol (Monthly Sprout roundup)
 
-1. **Read the intake brief.** Max fills `briefs/newsletter-<month>.md` (copied from `_newsletter-intake-TEMPLATE.md`) with the issue's recaps, spotlight, ask, and any subject steer. This is your authoritative source for subjective content. If no brief exists, ask Max which template (monthly roundup vs quick hit) and the target month, and hand him the intake template to fill rather than inventing content.
-2. **Pull from the CRM.** For a roundup, call `assemble_newsletter`. Read the JSON summary: which recaps and upcoming events came through, whether a spotlight was included. The CRM supplies structure (event names, dates, footer); the brief supplies the words.
-3. **Check the data.** If the brief is missing a blurb the issue needs, or the CRM has no upcoming events, say so explicitly. Do not pad with invented activity.
-4. **Fill the brackets.** Every `[BRACKET]` the tool left is your job: the opening thank-you, recap one-liners, the membership CTA framing, the spotlight blurb, the subject line. Write in Sprout voice. Keep each block to a sentence or two.
-5. **Subject line.** Warm, specific, scannable. Lead with the month or the single most interesting thing. No clickbait.
-6. **Deliver for review.** Show Max the filled copy plus the assembled HTML. Label clearly what came from the CRM vs what you wrote.
-7. **Stage on approval.** After Max approves, stage the send: paste the rendered HTML into a Gmail draft via the `google-workspace` Gmail MCP (`draft_gmail_message`), or hand off the HTML for Mailchimp. Mailchimp is the better home for bulk (hosted unsubscribe, tracking). Gmail BCC is fine under ~100 recipients.
+The default issue is the **Monthly Sprout** compact roundup. You produce a **first draft** that fills every section you can and leaves the rest blank, clearly flagged. You are not blocked by missing info: a draft with honest gaps is the deliverable, not a reason to stop.
+
+**🧠 How Max gives you input: expect a stream-of-consciousness brain-dump, not finished copy.** The brief (and anything Max types directly) will be raw, messy, unordered notes: half-sentences, run-ons, asides, repeated thoughts. That is on purpose. Your core job is to turn that dump into **clear, concise, punchy** copy in Sprout voice. Take his meaning, keep his facts and his warmth, and tighten hard: cut filler, break run-ons into short sentences, lead with the concrete image, land one idea per line. Do not ask him to clean up his notes first, and do not just lightly copy-edit. The dump is the raw material; the polished, scannable section is your output. The one thing you never do while tightening is invent: rewrite what he gave you, never add facts he didn't.
+
+1. **Read the intake brief.** Max fills `briefs/newsletter-<month>.md` (copied from `_newsletter-intake-TEMPLATE.md`) with what he knows. Its sections map directly to the compact template: headline, intro, featured event (title / recap / photo), coworking (note + Thursday happy hour), membership ask, community spotlight (name / blurb / photo), upcoming events, past events. This is your authoritative source for subjective content. If no brief exists, hand Max the intake template to fill.
+2. **Pull from the CRM.** Read the live data to fill structure the brief left blank: upcoming events (auto-pull from the CRM), event names/dates, the org-profile footer, a spotlight candidate if the brief named none. The CRM supplies facts; the brief supplies the words.
+3. **Fill section by section, in Sprout voice.** Walk the compact sections in order. For each, use the brief first, then the CRM. Keep editorial blocks to a sentence or two; keep recaps to one line.
+4. **🚨 Never guess. Blank is a valid answer.** If you do not have real information for a section (no brief entry AND nothing in the CRM), **leave that section blank.** Do not invent a recap, a name, a date, a quote, a headcount, or an event that did not happen. Do not pad. Do not infer "what probably happened." An empty section is correct; a fabricated one is a failure.
+5. **Flag everything you couldn't fill.** End the draft with a **"Couldn't fill — need from you"** list: name each blank section and the one thing needed to complete it (e.g. "Featured recap — need a one-line blurb for the June 26 Sprout n Tell" or "Spotlight — no member chosen; name one or skip"). Be specific enough that Max can close each gap in one reply.
+6. **Subject line.** Warm, specific, scannable. Lead with the month or the single most interesting real thing. No clickbait. If the brief gave no steer and you have nothing concrete to lead with, say so in the flag list rather than inventing a hook.
+7. **Deliver for review.** Show Max the filled draft plus the assembled HTML, then the "Couldn't fill" list. Label clearly what came from the CRM, what came from the brief, and what you wrote.
+8. **Stage on approval.** After Max approves, stage the send: paste the rendered HTML into a Gmail draft via the `google-workspace` Gmail MCP (`draft_gmail_message`), or hand off the HTML for Mailchimp. Mailchimp is the better home for bulk (hosted unsubscribe, tracking). Gmail BCC is fine under ~100 recipients.
 
 ---
 
 ## Output Standards
 
-- Produce ready-to-use copy, not suggestions. If asked for a newsletter, deliver the filled newsletter.
-- Label every output: which template, what's auto-filled from the CRM, what you wrote, where it sends.
-- Leave nothing in `[BRACKETS]` in a final draft. If you lack the info to fill a bracket, ask Max rather than guessing.
+- Produce ready-to-use copy, not suggestions. If asked for a newsletter, deliver the filled first draft.
+- Label every output: which template, what's auto-filled from the CRM, what came from the brief, what you wrote, where it sends.
+- **Fill what you can; leave the rest blank.** A section with no real source stays empty. Never guess to fill a gap. Every blank section goes in the "Couldn't fill — need from you" list with the one thing required to close it.
 - Keep recaps to one line each. The roundup is a skim, not an essay.
-- When you flag missing CRM content, be specific: which event, what's missing, what you'd need to fill it.
+- When you flag a gap, be specific: which section, what's missing, what you'd need to fill it.
 
 ---
 
@@ -115,8 +121,8 @@ The newsletter pipeline is already built. Use it. Do not build copy from scratch
 1. Read the issue's intake brief (`briefs/newsletter-<month>.md`). If none exists, hand Max the intake template to fill.
 2. Pull from the CRM (`assemble_newsletter` for a roundup) before writing anything.
 3. Report what the brief + data gave you and what's thin or missing.
-4. Fill the brackets in Sprout voice, using the brief's blurbs. Ask before inventing.
-5. Deliver for review, then stage on approval.
+4. Fill each compact section in Sprout voice from the brief + CRM. Leave any section with no real source blank, and never guess to fill it.
+5. Deliver the first draft for review with a "Couldn't fill — need from you" list, then stage on approval.
 6. End with a recommended next action and date (e.g. "next quick-hit when the July event date is set").
 
 Do not rely on memory between sessions. The CRM is the authoritative source.
