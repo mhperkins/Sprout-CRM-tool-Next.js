@@ -2,6 +2,28 @@
 
 ---
 
+## 2026-06-04 — Newsletter preview: fix "See more events" hijacking the pane + make every link work + add Instagram button
+
+App + template change (`components/CRMManager.jsx` + `lib/newsletter.js`; `npm run build` passes). Effort: diagnose medium / fix low.
+
+**The bug:** clicking **"See more events"** in the compact-newsletter preview reloaded the iframe and rendered the live CRM **Dashboard** inside the preview pane.
+
+**Root cause:** the preview is an `<iframe srcDoc=…>`, and a `srcdoc` document inherits its base URL from the parent page (`localhost:3000/`). The email's `<a href="#events">` resolved to `http://localhost:3000/#events`, so clicking it navigated the iframe to the live app, which booted and rendered the Dashboard.
+
+**Fix (preview-only):**
+- New `previewHtml` `useMemo` in `NewsletterEditor` injects `<base href="about:srcdoc">` into the `<head>` so fragment links scroll within the iframe instead of loading the app. The stored/sent `built.html` is untouched.
+- Sandboxed the preview iframe (`sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"`) — scripts off as defense-in-depth, popups allowed so `target="_blank"` links open.
+- Moved `id="events"` off a stray `<a>` (which sat between `</tr>` and `<tr>` and got foster-parented out of the table) onto a real `<tr id="events">`, so the scroll target is reliable.
+
+**Then made the other links real:**
+- Membership button got `target="_blank" rel="noopener noreferrer"`.
+- Footer website + IG handle changed from plain text to clickable links (website https-normalized; IG → `instagram.com/<handle>`).
+- Added a new fuchsia "● Follow @handle →" Instagram button in the intro area (there was no IG button before; the handle only appeared as footer text). Pulls from `profile.igHandle`; blank → placeholder. Solid fuchsia + `●` glyph since email clients don't render CSS gradients/SVG.
+
+**Note:** the base-injection + scroll-target + membership-`target` work landed in commit `b4be500` (bundled with the Polish version-history change below). This commit adds the footer links + IG button (`lib/newsletter.js`) and the sandbox `allow-popups` line (`CRMManager.jsx`). Email caveat: Gmail/Outlook strip `id` anchors, so the scroll only works in the in-app preview + hosted view; `target="_blank"` does ship to the real email.
+
+---
+
 ## 2026-06-04 — Newsletter Polish: non-destructive result card with version history
 
 App code change (`components/CRMManager.jsx`; `npm run build` passes). Effort: medium.

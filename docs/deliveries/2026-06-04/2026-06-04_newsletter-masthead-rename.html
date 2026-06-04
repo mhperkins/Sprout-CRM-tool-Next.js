@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Newsletter Masthead Rename</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Lato',Helvetica,Arial,sans-serif;
+    background:#0c0c0e;
+    color:#1a1a1a;
+    min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    padding:40px;
+  }
+  .slide {
+    width:100%; max-width:860px;
+    background:#FFFFFF;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 24px 70px rgba(0,0,0,.55);
+  }
+  .top { padding:34px 40px 26px; }
+  .kicker {
+    font-size:12px; font-weight:700; letter-spacing:3px;
+    text-transform:uppercase; color:#8a8a86; margin-bottom:10px;
+  }
+  h1 { font-size:30px; font-weight:900; letter-spacing:-.5px; line-height:1.12; }
+  h1 .acid { color:#9da300; }
+  .acid-rule { height:4px; background:#C6C902; margin:22px 0 0; }
+  .badges { display:flex; flex-wrap:wrap; gap:10px; padding:24px 40px 6px; }
+  .badge {
+    font-size:12px; font-weight:700; letter-spacing:.4px;
+    padding:7px 14px; border-radius:999px;
+  }
+  .b-file { background:#e6f9fb; color:#0a7d8a; }
+  .b-build { background:#eafbe6; color:#3a7d18; }
+  .b-scope { background:#fbf3e6; color:#9a6a12; }
+  .b-commit { background:#1a1a1a; color:#C6C902; font-family:ui-monospace,Menlo,monospace; }
+  .cards { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:22px 40px 8px; }
+  .card {
+    border:1px solid #ececec; border-radius:12px; padding:18px 18px 16px;
+  }
+  .card h3 {
+    font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+    color:#8a8a86; margin-bottom:12px;
+  }
+  .mast {
+    background:#FFFFFF; border:1px solid #ececec; border-radius:8px;
+    padding:14px 16px; display:flex; justify-content:flex-end;
+  }
+  .mast .lbl {
+    text-align:right; font-size:11px; font-weight:700; letter-spacing:2px;
+    text-transform:uppercase; color:#030000; line-height:1.5;
+  }
+  .mast .lbl .mo { color:#8a8a86; }
+  .strike { text-decoration:line-through; color:#c0392b; opacity:.65; }
+  .arrow { color:#8a8a86; font-weight:900; margin:8px 0; text-align:center; font-size:14px; }
+  .new { color:#9da300; }
+  .kept { font-size:13.5px; line-height:1.7; color:#444; }
+  .kept li { list-style:none; padding-left:20px; position:relative; margin-bottom:8px; }
+  .kept li:before { content:'•'; position:absolute; left:4px; color:#C6C902; font-weight:900; }
+  .foot {
+    padding:18px 40px 30px; display:flex; justify-content:space-between; align-items:center;
+    border-top:1px solid #f2f2f2; margin-top:14px;
+  }
+  .foot .left { font-size:12.5px; color:#8a8a86; }
+  .foot .left b { color:#1a1a1a; }
+  .foot .branch {
+    font-family:ui-monospace,Menlo,monospace; font-size:12px;
+    background:#f4f4f0; color:#444; padding:6px 12px; border-radius:6px;
+  }
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="top">
+      <div class="kicker">Sprout CRM Next · Delivery · 2026-06-04</div>
+      <h1>Newsletter masthead renamed<br>to <span class="acid">Monthly Sprout</span></h1>
+      <div class="acid-rule"></div>
+    </div>
+
+    <div class="badges">
+      <span class="badge b-file">lib/newsletter.js</span>
+      <span class="badge b-build">✓ build passes</span>
+      <span class="badge b-scope">1 line · display-only</span>
+      <span class="badge b-commit">fca3d84 · main</span>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <h3>The change</h3>
+        <div class="mast">
+          <div class="lbl"><span class="strike">Monthly Roundup</span><br><span class="mo">May 2026</span></div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="mast">
+          <div class="lbl"><span class="new">Monthly Sprout</span><br><span class="mo">May 2026</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Scope &amp; left untouched</h3>
+        <ul class="kept">
+          <li>Masthead label in <b>buildCompact()</b> — line 233</li>
+          <li>Picker name "Monthly Roundup" — unchanged</li>
+          <li>&lt;title&gt; tag — unchanged</li>
+          <li>CRMManager.jsx refactor — left uncommitted (open handoff)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot">
+      <div class="left">Committed &amp; pushed · <b>1 file</b>, +9 / -1 · CHANGELOG updated</div>
+      <div class="branch">main → fca3d84</div>
+    </div>
+  </div>
+</body>
+</html>

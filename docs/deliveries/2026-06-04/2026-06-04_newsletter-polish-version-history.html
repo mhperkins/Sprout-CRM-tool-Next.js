@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Newsletter Polish — non-destructive version history</title>
+<style>
+  :root{
+    --black:#030000; --cyan:#73C4D6; --fuchsia:#E10098; --acid:#C6C902; --banana:#FAD100;
+    --acid-lt:#E9E99A; --cyan-lt:#C7E7EF; --banana-lt:#FEF4C1; --fuchsia-lt:#FFCDF0;
+    --g50:#F7F7F6; --g100:#ECECEA; --g200:#D9D9D6; --g500:#6b6b66; --g700:#3a3a38;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Lato','Segoe UI',Helvetica,Arial,sans-serif;background:#1a1a1a;color:var(--g700);
+    padding:40px 20px;display:flex;justify-content:center;}
+  .slide{width:100%;max-width:880px;background:#fff;border-radius:18px;overflow:hidden;
+    box-shadow:0 24px 60px rgba(0,0,0,.45);}
+  .hd{padding:30px 38px 26px;border-bottom:5px solid var(--acid);position:relative;}
+  .eyebrow{font-size:11px;font-weight:900;letter-spacing:2.5px;text-transform:uppercase;color:var(--fuchsia);margin-bottom:10px;}
+  h1{font-size:27px;font-weight:900;color:var(--black);line-height:1.2;}
+  .sub{margin-top:9px;font-size:14px;color:var(--g500);line-height:1.5;}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;}
+  .chip{font-size:11px;font-weight:800;padding:5px 11px;border-radius:20px;border:1px solid var(--g200);
+    display:inline-flex;align-items:center;gap:6px;}
+  .chip.commit{background:var(--black);color:#fff;border-color:var(--black);font-family:ui-monospace,Menlo,Consolas,monospace;}
+  .chip.branch{background:var(--cyan-lt);color:#0d3d49;}
+  .chip.effort{background:var(--banana-lt);color:#7a5c00;}
+  .chip.build{background:var(--acid-lt);color:#3a3d00;}
+  .bd{padding:30px 38px 14px;}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+  .card{border:1px solid var(--g200);border-radius:12px;padding:18px 18px 16px;background:var(--g50);}
+  .card .t{font-size:13px;font-weight:900;color:var(--black);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .card .t .ic{width:24px;height:24px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;}
+  .card p{font-size:13px;line-height:1.55;color:var(--g700);}
+  .card p + p{margin-top:7px;}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background:#fff;border:1px solid var(--g200);
+    border-radius:4px;padding:1px 5px;color:#0d3d49;}
+  .demo{margin:4px 38px 26px;border:1px dashed var(--g200);border-radius:12px;padding:18px 20px;background:#fff;}
+  .demo .lbl{font-size:10px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--g500);margin-bottom:10px;}
+  .field{border:1px solid var(--g200);border-radius:7px;padding:9px 11px;font-size:13px;color:var(--g700);background:var(--g50);}
+  .panel{margin-top:7px;border:1px solid var(--acid);border-radius:8px;background:var(--acid-lt);padding:9px;}
+  .panel .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+  .panel .ph .nm{font-size:11px;font-weight:900;color:#3a3d00;}
+  .panel .ph .x{font-size:11px;font-weight:800;color:var(--g500);}
+  .ver{background:#fff;border:1px solid var(--g200);border-radius:6px;padding:8px 10px;margin-bottom:6px;}
+  .ver:last-child{margin-bottom:0;}
+  .ver .vn{font-size:10px;font-weight:800;color:var(--g500);margin-bottom:3px;}
+  .ver .vt{font-size:12.5px;line-height:1.5;color:var(--g700);margin-bottom:7px;}
+  .use{display:inline-block;font-size:11px;font-weight:800;background:var(--acid);color:#3a3d00;border-radius:5px;padding:3px 10px;}
+  .ft{padding:16px 38px 28px;border-top:1px solid var(--g100);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .ft .path{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--g500);}
+  .ft .brand{font-size:12px;font-weight:900;color:var(--black);}
+  .ft .brand span{color:var(--fuchsia);}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="hd">
+      <div class="eyebrow">Delivery · 2026-06-04 · Sprout CRM Next</div>
+      <h1>Newsletter ✨ Polish is now non-destructive</h1>
+      <div class="sub">Clicking Polish used to overwrite your draft in place — one bad rewrite and the original was gone. Now the agent's version appears in an inline card below the field, your original stays put, and every re-polish is kept as a pickable version.</div>
+      <div class="meta">
+        <span class="chip commit">⎇ b4be500</span>
+        <span class="chip branch">main · pushed</span>
+        <span class="chip effort">Effort: medium</span>
+        <span class="chip build">✓ npm run build</span>
+      </div>
+    </div>
+
+    <div class="bd">
+      <div class="row">
+        <div class="card">
+          <div class="t"><span class="ic" style="background:var(--acid-lt)">🛟</span> Original preserved</div>
+          <p>Polish no longer calls <code>apply()</code>. The rewrite lands in a new per-field <code>polishOut</code> state — the field itself is never touched until you choose to use a version.</p>
+        </div>
+        <div class="card">
+          <div class="t"><span class="ic" style="background:var(--cyan-lt)">🗂️</span> Version history</div>
+          <p>Each ✨ Re-polish stacks a new numbered version (<code>v1 · v2 · v3 · latest</code>). Liked the first one better? It's still there with its own button.</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="card">
+          <div class="t"><span class="ic" style="background:var(--banana-lt)">✓</span> Use this / ✕ Discard</div>
+          <p><b>Use this</b> drops that version into the field and closes the card. <b>Discard</b> clears it with nothing changed. Button relabels to <b>Re-polish</b> once a result exists.</p>
+        </div>
+        <div class="card">
+          <div class="t"><span class="ic" style="background:var(--fuchsia-lt)">🔌</span> Both surfaces</div>
+          <p>Wired into single copy fields (Headline, Intro, Recap…) <i>and</i> per-item repeat fields (each event entry). One <code>polishPanel()</code> renderer, two call sites.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo">
+      <div class="lbl">What it looks like in the editor</div>
+      <div class="field">This season we hosted some gatherings, welcomed new folks into our community, and launched a membership program…</div>
+      <div class="panel">
+        <div class="ph"><span class="nm">✨ Polished by Comms · 2 versions</span><span class="x">✕ Discard</span></div>
+        <div class="ver">
+          <div class="vn">v1</div>
+          <div class="vt">We opened our doors this spring — new faces, new gatherings, and a brand-new membership to grow with us.</div>
+          <span class="use">✓ Use this</span>
+        </div>
+        <div class="ver">
+          <div class="vn">v2 · latest</div>
+          <div class="vt">This season we threw open the doors: fuller rooms, new friends, and a membership built to keep the community close.</div>
+          <span class="use">✓ Use this</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ft">
+      <div>
+        <div class="path">components/CRMManager.jsx · CHANGELOG.md</div>
+        <div class="path">+ folded in NewsletterView templates refactor · reverted debug marker in lib/newsletter.js</div>
+      </div>
+      <div class="brand">SPROUT S<span>♥</span>CIETY</div>
+    </div>
+  </div>
+</body>
+</html>

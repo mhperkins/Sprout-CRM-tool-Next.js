@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Newsletter links + Instagram button</title>
+<style>
+  :root{
+    --cyan:#73C4D6; --fuchsia:#E10098; --acid:#C6C902; --banana:#FAD100;
+    --ink:#030000; --paper:#F7F7F6; --g500:#8a8a86; --g600:#5a5a56; --line:#ECECEA;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Lato','Helvetica Neue',Arial,sans-serif;background:var(--paper);color:var(--ink);
+       min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 16px;}
+  .slide{width:100%;max-width:960px;background:#fff;border-radius:16px;overflow:hidden;
+         box-shadow:0 18px 50px rgba(3,0,0,.10);}
+  .top{padding:30px 38px;border-bottom:3px solid var(--acid);display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+  .eyebrow{font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--fuchsia);}
+  h1{font-size:27px;font-weight:900;line-height:1.2;margin-top:6px;max-width:640px;}
+  .badges{display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+  .badge{font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;padding:6px 12px;border-radius:6px;white-space:nowrap;}
+  .badge.diag{background:#eef7fa;color:#0d3d49;}
+  .badge.build{background:#f2f3cf;color:#3a3d00;}
+  .body{padding:30px 38px 14px;}
+  .lead{font-size:15px;line-height:1.6;color:var(--g600);margin-bottom:24px;max-width:760px;}
+  .lead b{color:var(--ink);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .card{border:1px solid var(--line);border-radius:11px;padding:18px 20px;position:relative;}
+  .card::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:5px;border-radius:5px;}
+  .card.c1::before{background:var(--cyan);}
+  .card.c2::before{background:var(--fuchsia);}
+  .card.c3::before{background:var(--acid);}
+  .card.c4::before{background:var(--banana);}
+  .card h3{font-size:15px;font-weight:900;margin-bottom:6px;padding-left:12px;}
+  .card p{font-size:13.5px;line-height:1.55;color:var(--g600);padding-left:12px;}
+  .card code{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:12px;color:var(--ink);}
+  .rootcause{margin-top:22px;background:var(--ink);color:#fff;border-radius:11px;padding:20px 22px;}
+  .rootcause .lbl{font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--banana);margin-bottom:8px;}
+  .rootcause p{font-size:13.5px;line-height:1.6;color:#d8d8d4;}
+  .rootcause code{background:#1c1c1a;border-radius:4px;padding:1px 6px;color:var(--cyan);font-size:12px;}
+  .foot{padding:18px 38px 30px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:8px;}
+  .files{display:flex;gap:8px;flex-wrap:wrap;}
+  .chip{font-size:12px;font-weight:700;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:6px 11px;color:var(--g600);}
+  .meta{font-size:12px;color:var(--g500);text-align:right;}
+  .meta b{color:var(--ink);font-family:ui-monospace,Menlo,Consolas,monospace;}
+  .caveat{font-size:12px;color:var(--g500);padding:0 38px 28px;line-height:1.55;}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="top">
+      <div>
+        <div class="eyebrow">Delivery · Newsletter</div>
+        <h1>"See more events" no longer hijacks the preview — and every link now works</h1>
+      </div>
+      <div class="badges">
+        <span class="badge diag">Diagnose · medium</span>
+        <span class="badge build">Fix · low</span>
+      </div>
+    </div>
+
+    <div class="body">
+      <p class="lead">Clicking <b>"See more events"</b> in the compact-newsletter preview was reloading the pane and rendering the live CRM <b>Dashboard</b> inside it. Root-caused to the iframe base-URL inheritance, fixed preview-side, then wired up the membership button, footer contact links, and a brand-new Instagram button.</p>
+
+      <div class="grid">
+        <div class="card c1">
+          <h3>↧ Scroll fix, preview-only</h3>
+          <p>New <code>previewHtml</code> memo injects <code>&lt;base href="about:srcdoc"&gt;</code> so <code>#events</code> scrolls inside the iframe instead of loading the app. Sent HTML untouched. Iframe sandboxed (scripts off, popups on).</p>
+        </div>
+        <div class="card c2">
+          <h3>🔗 Reliable scroll target</h3>
+          <p>Moved <code>id="events"</code> off a stray <code>&lt;a&gt;</code> (foster-parented out of the table) onto a real <code>&lt;tr id="events"&gt;</code>.</p>
+        </div>
+        <div class="card c3">
+          <h3>🎟 Buttons + footer links</h3>
+          <p>Membership button gets <code>target="_blank"</code>. Footer website + IG handle went from plain text to clickable links (IG → <code>instagram.com/&lt;handle&gt;</code>).</p>
+        </div>
+        <div class="card c4">
+          <h3>● Follow on Instagram</h3>
+          <p>New fuchsia "Follow @handle →" button in the intro area — seen first. Pulls from the org profile; no IG button existed before.</p>
+        </div>
+      </div>
+
+      <div class="rootcause">
+        <div class="lbl">Root cause</div>
+        <p>The preview is an <code>&lt;iframe srcDoc&gt;</code>, and a srcdoc document <b>inherits its base URL from the parent page</b>. So <code>href="#events"</code> resolved to <code>localhost:3000/#events</code> — clicking it navigated the iframe to the live app, which booted and rendered the Dashboard right in the preview.</p>
+      </div>
+    </div>
+
+    <div class="foot">
+      <div class="files">
+        <span class="chip">lib/newsletter.js</span>
+        <span class="chip">components/CRMManager.jsx</span>
+        <span class="chip">npm run build ✓</span>
+      </div>
+      <div class="meta">
+        branch <b>main</b><br>
+        commit <b id="hash">(pending)</b>
+      </div>
+    </div>
+    <p class="caveat">⚠️ Email caveat: Gmail/Outlook strip <code>id</code> anchors, so the scroll only works in the in-app preview + hosted view. <code>target="_blank"</code> does ship to the real email. The IG button + footer IG link resolve only when the org profile has an Instagram handle set.</p>
+  </div>
+</body>
+</html>

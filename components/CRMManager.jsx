@@ -2547,7 +2547,7 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
         <div className="card" style={{position:"sticky",top:16}}>
           <div className="card-hd"><span className="card-ttl">Preview</span><span style={{fontSize:11,color:"var(--g500)"}}>live</span></div>
           <div style={{height:"calc(100vh - 180px)",minHeight:480,background:"#F7F7F6",borderRadius:"0 0 10px 10px",overflow:"hidden"}}>
-            <iframe title="newsletter-preview" sandbox="allow-same-origin" srcDoc={previewHtml} style={{width:"100%",height:"100%",border:"none"}}/>
+            <iframe title="newsletter-preview" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" srcDoc={previewHtml} style={{width:"100%",height:"100%",border:"none"}}/>
           </div>
         </div>
       </div>
