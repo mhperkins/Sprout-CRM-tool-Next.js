@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-03 — Donor contact list shows Campaign (Givebutter) instead of Affiliation
+
+App code change (`components/CRMManager.jsx` only; `npm run build` passes). Display-only — no data-side change. The **Campaign** field (visible) + hidden **`campaign_id`** (rename-proof Givebutter key in the `data` JSONB blob, never rendered) were already built a prior session and already populated on every donor at import time, so this session only added the two display surfaces.
+
+- **List column:** in the Donors bucket the header reads **Campaign** with a 🎗 chip showing `c.campaign`; Community/Prospects keep **Affiliation** with the 🏢 org chips. One conditional on the `<th>` and the `<td>`.
+- **Detail panel:** donors get a new **Campaign (Givebutter)** section (🎗 chip), rendered only when `contact.campaign` is set, placed above Affiliations.
+- The hidden `campaign_id` was untouched and is still never shown.
+- Note: `CAMPAIGN_OPTS` is a synced static snapshot, not a live pull — say "refresh the campaign list" after any Givebutter campaign add/rename.
+
+---
+
 ## 2026-06-03 — Open-web enrichment pass on the imported IG prospects + orgs
 
 Data-only (no app code). After the first IG import landed, the Desktop research flagged that some accounts (Polo Bear, Havi Tatu, the `@goldenarmyfitness_j` "Staton" lead) have off-IG web footprints. Max asked for an independent research pass on all the new prospects + orgs. This is the complementary half of the two-surface split: Desktop+Chrome reads IG directly; Claude Code in VS Code reads the open web.

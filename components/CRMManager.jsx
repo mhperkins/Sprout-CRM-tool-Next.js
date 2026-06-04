@@ -764,6 +764,10 @@ function ContactDetail({contact,orgs,events,onClose,onUpdate,onEdit,showToast}) 
             {contact.instagram_handle&&<div className="dp-field"><strong>Instagram:</strong> {contact.instagram_handle}</div>}
             {contact.website&&<div className="dp-field"><strong>Website:</strong> <a href={contact.website} target="_blank" rel="noreferrer" style={{color:"var(--cyan)"}}>{contact.website}</a></div>}
           </div>
+          {curSegment==="donor"&&contact.campaign&&<div className="dp-section">
+            <div className="dp-sect-lbl">Campaign <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(Givebutter)</span></div>
+            <span style={{display:"inline-flex",alignItems:"center",gap:4,background:"var(--banana-lt,#fff7d6)",color:"#8a6d00",fontSize:11,fontWeight:700,padding:"3px 9px",borderRadius:12}}>🎗 {contact.campaign}</span>
+          </div>}
           {(affOrgs.length>0||affEvents.length>0)&&<div className="dp-section">
             <div className="dp-sect-lbl">Affiliations</div>
             <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
@@ -1454,7 +1458,7 @@ const [editing,setEditing]=useState(null);
       {filtered.length===0
         ? <div className="empty"><div className="empty-ico">👤</div><div className="empty-ttl">{contacts.length===0?"No contacts yet":"No results"}</div><div className="empty-txt">{contacts.length===0?"Add contacts manually or import JSON profiles from Claude.":"Try adjusting your filters."}</div></div>
       : <div className="tbl-wrap"><table className="tbl">
-            <thead><tr><th>Name</th><th>Type</th><th>Affiliation</th><th>Status</th><th>Next Action</th><th>Health</th><th></th></tr></thead>
+            <thead><tr><th>Name</th><th>Type</th><th>{segment==="donor"?"Campaign":"Affiliation"}</th><th>Status</th><th>Next Action</th><th>Health</th><th></th></tr></thead>
             <tbody>
 {filtered.map(c=>{
               const cOrgIds=(c.org_ids&&c.org_ids.length)?c.org_ids:(c.org_id?[c.org_id]:[]);
@@ -1474,7 +1478,9 @@ const [editing,setEditing]=useState(null);
                   </div>;
                 })()}</td>
                 <td><div style={{display:"flex",flexWrap:"wrap",gap:3}}>{(c.relationship_types&&c.relationship_types.length?c.relationship_types:[c.relationship_type]).filter(Boolean).map(t=><span key={t} className="type-tag">{REL_TYPES[t]||t}</span>)}</div></td>
-                <td style={{fontSize:12,color:"var(--g600)"}}>{cOrgs.length?<div style={{display:"flex",flexWrap:"wrap",gap:3}}>{cOrgs.map(o=><span key={o.id} style={{display:"inline-flex",alignItems:"center",gap:3,background:"var(--cyan-lt)",color:"#155e6e",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:10}}>🏢 {o.name}</span>)}</div>:"—"}</td>
+                <td style={{fontSize:12,color:"var(--g600)"}}>{segment==="donor"
+                  ? (c.campaign?<span style={{display:"inline-flex",alignItems:"center",gap:3,background:"var(--banana-lt,#fff7d6)",color:"#8a6d00",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:10}}>🎗 {c.campaign}</span>:"—")
+                  : (cOrgs.length?<div style={{display:"flex",flexWrap:"wrap",gap:3}}>{cOrgs.map(o=><span key={o.id} style={{display:"inline-flex",alignItems:"center",gap:3,background:"var(--cyan-lt)",color:"#155e6e",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:10}}>🏢 {o.name}</span>)}</div>:"—")}</td>
                 <td><RelTag status={c.relationship_status}/></td>
                 <td style={{maxWidth:160,fontSize:11,color:"var(--g600)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.next_action||"—"}</td>
                 <td style={{padding:"12px 14px"}}>
