@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Newsletter Save Draft + Auto-save</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cyan:#73C4D6; --cyan-lt:#E4F4F8; --fuchsia:#E10098; --acid:#D8F000;
+    --banana:#FFD43B; --ink:#0B0B0C; --g900:#16181B; --g700:#3A3D42;
+    --g500:#6B7077; --g300:#C9CDD2; --g100:#EEF0F2; --g50:#F7F8F9; --paper:#FFFFFF;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Lato',system-ui,sans-serif; background:radial-gradient(circle at 20% 0%,#1b1d20,#0b0b0c 60%); color:var(--g900); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px 20px;}
+  .slide{width:100%; max-width:920px; background:var(--paper); border-radius:22px; overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.5);}
+  .top{height:7px; background:linear-gradient(90deg,var(--cyan) 0%,var(--fuchsia) 38%,var(--acid) 70%,var(--banana) 100%);}
+  .hd{padding:30px 38px 22px; border-bottom:1px solid var(--g100);}
+  .eyebrow{font-size:11px; font-weight:900; letter-spacing:.22em; text-transform:uppercase; color:var(--fuchsia); margin-bottom:10px;}
+  h1{font-size:30px; font-weight:900; line-height:1.12; color:var(--ink); letter-spacing:-.01em;}
+  .sub{margin-top:10px; font-size:14px; color:var(--g500); font-weight:700;}
+  .meta{display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;}
+  .chip{font-size:11px; font-weight:900; padding:6px 12px; border-radius:999px; letter-spacing:.03em;}
+  .chip.branch{background:var(--cyan-lt); color:#13606f;}
+  .chip.hash{background:var(--ink); color:#fff; font-family:ui-monospace,Menlo,monospace;}
+  .chip.effort{background:var(--banana); color:#4a3a00;}
+  .chip.build{background:#E9F9E7; color:#1f7a2e;}
+  .body{padding:26px 38px 12px; display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .card{border:1px solid var(--g100); border-radius:15px; padding:18px 18px 16px; background:var(--g50);}
+  .card .ic{font-size:20px; line-height:1;}
+  .card h3{font-size:15px; font-weight:900; margin:9px 0 6px; color:var(--g900);}
+  .card p{font-size:12.5px; line-height:1.55; color:var(--g700);}
+  .card code{background:#fff; border:1px solid var(--g100); border-radius:5px; padding:1px 5px; font-size:11px; color:var(--fuchsia);}
+  .full{grid-column:1 / -1;}
+  .trap{background:linear-gradient(180deg,#FFF9E0,#FFF4CC); border:1px solid var(--banana);}
+  .trap h3{color:#7a5b00;}
+  .ft{padding:18px 38px 28px; border-top:1px solid var(--g100); display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;}
+  .ft .files{font-size:11.5px; color:var(--g500); font-weight:700;}
+  .ft .files code{font-family:ui-monospace,Menlo,monospace; color:var(--g700);}
+  .flag{font-size:11.5px; color:#9a4a00; background:#FFF1E2; border:1px solid #FFD3A8; border-radius:10px; padding:9px 12px; font-weight:700;}
+  .logo{font-size:13px; font-weight:900; color:var(--ink);}
+  .logo span{color:var(--cyan);}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="top"></div>
+    <div class="hd">
+      <div class="eyebrow">Sprout CRM · Delivery</div>
+      <h1>Newsletter drafts now save, auto-save, and survive a reload</h1>
+      <div class="sub">A Save-draft button, auto-save on navigate-away, and reload persistence for the in-app newsletter editor.</div>
+      <div class="meta">
+        <span class="chip branch">main</span>
+        <span class="chip hash">5aa8fdc</span>
+        <span class="chip effort">Effort: medium</span>
+        <span class="chip build">✓ build passes</span>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="card">
+        <div class="ic">💾</div>
+        <h3>Save draft button</h3>
+        <p>Persists to Supabase but <b>stays in the editor</b>. The old "Save" (which closed back to the list) is now <b>Save &amp; close</b>. A new draft <b>adopts its generated id on first save</b>, so repeat saves update the same record instead of duplicating.</p>
+      </div>
+
+      <div class="card">
+        <div class="ic">🚪</div>
+        <h3>Auto-save on navigate-away</h3>
+        <p>Saves on <b>unmount</b> (← Back, sidebar view switch) and on <b>tab close</b> via <code>beforeunload</code>. Guarded by <code>draftHasContent()</code> so a blank new draft isn't saved, and suppressed on Delete / explicit close so nothing is resurrected or double-written.</p>
+      </div>
+
+      <div class="card">
+        <div class="ic">🔄</div>
+        <h3>Persist on reload</h3>
+        <p>The open editor session snapshots to <code>localStorage</code> (<code>sprout_nl_editor_v1</code>) on every change and restores once on mount — in a <code>useEffect</code> to dodge a hydration mismatch. A reload mid-edit returns you to the draft intact, <b>even a never-saved one</b>.</p>
+      </div>
+
+      <div class="card">
+        <div class="ic">🧩</div>
+        <h3>Under the hood</h3>
+        <p>New editor callbacks <code>onSaveStay</code> / <code>onSaveClose</code> / <code>onAutoSave</code> replace the single <code>onSave</code> prop. <code>makeRecord(d)</code> factors the shared id-assign + HTML-bake; refs capture the latest draft + built HTML for the unmount cleanup.</p>
+      </div>
+
+      <div class="card trap full">
+        <div class="ic">⚠️</div>
+        <h3>The duplicate trap we closed</h3>
+        <p>The new-draft id is a <b>deterministic slug</b> (<code>nl_&lt;month&gt;_roundup</code>). If auto-save wrote a record while the localStorage snapshot still held <code>id:null</code>, returning would regenerate the same base id, find it taken, and bump to <code>_2</code> — a fresh duplicate every navigate-away/return cycle. Fixed by having <code>onAutoSave</code> write the saved record (with its assigned id) back into the snapshot, so restore returns the id and further saves update in place.</p>
+      </div>
+    </div>
+
+    <div class="ft">
+      <div>
+        <div class="files">Touched: <code>components/CRMManager.jsx</code> · <code>CHANGELOG.md</code></div>
+        <div class="flag" style="margin-top:10px;">⚑ Left uncommitted: a pre-existing <code>lib/newsletter.js</code> intro/headline change (not mine this session) — surfaced for your call.</div>
+      </div>
+      <div class="logo">Sprout<span>·</span>CRM</div>
+    </div>
+  </div>
+</body>
+</html>

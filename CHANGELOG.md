@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-06-03 — Compact newsletter: render Headline + Intro greeting block (+ Polish key / grant-tool build diagnosis)
+
+App code change (`lib/newsletter.js`). Effort: diagnose medium / fix low.
+
+- **Headline + Intro now render.** The compact editor's **Headline** (`v.headline`) and **Intro / thank-you** (`v.intro`) fields had no visible home — `headline` rendered nowhere and `intro` only fed the hidden inbox-preheader `<div>`. Added a visible greeting block (headline 22px/900 + intro paragraph, `cval` placeholder pattern) at the top of `buildCompact()`, between the masthead rule and Featured.
+- **Featured photo banner 260px → 200px** (`object-position:center`, dropped the placeholder padding wrapper) — Max's tuning in the same file.
+- **Polish "API key didn't match" — resolved as a Vercel config issue, no code change.** The deployed app reads `ANTHROPIC_API_KEY` from Vercel; a stale/wrong value lived under that name on the **`sprout-crm-tool-next-js`** project (and Max had initially opened the wrong project). Local `.env.local` key verified valid (curl → 200). Max edited (not added) the key under Settings → Environments → Production + redeployed → Polish works.
+- **Diagnosed (and locally fixed) a build break in a *different* repo.** The redeploy surfaced a *Build Failed* for `sprout-grant-tool` (GitHub `mhperkins/sprout-tools`): `Error: supabaseKey is required` from a module-scope `createClient(url, SUPABASE_SERVICE_ROLE_KEY)` evaluated during `next build` page-data collection. Fix (lazy-init the client inside the handlers in `app/api/ai/upload/route.js` + `upload-image/route.js`, remove the dead `export const config`) is verified green locally but **uncommitted/unpushed** to that repo, pending authorization.
+- Swept in the prior session's orphaned delivery slide (committed in code, never added as a file).
+
 ## 2026-06-03 — Newsletter: Save draft + auto-save on navigate-away + persist on reload
 
 App code only (`components/CRMManager.jsx`). `npm run build` passes. Effort: medium.
