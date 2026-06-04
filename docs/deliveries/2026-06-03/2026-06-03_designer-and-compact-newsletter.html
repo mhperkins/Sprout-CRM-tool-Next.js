@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Web & Graphic Designer + Compact Newsletter</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --blk:#030000; --off:#F7F7F6; --acid:#C6C902; --fuch:#E10098; --cyan:#73C4D6; --ban:#FAD100; --g:#6b6b67; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:'Lato',Helvetica,Arial,sans-serif; background:var(--blk); color:var(--blk); padding:32px 16px; }
+  .slide{ max-width:1040px; margin:0 auto; background:var(--off); border-radius:18px; overflow:hidden; box-shadow:0 24px 60px rgba(0,0,0,.4); }
+  .hd{ background:var(--blk); color:var(--off); padding:30px 36px; }
+  .hd .kick{ font-size:12px; font-weight:900; letter-spacing:3px; text-transform:uppercase; color:var(--acid); }
+  .hd h1{ font-size:28px; font-weight:900; line-height:1.2; margin-top:8px; }
+  .hd h1 .pink{ color:var(--fuch); } .hd h1 .cy{ color:var(--cyan); }
+  .meta{ display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+  .badge{ font-size:12px; font-weight:900; padding:6px 12px; border-radius:20px; }
+  .b-branch{ background:var(--cyan); color:#0d3d49; }
+  .b-hash{ background:var(--ban); color:#3a3000; font-family:monospace; }
+  .b-build{ background:var(--acid); color:#3a3d00; }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:24px 36px; }
+  .card{ background:#fff; border-radius:12px; padding:18px 20px; border-left:6px solid var(--cyan); }
+  .card.f{ border-color:var(--fuch); } .card.a{ border-color:var(--acid); } .card.b{ border-color:var(--ban); } .card.k{ border-color:var(--blk); }
+  .card .ico{ font-size:22px; } .card h3{ font-size:16px; font-weight:900; margin:6px 0 6px; }
+  .card p{ font-size:13px; line-height:1.55; color:#3a3a38; }
+  .card code{ background:var(--off); padding:1px 5px; border-radius:4px; font-size:12px; }
+  .full{ grid-column:1 / -1; }
+  .note{ background:#FFF3F9; border-left:6px solid var(--fuch); }
+  .ft{ background:var(--blk); color:#9a9a96; padding:18px 36px; font-size:12px; }
+  .ft b{ color:var(--off); }
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="hd">
+      <div class="kick">Sprout Society · Delivery</div>
+      <h1>Web &amp; Graphic Designer <span class="pink">employee</span> + in-app <span class="cy">compact newsletter</span></h1>
+      <div class="meta">
+        <span class="badge b-branch">branch: main</span>
+        <span class="badge b-hash">commit d75ac23</span>
+        <span class="badge b-build">npm run build ✓</span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="ico">🎨</div>
+        <h3>New employee: Web &amp; Graphic Designer</h3>
+        <p>2nd virtual-agency hire at <code>virtual-agency/employees/Design/</code>. Primary job: designing the HTML newsletter. Brand rules + email-safe rules + Canva limits baked into the prompt.</p>
+      </div>
+
+      <div class="card f">
+        <div class="ico">📐</div>
+        <h3>Compact roundup, redesigned</h3>
+        <p>Featured photo block (Sprout n Tell) + "See more events" jump → Coworking promo → Membership → Community Spotlight → Events. Black top trim removed, sized to ~7in tall on a phone.</p>
+      </div>
+
+      <div class="card a">
+        <div class="ico">🧩</div>
+        <h3>It's the app's primary template</h3>
+        <p>Added as <code>monthly-roundup-compact</code> ("Monthly Roundup"); old one is "Classic". New <code>COMPACT_SECTIONS</code> model + <code>buildCompact()</code> renderer in <code>lib/newsletter.js</code>.</p>
+      </div>
+
+      <div class="card b">
+        <div class="ico">🗂️</div>
+        <h3>Custom section fill form</h3>
+        <p>Each section is its own field. Single boxes for copy; Upcoming/Past events start with one entry + a <b>＋ Add another event</b> button. Live preview as you type.</p>
+      </div>
+
+      <div class="card f">
+        <div class="ico">✨</div>
+        <h3>Brain-dump → Comms polishes it</h3>
+        <p>A <b>Polish</b> button on every copy field calls <code>app/api/polish</code> (Anthropic Haiku 4.5, Comms voice) and rewrites messy notes into 1–2 Sprout-voice sentences.</p>
+      </div>
+
+      <div class="card a">
+        <div class="ico">🖼️</div>
+        <h3>Image uploads on the fields</h3>
+        <p>"Add image" on the featured photo, spotlight, and each event. Uploads to a new public Supabase Storage bucket <code>newsletter-images</code>. Logo hosted there too, so it renders in app + email.</p>
+      </div>
+
+      <div class="card k note full">
+        <div class="ico">🔑</div>
+        <h3>One thing to switch on</h3>
+        <p>The Polish button needs <code>ANTHROPIC_API_KEY</code> set server-side (a blank line is waiting in <code>.env.local</code>, and add the same var in Vercel). Until then Polish shows a clear "key not set" message; image upload and everything else work without it.</p>
+      </div>
+    </div>
+
+    <div class="ft">
+      <b>Files:</b> virtual-agency/employees/Design/* · lib/newsletter.js · components/CRMManager.jsx · lib/services.js · app/api/polish/route.js · docs/newsletter/monthly-roundup-compact.html &nbsp;|&nbsp; <b>Data:</b> Supabase Storage bucket newsletter-images (migration newsletter_images_storage_bucket) &nbsp;|&nbsp; <b>2026-06-03</b>
+    </div>
+  </div>
+</body>
+</html>
