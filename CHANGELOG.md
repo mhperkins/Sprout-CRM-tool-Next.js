@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-06-04 — SOLVED the gigantic featured-image bug + added a drag-to-reposition crop control
+
+App + template change (`components/CRMManager.jsx` + `lib/newsletter.js`; `npm run build` passes). Effort: diagnose high / fix low.
+
+**Root cause (a 4-session bug):** in `buildCompact()`, the featured and spotlight `<img alt="…">` used `cval(...)` for the alt text — but `cval` returns **HTML** (`<span style="color:#c2c2bf;">[…]</span>`) when the field is empty. Inside `alt="…"`, those quotes terminate the `<img>` tag early; the browser's error-recovery drops the real `style` (the `height:200px; max-width:544px; object-fit:cover`), so the image renders at natural size = gigantic. It dodged 3 prior sessions because every fix tweaked the sizing CSS and every test used a non-empty title (which made `cval` return clean text); Max uploads the photo before typing a title, triggering the empty-field path. Confirmed by inspecting the live element (`alt="<span style=" color:#c2c2bf;"…`).
+
+**Changes:**
+- **Fix** (`lib/newsletter.js`): featured + spotlight alt now use plain escaped text — `alt="${esc(v.featuredTitle || "Featured event")}"` and `alt="${esc(v.spotlightName || "Member")}"` (the event-card/past-row imgs already used `esc(...)`). Verified in headless Playwright with an empty title → renders exactly 544×200.
+- **Crop feature** (Max's follow-up): featured photo gets a **drag-to-reposition** control. `lib/newsletter.js` — featured `COMPACT_SECTIONS` entry flagged `crop:true, ratio:544/200`; img renders `object-position:${esc(v.featuredPhotoPos || "center")}`. `CRMManager.jsx` — new reusable **`ImageCrop`** component shows the photo at the exact 544×200 banner aspect with `object-fit:cover` and pointer-drag to move the focal point (clamped 0–100%), emitting an `object-position` string into `field_values.featuredPhotoPos`. New upload recenters; Remove clears both. No canvas/re-upload — email-safe. `field_values` is `z.record(z.any())`, no schema change.
+
+**Found, not yet applied (needs Max's OK):** `sprout_newsletters` has no RLS policy — every save returns 401 ("violates row-level security policy") and the table is empty. Fix is the same `anon_all` policy the other `sprout_*` tables have.
+
+---
+
 ## 2026-06-04 — Monthly Sprout newsletter intake form + Comms agent brain-dump/don't-guess workflow
 
 Virtual-agency docs only (no app code or CRM data change). Effort: medium.

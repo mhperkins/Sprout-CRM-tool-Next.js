@@ -92,6 +92,11 @@
 - **One-line recap:** [Our first collaboration with Barnun, a sober event community. We had non-alchoholic beverage tasting. Follow @barnun.life]
 
 ### Past 2
+- **Name:** [Sprout Game Night w/ Community Week]
+- **Date:** [2026-05-26]
+- **One-line recap:** [We partnered with @community.week for a night of board games and new friends.]
+
+### Past 3
 - **Name:** [Sprout Co-Work]
 - **Date:** [Every Tuesday and Thursday]
 - **One-line recap:** [Bushwick residents enjoyed a place to work from home, away from home]

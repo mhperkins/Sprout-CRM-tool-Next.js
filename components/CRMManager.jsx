@@ -2258,6 +2258,37 @@ function NewsletterView({newsletters,events,contacts,profile,onUpdate,onDelete,s
   />;
 }
 
+// Drag-to-reposition control. Shows the image at the email banner's exact aspect
+// ratio with object-fit:cover, and lets you drag the photo to choose what shows.
+// Emits an object-position string ("50% 35%") stored back into field_values.
+function ImageCrop({url,value,onChange,ratio=544/200}){
+  const parse=(v)=>{ const m=(v||"").match(/(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%/); return m?{x:+m[1],y:+m[2]}:{x:50,y:50}; };
+  const pos=parse(value);
+  const boxRef=useRef(null); const drag=useRef(null);
+  const clamp=(n)=>Math.max(0,Math.min(100,n));
+  const onDown=(e)=>{ e.preventDefault();
+    drag.current={sx:e.clientX,sy:e.clientY,px:pos.x,py:pos.y,rect:boxRef.current.getBoundingClientRect()};
+    window.addEventListener("pointermove",onMove); window.addEventListener("pointerup",onUp);
+  };
+  const onMove=(e)=>{ const d=drag.current; if(!d) return;
+    // Drag the photo down → reveal the top (object-position y decreases), and vice versa.
+    const dx=(e.clientX-d.sx)/d.rect.width*100;
+    const dy=(e.clientY-d.sy)/d.rect.height*100;
+    onChange(`${clamp(d.px-dx).toFixed(0)}% ${clamp(d.py-dy).toFixed(0)}%`);
+  };
+  const onUp=()=>{ drag.current=null; window.removeEventListener("pointermove",onMove); window.removeEventListener("pointerup",onUp); };
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:6}}>
+      <div ref={boxRef} onPointerDown={onDown}
+        style={{position:"relative",width:"100%",aspectRatio:String(ratio),borderRadius:8,overflow:"hidden",border:"1px solid var(--g200)",background:"var(--g100)",cursor:"grab",touchAction:"none"}}>
+        <img src={url} alt="" draggable={false}
+          style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:`${pos.x}% ${pos.y}%`,display:"block",pointerEvents:"none",userSelect:"none"}}/>
+        <div style={{position:"absolute",bottom:6,left:6,fontSize:10,fontWeight:700,color:"#fff",background:"rgba(0,0,0,.55)",padding:"2px 7px",borderRadius:4,pointerEvents:"none"}}>↕ drag to reposition</div>
+      </div>
+    </div>
+  );
+}
+
 function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newsletters,onBack,onSaveStay,onSaveClose,onAutoSave,onDelete,confirmDel,setConfirmDel,doDelete,showToast}) {
   const s=(k,v)=>setDraft(p=>({...p,[k]:v}));
   const setField=(key,val)=>setDraft(p=>({...p,field_values:{...p.field_values,[key]:val}}));
@@ -2464,17 +2495,27 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
                     const LBL={textTransform:"none",letterSpacing:0,color:"var(--g600)",fontWeight:600};
                     const PB={padding:"2px 8px",fontSize:11};
                     if(sec.kind==="image"){
-                      const url=fv[sec.key]||""; const fid=sec.key;
+                      const url=fv[sec.key]||""; const fid=sec.key; const posKey=`${sec.key}Pos`;
+                      // New upload recenters the crop.
+                      const applyUpload=(u)=>{ setField(sec.key,u); if(sec.crop) setField(posKey,"50% 50%"); };
                       return (
                         <div className="fg" key={sec.key}>
                           <label className="fl" style={LBL}>{sec.label}</label>
                           {url
-                            ? <div style={{display:"flex",alignItems:"center",gap:8}}>
-                                <img src={url} alt="" style={{width:48,height:48,objectFit:"cover",borderRadius:6,border:"1px solid var(--g200)"}}/>
-                                <button className="btn btn-ghost btn-sm" style={PB} disabled={busy[fid]==="upload"} onClick={()=>pickImage(fid,u=>setField(sec.key,u))}>{busy[fid]==="upload"?"Uploading…":"Replace"}</button>
-                                <button className="btn btn-ghost btn-sm" style={PB} onClick={()=>setField(sec.key,"")}>Remove</button>
-                              </div>
-                            : <button className="btn btn-ghost btn-sm" style={{...PB,alignSelf:"flex-start"}} disabled={busy[fid]==="upload"} onClick={()=>pickImage(fid,u=>setField(sec.key,u))}>{busy[fid]==="upload"?"Uploading…":"🖼 Add image"}</button>}
+                            ? (sec.crop
+                                ? <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                                    <ImageCrop url={url} value={fv[posKey]} ratio={sec.ratio} onChange={(p)=>setField(posKey,p)}/>
+                                    <div style={{display:"flex",gap:8}}>
+                                      <button className="btn btn-ghost btn-sm" style={PB} disabled={busy[fid]==="upload"} onClick={()=>pickImage(fid,applyUpload)}>{busy[fid]==="upload"?"Uploading…":"Replace"}</button>
+                                      <button className="btn btn-ghost btn-sm" style={PB} onClick={()=>{setField(sec.key,"");setField(posKey,"");}}>Remove</button>
+                                    </div>
+                                  </div>
+                                : <div style={{display:"flex",alignItems:"center",gap:8}}>
+                                    <img src={url} alt="" style={{width:48,height:48,objectFit:"cover",borderRadius:6,border:"1px solid var(--g200)"}}/>
+                                    <button className="btn btn-ghost btn-sm" style={PB} disabled={busy[fid]==="upload"} onClick={()=>pickImage(fid,u=>setField(sec.key,u))}>{busy[fid]==="upload"?"Uploading…":"Replace"}</button>
+                                    <button className="btn btn-ghost btn-sm" style={PB} onClick={()=>setField(sec.key,"")}>Remove</button>
+                                  </div>)
+                            : <button className="btn btn-ghost btn-sm" style={{...PB,alignSelf:"flex-start"}} disabled={busy[fid]==="upload"} onClick={()=>pickImage(fid,applyUpload)}>{busy[fid]==="upload"?"Uploading…":"🖼 Add image"}</button>}
                         </div>
                       );
                     }
