@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-03 — Effort-Level Protocol authored + saved to global and project memory
+
+Config/memory only, no repo code or data change (all artifacts live outside the git repo).
+
+- Wrote the **Effort-Level Protocol**: the word `effort` (or my own judgment on a big/multi-step/hard-to-reverse task) triggers an opening `Effort: <low|medium|high|max/ultra> — <why>` line; debugging splits into `diagnose / fix` with fix never exceeding diagnosis; data-loss surfaces go max on both; match effort to the cost of being wrong; autonomous mid-task re-tiering under bypass permissions (report, don't ask).
+- Saved to **Sprout project memory** (`memory/effort-level-protocol.md`, type `feedback`, + `MEMORY.md` pointer).
+- Saved to **global `~/.claude/CLAUDE.md`** as a new "Effort-Level Protocol" section (between Permissions and Git Commands) so it applies across all projects.
+- Open: the project-memory copy is now redundant with the global rule — pending Max's call whether to delete it or keep it as a backup.
+
+---
+
 ## 2026-06-03 — Sheet reconciliation pass (analysis only, no changes)
 
 Deduped the three real contact sheets surfaced by the links pull against the live CRM roster (~130 contacts, matched by email): **Check-In (21 rows), Show N Tell – Interest Form (23 rows), Luma Attendees/Subscribers (45 rows) → 0 net-new contacts.** Everyone with real contact info is already in the CRM. The Luma sheet is the original donor/member base; Show N Tell "guest names" are headcount notes, not leads. Flagged (not acted on): a Luma row with display name "Tyler Ricci" but first/last "Jake Fleshner". `sprout_newest_followers` excluded per Max — it's an IG triage sheet, not contacts. No code or data change.
