@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-06-05 — Fixed newsletter "Save failed: violates row-level security policy" (added missing RLS policy)
+
+DB-only change (one RLS policy via Supabase MCP `apply_migration`); no app code. Effort: diagnose low / fix low.
+
+**The bug:** every newsletter save threw `new row violates row-level security policy for table "sprout_newsletters"`.
+
+**Root cause:** `sprout_newsletters` had RLS **enabled but zero policies** — Postgres denies all writes by default, so the table was effectively locked and newsletters had never persisted via the app. It was the only `sprout_*` table missing a policy; every other CRM table (`sprout_contacts`/`orgs`/`events`/`profile`) already carries an identical `anon_all` policy (`FOR ALL TO anon USING (true) WITH CHECK (true)`). Confirmed via `pg_policies`.
+
+**Fix:** applied the same `anon_all` policy to `sprout_newsletters` (migration `sprout_newsletters_anon_all_policy`), bringing it in line with the rest. Verified live. Applies immediately at the DB, no redeploy.
+
+**Security note (discussed + deferred):** this app has no Supabase Auth — RLS is "enabled" everywhere but every policy is wide-open `anon`, and the anon key ships in the client bundle, so the whole CRM is effectively public. Adding `anon_all` to newsletters doesn't weaken anything; it makes the table consistent with the app's existing model. Real lockdown (Supabase Auth + `auth.uid()`-scoped policies on every table) is now a tracked cross-app project that pairs with the planned per-tool Supabase migration.
+
+---
+
 ## 2026-06-04 — SOLVED the gigantic featured-image bug + added a drag-to-reposition crop control
 
 App + template change (`components/CRMManager.jsx` + `lib/newsletter.js`; `npm run build` passes). Effort: diagnose high / fix low.

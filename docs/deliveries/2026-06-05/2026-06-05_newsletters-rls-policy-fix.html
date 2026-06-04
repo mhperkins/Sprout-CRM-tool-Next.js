@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Newsletter RLS Fix · 2026-06-05</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Lato',-apple-system,sans-serif;
+    background:#0f1c2e;
+    color:#1a1a1a;
+    min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    padding:40px 20px;
+  }
+  .slide {
+    width:100%; max-width:920px;
+    background:#fdfdf8;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 30px 80px rgba(0,0,0,.45);
+  }
+  .head {
+    background:linear-gradient(120deg,#00b3c4 0%,#d6379b 55%,#c9e265 110%);
+    padding:34px 40px 30px;
+    color:#fff;
+  }
+  .kicker {
+    font-size:13px; font-weight:900; letter-spacing:2.5px;
+    text-transform:uppercase; opacity:.92; margin-bottom:10px;
+  }
+  .head h1 { font-size:30px; font-weight:900; line-height:1.18; letter-spacing:-.3px; }
+  .head .sub { margin-top:12px; font-size:15px; font-weight:700; opacity:.95; }
+  .badges { margin-top:18px; display:flex; flex-wrap:wrap; gap:8px; }
+  .badge {
+    background:rgba(255,255,255,.22); backdrop-filter:blur(4px);
+    border:1px solid rgba(255,255,255,.35);
+    padding:6px 13px; border-radius:30px;
+    font-size:12.5px; font-weight:700; color:#fff;
+  }
+  .body { padding:34px 40px 40px; }
+  .row { display:flex; gap:18px; flex-wrap:wrap; }
+  .card {
+    flex:1 1 250px;
+    background:#fff;
+    border:1px solid #e7e7dc;
+    border-left:5px solid #00b3c4;
+    border-radius:12px;
+    padding:20px 22px;
+  }
+  .card.fix { border-left-color:#d6379b; }
+  .card.note { border-left-color:#c9a92e; }
+  .card h3 {
+    font-size:13px; font-weight:900; letter-spacing:1.2px; text-transform:uppercase;
+    color:#6b6b60; margin-bottom:12px;
+  }
+  .card p { font-size:14.5px; line-height:1.55; color:#2b2b2b; }
+  .card p + p { margin-top:9px; }
+  code {
+    font-family:'SF Mono',Consolas,monospace;
+    background:#f0f0e6; color:#b81e74;
+    padding:2px 6px; border-radius:5px; font-size:12.5px; font-weight:700;
+  }
+  .codeblock {
+    margin-top:14px;
+    background:#11202f; color:#c9e265;
+    font-family:'SF Mono',Consolas,monospace;
+    font-size:12.5px; line-height:1.6;
+    padding:14px 16px; border-radius:10px;
+    overflow-x:auto; white-space:pre;
+  }
+  .codeblock .kw { color:#00b3c4; }
+  .codeblock .str { color:#f5a9d0; }
+  .check { color:#3a9a3a; font-weight:900; }
+  .section-label {
+    font-size:12px; font-weight:900; letter-spacing:2px; text-transform:uppercase;
+    color:#9a9a8c; margin:28px 0 14px;
+  }
+  .foot {
+    margin-top:30px; padding-top:20px; border-top:1px solid #e7e7dc;
+    display:flex; flex-wrap:wrap; gap:10px 24px; align-items:center;
+    font-size:13px; color:#6b6b60; font-weight:700;
+  }
+  .foot .pill {
+    background:#11202f; color:#c9e265;
+    font-family:'SF Mono',Consolas,monospace;
+    padding:5px 11px; border-radius:7px; font-size:12px; font-weight:700;
+  }
+  .foot .pill.branch { color:#00d4e8; }
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="head">
+      <div class="kicker">Sprout CRM Next · Delivery</div>
+      <h1>Newsletter saves fixed — added the missing RLS policy to <code style="background:rgba(255,255,255,.2);color:#fff;">sprout_newsletters</code></h1>
+      <div class="sub">“Save failed: new row violates row-level security policy” → resolved at the database, no app code, no redeploy.</div>
+      <div class="badges">
+        <span class="badge">🛡️ Supabase MCP</span>
+        <span class="badge">🗄️ DB-only change</span>
+        <span class="badge">⚡ Effort: diagnose low / fix low</span>
+        <span class="badge">📅 2026-06-05</span>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="section-label">What was wrong</div>
+      <div class="row">
+        <div class="card">
+          <h3>🔍 Root cause</h3>
+          <p><code>sprout_newsletters</code> had RLS <b>enabled but zero policies</b>. Postgres denies every write by default — so the table was effectively locked and newsletters had <b>never persisted</b> through the app.</p>
+          <p>It was the <b>only</b> <code>sprout_*</code> table missing a policy. Every other CRM table already carried an identical <code>anon_all</code> rule.</p>
+        </div>
+        <div class="card note">
+          <h3>🧭 How we confirmed</h3>
+          <p>Queried <code>pg_policies</code> across all <code>sprout_*</code> tables — newsletters returned <b>no rows</b> while contacts / orgs / events / profile each had <code>anon_all (using true / with check true)</code>.</p>
+        </div>
+      </div>
+
+      <div class="section-label">The fix</div>
+      <div class="row">
+        <div class="card fix">
+          <h3>✅ Applied via Supabase MCP</h3>
+          <p>Added the same <code>anon_all</code> policy through <code>apply_migration</code> — migration name <code>sprout_newsletters_anon_all_policy</code>. <span class="check">Verified live</span> in <code>pg_policies</code>; matches the other tables exactly. Applies immediately, no redeploy.</p>
+          <div class="codeblock"><span class="kw">create policy</span> <span class="str">"anon_all"</span> <span class="kw">on</span> public.sprout_newsletters
+  <span class="kw">for all to</span> anon
+  <span class="kw">using</span> (<span class="str">true</span>)
+  <span class="kw">with check</span> (<span class="str">true</span>);</div>
+        </div>
+        <div class="card note">
+          <h3>🔐 Security reality (deferred)</h3>
+          <p>This app has <b>no Supabase Auth</b> — RLS is on everywhere but every policy is wide-open <code>anon</code>, and the anon key ships in the client bundle. The whole CRM is effectively public.</p>
+          <p>So this change makes newsletters <b>consistent</b>, not less safe. Real lockdown (Auth + <code>auth.uid()</code>-scoped policies on every table) is now tracked as its own cross-app project.</p>
+        </div>
+      </div>
+
+      <div class="foot">
+        <span class="pill branch">main</span>
+        <span>DB migration — applied directly to Supabase</span>
+        <span>Newsletter drafts + featured-photo crop position now persist ✅</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

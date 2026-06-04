@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Featured-image fix + crop control</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Lato',Helvetica,Arial,sans-serif; background:#F7F7F6; color:#030000; padding:40px 20px; }
+  .slide { max-width:920px; margin:0 auto; background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 18px 50px rgba(3,0,0,.12); }
+  .hd { padding:30px 36px; background:#030000; color:#fff; }
+  .acid-rule { height:5px; background:linear-gradient(90deg,#73C4D6 0 25%,#E10098 25% 50%,#C6C902 50% 75%,#FAD100 75% 100%); }
+  .eyebrow { font-size:12px; font-weight:900; letter-spacing:3px; text-transform:uppercase; color:#FAD100; margin-bottom:8px; }
+  .ttl { font-size:27px; font-weight:900; line-height:1.2; }
+  .sub { font-size:14px; color:#b8b8b4; margin-top:8px; }
+  .body { padding:30px 36px 36px; }
+  .meta { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:26px; }
+  .chip { font-size:12px; font-weight:700; padding:6px 13px; border-radius:20px; background:#F7F7F6; border:1px solid #ECECEA; }
+  .chip b { font-weight:900; }
+  .chip.acid { background:#FAF8D6; border-color:#E4E59A; }
+  .chip.cyan { background:#E4F3F7; border-color:#A9D9E5; }
+  .card { border:1px solid #ECECEA; border-radius:12px; padding:20px 22px; margin-bottom:16px; }
+  .card.solve { border-left:6px solid #C6C902; }
+  .card.feat  { border-left:6px solid #73C4D6; }
+  .card.flag  { border-left:6px solid #E10098; background:#FDEAF6; }
+  .card h3 { font-size:16px; font-weight:900; margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+  .card p { font-size:14px; line-height:1.6; color:#3a3a38; }
+  .card p + p { margin-top:8px; }
+  code { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12.5px; background:#F2F2F0; padding:2px 6px; border-radius:4px; }
+  .tag { display:inline-block; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:1px; padding:3px 9px; border-radius:5px; }
+  .tag.fixed { background:#C6C902; color:#3a3d00; }
+  .tag.new   { background:#73C4D6; color:#0d3d49; }
+  .tag.todo  { background:#E10098; color:#fff; }
+  .ft { display:flex; flex-wrap:wrap; gap:18px; align-items:center; padding:18px 36px; background:#F7F7F6; border-top:1px solid #ECECEA; font-size:12.5px; }
+  .ft .k { color:#8a8a86; font-weight:700; }
+  .ft .v { font-weight:900; }
+  .ft .v.hash { color:#E10098; font-family:ui-monospace,Menlo,Consolas,monospace; }
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="hd">
+      <div class="eyebrow">Sprout CRM · Delivery · 2026-06-04</div>
+      <div class="ttl">Gigantic featured image — SOLVED · plus a drag-to-reposition crop</div>
+      <div class="sub">A 4-session bug, finally caught. The CSS was never the problem.</div>
+    </div>
+    <div class="acid-rule"></div>
+    <div class="body">
+
+      <div class="meta">
+        <span class="chip cyan">📁 <b>lib/newsletter.js</b></span>
+        <span class="chip cyan">📁 <b>components/CRMManager.jsx</b></span>
+        <span class="chip">🧪 <b>npm run build</b> passes</span>
+        <span class="chip acid">🎯 Effort: diagnose high / fix low</span>
+      </div>
+
+      <div class="card solve">
+        <h3><span class="tag fixed">Fixed</span> The root cause: HTML leaking into the <code>alt</code> attribute</h3>
+        <p>The featured (and spotlight) <code>&lt;img alt="…"&gt;</code> used <code>cval()</code> for the alt text — which returns an HTML <code>&lt;span&gt;</code> placeholder when the field is empty. Those quotes <b>terminated the <code>&lt;img&gt;</code> tag early</b>, so the browser dropped the real <code>style</code> (<code>height:200px; max-width:544px; object-fit:cover</code>) and the photo fell back to natural size = gigantic.</p>
+        <p><b>Why it hid for 4 sessions:</b> every prior fix tweaked the sizing CSS, and every test used a filled-in title (so <code>cval</code> returned clean text). Uploading the photo <i>before</i> typing a title triggered the empty-field path. The smoking gun: inspecting the live element showed <code>alt="&lt;span style=" color:#c2c2bf;"…</code></p>
+        <p><b>Fix:</b> both alts now use plain escaped text — <code>esc(v.featuredTitle || "Featured event")</code>. Verified in headless Chromium with an empty title → renders exactly <b>544×200</b>.</p>
+      </div>
+
+      <div class="card feat">
+        <h3><span class="tag new">New</span> Drag-to-reposition crop for the featured photo</h3>
+        <p>Since the image already uses <code>object-fit:cover</code>, repositioning just controls <code>object-position</code> — no canvas, no re-upload, email-safe. New reusable <code>ImageCrop</code> component shows the photo at the exact 544×200 banner shape; <b>drag the photo</b> to choose what shows. Saves as <code>field_values.featuredPhotoPos</code> ("50% 35%"), recenters on Replace.</p>
+      </div>
+
+      <div class="card flag">
+        <h3><span class="tag todo">Needs OK</span> sprout_newsletters has no RLS policy</h3>
+        <p>It's the only <code>sprout_*</code> table with no row-level-security policy, so every save returns 401 and the table is empty — drafts &amp; crop positions don't persist, and the editor floods with "Save failed". One-line fix ready (the same <code>anon_all</code> policy every other table has). Say <b>"add the newsletters policy"</b> to apply.</p>
+      </div>
+
+    </div>
+    <div class="ft">
+      <span><span class="k">commit</span> <span class="v hash">8f22cb1</span></span>
+      <span><span class="k">branch</span> <span class="v">main</span></span>
+      <span><span class="k">pushed</span> <span class="v">✓ origin/main</span></span>
+      <span><span class="k">confirmed live</span> <span class="v">"PERFECT, that worked"</span></span>
+    </div>
+  </div>
+</body>
+</html>
