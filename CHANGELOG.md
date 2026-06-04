@@ -2,6 +2,14 @@
 
 ---
 
+## 2026-06-04 — Compact newsletter masthead: "MONTHLY ROUNDUP" → "MONTHLY SPROUT"
+
+One-line template tweak (`lib/newsletter.js` only; `npm run build` passes).
+
+- The masthead right-column label in `buildCompact()` read `Monthly Roundup` (rendered uppercase via `text-transform:uppercase`). Changed the literal to `Monthly Sprout` at `lib/newsletter.js:233`.
+- Display-only. The template picker `name` ("Monthly Roundup") and the `<title>` tag ("Sprout Society Monthly Roundup") were left untouched.
+- Commit staged `lib/newsletter.js` only. The pre-existing uncommitted `components/CRMManager.jsx` NewsletterView refactor (open handoff) and a line-endings-only no-op in `lib/schemas.js` were deliberately excluded.
+
 ## 2026-06-04 — UNRESOLVED: featured newsletter image still renders gigantic (handoff to a fresh convo)
 
 Debugging session. The compact newsletter editor preview still renders an uploaded Featured photo at full natural height (spilling past the email-card edges). All fixes failed from the user's POV — handing off.
