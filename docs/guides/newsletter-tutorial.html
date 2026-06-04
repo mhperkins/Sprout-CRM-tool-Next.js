@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to Make & Send a Newsletter — Sprout Society</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0a0a0a; --paper:#f4f4f1; --card:#ffffff;
+    --acid:#c6c902; --acid-lt:#fbfbe0;
+    --banana:#fad100; --fuchsia:#e5009e; --cyan:#22b6c4;
+    --g800:#1f2937; --g600:#4b5563; --g500:#6b7280; --g300:#d1d5db; --g200:#e5e7eb; --g100:#f3f4f6;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:'Lato',-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--paper);line-height:1.6}
+  .wrap{max-width:920px;margin:0 auto;padding:0 22px 90px}
+
+  /* ── Masthead ── */
+  .hero{background:var(--ink);color:#fff;padding:54px 22px 46px;text-align:center;border-bottom:6px solid var(--acid)}
+  .hero .kicker{font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--banana);margin-bottom:14px}
+  .hero h1{font-size:clamp(28px,5vw,44px);font-weight:900;margin:0 0 12px;line-height:1.1}
+  .hero p{font-size:17px;color:#d8d8d4;max-width:620px;margin:0 auto}
+  .hero .leaf{font-size:40px;margin-bottom:6px}
+
+  /* ── Intro panel ── */
+  .intro{background:var(--card);border-radius:16px;padding:26px 28px;margin:-30px auto 0;max-width:760px;box-shadow:0 10px 30px rgba(0,0,0,.10);position:relative}
+  .intro h2{margin:0 0 8px;font-size:19px;font-weight:900}
+  .intro p{margin:0 0 4px;color:var(--g600);font-size:15px}
+  .bigsteps{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .bigstep{flex:1;min-width:140px;background:var(--g100);border-radius:12px;padding:14px 14px;text-align:center}
+  .bigstep .n{display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--banana);font-weight:900;font-size:13px;align-items:center;justify-content:center;margin-bottom:8px}
+  .bigstep .t{font-size:13px;font-weight:700;color:var(--g800);line-height:1.3}
+
+  /* ── Step block ── */
+  .step{background:var(--card);border-radius:16px;margin:30px 0;box-shadow:0 4px 18px rgba(0,0,0,.06);overflow:hidden;border:1px solid var(--g200)}
+  .step-hd{display:flex;align-items:center;gap:16px;padding:22px 26px 18px}
+  .step-num{flex:none;width:46px;height:46px;border-radius:50%;background:var(--acid);color:var(--ink);font-size:21px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 #9a9c00}
+  .step-hd h3{margin:0;font-size:21px;font-weight:900}
+  .step-hd .sub{margin:2px 0 0;font-size:14px;color:var(--g500);font-weight:700}
+  .step-bd{padding:0 26px 26px}
+  .step-bd > p{font-size:15.5px;color:var(--g600);margin:0 0 16px}
+
+  /* ── Screenshot + pins ── */
+  .shot{position:relative;display:inline-block;width:100%;border-radius:12px;overflow:hidden;border:1px solid var(--g200);background:var(--g100);box-shadow:0 6px 20px rgba(0,0,0,.10)}
+  .shot img{display:block;width:100%;height:auto}
+  .pin{position:absolute;width:30px;height:30px;border-radius:50%;background:var(--fuchsia);color:#fff;font-weight:900;font-size:15px;display:flex;align-items:center;justify-content:center;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35);transform:translate(-50%,-50%);z-index:2}
+  .pin.cy{background:var(--cyan)} .pin.bk{background:var(--ink);color:var(--banana)}
+
+  /* ── Legend under a shot ── */
+  .legend{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:10px}
+  .legend li{display:flex;gap:12px;align-items:flex-start;font-size:15px}
+  .legend .b{flex:none;width:24px;height:24px;border-radius:50%;background:var(--fuchsia);color:#fff;font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .legend .b.cy{background:var(--cyan)} .legend .b.bk{background:var(--ink);color:var(--banana)}
+  .legend b{color:var(--g800)}
+
+  /* ── Callout note ── */
+  .note{display:flex;gap:12px;background:var(--acid-lt);border:1px solid var(--acid);border-radius:12px;padding:14px 16px;margin:18px 0 0;font-size:14.5px;color:#444}
+  .note .ic{font-size:20px;flex:none}
+  .note.tip{background:#e9f8fa;border-color:#9fdde4}
+  .note.warn{background:#fff6e0;border-color:var(--banana)}
+
+  /* ── Two-up grid for the two templates ── */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px}
+  @media(max-width:620px){.grid2{grid-template-columns:1fr}}
+  .tcard{border:1px solid var(--g200);border-radius:12px;padding:18px;background:var(--g100)}
+  .tcard h4{margin:0 0 6px;font-size:16px;font-weight:900}
+  .tcard p{margin:0;font-size:14px;color:var(--g600)}
+  .tcard .tag{display:inline-block;background:var(--ink);color:var(--banana);font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;margin-bottom:10px;letter-spacing:.04em}
+
+  /* ── Workflow rail ── */
+  .flow{display:flex;align-items:stretch;gap:0;margin-top:8px;flex-wrap:wrap}
+  .flow .stg{flex:1;min-width:130px;border-radius:12px;padding:14px 12px;text-align:center;border:2px solid var(--g200);background:var(--g100);position:relative}
+  .flow .stg .lbl{font-size:14px;font-weight:900}
+  .flow .stg .dsc{font-size:12px;color:var(--g500);margin-top:3px}
+  .flow .arw{align-self:center;font-size:22px;color:var(--g300);padding:0 6px;font-weight:900}
+  .flow .stg.s1{border-color:var(--g300)}
+  .flow .stg.s2{border-color:var(--banana);background:#fffbe8}
+  .flow .stg.s3{border-color:var(--acid);background:var(--acid-lt)}
+  .flow .stg.s4{border-color:var(--ink);background:var(--ink);color:#fff}
+  .flow .stg.s4 .dsc{color:#bbb}
+  @media(max-width:620px){.flow .arw{transform:rotate(90deg)}}
+
+  /* ── Closing ── */
+  .end{background:var(--ink);color:#fff;border-radius:16px;padding:34px 30px;margin-top:40px;text-align:center}
+  .end h3{margin:0 0 10px;font-size:22px;font-weight:900;color:var(--banana)}
+  .end p{margin:0 auto;max-width:560px;color:#d8d8d4;font-size:15px}
+  .end .chips{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+  .end .chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:7px 15px;font-size:13px;font-weight:700}
+
+  .footnote{text-align:center;color:var(--g500);font-size:12.5px;margin-top:26px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="leaf">🌱</div>
+  <div class="kicker">Sprout Society · Newsletter Guide</div>
+  <h1>How to Make &amp; Send a Newsletter</h1>
+  <p>A plain-English walkthrough. No tech experience needed. If you can fill out a form and click a button, you can do this.</p>
+</header>
+
+<div class="wrap">
+
+  <div class="intro">
+    <h2>What you're about to do</h2>
+    <p>You'll pick a layout, fill in a few boxes (the app even cleans up your writing for you), check how it looks, send a test to yourself, and then send it to your people. That's the whole thing.</p>
+    <div class="bigsteps">
+      <div class="bigstep"><div class="n">1</div><div class="t">Pick a template</div></div>
+      <div class="bigstep"><div class="n">2</div><div class="t">Fill in the boxes</div></div>
+      <div class="bigstep"><div class="n">3</div><div class="t">Check the preview</div></div>
+      <div class="bigstep"><div class="n">4</div><div class="t">Test it on yourself</div></div>
+      <div class="bigstep"><div class="n">5</div><div class="t">Send it out</div></div>
+    </div>
+  </div>
+
+  <!-- STEP 1 -->
+  <section class="step">
+    <div class="step-hd">
+      <div class="step-num">1</div>
+      <div><h3>Open the Newsletter page</h3><div class="sub">It lives in the left-hand menu</div></div>
+    </div>
+    <div class="step-bd">
+      <p>Look down the dark menu on the left side of the screen and click <b>Newsletter</b>. This page is your home base: new layouts to start from sit on top, and anything you've saved before sits underneath.</p>
+      <div class="shot">
+        <img src="newsletter-shots/01-full-landing.png" alt="The Newsletter page with the left menu and template choices">
+        <span class="pin" style="left:8.5%;top:33.5%">1</span>
+        <span class="pin cy" style="left:48%;top:25%">2</span>
+        <span class="pin bk" style="left:48%;top:50%">3</span>
+      </div>
+      <ul class="legend">
+        <li><span class="b">1</span><span><b>Newsletter</b> in the menu — click it to land here.</span></li>
+        <li><span class="b cy">2</span><span><b>Templates</b> — ready-made layouts. You'll start a newsletter from one of these.</span></li>
+        <li><span class="b bk">3</span><span><b>Saved newsletters</b> — every draft and sent issue you've made, so you can come back anytime.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="step">
+    <div class="step-hd">
+      <div class="step-num">2</div>
+      <div><h3>Pick a template</h3><div class="sub">Two layouts to choose from</div></div>
+    </div>
+    <div class="step-bd">
+      <p>Click the yellow <b>Use this →</b> button under whichever layout fits. Don't overthink it — most of the time you want the <b>Monthly Roundup</b>.</p>
+      <div class="grid2">
+        <div class="tcard">
+          <span class="tag">MOST COMMON</span>
+          <h4>Monthly Roundup</h4>
+          <p>Your full monthly update: a featured event with a photo, the coworking note, a membership ask, a community spotlight, and a list of upcoming &amp; past events. Built to look great on a phone.</p>
+        </div>
+        <div class="tcard">
+          <span class="tag">QUICK ONE-OFF</span>
+          <h4>Quick Hit</h4>
+          <p>A short, single-message send for between the monthly ones. One event, one update, one button. Use it when you just have one thing to say.</p>
+        </div>
+      </div>
+      <div class="note tip"><span class="ic">💡</span><span>Nothing is final when you click <b>Use this</b>. It just opens an editor. You can change everything, save it for later, or throw it away.</span></div>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="step">
+    <div class="step-hd">
+      <div class="step-num">3</div>
+      <div><h3>Meet the editor</h3><div class="sub">You type on the left, it appears on the right</div></div>
+    </div>
+    <div class="step-bd">
+      <p>This is where you'll spend your time. The <b>left side is your worksheet</b> — boxes you fill in. The <b>right side is a live preview</b> — the actual email, updating as you type. You never have to imagine how it'll look; you just watch it appear.</p>
+      <div class="shot">
+        <img src="newsletter-shots/04-full-editor.png" alt="The editor: a form on the left and a live email preview on the right">
+        <span class="pin" style="left:33%;top:13%">1</span>
+        <span class="pin cy" style="left:75%;top:30%">2</span>
+        <span class="pin bk" style="left:91.5%;top:4.5%">3</span>
+      </div>
+      <ul class="legend">
+        <li><span class="b">1</span><span><b>Your worksheet</b> — the boxes you fill in (subject, your writing, photos).</span></li>
+        <li><span class="b cy">2</span><span><b>Live preview</b> — the real email. It changes the moment you type. This is exactly what people will receive.</span></li>
+        <li><span class="b bk">3</span><span><b>Save buttons</b> — top right. We'll cover these in Step 6. Your work is also saved automatically as you go.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="step">
+    <div class="step-hd">
+      <div class="step-num">4</div>
+      <div><h3>Fill in the details</h3><div class="sub">Subject line and the month</div></div>
+    </div>
+    <div class="step-bd">
+      <p>At the top of your worksheet is a small <b>Details</b> box. Two things matter here:</p>
+      <ul class="legend" style="margin-top:0">
+        <li><span class="b">A</span><span><b>Subject line</b> — what people see in their inbox before they open it. Keep it short and inviting, like <i>"June at Sprout 🌱"</i>.</span></li>
+        <li><span class="b">B</span><span><b>Month label</b> — like <i>"June 2026."</i> It shows at the top of the newsletter.</span></li>
+      </ul>
+      <p style="margin-top:16px">Leave <b>Status</b> on <b>Draft</b> for now and ignore <b>Send date</b> — we'll come back to those when it's time to send.</p>
+      <div class="shot">
+        <img src="newsletter-shots/06-details.png" alt="The Details box: subject line, status, send date, and month label">
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 5 -->
+  <section class="step">
+    <div class="step-hd">
+      <div class="step-num">5</div>
+      <div><h3>Write your sections</h3><div class="sub">Where the magic buttons live</div></div>
+    </div>
+    <div class="step-bd">
+      <p>Below Details is the <b>Sections</b> list — one box per part of the newsletter (headline, intro, featured event, coworking, membership, spotlight, and your events). Just fill in the ones you have something for. Empty boxes simply don't show up in the email.</p>
+      <p>Two buttons make this easy, and they appear right next to the boxes:</p>
+      <ul class="legend" style="margin-top:0">
+        <li><span class="b bk">✨</span><span><b>Polish</b> — type messy notes however they come out of your head, then click <b>✨ Polish</b>. The app rewrites it into clean, friendly Sprout-style sentences. You can polish more than once and pick the version you like. Don't like it? Discard it — your original stays put.</span></li>
+        <li><span class="b cy">🖼</span><span><b>Add image</b> — click it to upload a photo from your computer. For the featured photo you can even <b>drag the picture</b> to choose what part shows.</span></li>
+      </ul>
+      <div class="note"><span class="ic">📅</span><span>For <b>Upcoming events</b> and <b>Past events</b>, fill in the first one, then click <b>＋ Add another event</b> for each extra. Remove any you don't need.</span></div>
+      <div class="shot" style="margin-top:18px;max-width:430px">
+        <img src="newsletter-shots/08-sections.png" alt="The Sections list with Polish and Add image buttons on each box">
+      </div>
+      <div class="note tip"><span class="ic">💡</span><span><b>Polish needs something to work with.</b> If you click it on an empty box, it'll just ask you to write a few notes first. Jot the rough idea down, then polish.</span></div>
+    </div>
+  </section>
+
+  <!-- STEP 6 -->
+  <section class="step">
+    <div class="step-hd">
+      <div class="step-num">6</div>
+      <div><h3>Save your work</h3><div class="sub">So you can step away anytime</div></div>
+    </div>
+    <div class="step-bd">
+      <p>Up in the top-right corner you have two save buttons. You really can't lose your work here — it also saves on its own as you go.</p>
+      <ul class="legend" style="margin-top:0">
+        <li><span class="b">💾</span><span><b>Save draft</b> — saves but keeps you in the editor so you can keep working.</span></li>
+        <li><span class="b bk">✓</span><span><b>Save &amp; close</b> — saves and takes you back to the main list. Your draft is waiting for you under <b>Saved newsletters</b> whenever you return.</span></li>
+      </ul>
+      <div class="note tip"><span class="ic">🛟</span><span>Even if you close the tab or walk away, the app remembers your draft. Come back later and pick up right where you left off.</span></div>
+    </div>
+  </section>
+
+  <!-- STEP 7 -->
+  <section class="step">
+    <div class="step-hd">
+      <div class="step-num">7</div>
+      <div><h3>The four stages of a newsletter</h3><div class="sub">Draft → Pending → Approved → Sent</div></div>
+    </div>
+    <div class="step-bd">
+      <p>Every newsletter moves through four stages. You set the stage with the <b>Status</b> dropdown in the Details box. This is a safety net: the big <b>Send to list</b> button only switches on once you've marked it <b>Approved</b>, so nothing goes out by accident.</p>
+      <div class="flow">
+        <div class="stg s1"><div class="lbl">Draft</div><div class="dsc">You're still writing</div></div>
+        <div class="arw">→</div>
+        <div class="stg s2"><div class="lbl">Pending</div><div class="dsc">Ready for a look-over</div></div>
+        <div class="arw">→</div>
+        <div class="stg s3"><div class="lbl">Approved</div><div class="dsc">Good to go</div></div>
+        <div class="arw">→</div>
+        <div class="stg s4"><div class="lbl">Sent</div><div class="dsc">It's out the door</div></div>
+      </div>
+      <div class="note warn"><span class="ic">🔒</span><span>You can't send to your whole list until the status says <b>Approved</b>. That's on purpose — it gives you a moment to be sure.</span></div>
+    </div>
+  </section>
+
+  <!-- STEP 8 -->
+  <section class="step">
+    <div class="step-hd">
+      <div class="step-num">8</div>
+      <div><h3>Always send a test to yourself first</h3><div class="sub">See it in a real inbox before anyone else does</div></div>
+    </div>
+    <div class="step-bd">
+      <p>Find the <b>Send</b> box on your worksheet. Before sending to anyone else, send it to your own email so you can see exactly what it looks like when it lands.</p>
+      <div class="shot" style="max-width:480px">
+        <img src="newsletter-shots/07-send.png" alt="The Send box: passphrase, test send, and send-to-list">
+        <span class="pin" style="left:50%;top:21%">1</span>
+        <span class="pin cy" style="left:50%;top:44%">2</span>
+        <span class="pin bk" style="left:50%;top:88%">3</span>
+      </div>
+      <ul class="legend">
+        <li><span class="b">1</span><span><b>Send passphrase</b> — type the password Max gave you. This is required for any send, and keeps strangers from using it.</span></li>
+        <li><span class="b cy">2</span><span><b>Test send</b> — type your own email, click <b>✉️ Send test</b>. It arrives with <b>[TEST]</b> in front of the subject. Open it on your phone and your computer to check it looks right.</span></li>
+        <li><span class="b bk">3</span><span><b>Send to list</b> — the real thing (next step). It's greyed out until the status is Approved.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- STEP 9 -->
+  <section class="step">
+    <div class="step-hd">
+      <div class="step-num">9</div>
+      <div><h3>Send it to your people</h3><div class="sub">When you're happy with the test</div></div>
+    </div>
+    <div class="step-bd">
+      <p>Once the test looks great, you're ready for real. Three quick moves:</p>
+      <ul class="legend" style="margin-top:0">
+        <li><span class="b">1</span><span>In <b>Details</b>, change <b>Status</b> to <b>Approved</b>. The <b>🚀 Send to list</b> button now wakes up.</span></li>
+        <li><span class="b cy">2</span><span>In the <b>Send to list</b> area, choose who gets it: <b>All buckets</b>, or just <b>Community</b>, <b>Donors</b>, or <b>Prospects</b>. It shows you how many people have an email on file.</span></li>
+        <li><span class="b bk">3</span><span>Click <b>🚀 Send to list</b>. It asks you to confirm the count first. Say yes, and it goes out from <b>hello@sproutsociety.org</b>. The newsletter flips to <b>Sent</b> automatically.</span></li>
+      </ul>
+      <div class="note warn"><span class="ic">🚀</span><span><b>This one is for real.</b> Everyone in the bucket you picked will receive it. The test send is for checking; this button is the actual send.</span></div>
+    </div>
+  </section>
+
+  <!-- STEP 10 -->
+  <section class="step">
+    <div class="step-hd">
+      <div class="step-num">10</div>
+      <div><h3>Finding it again later</h3><div class="sub">Nothing ever gets lost</div></div>
+    </div>
+    <div class="step-bd">
+      <p>Back on the main Newsletter page, scroll to <b>Saved newsletters</b>. Everything is sorted into <b>Drafts</b>, <b>Pending</b>, <b>Approved</b>, and <b>Sent</b>. Click any one to open it — to keep editing a draft, or just to look back at something you already sent.</p>
+      <div class="shot" style="max-width:680px">
+        <img src="newsletter-shots/03-saved.png" alt="The Saved newsletters list grouped by stage">
+      </div>
+    </div>
+  </section>
+
+  <div class="end">
+    <h3>That's it — you're a newsletter editor now 🌱</h3>
+    <p>Pick a template, fill the boxes, polish your words, test it on yourself, approve, and send. Take it one box at a time and you genuinely can't break anything.</p>
+    <div class="chips">
+      <span class="chip">1 · Pick a template</span>
+      <span class="chip">2 · Fill the boxes</span>
+      <span class="chip">3 · ✨ Polish</span>
+      <span class="chip">4 · ✉️ Test yourself</span>
+      <span class="chip">5 · Approve</span>
+      <span class="chip">6 · 🚀 Send</span>
+    </div>
+  </div>
+
+  <div class="footnote">Sprout Society CRM · Newsletter walkthrough · Sends go out from hello@sproutsociety.org</div>
+
+</div>
+</body>
+</html>

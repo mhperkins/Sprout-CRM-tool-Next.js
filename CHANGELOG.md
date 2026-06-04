@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-06-05 — Non-techy newsletter tutorial with real annotated screenshots
+
+Docs only, no app code or data change. Effort: medium.
+
+Built a plain-English HTML walkthrough of the newsletter feature for people who have never seen the app — no tech speak, just step-by-step with annotated screenshots.
+
+- Captured 10 high-res screenshots of the live Newsletter UI by driving the running dev server with a throwaway Playwright script (landing, templates, editor, Details/Send/Sections cards, live preview).
+- `docs/guides/newsletter-tutorial.html` — references the PNGs in `docs/guides/newsletter-shots/`.
+- `docs/guides/newsletter-tutorial-portable.html` — single file with all screenshots embedded as base64 (~0.95 MB). The shareable version; opens or emails anywhere with no broken images.
+- 10 steps: open Newsletter → pick a template → meet the editor → fill details → write sections (✨ Polish + 🖼 Add image) → save → the Draft→Pending→Approved→Sent stages → test on yourself first → send to list → find it again.
+- Annotations are percentage-positioned numbered pins (so they scale) with plain-language legends, in the Sprout palette (ink/acid/banana/fuchsia/cyan, Lato). Both throwaway capture/inline scripts deleted after.
+
+---
+
 ## 2026-06-05 — Wrote + imported the May newsletter, then built the in-app send workflow (Draft → Pending → Approved → Sent) with Gmail sending
 
 App code + new server route + data. Effort: high (multi-file build + outward-facing send + Gmail auth wiring). `npm run build` passes; verified a live test send end to end.
