@@ -2139,7 +2139,7 @@ function blankNewsletter(templateId, today) {
 
 function NewsletterView({newsletters,events,contacts,profile,onUpdate,onDelete,showToast}) {
   const today = new Date().toISOString().slice(0,10);
-  const [mode,setMode]=useState("list");          // list | pick | edit
+  const [mode,setMode]=useState("list");          // list | edit
   const [draft,setDraft]=useState(null);
   const [confirmDel,setConfirmDel]=useState(null);
   const suppressAuto=useRef(false);               // skip the unmount auto-save (used by delete + explicit close)
@@ -2176,69 +2176,68 @@ function NewsletterView({newsletters,events,contacts,profile,onUpdate,onDelete,s
     showToast("Draft saved ✓");
   };
 
-  /* ── List ── */
+  /* ── Landing: templates on top, saved newsletters below ── */
   if (mode==="list") {
+    const hasSaved = newsletters.length>0;
     return (
       <div className="page">
         <div className="pg-hd">
-          <div><div className="pg-ttl">Newsletter</div><div className="pg-sub">{newsletters.length} issue{newsletters.length!==1?"s":""} · past, current, and upcoming</div></div>
-          <button className="btn btn-blk" onClick={()=>setMode("pick")}>+ New Newsletter</button>
+          <div><div className="pg-ttl">Newsletter</div><div className="pg-sub">Start from a template, or open a saved one below</div></div>
         </div>
 
-        {newsletters.length===0 && (
-          <div className="card"><div className="card-bd" style={{textAlign:"center",padding:"40px 24px",color:"var(--g500)"}}>
-            <div style={{fontSize:30,marginBottom:10}}>📰</div>
-            <div style={{fontSize:14,fontWeight:700,color:"var(--g700)",marginBottom:4}}>No newsletters yet</div>
-            <div style={{fontSize:12,marginBottom:16}}>Start one from a template. Recaps and upcoming events auto-fill from the CRM.</div>
-            <button className="btn btn-acid btn-sm" onClick={()=>setMode("pick")}>+ New Newsletter</button>
-          </div></div>
-        )}
-
-        {NL_GROUPS.map(g=>{
-          const items=newsletters.filter(n=>(n.status||"draft")===g.status)
-            .sort((a,b)=>(b.send_date||b.month||"").localeCompare(a.send_date||a.month||""));
-          if(!items.length) return null;
-          return (
-            <div className="card" key={g.status}>
-              <div className="card-hd"><span className="card-ttl">{g.label}</span><span style={{fontSize:11,color:"var(--g500)"}}>{items.length} · {g.hint}</span></div>
-              <div className="card-bd" style={{display:"flex",flexDirection:"column",gap:8}}>
-                {items.map(n=>(
-                  <div key={n.id} className="overdue-row" style={{cursor:"pointer"}} onClick={()=>openEdit(n)}>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:13,fontWeight:700,color:"var(--g800)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{n.subject||"(no subject)"}</div>
-                      <div style={{fontSize:11,color:"var(--g500)",marginTop:2}}>
-                        {(TEMPLATES.find(t=>t.id===n.template)?.name)||n.template} · {n.month||"no month"}{n.send_date?` · ${n.send_date}`:""}
-                      </div>
-                    </div>
-                    <NlStatusTag status={n.status}/>
+        {/* Templates */}
+        <div className="card">
+          <div className="card-hd"><span className="card-ttl">Templates</span><span style={{fontSize:11,color:"var(--g500)"}}>Pick a layout to start a new one</span></div>
+          <div className="card-bd">
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+              {TEMPLATES.map(t=>(
+                <div key={t.id} className="card" style={{cursor:"pointer",margin:0}} onClick={()=>startNew(t.id)}>
+                  <div className="card-bd">
+                    <div style={{fontSize:15,fontWeight:900,color:"var(--g800)",marginBottom:6}}>{t.name}</div>
+                    <div style={{fontSize:12,lineHeight:1.5,color:"var(--g600)"}}>{t.blurb}</div>
+                    <button className="btn btn-acid btn-sm" style={{marginTop:14}} onClick={(e)=>{e.stopPropagation();startNew(t.id);}}>Use this →</button>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          );
-        })}
-      </div>
-    );
-  }
-
-  /* ── Template picker ── */
-  if (mode==="pick") {
-    return (
-      <div className="page">
-        <div className="pg-hd">
-          <div><div className="pg-ttl">Pick a template</div><div className="pg-sub">Choose a starting layout</div></div>
-          <button className="btn btn-ghost btn-sm" onClick={backToList}>← Cancel</button>
+          </div>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-          {TEMPLATES.map(t=>(
-            <div key={t.id} className="card" style={{cursor:"pointer"}} onClick={()=>startNew(t.id)}>
-              <div className="card-bd">
-                <div style={{fontSize:15,fontWeight:900,color:"var(--g800)",marginBottom:6}}>{t.name}</div>
-                <div style={{fontSize:12,lineHeight:1.5,color:"var(--g600)"}}>{t.blurb}</div>
-                <button className="btn btn-acid btn-sm" style={{marginTop:14}} onClick={(e)=>{e.stopPropagation();startNew(t.id);}}>Use this →</button>
+
+        {/* Saved */}
+        <div className="card">
+          <div className="card-hd"><span className="card-ttl">Saved newsletters</span><span style={{fontSize:11,color:"var(--g500)"}}>{newsletters.length} issue{newsletters.length!==1?"s":""}</span></div>
+          <div className="card-bd">
+            {!hasSaved && (
+              <div style={{textAlign:"center",padding:"28px 24px",color:"var(--g500)"}}>
+                <div style={{fontSize:26,marginBottom:8}}>📰</div>
+                <div style={{fontSize:13,fontWeight:700,color:"var(--g700)",marginBottom:4}}>No saved newsletters yet</div>
+                <div style={{fontSize:12}}>Pick a template above to start one. Drafts and sent issues show up here.</div>
               </div>
-            </div>
-          ))}
+            )}
+            {hasSaved && NL_GROUPS.map(g=>{
+              const items=newsletters.filter(n=>(n.status||"draft")===g.status)
+                .sort((a,b)=>(b.send_date||b.month||"").localeCompare(a.send_date||a.month||""));
+              if(!items.length) return null;
+              return (
+                <div key={g.status} style={{marginBottom:14}}>
+                  <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.05em",color:"var(--g500)",marginBottom:8}}>{g.label} · {items.length}</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                    {items.map(n=>(
+                      <div key={n.id} className="overdue-row" style={{cursor:"pointer"}} onClick={()=>openEdit(n)}>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:13,fontWeight:700,color:"var(--g800)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{n.subject||"(no subject)"}</div>
+                          <div style={{fontSize:11,color:"var(--g500)",marginTop:2}}>
+                            {(TEMPLATES.find(t=>t.id===n.template)?.name)||n.template} · {n.month||"no month"}{n.send_date?` · ${n.send_date}`:""}
+                          </div>
+                        </div>
+                        <NlStatusTag status={n.status}/>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     );
@@ -2272,6 +2271,14 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
     recapLimit:draft.recap_limit, upcomingLimit:draft.upcoming_limit, today,
   }),[draft.template,draft.month,draft.field_values,draft.recap_limit,draft.upcoming_limit,events,profile,spotlightName,today]);
 
+  // Preview-only: inject <base href="about:srcdoc"> so in-email fragment links (e.g. "See more events" → #events)
+  // resolve to the iframe document itself and scroll, instead of inheriting the parent page URL and reloading the
+  // whole CRM app inside the preview pane. The stored/sent HTML (built.html) is left untouched.
+  const previewHtml = useMemo(()=>{
+    const html = built.html||"";
+    return html.replace(/<head([^>]*)>/i, '<head$1><base href="about:srcdoc">');
+  },[built.html]);
+
   const isMonthly = draft.template==="monthly-roundup";
   const isCompact = draft.template==="monthly-roundup-compact";
 
@@ -2283,6 +2290,9 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
 
   // Per-field busy state: fieldId -> "polish" | "upload".
   const [busy,setBusy]=useState({});
+  // Per-field Polish results: fieldId -> { apply, versions:[string] }. Non-destructive — the
+  // original field is untouched until the user clicks "Use this" on a version.
+  const [polishOut,setPolishOut]=useState({});
   async function runPolish(fieldId,label,current,apply){
     if(!current||!current.trim()){ showToast("Write some notes first","err"); return; }
     setBusy(b=>({...b,[fieldId]:"polish"}));
@@ -2290,9 +2300,38 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
       const r=await fetch("/api/polish",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:current,label})});
       const j=await r.json();
       if(!r.ok) throw new Error(j.error||"Polish failed");
-      apply(j.polished); showToast("Polished by Comms ✓");
+      // Append as a new version; preserve earlier versions so the user can pick any of them.
+      setPolishOut(p=>({...p,[fieldId]:{apply,versions:[...((p[fieldId]&&p[fieldId].versions)||[]),j.polished]}}));
     }catch(e){ showToast("Polish: "+(e.message||"failed"),"err"); }
     finally{ setBusy(b=>{const n={...b};delete n[fieldId];return n;}); }
+  }
+  const clearPolish=(fieldId)=>setPolishOut(p=>{const n={...p};delete n[fieldId];return n;});
+  function usePolishVersion(fieldId,text){
+    const o=polishOut[fieldId]; if(o&&o.apply) o.apply(text);
+    clearPolish(fieldId); showToast("Applied ✓");
+  }
+  // Result card rendered directly under a field. Original stays visible above; each re-polish
+  // adds a numbered version, each independently selectable.
+  function polishPanel(fieldId){
+    const o=polishOut[fieldId]; if(!o||!o.versions.length) return null;
+    const multi=o.versions.length>1;
+    return (
+      <div style={{marginTop:6,border:"1px solid var(--acid)",borderRadius:8,background:"var(--acid-lt)",padding:8}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+          <span style={{fontSize:11,fontWeight:800,color:"#3a3d00"}}>✨ Polished by Comms{multi?` · ${o.versions.length} versions`:""}</span>
+          <button className="btn btn-ghost btn-sm" style={{padding:"1px 7px",fontSize:11}} onClick={()=>clearPolish(fieldId)}>✕ Discard</button>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+          {o.versions.map((v,i)=>(
+            <div key={i} style={{background:"#fff",border:"1px solid var(--g200)",borderRadius:6,padding:"7px 9px"}}>
+              {multi&&<div style={{fontSize:10,fontWeight:700,color:"var(--g500)",marginBottom:3}}>v{i+1}{i===o.versions.length-1?" · latest":""}</div>}
+              <div style={{fontSize:13,lineHeight:1.5,color:"var(--g700)",whiteSpace:"pre-wrap",marginBottom:6}}>{v}</div>
+              <button className="btn btn-acid btn-sm" style={{padding:"2px 9px",fontSize:11}} onClick={()=>usePolishVersion(fieldId,v)}>✓ Use this</button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
   function pickImage(fieldId,apply){
     const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
@@ -2445,9 +2484,10 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
                         <div className="fg" key={sec.key}>
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
                             <label className="fl" style={{...LBL,margin:0}}>{sec.label}</label>
-                            {sec.polish&&<button className="btn btn-ghost btn-sm" style={PB} disabled={busy[fid]==="polish"} onClick={()=>runPolish(fid,sec.label,fv[sec.key]||"",t=>setField(sec.key,t))}>{busy[fid]==="polish"?"Polishing…":"✨ Polish"}</button>}
+                            {sec.polish&&<button className="btn btn-ghost btn-sm" style={PB} disabled={busy[fid]==="polish"} onClick={()=>runPolish(fid,sec.label,fv[sec.key]||"",t=>setField(sec.key,t))}>{busy[fid]==="polish"?"Polishing…":(polishOut[fid]?"✨ Re-polish":"✨ Polish")}</button>}
                           </div>
                           <textarea className="fta" rows={sec.rows||2} value={fv[sec.key]||""} onChange={e=>setField(sec.key,e.target.value)} placeholder={sec.polish?"Brain-dump here, then ✨ Polish…":"Type your copy…"}/>
+                          {polishPanel(fid)}
                         </div>
                       );
                     }
@@ -2468,8 +2508,9 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
                                 const fid=`${sec.key}.${idx}.${f.k}`;
                                 return (
                                   <div key={f.k}>
-                                    {f.polish&&<div style={{textAlign:"right",marginBottom:2}}><button className="btn btn-ghost btn-sm" style={{padding:"1px 7px",fontSize:11}} disabled={busy[fid]==="polish"} onClick={()=>runPolish(fid,f.ph,item[f.k]||"",t=>setItem(sec.key,idx,f.k,t))}>{busy[fid]==="polish"?"Polishing…":"✨ Polish"}</button></div>}
+                                    {f.polish&&<div style={{textAlign:"right",marginBottom:2}}><button className="btn btn-ghost btn-sm" style={{padding:"1px 7px",fontSize:11}} disabled={busy[fid]==="polish"} onClick={()=>runPolish(fid,f.ph,item[f.k]||"",t=>setItem(sec.key,idx,f.k,t))}>{busy[fid]==="polish"?"Polishing…":(polishOut[fid]?"✨ Re-polish":"✨ Polish")}</button></div>}
                                     <input className="fi" value={item[f.k]||""} onChange={e=>setItem(sec.key,idx,f.k,e.target.value)} placeholder={f.ph}/>
+                                    {f.polish&&polishPanel(fid)}
                                   </div>
                                 );
                               })}
@@ -2506,7 +2547,7 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
         <div className="card" style={{position:"sticky",top:16}}>
           <div className="card-hd"><span className="card-ttl">Preview</span><span style={{fontSize:11,color:"var(--g500)"}}>live</span></div>
           <div style={{height:"calc(100vh - 180px)",minHeight:480,background:"#F7F7F6",borderRadius:"0 0 10px 10px",overflow:"hidden"}}>
-            <iframe title="newsletter-preview" srcDoc={built.html} style={{width:"100%",height:"100%",border:"none"}}/>
+            <iframe title="newsletter-preview" sandbox="allow-same-origin" srcDoc={previewHtml} style={{width:"100%",height:"100%",border:"none"}}/>
           </div>
         </div>
       </div>

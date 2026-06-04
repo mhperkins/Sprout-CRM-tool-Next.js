@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-06-04 — Newsletter Polish: non-destructive result card with version history
+
+App code change (`components/CRMManager.jsx`; `npm run build` passes). Effort: medium.
+
+**The ask:** the ✨ Polish button overwrote the field silently, destroying the original draft. Make it non-destructive — show the agent's rewrite in a new box with an explicit "add" action, keep the original, and allow re-polishing.
+
+**Built (in `NewsletterEditor`):**
+- New per-field `polishOut` state: `fieldId -> { apply, versions:[string] }`. `runPolish` no longer calls `apply(...)` directly — it **appends** the result to that field's `versions` array, leaving the field untouched.
+- New `polishPanel(fieldId)` renderer — an acid-yellow result card shown directly under the field (original stays visible above). Each re-polish stacks a new numbered version (`v1 · v2 · v3 · latest`), each with its own **✓ Use this** button. A single **✕ Discard** clears the card.
+- `usePolishVersion` applies the chosen text + clears the card; `clearPolish` discards.
+- The Polish button relabels to **✨ Re-polish** once a result exists. Wired into both call sites: single copy fields (Headline, Intro, etc.) and per-item repeat fields (event entries).
+- Layout/version behavior chosen by the user: inline card (not a popup) + keep all versions (not latest-only).
+
+**Also in this commit (folded in):** the prior session's large uncommitted `NewsletterView` refactor (templates-on-top landing; `mode` `list|pick|edit` → `list|edit`; `startNew()`), left on disk across sessions, is committed here so the tree stops drifting. Reverted a leftover debug marker in `lib/newsletter.js` (`border:6px solid red` on the featured `<img>`, from the prior gigantic-image hunt) back to `border:0`.
+
 ## 2026-06-04 — Compact newsletter masthead: "MONTHLY ROUNDUP" → "MONTHLY SPROUT"
 
 One-line template tweak (`lib/newsletter.js` only; `npm run build` passes).
