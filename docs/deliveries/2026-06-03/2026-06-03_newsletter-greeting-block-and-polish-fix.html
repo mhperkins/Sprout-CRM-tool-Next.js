@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprout Delivery — Newsletter greeting block + Polish key fix</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Lato',Helvetica,Arial,sans-serif; background:#F7F7F6; color:#030000; padding:40px 20px; }
+  .slide { max-width:920px; margin:0 auto; background:#FFFFFF; border-radius:14px; overflow:hidden; box-shadow:0 18px 50px rgba(3,0,0,0.10); }
+  .head { padding:34px 40px 26px; border-bottom:4px solid #C6C902; }
+  .kicker { font-size:12px; font-weight:900; letter-spacing:3px; text-transform:uppercase; color:#E10098; }
+  .title { font-size:30px; font-weight:900; line-height:1.2; margin-top:8px; }
+  .sub { font-size:15px; color:#4B5563; margin-top:10px; line-height:1.5; }
+  .meta { display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }
+  .chip { font-size:12px; font-weight:700; padding:6px 12px; border-radius:20px; }
+  .chip.hash { background:#030000; color:#FAD100; font-family:monospace; }
+  .chip.branch { background:#73C4D6; color:#0d3d49; }
+  .chip.repo { background:#F7F7F6; color:#3a3a38; border:1px solid #ECECEA; }
+  .body { padding:30px 40px 40px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .card { border:1px solid #ECECEA; border-radius:10px; padding:20px 22px; }
+  .card.full { grid-column:1 / -1; }
+  .card .bar { height:5px; width:46px; border-radius:3px; margin-bottom:14px; }
+  .card h3 { font-size:17px; font-weight:900; }
+  .card p { font-size:14px; line-height:1.6; color:#3a3a38; margin-top:8px; }
+  .tag { display:inline-block; font-size:11px; font-weight:900; letter-spacing:1px; text-transform:uppercase; padding:3px 9px; border-radius:4px; margin-bottom:6px; }
+  .ship { background:#C6C902; color:#3a3d00; }
+  .fixed { background:#73C4D6; color:#0d3d49; }
+  .pending { background:#FAD100; color:#3a3000; }
+  code { background:#F7F7F6; border:1px solid #ECECEA; border-radius:4px; padding:1px 5px; font-size:12px; }
+  .foot { padding:20px 40px 30px; background:#030000; color:#9a9a96; font-size:12px; line-height:1.6; }
+  .foot b { color:#F7F7F6; }
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="head">
+      <div class="kicker">Sprout CRM · Delivery · June 2026</div>
+      <div class="title">Newsletter shows its Headline + Intro again<br>(plus the Polish "key didn't match" mystery, solved)</div>
+      <div class="sub">Two editor fields had no visible home in the compact template. A Polish error turned out to be a Vercel config issue on the right project — and it surfaced a build break in a different app entirely.</div>
+      <div class="meta">
+        <span class="chip hash">0baa016</span>
+        <span class="chip branch">main</span>
+        <span class="chip repo">Sprout-CRM-tool-Next.js</span>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="grid">
+
+        <div class="card">
+          <div class="bar" style="background:#E10098;"></div>
+          <span class="tag ship">Shipped</span>
+          <h3>Headline + Intro now render</h3>
+          <p>The compact editor exposed <b>Headline</b> and <b>Intro / thank-you</b> fields that appeared nowhere: <code>headline</code> rendered nothing, <code>intro</code> only fed the hidden inbox preheader. Added a visible greeting block at the top of <code>buildCompact()</code>, between the masthead rule and Featured.</p>
+        </div>
+
+        <div class="card">
+          <div class="bar" style="background:#C6C902;"></div>
+          <span class="tag ship">Tuned</span>
+          <h3>Featured banner → 200px</h3>
+          <p>Featured photo banner trimmed <b>260px → 200px</b> with <code>object-position:center</code> and the placeholder padding wrapper dropped. One file: <code>lib/newsletter.js</code>.</p>
+        </div>
+
+        <div class="card">
+          <div class="bar" style="background:#73C4D6;"></div>
+          <span class="tag fixed">Resolved · no code</span>
+          <h3>Polish "API key didn't match"</h3>
+          <p>The deployed app reads <code>ANTHROPIC_API_KEY</code> from <b>Vercel</b>, not <code>.env.local</code>. A stale value sat under that name on the <code>sprout-crm-tool-next-js</code> project. Local key verified valid (curl → 200). <b>Edit</b> the existing var (don't add → "already exists") + redeploy. Polish works.</p>
+        </div>
+
+        <div class="card">
+          <div class="bar" style="background:#FAD100;"></div>
+          <span class="tag pending">Fixed locally · push pending</span>
+          <h3>Grant-tool build break</h3>
+          <p>The redeploy surfaced a failure in a <b>different repo</b> (<code>sprout-grant-tool</code> → "sprout-tools"): <code>supabaseKey is required</code> from a module-scope <code>createClient</code>. Lazy-init fix verified green locally; awaiting OK to push to that repo's main.</p>
+        </div>
+
+        <div class="card full">
+          <div class="bar" style="background:#030000;"></div>
+          <h3>Why it broke at build time</h3>
+          <p><code>createClient(url, SUPABASE_SERVICE_ROLE_KEY)</code> ran at <b>module scope</b>, so <code>next build</code> evaluated it during page-data collection — where the service-role key is absent — and <code>createClient</code> throws synchronously on a missing key. Moving the client into the request handler defers it to runtime. The visible <code>export const config</code> warning was a red herring; removed it anyway (Pages-Router leftover the App Router ignores).</p>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="foot">
+      <b>Committed + pushed</b> · <code style="color:#FAD100;">0baa016</code> on <b>main</b> → Sprout-CRM-tool-Next.js · <code>lib/newsletter.js</code>, <code>CHANGELOG.md</code><br>
+      <b>Still open:</b> push the grant-tool fix (separate repo, blocked on authorization) · Polish key confirmed working on the deployed CRM.
+    </div>
+  </div>
+</body>
+</html>
