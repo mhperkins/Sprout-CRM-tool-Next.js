@@ -2,6 +2,27 @@
 
 ---
 
+## 2026-06-05 — Wrote + imported the May newsletter, then built the in-app send workflow (Draft → Pending → Approved → Sent) with Gmail sending
+
+App code + new server route + data. Effort: high (multi-file build + outward-facing send + Gmail auth wiring). `npm run build` passes; verified a live test send end to end.
+
+**1. Wrote the May "Monthly Sprout" issue.** Ran the Communications Manager agent against the filled intake brief (`briefs/SnTv1_newsletter-intake-TEMPLATE.md`, NOT the blank `newsletter-2026-06.md` — corrected mid-task). Tightened Max's brain-dump into Sprout-voice copy, fixed typos, left genuinely-blank items blank. Imported it as a real compact-template draft (`nl_may_2026_roundup`) by baking `field_values` + HTML through `buildNewsletter()` and upserting to `sprout_newsletters`.
+
+**2. SnT signup hyperlink + responsive fix** (`lib/newsletter.js`):
+- Added an optional `link` field to the compact **upcoming-event** block (`COMPACT_SECTIONS` + `compactUpCard`); renders a clickable fuchsia "Sign up / RSVP →" button. Wired the Show N Tell Google Form to the June 26 card. The editor now shows a "Sign-up / RSVP link" input on every upcoming event.
+- **Made the email fluid:** outer container `width:600px` → `width:100%; max-width:600px`, so it fills any phone width instead of forcing horizontal scroll / zoom-out. Improves every compact newsletter.
+- Fixed the footer **unsubscribe** (dead Mailchimp `*|UNSUB|*` tag → working `mailto:hello@…?subject=Unsubscribe` + physical address) for CAN-SPAM compliance.
+
+**3. Send workflow** (`lib/schemas.js`, `components/CRMManager.jsx`, new `app/api/send/route.js`):
+- New statuses **pending** + **approved** (Zod enum + `NL_STATUS_OPTS`/`NL_GROUPS`/colors). Flow: Draft → Pending → Approved → Sent.
+- New **Send card** in the editor: a passphrase field, a **Test send** (type addresses, subject prefixed `[TEST]`, always available), and **Send to list** (bucket selector All/Community/Donors/Prospects with live email counts, enabled only when status = Approved; on success auto-flips to Sent + stamps the date).
+- New `app/api/send` route sends via **Gmail API as hello@sproutsociety.org**, reusing the existing Workspace OAuth refresh token (has `gmail.send` scope) — no new API key. Test mode = typed addresses; list mode resolves recipients **server-side from the CRM by bucket** (BCC'd in batches of 45) so it can't be aimed at arbitrary addresses.
+- 🔒 Gated by `NEWSLETTER_SEND_SECRET` (the app is public + unauthenticated). Verified 401 on wrong/missing passphrase, 200 + delivered email on a real self-test to hello@.
+
+**Env (added to `.env.local`, must also be set in Vercel):** `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_SENDER`, `NEWSLETTER_SEND_SECRET`. Until set in Vercel, sending works on localhost only.
+
+---
+
 ## 2026-06-05 — Fixed newsletter "Save failed: violates row-level security policy" (added missing RLS policy)
 
 DB-only change (one RLS policy via Supabase MCP `apply_migration`); no app code. Effort: diagnose low / fix low.

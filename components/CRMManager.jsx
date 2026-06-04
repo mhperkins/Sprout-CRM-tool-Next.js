@@ -2109,13 +2109,16 @@ function SettingsView({profile,onUpdate,showToast}) {
 /* ─── Newsletter View ────────────────────────────────────────────────────────── */
 const NL_STATUS_OPTS = [
   {value:"draft",label:"Draft"},
-  {value:"scheduled",label:"Scheduled"},
+  {value:"pending",label:"Pending review"},
+  {value:"approved",label:"Approved"},
   {value:"sent",label:"Sent"},
 ];
-const NL_STATUS_COLOR = {draft:"var(--acid-lt)",scheduled:"var(--cyan-lt)",sent:"var(--g200)"};
-const NL_STATUS_TEXT  = {draft:"#3a3d00",scheduled:"#155e6e",sent:"var(--g600)"};
+const NL_STATUS_COLOR = {draft:"#ECECEA",pending:"#FAD100",approved:"#C6C902",scheduled:"var(--cyan-lt)",sent:"#030000"};
+const NL_STATUS_TEXT  = {draft:"#6b6b66",pending:"#3a3000",approved:"#3a3d00",scheduled:"#155e6e",sent:"#FAD100"};
 const NL_GROUPS = [
   {status:"draft",     label:"Drafts",    hint:"In progress"},
+  {status:"pending",   label:"Pending review", hint:"Ready to test"},
+  {status:"approved",  label:"Approved",  hint:"Ready to send"},
   {status:"scheduled", label:"Scheduled", hint:"Queued to send"},
   {status:"sent",      label:"Sent",      hint:"Already out"},
 ];
@@ -2324,6 +2327,11 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
   // Per-field Polish results: fieldId -> { apply, versions:[string] }. Non-destructive — the
   // original field is untouched until the user clicks "Use this" on a version.
   const [polishOut,setPolishOut]=useState({});
+  // Send workflow state (test send + approved list blast).
+  const [sendSecret,setSendSecret]=useState("");
+  const [testTo,setTestTo]=useState("");
+  const [listSeg,setListSeg]=useState("all");
+  const [sending,setSending]=useState("");   // "" | "test" | "list"
   async function runPolish(fieldId,label,current,apply){
     if(!current||!current.trim()){ showToast("Write some notes first","err"); return; }
     setBusy(b=>({...b,[fieldId]:"polish"}));
@@ -2436,6 +2444,41 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
     return ()=>{ window.removeEventListener("beforeunload",onBeforeUnload); autoSaveRef.current(); };
   },[]);
 
+  // Count contacts in a bucket that have a usable email (for the recipient preview).
+  const emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const segCount=(seg)=>contacts.filter(c=>{
+    const s=(c.segment)||"community"; const em=(c.email||"").trim();
+    return (seg==="all"||s===seg)&&emailRe.test(em);
+  }).length;
+
+  // Fire a send. mode "test" → typed addresses; mode "list" → server-resolved bucket blast.
+  const doSend=async(mode)=>{
+    if(!sendSecret.trim()){ showToast("Enter the send passphrase","err"); return; }
+    if(!(draft.subject||"").trim()){ showToast("Add a subject first","err"); return; }
+    const payload={mode,subject:draft.subject,html:built.html,secret:sendSecret.trim()};
+    if(mode==="test"){
+      const to=testTo.split(/[\s,;]+/).map(x=>x.trim()).filter(Boolean);
+      if(!to.length){ showToast("Enter at least one test email","err"); return; }
+      payload.to=to;
+    } else {
+      payload.segment=listSeg;
+      if(!window.confirm(`Send "${draft.subject}" to ${segCount(listSeg)} contact(s) in "${listSeg}"? This goes out for real.`)) return;
+    }
+    setSending(mode);
+    try{
+      const r=await fetch("/api/send",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+      const j=await r.json();
+      if(!r.ok) throw new Error(j.error||"Send failed");
+      if(mode==="test"){ showToast(`Test sent to ${j.sent} address${j.sent!==1?"es":""} ✓`); }
+      else{
+        showToast(`Sent to ${j.sent} contact${j.sent!==1?"s":""} ✓`);
+        setDraft(p=>({...p,status:"sent",send_date:today}));
+        onSaveStay(makeRecord({...draftRef.current,status:"sent",send_date:today}).rec);
+      }
+    }catch(e){ showToast("Send: "+(e.message||"failed"),"err"); }
+    finally{ setSending(""); }
+  };
+
   const copyHtml = async () => {
     try{ await navigator.clipboard.writeText(built.html); showToast("HTML copied — paste into Mailchimp ✓"); }
     catch{ showToast("Copy failed — check console","err"); console.error("clipboard write failed"); }
@@ -2466,6 +2509,36 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
               <div className="fg"><label className="fl">Send date</label><input type="date" className="fi" value={draft.send_date||""} onChange={e=>s("send_date",e.target.value||null)}/></div>
             </div>
             <div className="fg"><label className="fl">Month label</label><input className="fi" value={draft.month} onChange={e=>s("month",e.target.value)} placeholder="e.g. June 2026"/></div>
+          </div></div>
+
+          {/* ── Send ── */}
+          <div className="card"><div className="card-hd"><span className="card-ttl">Send</span><span style={{fontSize:11,color:"var(--g500)"}}>via hello@sproutsociety.org</span></div><div className="card-bd">
+            <div className="fg"><label className="fl">Send passphrase</label><input type="password" className="fi" value={sendSecret} onChange={e=>setSendSecret(e.target.value)} placeholder="required to send" autoComplete="off"/></div>
+
+            <div style={{marginTop:4}}>
+              <label className="fl">Test send</label>
+              <div style={{fontSize:11,color:"var(--g500)",margin:"2px 0 6px",lineHeight:1.5}}>Send this draft to specific addresses (subject prefixed <b>[TEST]</b>). Comma or space separated.</div>
+              <input className="fi" value={testTo} onChange={e=>setTestTo(e.target.value)} placeholder="you@example.com, friend@example.com"/>
+              <button className="btn btn-ghost btn-sm" style={{marginTop:8}} disabled={sending==="test"} onClick={()=>doSend("test")}>{sending==="test"?"Sending…":"✉️ Send test"}</button>
+            </div>
+
+            <div style={{borderTop:"1px solid var(--g200)",margin:"14px 0"}}/>
+
+            <div>
+              <label className="fl">Send to list</label>
+              <div style={{fontSize:11,color:"var(--g500)",margin:"2px 0 6px",lineHeight:1.5}}>Goes to every contact in the bucket with an email. Enabled once the issue is <b>Approved</b>.</div>
+              <div className="frow">
+                <div className="fg"><select className="fi" value={listSeg} onChange={e=>setListSeg(e.target.value)}>
+                  <option value="all">All buckets</option>
+                  <option value="community">Community</option>
+                  <option value="donor">Donors</option>
+                  <option value="prospect">Prospects</option>
+                </select></div>
+                <div style={{fontSize:12,color:"var(--g600)",alignSelf:"center",whiteSpace:"nowrap"}}>{segCount(listSeg)} with email</div>
+              </div>
+              <button className="btn btn-acid btn-sm" style={{marginTop:8}} disabled={draft.status!=="approved"||sending==="list"} onClick={()=>doSend("list")}>{sending==="list"?"Sending…":"🚀 Send to list"}</button>
+              {draft.status!=="approved"&&<div style={{fontSize:11,color:"var(--g500)",marginTop:6}}>Set status to <b>Approved</b> above to enable.</div>}
+            </div>
           </div></div>
 
           {isMonthly&&(
