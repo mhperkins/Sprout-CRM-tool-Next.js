@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-06-03 — Newsletter: Save draft + auto-save on navigate-away + persist on reload
+
+App code only (`components/CRMManager.jsx`). `npm run build` passes. Effort: medium.
+
+- **`💾 Save draft` button** — persists to Supabase but stays in the editor. The old "Save" (which closed back to the list) is now **"Save & close"**. A new draft adopts its generated id on first save so repeat saves update in place instead of duplicating.
+- **Auto-save on navigate-away** — the editor saves on unmount (← Back, sidebar view switch) and on tab close (`beforeunload`). Guarded by `draftHasContent()` so a blank new draft isn't saved; suppressed (`suppressAuto` ref) on Delete and explicit Save-&-close so a deleted newsletter isn't resurrected and an explicit save isn't double-written.
+- **Persist on reload** — `NewsletterView` snapshots `{mode,draft}` to `localStorage` (`sprout_nl_editor_v1`) on every change and restores it once on mount (in a `useEffect`, guarded by a `restored` ref, to avoid an SSR/hydration mismatch). A reload mid-edit returns to the editor with the draft intact, even a never-saved new one; cleared on return to the list.
+- **Duplicate trap fixed** — the new-draft id is a deterministic slug, so auto-saving then returning with a stale `id:null` snapshot would regenerate the same base id and bump to `_2`. `onAutoSave` now writes the saved rec (with its assigned id) back into the localStorage snapshot so restore returns the id.
+- **Mechanics** — new editor callbacks `onSaveStay`/`onSaveClose`/`onAutoSave` replace the single `onSave`; `makeRecord(d)` factors the shared id-assign + html-bake; `draftRef`/`builtRef`/`autoSaveRef` capture latest values for the unmount cleanup.
+
 ## 2026-06-03 — Fix: cap newsletter photo blocks to fixed-height banners
 
 App code change (`lib/newsletter.js` only). An uploaded featured photo was rendering at full natural height and dominating the page.

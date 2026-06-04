@@ -2126,6 +2126,8 @@ function NlStatusTag({status}) {
 
 const nlSlug = (s) => (s||"").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"").slice(0,40);
 
+const NL_EDITOR_LS_KEY = "sprout_nl_editor_v1";
+
 function blankNewsletter(templateId, today) {
   return {
     id:null, subject:"", status:"draft", send_date:null,
@@ -2140,10 +2142,39 @@ function NewsletterView({newsletters,events,contacts,profile,onUpdate,onDelete,s
   const [mode,setMode]=useState("list");          // list | pick | edit
   const [draft,setDraft]=useState(null);
   const [confirmDel,setConfirmDel]=useState(null);
+  const suppressAuto=useRef(false);               // skip the unmount auto-save (used by delete + explicit close)
+
+  // Restore an in-progress editor session after a reload (persists even an unsaved new draft).
+  const restored=useRef(false);
+  useEffect(()=>{
+    if(restored.current) return; restored.current=true;
+    try{
+      const r=JSON.parse(localStorage.getItem(NL_EDITOR_LS_KEY)||"null");
+      if(r&&r.mode==="edit"&&r.draft){ setDraft(r.draft); setMode("edit"); }
+    }catch{}
+  },[]);
+  // Keep the local snapshot in sync so a reload mid-edit returns to the same draft.
+  useEffect(()=>{
+    try{
+      if(mode==="edit"&&draft) localStorage.setItem(NL_EDITOR_LS_KEY,JSON.stringify({mode,draft}));
+      else localStorage.removeItem(NL_EDITOR_LS_KEY);
+    }catch{}
+  },[mode,draft]);
 
   const startNew = (templateId) => { setDraft(blankNewsletter(templateId,today)); setMode("edit"); };
   const openEdit = (n) => { setDraft({...n}); setMode("edit"); };
   const backToList = () => { setDraft(null); setMode("list"); };
+
+  // Editor save channels. Stay = Save-draft button; close = Save & close; auto = unmount/navigate-away.
+  const onSaveStay  = (rec) => { onUpdate(rec); };
+  const onSaveClose = (rec) => { suppressAuto.current=true; onUpdate(rec); showToast(rec._wasNew?"Newsletter created ✓":"Newsletter saved ✓"); backToList(); };
+  const onAutoSave  = (rec) => {
+    if(suppressAuto.current){ suppressAuto.current=false; return; }
+    onUpdate(rec);
+    // Reflect the assigned id back into the reload snapshot so returning never duplicates the record.
+    try{ localStorage.setItem(NL_EDITOR_LS_KEY,JSON.stringify({mode:"edit",draft:rec})); }catch{}
+    showToast("Draft saved ✓");
+  };
 
   /* ── List ── */
   if (mode==="list") {
@@ -2218,15 +2249,17 @@ function NewsletterView({newsletters,events,contacts,profile,onUpdate,onDelete,s
     draft={draft} setDraft={setDraft} today={today}
     events={events} contacts={contacts} profile={profile} newsletters={newsletters}
     onBack={backToList}
-    onSave={(rec)=>{ onUpdate(rec); showToast(rec._wasNew?"Newsletter created ✓":"Newsletter saved ✓"); backToList(); }}
+    onSaveStay={onSaveStay}
+    onSaveClose={onSaveClose}
+    onAutoSave={onAutoSave}
     onDelete={(id)=>setConfirmDel(id)}
     confirmDel={confirmDel} setConfirmDel={setConfirmDel}
-    doDelete={(id)=>{ onDelete(id); setConfirmDel(null); backToList(); }}
+    doDelete={(id)=>{ suppressAuto.current=true; onDelete(id); setConfirmDel(null); backToList(); }}
     showToast={showToast}
   />;
 }
 
-function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newsletters,onBack,onSave,onDelete,confirmDel,setConfirmDel,doDelete,showToast}) {
+function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newsletters,onBack,onSaveStay,onSaveClose,onAutoSave,onDelete,confirmDel,setConfirmDel,doDelete,showToast}) {
   const s=(k,v)=>setDraft(p=>({...p,[k]:v}));
   const setField=(key,val)=>setDraft(p=>({...p,field_values:{...p.field_values,[key]:val}}));
 
@@ -2272,18 +2305,66 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
     inp.click();
   }
 
-  const handleSave = () => {
-    let id=draft.id;
-    let wasNew=false;
+  // Latest draft + built html, captured in refs so the unmount auto-save reads current values.
+  const draftRef=useRef(draft); useEffect(()=>{draftRef.current=draft;});
+  const builtRef=useRef(built); useEffect(()=>{builtRef.current=built;});
+
+  // Whether a draft holds anything worth persisting (avoids saving an instantly-abandoned blank).
+  const draftHasContent=(d)=>{
+    if(!d) return false;
+    if(d.id) return true;                       // an existing record always saves
+    if((d.subject||"").trim()) return true;
+    if(d.spotlight_contact_id||d.send_date) return true;
+    const fv=d.field_values||{};
+    return Object.values(fv).some(v=>{
+      if(typeof v==="string") return v.trim().length>0;
+      if(Array.isArray(v)) return v.some(it=>it&&Object.values(it).some(x=>typeof x==="string"&&x.trim()));
+      return !!v;
+    });
+  };
+
+  // Build a clean, id-assigned, html-baked record from the given draft.
+  const makeRecord=(d)=>{
+    let id=d.id, wasNew=false;
     if(!id){
       wasNew=true;
-      const base=`nl_${nlSlug(draft.month||"newsletter")}_${isMonthly?"roundup":"quick"}`;
+      const base=`nl_${nlSlug(d.month||"newsletter")}_${isMonthly?"roundup":"quick"}`;
       id=base; let i=2;
       while(newsletters.some(n=>n.id===id)){ id=`${base}_${i++}`; }
     }
-    const {_isNew,_wasNew,...clean}=draft;
-    onSave({...clean,id,html:built.html,createdAt:draft.createdAt||new Date().toISOString(),_wasNew:wasNew});
+    const {_isNew,_wasNew,...clean}=d;
+    return {wasNew,id,rec:{...clean,id,html:builtRef.current.html,createdAt:d.createdAt||new Date().toISOString(),_wasNew:wasNew}};
   };
+
+  // Save draft — persist but stay in the editor.
+  const saveDraft = () => {
+    const d=draftRef.current;
+    if(!draftHasContent(d)){ showToast("Add a subject or some copy first","err"); return; }
+    const {wasNew,id,rec}=makeRecord(d);
+    onSaveStay(rec);
+    if(wasNew) setDraft(p=>({...p,id,_isNew:false}));   // adopt the id so further saves update, not duplicate
+    showToast(wasNew?"Draft saved ✓":"Saved ✓");
+  };
+
+  // Save & close.
+  const saveClose = () => {
+    const d=draftRef.current;
+    if(!draftHasContent(d)){ onBack(); return; }
+    onSaveClose(makeRecord(d).rec);
+  };
+
+  // Auto-save on navigate-away / unmount (and on tab close via beforeunload).
+  const autoSaveRef=useRef();
+  autoSaveRef.current=()=>{
+    const d=draftRef.current;
+    if(!draftHasContent(d)) return;
+    onAutoSave(makeRecord(d).rec);
+  };
+  useEffect(()=>{
+    const onBeforeUnload=()=>{ try{ autoSaveRef.current(); }catch{} };
+    window.addEventListener("beforeunload",onBeforeUnload);
+    return ()=>{ window.removeEventListener("beforeunload",onBeforeUnload); autoSaveRef.current(); };
+  },[]);
 
   const copyHtml = async () => {
     try{ await navigator.clipboard.writeText(built.html); showToast("HTML copied — paste into Mailchimp ✓"); }
@@ -2299,7 +2380,8 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
           <button className="btn btn-ghost btn-sm" onClick={onBack}>← Back</button>
           {!draft._isNew&&<button className="btn btn-ghost btn-sm" onClick={()=>onDelete(draft.id)}>Delete</button>}
           <button className="btn btn-ghost btn-sm" onClick={copyHtml}>Copy HTML</button>
-          <button className="btn btn-acid btn-sm" onClick={handleSave}>Save</button>
+          <button className="btn btn-ghost btn-sm" onClick={saveDraft}>💾 Save draft</button>
+          <button className="btn btn-acid btn-sm" onClick={saveClose}>Save &amp; close</button>
         </div>
       </div>
 
