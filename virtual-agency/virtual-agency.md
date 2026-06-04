@@ -14,13 +14,14 @@ The shared memory is the live Sprout CRM (Supabase project `ixdnmjchvjzytyhmripc
 
 ```
 Sprout Society
-  Communications Manager   (FIRST BUILD — drafts newsletters, marketing, outreach copy)
+  Communications Manager   (drafts newsletters, marketing, outreach copy)
+  Web & Graphic Designer    (PRIMARY: HTML newsletter design; also social graphics, flyers, slides, web look-and-feel)
   Grant Manager            (research, write, track deadlines)
   CRM Manager              (pipeline review, follow-ups, data hygiene via the sprout-crm MCP)
   Social Media             (post copy, content calendar, platform execution)
 ```
 
-**Note:** Communications owns outcomes (newsletter sends, email campaigns, audience growth). Social Media is a content producer (post copy, calendar, platform-specific execution). They are distinct agents. "Full-Stack Developer" is Claude Code itself, not a role.
+**Note:** Communications owns outcomes (newsletter sends, email campaigns, audience growth). Social Media is a content producer (post copy, calendar, platform-specific execution). The Web & Graphic Designer owns the *visual* layer across surfaces (Communications owns the words, Design owns the picture; they hand off). They are distinct agents. "Full-Stack Developer" is Claude Code itself, not a role.
 
 ---
 
@@ -89,7 +90,7 @@ Stack in hand:
 Shared artifact templates so agents can hand off to each other and to Max without ambiguity.
 
 ### 3. Remaining agents
-In rough priority: Grant Manager, CRM Manager, Social Media.
+In rough priority: Web & Graphic Designer, Grant Manager, CRM Manager, Social Media.
 
 ---
 
@@ -107,24 +108,27 @@ In rough priority: Grant Manager, CRM Manager, Social Media.
 
 *(Rewritten each session — snapshot, not a log.)*
 
-**Last session:** 2026-06-02 — Stood up the Sprout Society virtual agency, mirroring the Composer's Compass setup. Built the first employee: the Communications Manager.
+**Last session:** 2026-06-03 — Built the second employee: the Web & Graphic Designer (the visual counterpart to Communications). Mirrors the Communications folder pattern.
 
 **What was built:**
-- `virtual-agency/virtual-agency.md` — this org doc (Sprout Society agents, Agile/PMBOK framework, build order).
-- Communications Manager agent:
-  - `employees/Communications/system-prompts/communications-manager-system-prompt_v1.md` — system prompt, writing rules, newsletter draft protocol grounded in the live newsletter tooling.
-  - `employees/Communications/communications-manager-jobDescription.md` — role description, responsibilities, tools.
-- Created `sprints/` and `briefs/` folders for the agent (empty until first sprint).
+- Web & Graphic Designer agent:
+  - `employees/Design/system-prompts/design-lead-system-prompt_v1.md` — system prompt, brand rules (palette + Lato + accent rotation), design stack, the known Canva pixel-exact-vs-editable limit, standard formats, design protocol.
+  - `employees/Design/design-lead-jobDescription.md` — role description, responsibilities, scope boundaries vs Communications/Social, tools.
+  - `employees/Design/work-log.md` + empty `sprints/` and `briefs/` folders.
+- Updated this org doc: roster, build-order, and the Communications↔Design handoff note (Communications owns the words, Design owns the picture).
 
 **Build order status:**
-- Communications Manager: built (system prompt + job description). No sprint yet.
+- Communications Manager: built. First live run done (caption proof, 2026-06-03).
+- Web & Graphic Designer: built (system prompt + job description). No deliverable yet.
 - Grant Manager, CRM Manager, Social Media: not started.
 
 **Invocation:**
 - Communications: `claude --system-prompt virtual-agency/employees/Communications/system-prompts/communications-manager-system-prompt_v1.md`
-- Or spawn as a sub-agent via the Agent tool.
+- Design: `claude --system-prompt virtual-agency/employees/Design/system-prompts/design-lead-system-prompt_v1.md`
+- Or spawn either as a sub-agent via the Agent tool.
 
 **Resume here:**
-- ⬜ Run the Communications Manager's first sprint: draft the next monthly roundup end to end (`assemble_newsletter` → fill brackets → stage in Gmail → Max reviews).
+- ⬜ Run the Web & Graphic Designer's first deliverable: an HTML newsletter design pass (its primary job) — revise `01-monthly-roundup.html` + the `lib/newsletter.js` engine string for email-client safety and the new logo header, tested via `assemble_newsletter`.
+- ⬜ Run the Communications Manager's first newsletter (June roundup brief is pre-filled).
 - ⬜ Build the next agent (Grant Manager or CRM Manager).
 - ⬜ Add PMBOK artifact templates.

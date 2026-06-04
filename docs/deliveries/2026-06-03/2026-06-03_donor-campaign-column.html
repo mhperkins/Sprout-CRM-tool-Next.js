@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Donor Campaign Column</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --black:#1a1a1a; --cyan:#1fb6c9; --cyan-lt:#d7f3f7; --banana:#ffd84d;
+    --banana-lt:#fff7d6; --acid:#c6f432; --fuchsia:#e8468e; --g100:#f2f4f5;
+    --g200:#e3e7e9; --g400:#9aa6ab; --g600:#5d6a70; --g800:#2c3539;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Lato',sans-serif;background:#eef1f2;color:var(--black);
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px;}
+  .slide{width:960px;background:#fff;border-radius:24px;overflow:hidden;
+    box-shadow:0 24px 70px rgba(0,0,0,.16);}
+  .hdr{background:linear-gradient(120deg,#1fb6c9,#16919f);color:#fff;padding:34px 44px;
+    display:flex;align-items:center;justify-content:space-between;}
+  .hdr h1{font-size:27px;font-weight:900;letter-spacing:-.5px;}
+  .hdr .sub{font-size:14px;font-weight:700;opacity:.9;margin-top:5px;}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.35);padding:7px 14px;border-radius:30px;
+    font-size:12px;font-weight:700;}
+  .body{padding:36px 44px 14px;}
+  .lead{font-size:15px;color:var(--g800);line-height:1.55;margin-bottom:26px;}
+  .lead b{color:var(--black);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:26px;}
+  .card{border:1px solid var(--g200);border-radius:16px;padding:20px 22px;background:#fff;}
+  .card .tag{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--cyan);margin-bottom:9px;}
+  .card h3{font-size:16px;font-weight:900;margin-bottom:7px;}
+  .card p{font-size:13px;color:var(--g600);line-height:1.5;}
+  .gbchip{display:inline-flex;align-items:center;gap:4px;background:var(--banana-lt);
+    color:#8a6d00;font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;margin-top:9px;}
+  .orgchip{display:inline-flex;align-items:center;gap:4px;background:var(--cyan-lt);
+    color:#155e6e;font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;margin-top:9px;}
+  .note{background:var(--g100);border-radius:14px;padding:16px 20px;font-size:13px;
+    color:var(--g800);line-height:1.5;}
+  .note b{color:var(--black);}
+  .ftr{display:flex;align-items:center;justify-content:space-between;
+    padding:20px 44px;border-top:1px solid var(--g200);background:var(--g100);}
+  .ftr .meta{font-size:12px;color:var(--g600);font-weight:700;}
+  .ftr code{background:#fff;border:1px solid var(--g200);padding:3px 9px;border-radius:8px;
+    font-size:12px;color:var(--fuchsia);font-weight:700;}
+  .pill{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;
+    background:var(--acid);color:#000;padding:4px 11px;border-radius:20px;}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="hdr">
+      <div>
+        <h1>Donor list → Campaign column</h1>
+        <div class="sub">Pulls from Givebutter · was "Affiliation"</div>
+      </div>
+      <span class="chip">🎗 Display-only change</span>
+    </div>
+
+    <div class="body">
+      <p class="lead">
+        In the <b>Donors</b> bucket, the contact-list column now reads <b>Campaign</b> and shows each
+        donor's Givebutter campaign. Community &amp; Prospects keep <b>Affiliation</b>. The
+        <b>campaign</b> field and the hidden <b>campaign_id</b> were already built and populated at
+        donor import — this session only added the two display surfaces.
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <div class="tag">List column</div>
+          <h3>Campaign header + chip</h3>
+          <p>Header swaps to "Campaign" when the bucket is Donors; cell shows the campaign title.</p>
+          <span class="gbchip">🎗 Sprout Society Membership</span>
+        </div>
+        <div class="card">
+          <div class="tag">Other buckets</div>
+          <h3>Affiliation unchanged</h3>
+          <p>Community &amp; Prospects still show org affiliations as before.</p>
+          <span class="orgchip">🏢 Bar Nun</span>
+        </div>
+        <div class="card">
+          <div class="tag">Detail panel</div>
+          <h3>Campaign (Givebutter) section</h3>
+          <p>Donors get a Campaign section above Affiliations, rendered only when a campaign is set.</p>
+          <span class="gbchip">🎗 Powered by Community</span>
+        </div>
+        <div class="card">
+          <div class="tag">Hidden key</div>
+          <h3>campaign_id untouched</h3>
+          <p>The rename-proof Givebutter id stays in the JSONB blob and is never rendered.</p>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Reminder:</b> <code style="color:var(--cyan)">CAMPAIGN_OPTS</code> is a synced static snapshot (5 campaigns), not a live pull —
+        the deployed app can't reach the Givebutter MCP. Say <b>"refresh the campaign list"</b> after any add/rename.
+      </div>
+    </div>
+
+    <div class="ftr">
+      <span class="pill">Build passes</span>
+      <div class="meta">
+        <code>540190e</code> · branch <b>main</b> · components/CRMManager.jsx · 2026-06-03
+      </div>
+    </div>
+  </div>
+</body>
+</html>

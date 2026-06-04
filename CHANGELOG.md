@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-06-03 — Web & Graphic Designer employee + in-app compact newsletter (template, section editor, Comms "Polish" AI, image uploads)
+
+App code + data-infra change. `npm run build` passes.
+
+**New virtual-agency employee — Web & Graphic Designer** (`virtual-agency/employees/Design/`): system prompt + job description + work-log + `briefs/`/`sprints/`, mirroring the Communications pattern. Primary job = designing the HTML newsletter. Prompt carries the brand rules (palette, Lato, cyan→fuchsia→acid→banana accent rotation), email-safe HTML rules (tables not flexbox, inline styles, ~600px, absolute image URLs, bulletproof buttons), the Canva pixel-exact-vs-editable limit, and the Communications↔Design handoff. Org doc updated.
+
+**Compact monthly-roundup design** (`docs/newsletter/monthly-roundup-compact.html`): removed the black top trim (+ acid rule under the masthead), sized to ~7in tall on a phone (measured with throwaway Playwright scripts), restructured to: Featured event photo block (Sprout n Tell) + a "See more events" `#events` jump → Coworking promo (permanent Tue/Thu + Thursday Happy Hour, not an event) → Membership → Community Spotlight → Events (Upcoming 2-up + Past rows). In-email anchor caveat: Gmail/Outlook strip `id` anchors.
+
+**In-app newsletter system** (`lib/newsletter.js`, `components/CRMManager.jsx`):
+- Added the compact as the **primary** template `monthly-roundup-compact` ("Monthly Roundup"); the old one is now "Monthly Roundup (Classic)".
+- New `COMPACT_SECTIONS` structured model + `buildCompact()` renderer (not bracket-extraction); `buildNewsletter` delegates for the compact id.
+- **Section-based custom fill form**: each section is its own field; single boxes for copy, repeat sections (Upcoming/Past events) start with one entry + a "＋ Add another event" button. Live iframe preview as you type.
+
+**Stream-of-consciousness → Comms "✨ Polish"** (`app/api/polish/route.js`, new `@anthropic-ai/sdk`): server-side Anthropic call (Haiku 4.5, prompt-cached system = condensed Communications voice/rules) rewrites a brain-dump into 1–2 Sprout-voice sentences. Button on every copy field. Requires `ANTHROPIC_API_KEY` (server-side; `.env.local` + Vercel) — placeholder appended to `.env.local`.
+
+**Image uploads** (`lib/services.js`, Supabase Storage): new public `newsletter-images` bucket (migration `newsletter_images_storage_bucket`: anon insert + public read). "🖼 Add image" buttons on the featured photo, spotlight, and each event entry upload via `uploadNewsletterImage()` and store a public URL (works in app preview and email). The logo is now hosted in the bucket too (`brand/sprout-logo.png`, hardcoded into `buildCompact`), fixing the old relative-path-breaks-in-email problem.
+
 ## 2026-06-03 — Effort-Level Protocol authored + saved to global and project memory
 
 Config/memory only, no repo code or data change (all artifacts live outside the git repo).

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<!--
+  Sprout Society — Monthly Roundup (COMPACT redesign proposal)
+  Structure: Featured event (photo) -> Coworking promo -> Membership -> Community Spotlight -> Events (upcoming + past).
+  Email-safe: table layout, inline styles, ~600px, Lato-first stack, bulletproof button, solid bgcolor blocks.
+
+  ⚠️ BEFORE SENDING:
+   - sprout-logo.png AND the featured photo must become ABSOLUTE hosted URLs (https://...).
+     Local/relative paths do not load in email. (Browser preview shows the colored fallback + alt text.)
+   - ⚠️ The "See more events" jump button uses an in-page #events anchor. This works in a BROWSER /
+     hosted "view in browser" version. Many email clients (Gmail, Outlook) STRIP id anchors, so in the
+     email itself the button may not scroll. For the email, either accept that or point the button at the
+     hosted web version URL.
+   - Copy in [BRACKETS] is the Communications Manager's to fill. Event names/dates come from the CRM.
+   - On approval, port this into the lib/newsletter.js engine string (what actually ships); keep in sync.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>Sprout Society Monthly Roundup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+  <!-- Browser/hosted only: smooth scroll for the "See more events" button. Email clients ignore this. -->
+  <style> html { scroll-behavior: smooth; } </style>
+</head>
+<body style="margin:0; padding:0; background-color:#F7F7F6;">
+
+  <!-- Preheader (hidden inbox preview line) -->
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:#F7F7F6; font-size:1px; line-height:1px;">
+    [PREHEADER: one-line teaser, e.g. "Inside our first Sprout n Tell, new weekly coworking, and what's next."]
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F7F7F6;">
+    <tr>
+      <td align="center" style="padding:40px 12px;">
+
+        <!-- 600px container -->
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#FFFFFF; border-radius:8px; overflow:hidden;">
+
+          <!-- MASTHEAD -->
+          <tr>
+            <td style="padding:30px 28px 20px 28px; background-color:#FFFFFF;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="left" valign="middle">
+                    <img src="sprout-logo.png" alt="Sprout Society" width="156" style="display:block; border:0; height:auto; max-width:156px;">
+                  </td>
+                  <td align="right" valign="middle" style="font-family:'Lato',Helvetica,Arial,sans-serif; font-size:11px; font-weight:700; letter-spacing:2px; color:#030000; text-transform:uppercase;">
+                    Monthly Roundup<br>
+                    <span style="color:#8a8a86;">[Month Year]</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- accent rule under masthead -->
+          <tr>
+            <td style="padding:0 28px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr><td bgcolor="#C6C902" style="height:3px; line-height:3px; font-size:1px;">&nbsp;</td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ============ FEATURED MAY EVENT (photo block) ============ -->
+          <tr>
+            <td style="padding:24px 28px 6px 28px; font-family:'Lato',Helvetica,Arial,sans-serif; font-size:12px; font-weight:900; letter-spacing:2px; color:#E10098; text-transform:uppercase;">
+              Featured &middot; May
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 28px;">
+              <!-- Photo. Replace src with hosted URL. bgcolor + alt = graceful fallback when images are blocked. -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#73C4D6" style="border-radius:8px; overflow:hidden;">
+                <tr>
+                  <td align="center" valign="middle" style="font-family:'Lato',Helvetica,Arial,sans-serif; font-size:13px; font-weight:700; color:#0d3d49;">
+                    <!-- Blocked-image fallback = the cyan bgcolor + this alt text. Replace src with a hosted URL. -->
+                    <img src="sprout-n-tell.jpg" alt="Sprout n Tell — featured May event" width="544" height="260" style="display:block; width:100%; max-width:544px; height:auto; border:0;">
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:16px 28px 4px 28px; font-family:'Lato',Helvetica,Arial,sans-serif; font-size:24px; font-weight:900; line-height:1.25; color:#030000;">
+              Sprout n Tell
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 28px 14px 28px; font-family:'Lato',Helvetica,Arial,sans-serif; font-size:15px; line-height:1.6; color:#3a3a38;">
+              [Two or three sentence recap of our first Sprout n Tell. Communications fills.]
+            </td>
+          </tr>
+          <!-- See more events button (jumps to #events) -->
+          <tr>
+            <td style="padding:0 28px 24px 28px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr><td bgcolor="#030000" style="border-radius:4px;">
+                  <a href="#events" style="display:inline-block; padding:11px 22px; font-family:'Lato',Helvetica,Arial,sans-serif; font-size:13px; font-weight:900; color:#FAD100; text-decoration:none;">See more events &darr;</a>
+                </td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ============ COWORKING (promo, not an event) ============ -->
+          <tr>
+            <td style="padding:0 28px 24px 28px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F7F7F6" style="border-radius:8px;">
+                <tr>
+                  <td width="5" bgcolor="#73C4D6" style="width:5px; line-height:1px; font-size:1px;">&nbsp;</td>
+                  <td style="padding:20px 22px; font-family:'Lato',Helvetica,Arial,sans-serif;">
+                    <span style="font-size:12px; font-weight:900; letter-spacing:2px; color:#73C4D6; text-transform:uppercase;">Now Every Week</span><br>
+                    <span style="display:inline-block; padding-top:6px; font-size:20px; font-weight:900; color:#030000; line-height:1.3;">Coworking, Tuesdays &amp; Thursdays</span>
+                    <p style="margin:8px 0 0 0; font-size:15px; line-height:1.6; color:#3a3a38;">
+                      [One line: our coworking hours are now permanent. Drop in and work alongside the community. Times/location.]
+                    </p>
+                    <p style="margin:10px 0 0 0; font-size:15px; line-height:1.6; color:#030000;">
+                      <span style="display:inline-block; background-color:#FAD100; color:#3a3000; font-size:12px; font-weight:900; padding:3px 9px; border-radius:3px; letter-spacing:1px;">THURSDAYS</span>
+                      &nbsp;Stay after for Happy Hour. [One line.]
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ============ MEMBERSHIP ============ -->
+          <tr>
+            <td style="padding:0 28px 24px 28px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#E10098" style="border-radius:8px;">
+                <tr>
+                  <td style="padding:24px 24px; font-family:'Lato',Helvetica,Arial,sans-serif;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td valign="middle" style="font-family:'Lato',Helvetica,Arial,sans-serif; font-size:17px; font-weight:700; color:#FFFFFF; line-height:1.45;">
+                          [One-line membership ask.]
+                        </td>
+                        <td valign="middle" align="right">
+                          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                            <tr><td bgcolor="#030000" style="border-radius:4px;">
+                              <a href="[MEMBERSHIP_URL]" style="display:inline-block; padding:9px 18px; font-family:'Lato',Helvetica,Arial,sans-serif; font-size:13px; font-weight:900; color:#FAD100; text-decoration:none; white-space:nowrap;">Become a member &rarr;</a>
+                            </td></tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ============ COMMUNITY SPOTLIGHT ============ -->
+          <tr>
+            <td style="padding:0 28px 28px 28px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #ECECEA; border-radius:8px;">
+                <tr>
+                  <td width="5" bgcolor="#C6C902" style="width:5px; line-height:1px; font-size:1px;">&nbsp;</td>
+                  <td style="padding:22px 22px; font-family:'Lato',Helvetica,Arial,sans-serif;">
+                    <span style="font-size:12px; font-weight:900; letter-spacing:2px; color:#8a9000; text-transform:uppercase;">Community Spotlight</span><br>
+                    <span style="font-size:18px; font-weight:900; color:#030000; line-height:1.5;">[Member name]</span><br>
+                    <span style="font-size:14px; line-height:1.6; color:#3a3a38;">[Two or three line spotlight blurb. Communications fills.]</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ============ EVENTS (scroll target for "See more events") ============ -->
+          <a id="events" name="events"></a>
+          <tr>
+            <td style="padding:6px 28px 0 28px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr><td bgcolor="#ECECEA" style="height:1px; line-height:1px; font-size:1px;">&nbsp;</td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 28px 4px 28px; font-family:'Lato',Helvetica,Arial,sans-serif; font-size:13px; font-weight:900; letter-spacing:2px; color:#030000; text-transform:uppercase;">
+              Upcoming
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 28px 6px 28px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td width="50%" valign="top" style="padding:0 6px 0 0;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F7F7F6" style="border-radius:6px;">
+                      <tr><td style="padding:18px 16px; font-family:'Lato',Helvetica,Arial,sans-serif;">
+                        <span style="display:inline-block; background-color:#C6C902; color:#3a3d00; font-size:12px; font-weight:900; padding:3px 9px; border-radius:3px;">[Date]</span><br>
+                        <span style="font-size:16px; font-weight:700; color:#030000; line-height:1.4;">[Event name]</span><br>
+                        <span style="font-size:13px; line-height:1.5; color:#3a3a38;">[One line.]</span>
+                      </td></tr>
+                    </table>
+                  </td>
+                  <td width="50%" valign="top" style="padding:0 0 0 6px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F7F7F6" style="border-radius:6px;">
+                      <tr><td style="padding:18px 16px; font-family:'Lato',Helvetica,Arial,sans-serif;">
+                        <span style="display:inline-block; background-color:#73C4D6; color:#0d3d49; font-size:12px; font-weight:900; padding:3px 9px; border-radius:3px;">[Date]</span><br>
+                        <span style="font-size:16px; font-weight:700; color:#030000; line-height:1.4;">[Event name]</span><br>
+                        <span style="font-size:13px; line-height:1.5; color:#3a3a38;">[One line.]</span>
+                      </td></tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:16px 28px 4px 28px; font-family:'Lato',Helvetica,Arial,sans-serif; font-size:13px; font-weight:900; letter-spacing:2px; color:#030000; text-transform:uppercase;">
+              Past Events
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 28px 24px 28px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+
+                <tr>
+                  <td width="4" bgcolor="#73C4D6" style="width:4px; line-height:1px; font-size:1px;">&nbsp;</td>
+                  <td style="padding:14px 0 14px 14px; font-family:'Lato',Helvetica,Arial,sans-serif;">
+                    <span style="font-size:15px; font-weight:700; color:#030000;">[Event name]</span>
+                    <span style="font-size:13px; color:#8a8a86;">&nbsp;·&nbsp;[Date]</span><br>
+                    <span style="font-size:13px; line-height:1.5; color:#3a3a38;">[One-line recap.]</span>
+                  </td>
+                </tr>
+                <tr><td colspan="2" style="border-top:1px solid #ECECEA; font-size:1px; line-height:1px;">&nbsp;</td></tr>
+
+                <tr>
+                  <td width="4" bgcolor="#E10098" style="width:4px; line-height:1px; font-size:1px;">&nbsp;</td>
+                  <td style="padding:14px 0 14px 14px; font-family:'Lato',Helvetica,Arial,sans-serif;">
+                    <span style="font-size:15px; font-weight:700; color:#030000;">[Event name]</span>
+                    <span style="font-size:13px; color:#8a8a86;">&nbsp;·&nbsp;[Date]</span><br>
+                    <span style="font-size:13px; line-height:1.5; color:#3a3a38;">[One-line recap.]</span>
+                  </td>
+                </tr>
+                <tr><td colspan="2" style="border-top:1px solid #ECECEA; font-size:1px; line-height:1px;">&nbsp;</td></tr>
+
+                <tr>
+                  <td width="4" bgcolor="#C6C902" style="width:4px; line-height:1px; font-size:1px;">&nbsp;</td>
+                  <td style="padding:14px 0 14px 14px; font-family:'Lato',Helvetica,Arial,sans-serif;">
+                    <span style="font-size:15px; font-weight:700; color:#030000;">[Event name]</span>
+                    <span style="font-size:13px; color:#8a8a86;">&nbsp;·&nbsp;[Date]</span><br>
+                    <span style="font-size:13px; line-height:1.5; color:#3a3a38;">[One-line recap.]</span>
+                  </td>
+                </tr>
+
+              </table>
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="padding:34px 28px; background-color:#030000; font-family:'Lato',Helvetica,Arial,sans-serif;">
+              <p style="margin:0 0 6px 0; font-size:14px; font-weight:900; color:#F7F7F6; letter-spacing:1px;">SPROUT SOCIETY</p>
+              <p style="margin:0 0 14px 0; font-size:13px; line-height:1.6; color:#9a9a96;">[City / one-line mission, e.g. "Brooklyn · mental wellness + community"]</p>
+              <p style="margin:0; font-size:11px; line-height:1.6; color:#73C4D6;">
+                <a href="[INSTAGRAM_URL]" style="color:#73C4D6; text-decoration:none;">Instagram</a> &nbsp;·&nbsp;
+                <a href="[WEBSITE_URL]" style="color:#73C4D6; text-decoration:none;">Website</a> &nbsp;·&nbsp;
+                <a href="[VIEW_IN_BROWSER_URL]" style="color:#73C4D6; text-decoration:none;">View in browser</a> &nbsp;·&nbsp;
+                <a href="[UNSUBSCRIBE_URL]" style="color:#9a9a96; text-decoration:underline;">Unsubscribe</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /600px container -->
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

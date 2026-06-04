@@ -24,8 +24,9 @@ import {
   deleteEventById,
   deleteNewsletterById,
   DEFAULT_PROFILE,
+  uploadNewsletterImage,
 } from "../lib/services";
-import { buildNewsletter, TEMPLATES, defaultMonthYear } from "../lib/newsletter";
+import { buildNewsletter, TEMPLATES, defaultMonthYear, COMPACT_SECTIONS, blankCompactItem } from "../lib/newsletter";
 import { validateContact, validateOrg } from "../lib/schemas";
 
 /* ─── Styles ───────────────────────────────────────────────────────────────── */
@@ -2239,6 +2240,37 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
   }),[draft.template,draft.month,draft.field_values,draft.recap_limit,draft.upcoming_limit,events,profile,spotlightName,today]);
 
   const isMonthly = draft.template==="monthly-roundup";
+  const isCompact = draft.template==="monthly-roundup-compact";
+
+  // Compact (structured-section) field helpers.
+  const fv = draft.field_values||{};
+  const setItem   = (k,idx,sub,val)=>setDraft(p=>{ const arr=[...(p.field_values?.[k]||[blankCompactItem(COMPACT_SECTIONS.find(s=>s.key===k))])]; arr[idx]={...arr[idx],[sub]:val}; return {...p,field_values:{...p.field_values,[k]:arr}}; });
+  const addItem   = (sec)=>setDraft(p=>{ const arr=[...(p.field_values?.[sec.key]||[blankCompactItem(sec)])]; arr.push(blankCompactItem(sec)); return {...p,field_values:{...p.field_values,[sec.key]:arr}}; });
+  const removeItem= (k,idx)=>setDraft(p=>{ const arr=[...(p.field_values?.[k]||[])]; arr.splice(idx,1); return {...p,field_values:{...p.field_values,[k]:arr}}; });
+
+  // Per-field busy state: fieldId -> "polish" | "upload".
+  const [busy,setBusy]=useState({});
+  async function runPolish(fieldId,label,current,apply){
+    if(!current||!current.trim()){ showToast("Write some notes first","err"); return; }
+    setBusy(b=>({...b,[fieldId]:"polish"}));
+    try{
+      const r=await fetch("/api/polish",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:current,label})});
+      const j=await r.json();
+      if(!r.ok) throw new Error(j.error||"Polish failed");
+      apply(j.polished); showToast("Polished by Comms ✓");
+    }catch(e){ showToast("Polish: "+(e.message||"failed"),"err"); }
+    finally{ setBusy(b=>{const n={...b};delete n[fieldId];return n;}); }
+  }
+  function pickImage(fieldId,apply){
+    const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
+    inp.onchange=async()=>{ const file=inp.files&&inp.files[0]; if(!file) return;
+      setBusy(b=>({...b,[fieldId]:"upload"}));
+      try{ const url=await uploadNewsletterImage(file); apply(url); showToast("Image uploaded ✓"); }
+      catch(e){ showToast("Upload: "+(e.message||"failed"),"err"); }
+      finally{ setBusy(b=>{const n={...b};delete n[fieldId];return n;}); }
+    };
+    inp.click();
+  }
 
   const handleSave = () => {
     let id=draft.id;
@@ -2262,7 +2294,7 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
     <div className="page">
       <div className="pg-hd">
         <div><div className="pg-ttl">{draft._isNew?"New newsletter":"Edit newsletter"}</div>
-          <div className="pg-sub">{TEMPLATES.find(t=>t.id===draft.template)?.name} · {built.placeholders.length} field{built.placeholders.length!==1?"s":""} to fill</div></div>
+          <div className="pg-sub">{TEMPLATES.find(t=>t.id===draft.template)?.name} · {isCompact?"custom sections":`${built.placeholders.length} field${built.placeholders.length!==1?"s":""} to fill`}</div></div>
         <div style={{display:"flex",gap:8}}>
           <button className="btn btn-ghost btn-sm" onClick={onBack}>← Back</button>
           {!draft._isNew&&<button className="btn btn-ghost btn-sm" onClick={()=>onDelete(draft.id)}>Delete</button>}
@@ -2304,17 +2336,87 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
             </div></div>
           )}
 
-          <div className="card"><div className="card-hd"><span className="card-ttl">Fill in the blanks</span><span style={{fontSize:11,color:"var(--g500)"}}>{built.placeholders.length} left</span></div><div className="card-bd">
-            {built.placeholders.length===0
-              ? <div style={{fontSize:12,color:"var(--g500)"}}>Nothing left to fill — every placeholder is resolved. 🎉</div>
-              : <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                  {built.placeholders.map(ph=>(
-                    <div className="fg" key={ph.key}>
-                      <label className="fl" style={{textTransform:"none",letterSpacing:0,color:"var(--g600)",fontWeight:600}}>{ph.label}</label>
-                      <textarea className="fta" rows={2} value={draft.field_values[ph.key]||""} onChange={e=>setField(ph.key,e.target.value)} placeholder="Type your copy…"/>
-                    </div>
-                  ))}
-                </div>}
+          <div className="card"><div className="card-hd"><span className="card-ttl">{isCompact?"Sections":"Fill in the blanks"}</span><span style={{fontSize:11,color:"var(--g500)"}}>{isCompact?`${COMPACT_SECTIONS.length} sections`:`${built.placeholders.length} left`}</span></div><div className="card-bd">
+            {isCompact
+              ? <div style={{display:"flex",flexDirection:"column",gap:16}}>
+                  {COMPACT_SECTIONS.map(sec=>{
+                    const LBL={textTransform:"none",letterSpacing:0,color:"var(--g600)",fontWeight:600};
+                    const PB={padding:"2px 8px",fontSize:11};
+                    if(sec.kind==="image"){
+                      const url=fv[sec.key]||""; const fid=sec.key;
+                      return (
+                        <div className="fg" key={sec.key}>
+                          <label className="fl" style={LBL}>{sec.label}</label>
+                          {url
+                            ? <div style={{display:"flex",alignItems:"center",gap:8}}>
+                                <img src={url} alt="" style={{width:48,height:48,objectFit:"cover",borderRadius:6,border:"1px solid var(--g200)"}}/>
+                                <button className="btn btn-ghost btn-sm" style={PB} disabled={busy[fid]==="upload"} onClick={()=>pickImage(fid,u=>setField(sec.key,u))}>{busy[fid]==="upload"?"Uploading…":"Replace"}</button>
+                                <button className="btn btn-ghost btn-sm" style={PB} onClick={()=>setField(sec.key,"")}>Remove</button>
+                              </div>
+                            : <button className="btn btn-ghost btn-sm" style={{...PB,alignSelf:"flex-start"}} disabled={busy[fid]==="upload"} onClick={()=>pickImage(fid,u=>setField(sec.key,u))}>{busy[fid]==="upload"?"Uploading…":"🖼 Add image"}</button>}
+                        </div>
+                      );
+                    }
+                    if(sec.kind==="single"){
+                      const fid=sec.key;
+                      return (
+                        <div className="fg" key={sec.key}>
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                            <label className="fl" style={{...LBL,margin:0}}>{sec.label}</label>
+                            {sec.polish&&<button className="btn btn-ghost btn-sm" style={PB} disabled={busy[fid]==="polish"} onClick={()=>runPolish(fid,sec.label,fv[sec.key]||"",t=>setField(sec.key,t))}>{busy[fid]==="polish"?"Polishing…":"✨ Polish"}</button>}
+                          </div>
+                          <textarea className="fta" rows={sec.rows||2} value={fv[sec.key]||""} onChange={e=>setField(sec.key,e.target.value)} placeholder={sec.polish?"Brain-dump here, then ✨ Polish…":"Type your copy…"}/>
+                        </div>
+                      );
+                    }
+                    // repeat
+                    const items=(fv[sec.key]&&fv[sec.key].length?fv[sec.key]:[blankCompactItem(sec)]);
+                    return (
+                      <div key={sec.key} style={{borderTop:"1px solid var(--g100)",paddingTop:12}}>
+                        <label className="fl" style={{...LBL,marginBottom:8,display:"block"}}>{sec.label}</label>
+                        {items.map((item,idx)=>{
+                          const imgFid=`${sec.key}.${idx}.image`;
+                          return (
+                            <div key={idx} style={{display:"flex",flexDirection:"column",gap:6,marginBottom:8,padding:10,background:"var(--g50)",borderRadius:8}}>
+                              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                                <span style={{fontSize:11,fontWeight:700,color:"var(--g500)"}}>{sec.itemLabel} {idx+1}</span>
+                                {items.length>1&&<button className="btn btn-ghost btn-sm" style={PB} onClick={()=>removeItem(sec.key,idx)}>Remove</button>}
+                              </div>
+                              {sec.fields.map(f=>{
+                                const fid=`${sec.key}.${idx}.${f.k}`;
+                                return (
+                                  <div key={f.k}>
+                                    {f.polish&&<div style={{textAlign:"right",marginBottom:2}}><button className="btn btn-ghost btn-sm" style={{padding:"1px 7px",fontSize:11}} disabled={busy[fid]==="polish"} onClick={()=>runPolish(fid,f.ph,item[f.k]||"",t=>setItem(sec.key,idx,f.k,t))}>{busy[fid]==="polish"?"Polishing…":"✨ Polish"}</button></div>}
+                                    <input className="fi" value={item[f.k]||""} onChange={e=>setItem(sec.key,idx,f.k,e.target.value)} placeholder={f.ph}/>
+                                  </div>
+                                );
+                              })}
+                              {sec.itemImage&&(item.image
+                                ? <div style={{display:"flex",alignItems:"center",gap:8}}>
+                                    <img src={item.image} alt="" style={{width:40,height:40,objectFit:"cover",borderRadius:6,border:"1px solid var(--g200)"}}/>
+                                    <button className="btn btn-ghost btn-sm" style={PB} disabled={busy[imgFid]==="upload"} onClick={()=>pickImage(imgFid,u=>setItem(sec.key,idx,"image",u))}>{busy[imgFid]==="upload"?"Uploading…":"Replace"}</button>
+                                    <button className="btn btn-ghost btn-sm" style={PB} onClick={()=>setItem(sec.key,idx,"image","")}>Remove</button>
+                                  </div>
+                                : <button className="btn btn-ghost btn-sm" style={{...PB,alignSelf:"flex-start"}} disabled={busy[imgFid]==="upload"} onClick={()=>pickImage(imgFid,u=>setItem(sec.key,idx,"image",u))}>{busy[imgFid]==="upload"?"Uploading…":"🖼 Add image"}</button>
+                              )}
+                            </div>
+                          );
+                        })}
+                        <button className="btn btn-ghost btn-sm" onClick={()=>addItem(sec)}>+ Add another {sec.itemLabel}</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              : built.placeholders.length===0
+                ? <div style={{fontSize:12,color:"var(--g500)"}}>Nothing left to fill — every placeholder is resolved. 🎉</div>
+                : <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                    {built.placeholders.map(ph=>(
+                      <div className="fg" key={ph.key}>
+                        <label className="fl" style={{textTransform:"none",letterSpacing:0,color:"var(--g600)",fontWeight:600}}>{ph.label}</label>
+                        <textarea className="fta" rows={2} value={draft.field_values[ph.key]||""} onChange={e=>setField(ph.key,e.target.value)} placeholder="Type your copy…"/>
+                      </div>
+                    ))}
+                  </div>}
           </div></div>
         </div>
 

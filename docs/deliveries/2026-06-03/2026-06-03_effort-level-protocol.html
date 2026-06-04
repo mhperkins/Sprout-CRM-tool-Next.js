@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Effort-Level Protocol</title>
+<style>
+  :root{
+    --green:#1f7a4d; --green-dk:#155c39; --banana:#f4c430; --ink:#1a2b22;
+    --cream:#fbf7ee; --card:#ffffff; --line:#e3ddd0; --muted:#5f6b63; --cyan:#2a9d8f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Lato',-apple-system,Segoe UI,Roboto,sans-serif;
+    background:linear-gradient(135deg,#fbf7ee 0%,#f1ede0 100%);
+    color:var(--ink); padding:40px 24px; min-height:100vh;
+  }
+  .slide{max-width:920px;margin:0 auto;background:var(--card);border-radius:20px;
+    box-shadow:0 18px 50px rgba(26,43,34,.14);overflow:hidden;border:1px solid var(--line)}
+  .top{background:linear-gradient(120deg,var(--green) 0%,var(--green-dk) 100%);color:#fff;padding:34px 40px}
+  .eyebrow{font-size:12px;letter-spacing:2.5px;text-transform:uppercase;opacity:.82;font-weight:700}
+  h1{font-size:30px;margin-top:8px;font-weight:800;line-height:1.18}
+  .sub{margin-top:10px;font-size:15px;opacity:.9;max-width:680px}
+  .badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .badge{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);
+    padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.4px}
+  .badge.banana{background:var(--banana);color:#3a2c00;border-color:var(--banana)}
+  .body{padding:34px 40px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  .card h3{font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--green-dk);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .card p,.card li{font-size:14px;line-height:1.55;color:#33413a}
+  .card ul{list-style:none;display:flex;flex-direction:column;gap:7px}
+  .card li::before{content:"▸";color:var(--cyan);font-weight:800;margin-right:7px}
+  .full{grid-column:1 / -1}
+  .tiers{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px}
+  .tier{border-radius:11px;padding:12px;color:#fff;font-size:12.5px;line-height:1.4}
+  .tier b{display:block;font-size:13px;letter-spacing:.5px;margin-bottom:4px;text-transform:uppercase}
+  .t-low{background:#6aa84f}.t-med{background:#2a9d8f}.t-high{background:#e08e0b}.t-max{background:#b5482f}
+  .pill{display:inline-block;background:#1a2b22;color:#f4c430;font-family:ui-monospace,Menlo,monospace;
+    font-size:12.5px;padding:3px 9px;border-radius:6px;margin:2px 0}
+  .foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+    padding:20px 40px;background:var(--cream);border-top:1px solid var(--line)}
+  .meta{font-size:12.5px;color:var(--muted)}
+  .hash{font-family:ui-monospace,Menlo,monospace;background:#1a2b22;color:#fff;padding:5px 11px;border-radius:7px;font-size:12.5px}
+  .note{font-size:12px;color:var(--muted);margin-top:14px;font-style:italic}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="top">
+      <div class="eyebrow">Sprout CRM Next · Delivery</div>
+      <h1>Effort-Level Protocol — saved to global + project memory</h1>
+      <div class="sub">A standing rule: the word <strong>effort</strong> (or judgment on any big task) triggers an upfront effort tier before work begins. Debugging splits the dial into diagnose / fix.</div>
+      <div class="badges">
+        <span class="badge banana">Config / memory only</span>
+        <span class="badge">No repo code change</span>
+        <span class="badge">No data change</span>
+        <span class="badge">Cross-project</span>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="grid">
+        <div class="card">
+          <h3>📍 Where it lives</h3>
+          <ul>
+            <li><strong>Global</strong> <span class="pill">~/.claude/CLAUDE.md</span> new section, applies to all projects</li>
+            <li><strong>Sprout memory</strong> <span class="pill">memory/effort-level-protocol.md</span> type <em>feedback</em> + MEMORY.md pointer</li>
+            <li>Both sit outside the git repo, so nothing here was committed beyond the changelog</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>⚙️ How it fires</h3>
+          <ul>
+            <li>Open with <span class="pill">Effort: &lt;level&gt; — &lt;why&gt;</span></li>
+            <li>Debug → <span class="pill">diagnose / fix</span>, fix never exceeds diagnosis</li>
+            <li>Data-loss surfaces → <strong>max on both</strong></li>
+            <li>Re-tier mid-task autonomously, never stop to ask</li>
+          </ul>
+        </div>
+
+        <div class="card full">
+          <h3>🎚️ The dial — match effort to the cost of being wrong</h3>
+          <div class="tiers">
+            <div class="tier t-low"><b>Low</b>Known pattern, low blast radius. Solo + quick check.</div>
+            <div class="tier t-med"><b>Medium</b>Touches a pipeline/store. Solo + live-verify, review medium.</div>
+            <div class="tier t-high"><b>High</b>Silent/behavioral correctness. Design-first + adversarial verify.</div>
+            <div class="tier t-max"><b>Max/Ultra</b>Cross-cutting or data-integrity. Reserve for these.</div>
+          </div>
+          <p class="note">Tier examples reference Composer's Compass concepts (MuseScore handoff, score/cursor sync, large-score pipeline) — kept verbatim since the rule is now global.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <div class="meta">Pending: delete the redundant Sprout memory copy, or keep as backup — Max's call.</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span class="hash">main · 1cf2744</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

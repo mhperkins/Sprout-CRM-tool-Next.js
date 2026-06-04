@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · How did you hear about us</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --cyan:#1fb6c9; --cyan-lt:#e2f7fa; --banana:#ffd23f; --banana-lt:#fff7d6;
+    --ink:#16323a; --g600:#5b7480; --g100:#eef2f4; --paper:#fbfdfd;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',sans-serif;background:linear-gradient(135deg,#eef9fb,#fffdf2);color:var(--ink);padding:40px 20px;display:flex;justify-content:center}
+  .slide{width:100%;max-width:920px;background:var(--paper);border-radius:22px;box-shadow:0 18px 50px rgba(22,50,58,.13);overflow:hidden}
+  .head{background:linear-gradient(120deg,var(--cyan),#159aab);color:#fff;padding:34px 40px 30px}
+  .badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:14px}
+  .head h1{font-size:30px;font-weight:900;line-height:1.15}
+  .head p{margin-top:8px;font-size:15px;opacity:.92;max-width:640px}
+  .meta{display:flex;flex-wrap:wrap;gap:10px;padding:18px 40px;background:var(--cyan-lt);border-bottom:1px solid #d4eef2}
+  .chip{font-size:12.5px;font-weight:700;background:#fff;color:var(--ink);border-radius:18px;padding:6px 13px;border:1px solid #cbe8ed}
+  .chip b{color:var(--cyan)}
+  .body{padding:30px 40px 8px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{border:1px solid var(--g100);border-radius:14px;padding:18px 20px;background:#fff}
+  .card h3{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--cyan);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .card ul{list-style:none}
+  .card li{font-size:14px;line-height:1.5;padding:4px 0 4px 20px;position:relative;color:#26424b}
+  .card li::before{content:"›";position:absolute;left:4px;color:var(--banana);font-weight:900}
+  code{background:#f1f6f7;border:1px solid #e2eaec;border-radius:5px;padding:1px 6px;font-size:12.5px;color:#1d6c79}
+  .full{grid-column:1/-1}
+  .heard{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+  .htag{font-size:12px;font-weight:700;background:var(--banana-lt);color:#7a5c00;border-radius:13px;padding:4px 11px;border:1px solid #f3e3a0}
+  .htag span{color:#b07d00;font-weight:900}
+  .foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:20px 40px 30px;color:var(--g600);font-size:13px}
+  .hash{font-family:ui-monospace,monospace;background:var(--ink);color:#bfeef5;border-radius:8px;padding:6px 12px;font-size:12.5px}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="head">
+      <div class="badge">Delivered · 2026-06-03</div>
+      <h1>“How did you hear about us” — new contact field</h1>
+      <p>Added a referral/attribution field to every contact, wired it through the whole app, and backfilled it from the Sprout Society Check-In sheet. Plus: catalogued all the org's links into reference memory.</p>
+    </div>
+
+    <div class="meta">
+      <span class="chip">Branch <b>main</b></span>
+      <span class="chip">Commit <b>f4eb9ee</b></span>
+      <span class="chip">Build <b>✓ passing</b></span>
+      <span class="chip">4 files · <b>+31 / −2</b></span>
+      <span class="chip"><b>14</b> contacts populated</span>
+    </div>
+
+    <div class="body">
+      <div class="grid">
+        <div class="card">
+          <h3>🧩 Schema</h3>
+          <ul>
+            <li><code>how_heard</code> string on <code>ContactSchema</code></li>
+            <li>JSONB-only · optional · defaults <code>""</code></li>
+            <li>Rename-safe, no SQL column to sync</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🖥 UI surfaces</h3>
+          <ul>
+            <li>Add contact modal</li>
+            <li>Edit contact modal</li>
+            <li>Detail panel → “How they heard”</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>📥 Importer</h3>
+          <ul>
+            <li>Auto-detects a “how did you hear / referral / source” column</li>
+            <li>Added to <code>NL_MERGE_FIELDS</code> + new-record builder</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🔌 MCP server</h3>
+          <ul>
+            <li><code>create_or_update_contact</code> accepts <code>how_heard</code></li>
+            <li>Merges via <code>fillScalar</code></li>
+            <li>⚠️ needs a window reload to take effect</li>
+          </ul>
+        </div>
+
+        <div class="card full">
+          <h3>📇 Populated from the Check-In sheet · 14 contacts</h3>
+          <div class="heard">
+            <span class="htag">Anni · <span>Kenzi Parker</span></span>
+            <span class="htag">Flint · <span>Partner</span></span>
+            <span class="htag">Peyton · <span>Cody</span></span>
+            <span class="htag">Corrine · <span>A friend</span></span>
+            <span class="htag">Erik · <span>Friend</span></span>
+            <span class="htag">Ivey · <span>Friends performing</span></span>
+            <span class="htag">Julian · <span>Friend</span></span>
+            <span class="htag">Mac · <span>Nina</span></span>
+            <span class="htag">Camilla · <span>Friend presenting</span></span>
+            <span class="htag">Centralle · <span>Izzy</span></span>
+            <span class="htag">Mara · <span>Partner playing (Proactive Panic)</span></span>
+            <span class="htag">Ben · <span>Co-worker</span></span>
+            <span class="htag">Kingsley · <span>Jesse in my building</span></span>
+            <span class="htag">Morgan · <span>Friend</span></span>
+          </div>
+        </div>
+
+        <div class="card full">
+          <h3>🔖 Bonus · reference memory</h3>
+          <ul>
+            <li><code>memory/sprout-key-links.md</code> — 18 org links from the master Links Doc + Slack + Givebutter (membership, scholarship, Luma, Discord, 6 forms, 7 Drive files)</li>
+            <li>Next: resolve referral-name answers (Cody → Cody Naka, Izzy → Isabella, Jesse → Jesse Staton) into an actual referral graph</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <div>Sprout CRM Next · contact attribution</div>
+      <div class="hash">main · f4eb9ee</div>
+    </div>
+  </div>
+</body>
+</html>
