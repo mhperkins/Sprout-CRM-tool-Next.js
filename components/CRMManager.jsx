@@ -2145,6 +2145,7 @@ function NewsletterView({newsletters,events,contacts,profile,onUpdate,onDelete,s
   const [mode,setMode]=useState("list");          // list | edit
   const [draft,setDraft]=useState(null);
   const [confirmDel,setConfirmDel]=useState(null);
+  const [listDel,setListDel]=useState(null);      // newsletter pending delete from the list view
   const suppressAuto=useRef(false);               // skip the unmount auto-save (used by delete + explicit close)
 
   // Restore an in-progress editor session after a reload (persists even an unsaved new draft).
@@ -2234,6 +2235,7 @@ function NewsletterView({newsletters,events,contacts,profile,onUpdate,onDelete,s
                           </div>
                         </div>
                         <NlStatusTag status={n.status}/>
+                        <button className="btn btn-ghost btn-sm" title="Delete" style={{padding:"2px 8px",color:"var(--danger,#c0392b)"}} onClick={(e)=>{e.stopPropagation();setListDel(n);}}>🗑</button>
                       </div>
                     ))}
                   </div>
@@ -2242,6 +2244,10 @@ function NewsletterView({newsletters,events,contacts,profile,onUpdate,onDelete,s
             })}
           </div>
         </div>
+        {listDel&&<ConfirmModal
+          message={`Delete "${listDel.subject||"(no subject)"}"? This cannot be undone.`}
+          onConfirm={()=>{ suppressAuto.current=true; onDelete(listDel.id); setListDel(null); showToast("Newsletter deleted"); }}
+          onCancel={()=>setListDel(null)}/>}
       </div>
     );
   }
@@ -2329,7 +2335,16 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
   const [polishOut,setPolishOut]=useState({});
   // Send workflow state (test send + approved list blast).
   const [sendSecret,setSendSecret]=useState("");
-  const [testTo,setTestTo]=useState("");
+  // Known test recipients as toggle buttons; whatever is toggled on receives the test.
+  const TEST_PRESETS=[
+    {name:"Max",      email:"maxperkins@sproutsociety.org"},
+    {name:"Danielle", email:"danielle@sproutsociety.org"},
+    {name:"Morgan",   email:"mkuriloff16@gmail.com"},
+  ];
+  const [testOn,setTestOn]=useState([TEST_PRESETS[0].email]);   // Max on by default
+  const toggleTest=(em)=>setTestOn(p=>p.includes(em)?p.filter(x=>x!==em):[...p,em]);
+  const [showManual,setShowManual]=useState(false);
+  const [testTo,setTestTo]=useState("");   // manually-added extra addresses
   const [listSeg,setListSeg]=useState("all");
   const [sending,setSending]=useState("");   // "" | "test" | "list"
   // Auto-size the preview iframe to its content so the whole template shows without an inner
@@ -2467,8 +2482,9 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
     if(!(draft.subject||"").trim()){ showToast("Add a subject first","err"); return; }
     const payload={mode,subject:draft.subject,html:built.html,secret:sendSecret.trim()};
     if(mode==="test"){
-      const to=testTo.split(/[\s,;]+/).map(x=>x.trim()).filter(Boolean);
-      if(!to.length){ showToast("Enter at least one test email","err"); return; }
+      const manual=testTo.split(/[\s,;]+/).map(x=>x.trim()).filter(Boolean);
+      const to=[...new Set([...testOn,...manual])];
+      if(!to.length){ showToast("Pick at least one test recipient","err"); return; }
       payload.to=to;
     } else {
       payload.segment=listSeg;
@@ -2496,7 +2512,7 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
 
   return (
     <div className="page">
-      <div className="pg-hd">
+      <div className="pg-hd" style={{position:"sticky",top:0,zIndex:30,background:"var(--paper, #F7F7F6)",paddingTop:8,paddingBottom:12,borderBottom:"1px solid var(--g200, #e5e5e3)"}}>
         <div><div className="pg-ttl">{draft._isNew?"New newsletter":"Edit newsletter"}</div>
           <div className="pg-sub">{TEMPLATES.find(t=>t.id===draft.template)?.name} · {isCompact?"custom sections":`${built.placeholders.length} field${built.placeholders.length!==1?"s":""} to fill`}</div></div>
         <div style={{display:"flex",gap:8}}>
@@ -2608,14 +2624,26 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
                                   </div>
                                 );
                               })}
-                              {sec.itemImage&&(item.image
-                                ? <div style={{display:"flex",alignItems:"center",gap:8}}>
+                              {sec.itemImage&&(()=>{
+                                const applyItemUpload=(u)=>{ setItem(sec.key,idx,"image",u); if(sec.itemCrop) setItem(sec.key,idx,"imagePos","50% 50%"); };
+                                if(!item.image) return <button className="btn btn-ghost btn-sm" style={{...PB,alignSelf:"flex-start"}} disabled={busy[imgFid]==="upload"} onClick={()=>pickImage(imgFid,applyItemUpload)}>{busy[imgFid]==="upload"?"Uploading…":"🖼 Add image"}</button>;
+                                if(sec.itemCrop) return (
+                                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                                    <ImageCrop url={item.image} value={item.imagePos} ratio={sec.itemRatio} onChange={(p)=>setItem(sec.key,idx,"imagePos",p)}/>
+                                    <div style={{display:"flex",gap:8}}>
+                                      <button className="btn btn-ghost btn-sm" style={PB} disabled={busy[imgFid]==="upload"} onClick={()=>pickImage(imgFid,applyItemUpload)}>{busy[imgFid]==="upload"?"Uploading…":"Replace"}</button>
+                                      <button className="btn btn-ghost btn-sm" style={PB} onClick={()=>{setItem(sec.key,idx,"image","");setItem(sec.key,idx,"imagePos","");}}>Remove</button>
+                                    </div>
+                                  </div>
+                                );
+                                return (
+                                  <div style={{display:"flex",alignItems:"center",gap:8}}>
                                     <img src={item.image} alt="" style={{width:40,height:40,objectFit:"cover",borderRadius:6,border:"1px solid var(--g200)"}}/>
                                     <button className="btn btn-ghost btn-sm" style={PB} disabled={busy[imgFid]==="upload"} onClick={()=>pickImage(imgFid,u=>setItem(sec.key,idx,"image",u))}>{busy[imgFid]==="upload"?"Uploading…":"Replace"}</button>
                                     <button className="btn btn-ghost btn-sm" style={PB} onClick={()=>setItem(sec.key,idx,"image","")}>Remove</button>
                                   </div>
-                                : <button className="btn btn-ghost btn-sm" style={{...PB,alignSelf:"flex-start"}} disabled={busy[imgFid]==="upload"} onClick={()=>pickImage(imgFid,u=>setItem(sec.key,idx,"image",u))}>{busy[imgFid]==="upload"?"Uploading…":"🖼 Add image"}</button>
-                              )}
+                                );
+                              })()}
                             </div>
                           );
                         })}
@@ -2647,8 +2675,21 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
             <div className="frow" style={{alignItems:"flex-start"}}>
               <div style={{flex:1}}>
                 <label className="fl">Test send</label>
-                <div style={{fontSize:11,color:"var(--g500)",margin:"2px 0 6px",lineHeight:1.5}}>Send this draft to specific addresses (subject prefixed <b>[TEST]</b>). Comma or space separated.</div>
-                <input className="fi" value={testTo} onChange={e=>setTestTo(e.target.value)} placeholder="you@example.com, friend@example.com"/>
+                <div style={{fontSize:11,color:"var(--g500)",margin:"2px 0 6px",lineHeight:1.5}}>Toggle who gets the test (subject prefixed <b>[TEST]</b>).</div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                  {TEST_PRESETS.map(p=>{
+                    const on=testOn.includes(p.email);
+                    return <button key={p.email} type="button" title={p.email} onClick={()=>toggleTest(p.email)}
+                      style={{padding:"5px 12px",fontSize:12,fontWeight:700,borderRadius:20,cursor:"pointer",
+                        border:`1.5px solid ${on?"var(--fuchsia)":"var(--g300)"}`,
+                        background:on?"var(--fuchsia)":"transparent",color:on?"#fff":"var(--g600)"}}>
+                      {on?"✓ ":""}{p.name}</button>;
+                  })}
+                  <button type="button" onClick={()=>setShowManual(s=>!s)}
+                    style={{padding:"5px 12px",fontSize:12,fontWeight:700,borderRadius:20,cursor:"pointer",
+                      border:"1.5px dashed var(--g300)",background:"transparent",color:"var(--g600)"}}>＋ Add email</button>
+                </div>
+                {showManual&&<input className="fi" style={{marginTop:8}} value={testTo} onChange={e=>setTestTo(e.target.value)} placeholder="extra@email.com, another@email.com"/>}
                 <button className="btn btn-ghost btn-sm" style={{marginTop:8}} disabled={sending==="test"} onClick={()=>doSend("test")}>{sending==="test"?"Sending…":"✉️ Send test"}</button>
               </div>
 

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Newsletter Polish Pass</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{ --ink:#030000; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6; --paper:#F7F7F6; --g500:#8a8a86; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);padding:40px 20px;display:flex;justify-content:center}
+  .slide{width:100%;max-width:940px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.12)}
+  .hd{background:var(--ink);color:#fff;padding:34px 40px}
+  .hd .tag{font-size:12px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--banana)}
+  .hd h1{font-size:28px;font-weight:900;line-height:1.2;margin-top:10px}
+  .hd .sub{font-size:14px;color:#cfcfca;margin-top:10px;font-weight:700}
+  .meta{display:flex;flex-wrap:wrap;gap:10px;padding:18px 40px;background:var(--paper);border-bottom:1px solid #ececea}
+  .chip{font-size:12px;font-weight:900;padding:6px 12px;border-radius:20px;letter-spacing:.5px}
+  .chip.acid{background:var(--acid);color:var(--ink)} .chip.banana{background:var(--banana);color:#3a3000}
+  .chip.cyan{background:var(--cyan);color:#0d3d49} .chip.fuchsia{background:var(--fuchsia);color:#fff} .chip.ink{background:var(--ink);color:#fff}
+  .body{padding:30px 40px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{border:1px solid #ececea;border-radius:12px;padding:18px 20px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+  .card.bar-banana{border-left:6px solid var(--banana)} .card.bar-cyan{border-left:6px solid var(--cyan)}
+  .card.bar-fuchsia{border-left:6px solid var(--fuchsia)} .card.bar-acid{border-left:6px solid var(--acid)} .card.bar-ink{border-left:6px solid var(--ink)}
+  .card h3{font-size:15px;font-weight:900;margin-bottom:6px}
+  .card p{font-size:13px;line-height:1.55;color:#3a3a38}
+  code{background:#f0f0ee;padding:1px 6px;border-radius:4px;font-size:12px;font-weight:700}
+  .ft{padding:20px 40px;background:var(--ink);color:#cfcfca;font-size:12px;font-weight:700;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .ft .hash{color:var(--banana);font-family:monospace}
+  @media(max-width:680px){.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="hd">
+    <div class="tag">Delivered &middot; 2026-06-05</div>
+    <h1>Newsletter Polish Pass</h1>
+    <div class="sub">Spotlight rework, all-photo crop fix, sticky header, mobile stacking, card styling, footer logo, test-send toggles, list delete.</div>
+  </div>
+
+  <div class="meta">
+    <span class="chip cyan">lib/newsletter.js</span>
+    <span class="chip cyan">components/CRMManager.jsx</span>
+    <span class="chip cyan">app/globals.css</span>
+    <span class="chip banana">build &#10003;</span>
+    <span class="chip ink">committed + pushed</span>
+  </div>
+
+  <div class="body">
+    <div class="cards">
+      <div class="card bar-fuchsia">
+        <h3>&#128247; All photo crops fixed</h3>
+        <p>Spotlight, upcoming &amp; past photos now drag-to-reposition like featured. Root cause: crop-box ratio didn't match the rendered email box. Matched each: spotlight 495/200, upcoming 234/140, past 160/110.</p>
+      </div>
+      <div class="card bar-acid">
+        <h3>&#9733; Community Spotlight reworked</h3>
+        <p>Full-width banner photo on top, name + blurb below, with Instagram and Website/Streaming buttons. Mobile-safe stacking.</p>
+      </div>
+      <div class="card bar-ink">
+        <h3>&#128206; Sticky editor header</h3>
+        <p>Action bar now sticks on scroll. The blocker was a global <code>overflow-x:hidden</code> killing <code>position:sticky</code> &mdash; switched to <code>overflow-x:clip</code>.</p>
+      </div>
+      <div class="card bar-banana">
+        <h3>&#127912; Card system</h3>
+        <p>Banana left bars on Membership + Marketing, all bars 6px, uniform soft shadow on every box. Past-event rows kept flat.</p>
+      </div>
+      <div class="card bar-ink">
+        <h3>&#127993; White footer logo</h3>
+        <p>Trimmed + uploaded to Storage, placed bottom-right in a two-column footer; its near-black background blends into the <code>#030000</code> footer.</p>
+      </div>
+      <div class="card bar-fuchsia">
+        <h3>&#9993;&#65039; Test-send toggles + list delete</h3>
+        <p>Toggle pills for Max / Danielle / Morgan + manual add. New &#128465; delete button (styled confirm) on each saved newsletter card.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ft">
+    <span>Sprout CRM Next &middot; main</span>
+    <span class="hash">see latest commit</span>
+  </div>
+</div>
+</body>
+</html>

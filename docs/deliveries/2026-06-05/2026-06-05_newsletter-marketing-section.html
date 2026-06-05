@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Newsletter Marketing Section</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --paper:#F7F7F6; --g500:#8a8a86;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);
+    padding:40px 20px;display:flex;justify-content:center}
+  .slide{width:100%;max-width:880px;background:#fff;border-radius:16px;overflow:hidden;
+    box-shadow:0 24px 60px rgba(0,0,0,.12)}
+  .hd{background:var(--ink);color:#fff;padding:34px 40px}
+  .hd .tag{font-size:12px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--acid)}
+  .hd h1{font-size:30px;font-weight:900;line-height:1.2;margin-top:10px}
+  .hd .sub{font-size:15px;color:#cfcfca;margin-top:10px;font-weight:700}
+  .meta{display:flex;flex-wrap:wrap;gap:10px;padding:20px 40px;background:var(--paper);
+    border-bottom:1px solid #ececea}
+  .chip{font-size:12px;font-weight:900;padding:6px 12px;border-radius:20px;letter-spacing:.5px}
+  .chip.acid{background:var(--acid);color:var(--ink)}
+  .chip.banana{background:var(--banana);color:#3a3000}
+  .chip.cyan{background:var(--cyan);color:#0d3d49}
+  .chip.ink{background:var(--ink);color:#fff}
+  .body{padding:32px 40px}
+  .body h2{font-size:13px;font-weight:900;letter-spacing:2px;text-transform:uppercase;
+    color:var(--g500);margin-bottom:16px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{border:1px solid #ececea;border-radius:12px;padding:20px}
+  .card .n{display:inline-block;width:26px;height:26px;border-radius:50%;background:var(--acid);
+    color:var(--ink);font-weight:900;font-size:13px;text-align:center;line-height:26px;margin-bottom:10px}
+  .card h3{font-size:16px;font-weight:900;margin-bottom:6px}
+  .card p{font-size:14px;line-height:1.55;color:#3a3a38}
+  code{background:#f0f0ee;padding:1px 6px;border-radius:4px;font-size:13px;font-weight:700}
+  .preview{margin-top:26px;border-radius:12px;overflow:hidden;border:1px solid #ececea}
+  .pv-block{background:var(--acid);padding:24px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+  .pv-msg{color:#fff;font-size:17px;font-weight:700;line-height:1.45}
+  .pv-btn{background:var(--ink);color:var(--banana);font-size:13px;font-weight:900;
+    padding:9px 18px;border-radius:4px;white-space:nowrap}
+  .ft{padding:22px 40px;background:var(--ink);color:#cfcfca;font-size:12px;font-weight:700;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .ft .hash{color:var(--acid);font-family:monospace}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}.pv-block{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="hd">
+    <div class="tag">Delivered &middot; 2026-06-05</div>
+    <h1>Newsletter &mdash; New "Marketing" Promo Section</h1>
+    <div class="sub">An acid-green block styled like Membership, with an editable hyperlink button.</div>
+  </div>
+
+  <div class="meta">
+    <span class="chip acid">lib/newsletter.js</span>
+    <span class="chip cyan">Effort: low</span>
+    <span class="chip banana">build &#10003; passes</span>
+    <span class="chip ink">committed + pushed</span>
+  </div>
+
+  <div class="body">
+    <h2>What shipped</h2>
+    <div class="cards">
+      <div class="card">
+        <span class="n">1</span>
+        <h3>Two editor fields</h3>
+        <p>New <code>COMPACT_SECTIONS</code> entries &mdash; <code>marketing</code> (textarea + &#10024; Polish) and <code>marketingLink</code>. They auto-render in the editor, placed right after the Membership ask.</p>
+      </div>
+      <div class="card">
+        <span class="n">2</span>
+        <h3>Editable hyperlink</h3>
+        <p>The button box takes a bare URL (default "Learn more &rarr;") <em>or</em> <code>[Button text](URL)</code> for a custom label, via the existing <code>parseBtn()</code> helper.</p>
+      </div>
+      <div class="card">
+        <span class="n">3</span>
+        <h3>Acid-green block</h3>
+        <p>New MARKETING block in <code>buildCompact()</code>, between Membership and Community Spotlight. Same layout as Membership, but <code>#C6C902</code> background.</p>
+      </div>
+      <div class="card">
+        <span class="n">4</span>
+        <h3>Live-tuned styling</h3>
+        <p>White message text, banana <code>#FAD100</code> button, white placeholder, 20px padding, and newline&rarr;<code>&lt;br&gt;</code> so pressing Enter adds a line break.</p>
+      </div>
+    </div>
+
+    <div class="preview">
+      <div class="pv-block">
+        <div class="pv-msg">Do you have an idea for an event, workshop, or community hang? Click the link and fill out the form!</div>
+        <div class="pv-btn">Learn more &rarr;</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ft">
+    <span>Sprout CRM Next &middot; main</span>
+    <span class="hash">3ada4e0</span>
+  </div>
+</div>
+</body>
+</html>

@@ -2,6 +2,22 @@
 
 ---
 
+## 2026-06-05 — Newsletter polish pass: spotlight rework, all-photo crop fix, sticky header, mobile stacking, card styling, footer logo, test-send toggles, list delete
+
+App code (`lib/newsletter.js`, `components/CRMManager.jsx`, `app/globals.css`), a new white-logo asset in Supabase Storage, one DB delete. Effort: medium. `npm run build` passes. Committed + pushed.
+
+- **All photo crop boxes now work** (was featured-only). Spotlight + upcoming + past photos use the `ImageCrop` drag control. The bug: non-featured crops updated the editor but not the preview, because each crop box's aspect ratio didn't match its rendered email box. Proved the wiring was correct (node test of `buildCompact` output), then matched each crop ratio to its real box: spotlight 495/200, upcoming 234/140, past 160/110 (featured already 544/200).
+- **Community Spotlight** reworked: full-width 200px banner photo on top, name/blurb below, two inline link buttons (Instagram + website/streaming) via `parseBtn`. Replaced the generic add/remove links list.
+- **Mobile stacking:** Membership + Marketing + Spotlight changed from side-by-side message/button to stacked (text on top, button below) to fix phone squeeze.
+- **Sticky editor header.** Made the editor action bar `position:sticky`. The real blocker was `app/globals.css` `overflow-x:hidden` on `html,body` (forces a scroll container, kills sticky) — changed to `overflow-x:clip`.
+- **Card styling:** banana `#FAD100` left accent bars on Membership + Marketing, all four section bars bumped to 6px, `overflow:hidden` so bars clip into rounded corners, and a uniform `0 4px 14px rgba(0,0,0,0.16)` shadow on all boxes (past-event rows kept flat).
+- **White footer logo** (`White-logo-new.png` → trimmed/resized → `newsletter-images/brand/sprout-logo-white.png`), placed bottom-right in a two-column footer; its `#030000` background blends into the footer.
+- **Test send** is now toggle pills for Max / Danielle / Morgan + a "＋ Add email" manual extras field; sends to the union (deduped). Passphrase is required for both test and list sends (client + server enforced).
+- **List-view delete** button (🗑 + styled confirm) on each saved-newsletter card. Note: deleting via raw SQL while the app is open resurrects the row (app auto-saves the in-memory list back) — delete through the app button.
+- Coworking chip "THURSDAYS" → "Sprout-by-Day".
+
+---
+
 ## 2026-06-05 — Newsletter: new "Marketing" promo section (acid-green block, editable button)
 
 App code only (`lib/newsletter.js`). Effort: low. `npm run build` passes. Committed + pushed.
