@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Newsletter Data-Loss Fix + Save Hardening</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E0218A; --cyan:#52C6D9; --paper:#FAF9F5; --g500:#6b6b66;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',sans-serif;background:var(--paper);color:var(--ink);
+    padding:40px 20px;display:flex;justify-content:center}
+  .slide{width:100%;max-width:920px}
+  .hd{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .hd h1{font-size:30px;font-weight:900;letter-spacing:-.5px}
+  .acidrule{height:6px;background:var(--acid);border-radius:4px;margin:14px 0 22px}
+  .sub{font-size:15px;color:var(--g500);margin-bottom:4px}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 26px}
+  .badge{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;
+    border:2px solid var(--ink)}
+  .badge.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .badge.cyan{background:var(--cyan)}
+  .badge.banana{background:var(--banana)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{background:#fff;border-radius:14px;padding:20px 22px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.16);overflow:hidden;position:relative}
+  .card.full{grid-column:1 / -1}
+  .bar{position:absolute;left:0;top:0;bottom:0;width:6px}
+  .bar.fuchsia{background:var(--fuchsia)} .bar.cyan{background:var(--cyan)}
+  .bar.banana{background:var(--banana)} .bar.acid{background:var(--acid)}
+  .card h2{font-size:13px;font-weight:900;text-transform:uppercase;
+    letter-spacing:1px;margin-bottom:10px;padding-left:8px}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;
+    border-radius:6px;margin-bottom:10px}
+  .tag.need{background:var(--fuchsia);color:#fff}
+  .tag.hard{background:var(--cyan)}
+  .card p{font-size:14px;line-height:1.55;padding-left:8px;margin-bottom:8px}
+  .card code{background:#f0efe9;padding:1px 5px;border-radius:4px;
+    font-size:12.5px;font-family:ui-monospace,Menlo,monospace}
+  .commit{display:inline-block;font-family:ui-monospace,Menlo,monospace;
+    font-size:12px;font-weight:700;background:var(--ink);color:var(--banana);
+    padding:3px 9px;border-radius:6px}
+  ul{padding-left:26px;margin:6px 0}
+  li{font-size:14px;line-height:1.5;margin-bottom:5px}
+  .ft{margin-top:24px;font-size:12.5px;color:var(--g500);
+    border-top:1px solid #e3e2db;padding-top:14px;display:flex;
+    justify-content:space-between;flex-wrap:wrap;gap:8px}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="hd"><h1>Newsletter Data-Loss Fix + Save Hardening</h1></div>
+  <div class="sub">Sprout CRM Next · 2026-06-05 · branch <strong>main</strong></div>
+  <div class="acidrule"></div>
+
+  <div class="badges">
+    <span class="badge dark">2 commits pushed</span>
+    <span class="badge cyan">components/CRMManager.jsx</span>
+    <span class="badge cyan">lib/services.js</span>
+    <span class="badge banana">build passes</span>
+    <span class="badge">Effort: diagnose high / fix low</span>
+  </div>
+
+  <div class="grid">
+    <div class="card full">
+      <div class="bar acid"></div>
+      <h2>The Scare</h2>
+      <p>On the <strong>deployed</strong> app the Marketing block text + link showed as
+      placeholders (<code>[Button link]</code>) and the photos were gone. Git was clean and
+      pushed, Vercel matched — <strong>not a deploy problem.</strong> A direct database query
+      showed the saved record <code>nl_may_2026_roundup</code> was <strong>fully intact.</strong>
+      The editor was showing a <strong>stale draft restored from the browser's local storage</strong>
+      (<code>sprout_nl_editor_v1</code>), from before the marketing copy + photos were added.
+      Clearing it by hand failed because the running app rewrites the snapshot on every keystroke.</p>
+    </div>
+
+    <div class="card">
+      <div class="bar fuchsia"></div>
+      <h2>Fix 1 — Necessary</h2>
+      <span class="tag need">stops the recurrence</span>
+      <p>The restore effect loaded the local snapshot verbatim and never checked the database.
+      It now <strong>prefers the authoritative DB record</strong> for any saved draft: it waits
+      for the newsletters list to load, then matches by id. Only a never-saved new draft falls
+      back to the cache.</p>
+      <p>A stale cache can no longer override saved content.</p>
+      <p><span class="commit">630cf7b</span></p>
+    </div>
+
+    <div class="card">
+      <div class="bar cyan"></div>
+      <h2>Fix 2 — Hardening</h2>
+      <span class="tag hard">no silent failures</span>
+      <p>New single-record <code>saveNewsletter(n)</code> that <strong>validates and surfaces a
+      real error</strong> on failure, instead of silently skipping and reporting a false
+      "Saved&nbsp;✓". Writes only the changed record via a functional state update; strips
+      <code>_isNew</code>/<code>_wasNew</code> so editor flags never persist.</p>
+      <p><span class="commit">cd30eba</span></p>
+    </div>
+
+    <div class="card full">
+      <div class="bar banana"></div>
+      <h2>Blast Radius &amp; Decisions</h2>
+      <ul>
+        <li><strong>Newsletter-only.</strong> Contacts, orgs, events, and profile use separate
+        save functions and are untouched. <code>saveNewsletter</code> is referenced only by
+        <code>services.js</code> + <code>CRMManager.jsx</code>.</li>
+        <li><strong>Two residual items deliberately NOT added</strong> (they would only guard
+        cases Fixes 1+2 already prevent → bloat): the best-effort <code>beforeunload</code>
+        tab-close save, and a post-save refetch.</li>
+        <li><strong>Data never lost.</strong> The DB was verified intact before and after the
+        browser was closed; the async close-save is cancelled by the browser, which is why the
+        record survived.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="ft">
+    <span>Confirmed live: "everything is back."</span>
+    <span>630cf7b · cd30eba → origin/main</span>
+  </div>
+</div>
+</body>
+</html>

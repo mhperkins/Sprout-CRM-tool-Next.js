@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-06-05 — Newsletter data-loss fix + save-path hardening
+
+App code only (`components/CRMManager.jsx`, `lib/services.js`). Effort: diagnose high / fix low. `npm run build` passes. Commits `630cf7b` + `cd30eba` pushed to `main`.
+
+**The scare:** On the deployed app, the Marketing block text + link showed as placeholders and photos were gone. Investigation showed git was clean/pushed and the database record (`nl_may_2026_roundup`) was fully intact — the editor was displaying a **stale draft restored from the browser's `localStorage`** (`sprout_nl_editor_v1`), an older snapshot from before the marketing/photos were added. Clearing local storage by hand didn't stick because the running app rewrites the snapshot on every state change.
+
+- **Fix 1 (`630cf7b`) — necessary.** The restore `useEffect` in `NewsletterView` loaded the local snapshot verbatim and never consulted the database. It now **prefers the authoritative DB record** for any already-saved draft (waits for the newsletters list to load, then matches by id); only a never-saved new draft falls back to the local snapshot. A stale cache can no longer override saved content.
+- **Fix 2 (`cd30eba`) — hardening.** Added a single-record `saveNewsletter(n)` to `services.js` that **validates one record and returns a real error on Zod failure** instead of silently skipping (the old bulk path returned `{error:null}` on skip, producing a false "Saved ✓" with nothing written). The save callback now upserts only the changed record via a functional state update (no whole-list re-write, no stale closure), and strips `_isNew`/`_wasNew` so editor flags don't persist into the JSONB blob. Bulk `saveNewsletters()` kept as an unused fallback.
+- **Blast radius:** newsletter-only. Contacts/orgs/events/profile use separate save functions and are untouched.
+- Two residual items (sync `sendBeacon` tab-close save, post-save refetch) were deliberately **not** added — they only guard cases Fixes 1+2 already prevent.
+
+---
+
 ## 2026-06-05 — Newsletter polish pass: spotlight rework, all-photo crop fix, sticky header, mobile stacking, card styling, footer logo, test-send toggles, list delete
 
 App code (`lib/newsletter.js`, `components/CRMManager.jsx`, `app/globals.css`), a new white-logo asset in Supabase Storage, one DB delete. Effort: medium. `npm run build` passes. Committed + pushed.
