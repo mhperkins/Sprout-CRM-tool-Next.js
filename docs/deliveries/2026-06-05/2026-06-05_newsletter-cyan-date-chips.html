@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Cyan upcoming-event date chips</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --cyan-fg:#0d3d49;
+    --paper:#FBFBF8; --card:#FFFFFF; --muted:#6b6b66;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Lato',Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);
+    padding:48px 24px;line-height:1.5;}
+  .wrap{max-width:880px;margin:0 auto;}
+  .tag{display:inline-block;background:var(--cyan);color:var(--cyan-fg);font-size:12px;font-weight:900;
+    letter-spacing:1.5px;text-transform:uppercase;padding:5px 12px;border-radius:4px;}
+  h1{font-size:34px;font-weight:900;margin:16px 0 6px;line-height:1.15;}
+  .sub{font-size:17px;color:var(--muted);margin-bottom:8px;}
+  .meta{font-size:13px;color:var(--muted);margin-bottom:32px;}
+  .meta code{background:#efefe9;padding:2px 7px;border-radius:4px;font-weight:700;color:var(--ink);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px;}
+  .card{background:var(--card);border-radius:10px;padding:22px 24px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.10);overflow:hidden;position:relative;}
+  .card.full{grid-column:1 / -1;}
+  .bar{position:absolute;left:0;top:0;bottom:0;width:6px;}
+  .card h3{font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
+    color:var(--muted);margin-bottom:10px;}
+  .card p{font-size:15px;}
+  .card .pad{padding-left:6px;}
+  /* before / after demo chips */
+  .demo{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:8px;}
+  .minicard{background:#F7F7F6;border-radius:6px;padding:12px 14px;flex:1;min-width:150px;
+    box-shadow:0 3px 10px rgba(0,0,0,0.12);}
+  .chip{display:inline-block;font-size:12px;font-weight:900;padding:3px 9px;border-radius:3px;}
+  .chip.acid{background:var(--acid);color:#3a3d00;}
+  .chip.cyan{background:var(--cyan);color:var(--cyan-fg);}
+  .ev{font-size:14px;font-weight:700;margin-top:6px;}
+  .arrow{font-size:24px;font-weight:900;color:var(--muted);}
+  .label{font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+  .commit{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px;
+    background:var(--ink);color:#fff;border-radius:8px;padding:14px 18px;}
+  .commit code{background:rgba(255,255,255,0.14);padding:3px 9px;border-radius:4px;font-weight:700;}
+  .commit .ok{color:var(--acid);font-weight:900;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="tag">Newsletter · Delivered</span>
+  <h1>Upcoming-event date chips now all cyan</h1>
+  <p class="sub">One consistent date color across side-by-side event cards.</p>
+  <p class="meta">2026-06-05 · branch <code>main</code> · commit <code>8f48325</code> · <code>lib/newsletter.js</code> · build passing</p>
+
+  <div class="card full">
+    <h3>Before → After</h3>
+    <div class="demo">
+      <div style="flex:1;min-width:300px;">
+        <div class="label">Before — alternating by position</div>
+        <div class="demo">
+          <div class="minicard"><span class="chip acid">2026-06-26</span><div class="ev">Sprout n Tell Vol. 2</div></div>
+          <div class="minicard"><span class="chip cyan">Tuesdays &amp; Thursdays</span><div class="ev">Sprout Co-Work</div></div>
+        </div>
+      </div>
+      <div class="arrow">→</div>
+      <div style="flex:1;min-width:300px;">
+        <div class="label">After — all cyan</div>
+        <div class="demo">
+          <div class="minicard"><span class="chip cyan">2026-06-26</span><div class="ev">Sprout n Tell Vol. 2</div></div>
+          <div class="minicard"><span class="chip cyan">Tuesdays &amp; Thursdays</span><div class="ev">Sprout Co-Work</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <span class="bar" style="background:var(--banana);"></span>
+      <h3>What changed</h3>
+      <p class="pad"><code style="background:#efefe9;padding:2px 6px;border-radius:4px;">EVT_PILLS</code> alternated acid-green <code style="background:#efefe9;padding:2px 6px;border-radius:4px;">#C6C902</code> and cyan <code style="background:#efefe9;padding:2px 6px;border-radius:4px;">#73C4D6</code> by card position. Both entries are now cyan, so every upcoming-event date chip matches.</p>
+    </div>
+    <div class="card">
+      <span class="bar" style="background:var(--cyan);"></span>
+      <h3>Why</h3>
+      <p class="pad">In a 2-up row, two different chip colors read as two <em>different kinds</em> of thing. They're both just upcoming events — consistent cyan reads cleaner and ties to the coworking accent.</p>
+    </div>
+  </div>
+
+  <div class="commit">
+    <span>📦</span>
+    <code>8f48325</code>
+    <span>→ origin/main</span>
+    <span class="ok">✓ build passing</span>
+    <span style="color:#cfcfca;">2 files · +10 / −1</span>
+  </div>
+</div>
+</body>
+</html>
