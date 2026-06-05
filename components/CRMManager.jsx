@@ -2149,14 +2149,28 @@ function NewsletterView({newsletters,events,contacts,profile,onUpdate,onDelete,s
   const suppressAuto=useRef(false);               // skip the unmount auto-save (used by delete + explicit close)
 
   // Restore an in-progress editor session after a reload (persists even an unsaved new draft).
+  // For an already-saved draft, prefer the DB record over the local snapshot so a stale cache
+  // can never override saved content — wait for the newsletters list to load, then use the DB copy.
   const restored=useRef(false);
   useEffect(()=>{
-    if(restored.current) return; restored.current=true;
-    try{
-      const r=JSON.parse(localStorage.getItem(NL_EDITOR_LS_KEY)||"null");
-      if(r&&r.mode==="edit"&&r.draft){ setDraft(r.draft); setMode("edit"); }
-    }catch{}
-  },[]);
+    if(restored.current) return;
+    let r=null;
+    try{ r=JSON.parse(localStorage.getItem(NL_EDITOR_LS_KEY)||"null"); }catch{}
+    if(!(r&&r.mode==="edit"&&r.draft)){ restored.current=true; return; }
+    if(r.draft.id){
+      // Saved draft: hold until the DB list arrives, then load the authoritative DB record.
+      if(newsletters.length===0) return;
+      const fresh=newsletters.find(n=>n.id===r.draft.id);
+      restored.current=true;
+      setDraft(fresh?{...fresh}:r.draft);
+      setMode("edit");
+    } else {
+      // Never-saved new draft: only the local snapshot has it.
+      restored.current=true;
+      setDraft(r.draft);
+      setMode("edit");
+    }
+  },[newsletters]);
   // Keep the local snapshot in sync so a reload mid-edit returns to the same draft.
   useEffect(()=>{
     try{
