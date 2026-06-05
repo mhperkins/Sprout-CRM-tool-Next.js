@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-06-05 — Newsletter: new "Marketing" promo section (acid-green block, editable button)
+
+App code only (`lib/newsletter.js`). Effort: low. `npm run build` passes. Committed + pushed.
+
+Added a new Marketing section to the compact newsletter, modeled on the Membership block but acid green:
+
+- **Two new `COMPACT_SECTIONS` entries** — `marketing` (single textarea + ✨ Polish) and `marketingLink` (single; bare URL → default "Learn more →", or markdown `[Button text](URL)` via the existing `parseBtn()`). They auto-render as editor fields (the editor maps over `COMPACT_SECTIONS`). Placed after `membership`, before `spotlightName`.
+- **New MARKETING render block** in `buildCompact()`, between the Membership and Community Spotlight blocks. Mirrors the membership table layout (message left, black button right) with an **acid-green `#C6C902`** background.
+- Live tuning with Max: message text **white**; button text **banana `#FAD100`** to match the membership button (both the real link and the empty `[Button link]` placeholder); message has its own **white placeholder** (the shared `cph()` grey reads poorly on acid green); **20px padding** between message and button; message converts **newlines → `<br>`** so pressing Enter in the box adds a line break in the email.
+
+---
+
 ## 2026-06-05 — Newsletter polish: section renames, inline links + editable button labels, new no-tagline logo, footer cleanup
 
 Template + data + storage (`lib/newsletter.js`; new logo in Supabase Storage `newsletter-images/brand/`; `sprout_profile.address` updated via SQL). Effort: low. `npm run build` passes. Committed + pushed.
