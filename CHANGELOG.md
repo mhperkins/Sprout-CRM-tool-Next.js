@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-06-05 — Newsletter: unify upcoming-event date chips to cyan
+
+One-line template tweak (`lib/newsletter.js`). Effort: low. `npm run build` passes.
+
+- Max noticed two side-by-side upcoming-event cards showed different date-chip colors (left acid-green, right cyan). They weren't hand-set — `EVT_PILLS` alternated `#C6C902` / `#73C4D6` by card position for "visual rhythm." In a 2-up row that reads as two different *kinds* of thing rather than both being upcoming events.
+- Set both `EVT_PILLS` entries to cyan `#73C4D6`, so every upcoming-event date chip is consistent and ties to the coworking accent. Rotation removed.
+
+---
+
 ## 2026-06-05 — Newsletter data-loss fix + save-path hardening
 
 App code only (`components/CRMManager.jsx`, `lib/services.js`). Effort: diagnose high / fix low. `npm run build` passes. Commits `630cf7b` + `cd30eba` pushed to `main`.
