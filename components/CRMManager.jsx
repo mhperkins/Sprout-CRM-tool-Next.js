@@ -18,7 +18,7 @@ import {
   saveEvents      as svcSaveEvents,
   saveProfile     as svcSaveProfile,
   fetchNewsletters,
-  saveNewsletters as svcSaveNewsletters,
+  saveNewsletter  as svcSaveNewsletter,
   deleteContactById,
   deleteOrgById,
   deleteEventById,
@@ -3400,14 +3400,15 @@ const saveProfile = useCallback((u) => {
   }, [showToast]);
 
   const saveNewsletter = useCallback((rec) => {
-    const u = newsletters.find(n=>n.id===rec.id)
-      ? newsletters.map(n=>n.id===rec.id?rec:n)
-      : [...newsletters, rec];
-    setNewsletters(u);
-    svcSaveNewsletters(u).then(({ error }) => {
-      if (error) { console.error("saveNewsletters:", error); showToast(`Save failed: ${error}`, "err"); }
+    // Optimistic update on the single record (functional form — no stale-closure list).
+    setNewsletters(prev => prev.some(n=>n.id===rec.id)
+      ? prev.map(n=>n.id===rec.id?rec:n)
+      : [...prev, rec]);
+    // Persist ONLY this record; a validation failure now surfaces instead of silently skipping.
+    svcSaveNewsletter(rec).then(({ error }) => {
+      if (error) { console.error("saveNewsletter:", error); showToast(`Save failed: ${error}`, "err"); }
     });
-  }, [newsletters, showToast]);
+  }, [showToast]);
 
   const deleteNewsletter = useCallback(async (id) => {
     const prev = newsletters;
