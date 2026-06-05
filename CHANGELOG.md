@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-06-05 — Newsletter polish: section renames, inline links + editable button labels, new no-tagline logo, footer cleanup
+
+Template + data + storage (`lib/newsletter.js`; new logo in Supabase Storage `newsletter-images/brand/`; `sprout_profile.address` updated via SQL). Effort: low. `npm run build` passes. Committed + pushed.
+
+Six changes, mostly in `buildCompact()` / `COMPACT_SECTIONS`:
+
+- **Masthead renamed** "Monthly Sprout" → **"Sprout Monthly"** (display label only; template picker name and `<title>` left as "Monthly Roundup").
+- **Spotlight heading renamed** "Community Spotlight" → **"Community Sprout Shout"** (rendered email heading; editor field labels still read "Community spotlight — …").
+- **Inline links in any fill-in box.** New `linkify()` runs after `esc()` and converts markdown `[label](https://url)` into a styled fuchsia anchor; wired into `cval()` so every placeholder-using field supports it. No space between `]` and `(`; http/https only.
+- **Editable RSVP button label.** The upcoming-event `link` box now accepts a bare URL (default "Sign up / RSVP →") **or** markdown `[Button text](url)` to set both label and URL, via a new `parseBtn()` helper. Field placeholder updated to "Button: URL, or [Button text](URL)".
+- **New logo.** Swapped the tagline logo ("Less Bullshit, More Connection") for the **black wordmark + heart, no tagline**. Trimmed surrounding whitespace with `sharp` (1379×769 → 473×224), capped to 624px wide, uploaded to `newsletter-images/brand/sprout-logo-blackheart.png` (new filename; old logo kept), and repointed the masthead `<img src>`. Note: SVG is not usable — email clients don't render SVG in `<img>`; must be a transparent PNG.
+- **Footer cleanup.** Removed the website link (site under reconstruction; dropped the unused `website` const) so the footer reads `Brooklyn, NY · @sproutsocietyorg`; changed the address to **24 Scott Ave. Brooklyn, NY 11237** (updated in org settings via `jsonb_set`, not hardcoded); added a **501(c)(3) EIN line** rendering `Sprout Society is a registered 501(c)(3) nonprofit · EIN 83-1298420` from `profile.ein`.
+
+---
+
 ## 2026-06-05 — Newsletter editor layout: Send card moved right, preview auto-sizes to the full template
 
 App code only (`components/CRMManager.jsx`). Effort: low (single-file UI layout change). `npm run build` passes.
