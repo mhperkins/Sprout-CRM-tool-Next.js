@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Newsletter Polish, Logo, Footer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#F4E04D; --fuchsia:#E10098; --cyan:#73C4D6;
+    --paper:#F7F7F6; --mute:#8a8a86;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);padding:40px 24px;line-height:1.5}
+  .wrap{max-width:980px;margin:0 auto}
+  .top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;border-bottom:4px solid var(--ink);padding-bottom:20px;margin-bottom:28px}
+  h1{font-size:30px;font-weight:900;letter-spacing:-.5px}
+  .sub{color:var(--mute);font-size:15px;margin-top:6px}
+  .badges{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font-size:12px;font-weight:900;padding:6px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+  .c-hash{background:var(--ink);color:var(--acid)}
+  .c-branch{background:var(--cyan);color:var(--ink)}
+  .c-effort{background:var(--banana);color:var(--ink)}
+  .c-build{background:var(--acid);color:var(--ink)}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .card{background:#fff;border:2px solid var(--ink);border-radius:14px;padding:20px 22px}
+  .card h3{font-size:17px;font-weight:900;display:flex;align-items:center;gap:9px;margin-bottom:10px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--fuchsia);color:#fff;font-size:13px;font-weight:900;flex:none}
+  .card p{font-size:14px;color:#333}
+  .card code{background:var(--paper);border:1px solid #e0e0dd;border-radius:4px;padding:1px 6px;font-size:12.5px}
+  .was{color:var(--mute);text-decoration:line-through}
+  .now{color:var(--fuchsia);font-weight:900}
+  .foot{margin-top:26px;background:var(--ink);color:var(--paper);border-radius:14px;padding:22px 24px;font-size:13.5px}
+  .foot b{color:var(--acid)}
+  .files{margin-top:16px;font-size:13px;color:var(--mute)}
+  .files code{color:var(--ink);background:#fff;border:1px solid #ddd;border-radius:4px;padding:1px 6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Newsletter Polish &middot; Logo &middot; Footer</h1>
+      <div class="sub">Sprout CRM Next &mdash; template, data &amp; storage updates</div>
+    </div>
+    <div class="badges">
+      <span class="chip c-hash">aa9132d</span>
+      <span class="chip c-branch">main</span>
+      <span class="chip c-effort">Effort: low</span>
+      <span class="chip c-build">build ✓</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3><span class="num">1</span> Masthead renamed</h3>
+      <p><span class="was">Monthly Sprout</span> &rarr; <span class="now">Sprout Monthly</span><br>Display label only. Picker name &amp; <code>&lt;title&gt;</code> unchanged.</p>
+    </div>
+    <div class="card">
+      <h3><span class="num">2</span> Spotlight renamed</h3>
+      <p><span class="was">Community Spotlight</span> &rarr; <span class="now">Community Sprout Shout</span><br>The rendered email heading.</p>
+    </div>
+    <div class="card">
+      <h3><span class="num">3</span> Inline links anywhere</h3>
+      <p>New <code>linkify()</code> wired into <code>cval()</code> &mdash; type <code>[label](https://url)</code> in <b>any</b> fill-in box and it becomes a fuchsia link. No space between <code>]</code> and <code>(</code>.</p>
+    </div>
+    <div class="card">
+      <h3><span class="num">4</span> Editable RSVP button</h3>
+      <p>The event link box now takes a bare URL (default <b>Sign up / RSVP &rarr;</b>) <i>or</i> <code>[Button text](url)</code> to set label + link, via <code>parseBtn()</code>.</p>
+    </div>
+    <div class="card">
+      <h3><span class="num">5</span> New logo</h3>
+      <p>Black wordmark + heart, <b>no tagline</b>. Trimmed <code>1379×769 → 473×224</code>, hosted at <code>brand/sprout-logo-blackheart.png</code>. SVG won't work in email &mdash; PNG only.</p>
+    </div>
+    <div class="card">
+      <h3><span class="num">6</span> Footer cleanup</h3>
+      <p>Website link <b>removed</b> (site rebuilding). Address &rarr; <span class="now">24 Scott Ave. Brooklyn, NY 11237</span>. Added <b>501(c)(3) EIN 83-1298420</b> line.</p>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>Where it landed:</b> all template changes are reload-to-see in the newsletter editor. The address lives in <b>org settings</b> (updated via <code style="color:var(--banana)">jsonb_set</code>) so Settings &amp; every future issue reflect it. The new logo + the old tagline logo both sit in the <code style="color:var(--banana)">newsletter-images</code> Storage bucket.
+    <div class="files">
+      Touched: <code>lib/newsletter.js</code> &middot; <code>CHANGELOG.md</code> &middot; <code>sprout_profile.address</code> (DB) &middot; Supabase Storage (new logo). Throwaway trim/upload script + local PNG deleted after.
+    </div>
+  </div>
+</div>
+</body>
+</html>
