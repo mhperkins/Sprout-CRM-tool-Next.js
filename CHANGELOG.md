@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-06 — Newsletter: testimonial / quote pop-out in the Community Spotlight
+
+App code only (`lib/newsletter.js`). Effort: low. `npm run build` passes.
+
+- Max wanted a testimonial box for the newsletter that "pops out" — an acid-green block inside the Community Spotlight with a shadow and big quotation marks capping it like a testimonial.
+- **New field** `spotlightTestimonial` in `COMPACT_SECTIONS` (textarea + ✨ Polish) — auto-renders as an editor field since the editor maps over `COMPACT_SECTIONS`. Labeled "Community spotlight — testimonial / quote."
+- **New render block** in `buildCompact()`, inside the spotlight card below the blurb and above the IG/Website buttons: acid-green `#C6C902` block, rounded corners, shadow `0 6px 18px rgba(0,0,0,0.22)`. **Renders only when the field is filled** so a spotlight without a quote doesn't get an empty green box.
+- Iterated the quote-mark styling live with Max: bumped the marks to **46px banana `#FAD100`**, and placed them **inline** — the opening `"` sits right before the first word and the closing `"` right after the last word (instead of floating on their own rows), each dropped via negative `vertical-align` to cap the italic quote text.
+
+---
+
 ## 2026-06-05 — Newsletter: unify upcoming-event date chips to cyan
 
 One-line template tweak (`lib/newsletter.js`). Effort: low. `npm run build` passes.
