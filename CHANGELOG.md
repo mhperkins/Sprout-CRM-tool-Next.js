@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-06-06 — Contacts: new "Showcase" relationship type
+
+App code + MCP + docs (`components/CRMManager.jsx`, `lib/schemas.js`, `mcp/server.js`, `docs/CRM-db-schema.md`). Effort: low. `npm run build` passes.
+
+- Added a new community contact type **`showcase`** ("Showcase") for people who have performed or displayed at Sprout Society.
+- Updated all four schemas-sync points per the invariant: `REL_TYPES` in `CRMManager.jsx`, the Zod `relationship_types` enum in `lib/schemas.js`, both MCP inputSchemas in `mcp/server.js` (`search_contacts` filter + `create_or_update_contact` merge), and the enum row in `docs/CRM-db-schema.md`. Placed after `attendee`, before `sprout_society`.
+- People-only: not added to the org high-signal `tags` mirror (Showcase describes individuals who performed/displayed, not orgs).
+- Flows automatically into the Add/Edit modals, detail panel, contact + org list chips, and the type filter, since those map over `REL_TYPES`.
+- ⚠️ Reload the VS Code window so the running MCP server picks up the new enum value.
+
+---
+
 ## 2026-06-06 — Newsletter: proofread May draft + editable titles/subheaders + generic Announcement section
 
 App code (`lib/newsletter.js`, `components/CRMManager.jsx`) + DB content edits to the May draft (`nl_may_2026_roundup`). Effort: low → medium. `npm run build` passes.

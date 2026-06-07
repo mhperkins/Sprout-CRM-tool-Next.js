@@ -32,7 +32,7 @@ source of truth for the UI merge pattern. Additional JSONB-only fields:
 | Key                         | Type             | Notes                                                           |
 |-----------------------------|------------------|-----------------------------------------------------------------|
 | `phone`                     | string           | Nullable                                                        |
-| `relationship_types`        | string[]         | Multi-select. Enum: `music` `art` `event_host` `partner` `community_builder` `attendee` `sprout_society` `other`. Legacy single-string coerced to array on read. |
+| `relationship_types`        | string[]         | Multi-select. Enum: `music` `art` `event_host` `partner` `community_builder` `attendee` `showcase` `sprout_society` `other`. Legacy single-string coerced to array on read. |
 | `other_description`         | string           | Free text when `relationship_types` includes `other`            |
 | `website`                   | string           | Nullable                                                        |
 | `instagram_handle`          | string           | Nullable                                                        |

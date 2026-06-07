@@ -295,7 +295,7 @@ const STYLES = `
 
 /* ─── Constants ─────────────────────────────────────────────────────────────── */
 const REL_STATUS = { cold:"Cold", cool:"Cool", warm:"Warm", active:"Active" };
-const REL_TYPES  = { music:"Music", art:"Art", event_host:"Event Host", community_builder:"Community Builder", partner:"Partner", attendee:"Attendee", sprout_society:"Sprout Society", other:"Other" };
+const REL_TYPES  = { music:"Music", art:"Art", event_host:"Event Host", community_builder:"Community Builder", partner:"Partner", attendee:"Attendee", showcase:"Showcase", sprout_society:"Sprout Society", other:"Other" };
 // High-signal role tags shared by contacts AND orgs (orgs store these in `tags`, since they have no relationship_types). Tokens match REL_TYPES so one filter spans both.
 const ORG_ROLE_TAGS = [["music","Music"],["art","Art"],["event_host","Event Host"],["community_builder","Community Builder"]];
 const SEGMENTS   = { community:"Community", donor:"Donors", prospect:"Prospects" };
