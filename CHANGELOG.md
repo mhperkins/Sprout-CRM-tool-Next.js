@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-06-06 — Newsletter: featured-event announcement box + cyan hyperlinks
+
+App code only (`lib/newsletter.js`). Effort: low. `npm run build` passes.
+
+- **Featured announcement box.** New optional field `featuredAnnounce` in `COMPACT_SECTIONS` (textarea + ✨ Polish, "Featured event — announcement (optional)"), placed after `featuredRecap`. New render block in `buildCompact()` between the recap and the "See more events" button: a grey `#ECECEA` box with bold fuchsia `#E10098` text. Renders only when filled, so a featured event without an announcement gets no empty grey box.
+- **Hyperlink color → cyan.** Confirmed markdown links already work in any fill-in box via `linkify()` (`[label](https://url)`, no space between `]` and `(`, http(s) only) — no separate link box needed. Parameterized `linkify(html, color)` and `cval(v, t, linkColor)`, then set the global default to cyan so every inline link is uniform.
+- Used a deeper cyan `#2a8ca0` rather than the light brand cyan `#73C4D6`: the light cyan as link text is too low-contrast on white/grey backgrounds; `#2a8ca0` is a darker shade of the same hue that stays legible.
+
+---
+
 ## 2026-06-06 — Newsletter: testimonial / quote pop-out in the Community Spotlight
 
 App code only (`lib/newsletter.js`). Effort: low. `npm run build` passes.
