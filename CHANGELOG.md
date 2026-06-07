@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-06 — Newsletter: proofread May draft + editable titles/subheaders + generic Announcement section
+
+App code (`lib/newsletter.js`, `components/CRMManager.jsx`) + DB content edits to the May draft (`nl_may_2026_roundup`). Effort: low → medium. `npm run build` passes.
+
+- **Proofread the May newsletter.** Pulled `field_values` and read every field. Fixed the intro broken sentence ("...into our space**.** launched..." → comma), the spotlight blurb ("instagram"→"Instagram", "Soundcloud"→"SoundCloud", missing final period), and trimmed cosmetic trailing spaces. Per Max: standardized the event name to **"Sprout 'N' Tell"** everywhere, left the testimonial punctuation alone, kept "Last month" in the featured recap (correct — Vol. 1 ran in May, the issue ships in June). Applied via targeted `jsonb_set` on `data->field_values`.
+- **All static titles/subheaders → editable fields.** New `kind:"header"` field type in `COMPACT_SECTIONS` + a `tval(v, fallback)` helper in `lib/newsletter.js`. Unlike `cval` (muted `[placeholder]` when blank), `tval` falls back to the hardcoded default, so any draft that never sets these renders identically to before — no data migration, no placeholder leak. New fields: `mastheadLabel`, `featuredEyebrow`, `seeMoreLabel`, `spotlightEyebrow`, `membershipBtn`, `upcomingTitle`, `pastTitle`, `footerBrand`. Editor renders `header` fields as a one-line input whose placeholder is the current default (new `header` branch in `NewsletterEditor`). Left the masthead month label (already in Details) and the dynamic Follow @handle button (from the org profile) alone.
+- **Coworking block → generic Announcement section.** "It won't always be coworking." Relabeled the fields ("Coworking — …" → "Announcement — eyebrow/title/body/highlight"), made the yellow highlight chip label editable (`coworkingChip`, default "Sprout-by-Day"), and made the whole highlight line render only when `coworkingThurs` is filled. Changed the generic defaults (eyebrow → "Announcement", title → blank) so a future non-coworking issue won't show stale wording, and wrote the May draft's `coworkingEyebrow`/`coworkingTitle` explicitly so this issue is visually unchanged. Kept the existing `coworking*` keys (no rename) to avoid migrating saved data. This also subsumes the earlier fix of the hardcoded "Coworking, Tuesdays & Thursdays" heading — that line is now the editable `coworkingTitle`.
+- **⚠️ Stale baked HTML:** the May edits went straight to `field_values` in the DB, so the draft's baked `html` is stale. Open the draft in the editor and Save draft once to rebake before sending; the live preview already shows the corrected copy on open.
+
+---
+
 ## 2026-06-06 — Newsletter: featured-event announcement box + cyan hyperlinks
 
 App code only (`lib/newsletter.js`). Effort: low. `npm run build` passes.

@@ -2602,6 +2602,15 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
                         </div>
                       );
                     }
+                    if(sec.kind==="header"){
+                      // Editable static title/subheader. Blank = the default (shown as placeholder).
+                      return (
+                        <div className="fg" key={sec.key}>
+                          <label className="fl" style={LBL}>{sec.label}</label>
+                          <input className="fi" value={fv[sec.key]||""} onChange={e=>setField(sec.key,e.target.value)} placeholder={sec.ph||"Type your copy…"}/>
+                        </div>
+                      );
+                    }
                     if(sec.kind==="single"){
                       const fid=sec.key;
                       return (
