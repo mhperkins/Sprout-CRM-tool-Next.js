@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — See more events auto-scroll fix</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --cyan:#73C4D6; --fuchsia:#E10098;
+    --acid:#C6C902; --banana:#FAD100; --paper:#F4F4F1; --card:#ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Lato',Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;}
+  .slide{width:100%;max-width:860px;background:var(--card);border-radius:18px;
+    box-shadow:0 18px 50px rgba(0,0,0,0.18);overflow:hidden;}
+  .bar{height:8px;background:linear-gradient(90deg,var(--cyan) 0 25%,var(--fuchsia) 25% 50%,var(--acid) 50% 75%,var(--banana) 75% 100%);}
+  .head{padding:34px 40px 22px;}
+  .eyebrow{font-size:12px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--fuchsia);}
+  h1{font-size:28px;font-weight:900;line-height:1.18;margin-top:8px;}
+  .sub{font-size:15px;color:#555;margin-top:10px;line-height:1.5;}
+  .meta{display:flex;flex-wrap:wrap;gap:10px;padding:0 40px 22px;}
+  .chip{font-size:12px;font-weight:700;padding:6px 12px;border-radius:20px;background:var(--paper);
+    border:1px solid #e2e2dc;}
+  .chip b{font-weight:900;}
+  .chip.hash{background:var(--ink);color:var(--banana);border-color:var(--ink);font-family:monospace;}
+  .body{padding:6px 40px 34px;}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .c{border:1px solid #ececea;border-radius:12px;padding:18px 18px 16px;background:#fcfcfb;}
+  .c .t{font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+  .c.bug .t{color:var(--fuchsia);} .c.fix .t{color:#2a8ca0;}
+  .c p{font-size:14px;line-height:1.55;color:#333;}
+  code{font-family:monospace;background:#efefea;padding:1px 5px;border-radius:4px;font-size:12.5px;}
+  .flow{margin-top:18px;border:1px dashed #d6d6cf;border-radius:12px;padding:16px 18px;background:#fff;}
+  .flow .t{font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--ink);margin-bottom:10px;}
+  .row{display:flex;align-items:center;gap:10px;font-size:13.5px;flex-wrap:wrap;}
+  .pill{padding:5px 11px;border-radius:8px;font-weight:700;font-size:12.5px;}
+  .pill.blank{background:var(--cyan);color:#0d3d49;} .pill.url{background:var(--ink);color:var(--banana);}
+  .arrow{color:#999;font-weight:900;}
+  .foot{padding:16px 40px 28px;font-size:12.5px;color:#777;border-top:1px solid #f0f0ec;}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="bar"></div>
+  <div class="head">
+    <div class="eyebrow">Sprout CRM · Delivery · 2026-06-08</div>
+    <h1>"See more events" button auto-scrolls again</h1>
+    <div class="sub">The featured newsletter button always opened a hardcoded Luma link in a new tab — even with the link field empty. Restored its original behavior: scroll down to the Upcoming events section.</div>
+  </div>
+  <div class="meta">
+    <span class="chip"><b>File</b> &nbsp;lib/newsletter.js</span>
+    <span class="chip"><b>Effort</b> &nbsp;diagnose low / fix low</span>
+    <span class="chip"><b>Build</b> &nbsp;✓ passes</span>
+    <span class="chip hash">49d6442 · main</span>
+  </div>
+  <div class="body">
+    <div class="cards">
+      <div class="c bug">
+        <div class="t">🐞 Root cause</div>
+        <p>The render used <code>tval(v.seeMoreLink, "https://luma.com/...")</code>. <code>tval</code> returns its fallback when a field is <b>blank</b>, so an empty link field still produced the Luma URL plus <code>target="_blank"</code>. The May draft's stored value was actually <code>null</code> all along.</p>
+      </div>
+      <div class="c fix">
+        <div class="t">🔧 The fix</div>
+        <p>Blank link → <code>href="#events"</code>, scrolls to the Upcoming section (no new tab). Typed URL → links out in a new tab. Editor field relabeled to <b>"(blank = scroll to Upcoming)"</b> so the default is clear.</p>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="t">Button behavior now</div>
+      <div class="row">
+        <span class="pill blank">link field blank</span>
+        <span class="arrow">→</span>
+        <span>scrolls to <code>#events</code> (Upcoming) · default</span>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <span class="pill url">URL typed in</span>
+        <span class="arrow">→</span>
+        <span>opens that URL in a new tab</span>
+      </div>
+    </div>
+  </div>
+  <div class="foot">⚠️ Email caveat unchanged: Gmail/Outlook strip <code>id</code> anchors, so the in-email scroll may not fire there — the typed-URL fallback covers that case if ever needed.</div>
+</div>
+</body>
+</html>
