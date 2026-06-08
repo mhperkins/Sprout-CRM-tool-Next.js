@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-06-08 — Newsletter: fix "prompt() is not supported" crash on Save version
+
+App code only (`components/CRMManager.jsx`). Effort: diagnose low / fix low. `npm run build` passes.
+
+- **Bug:** clicking **📌 Save version** in the newsletter editor threw a Next.js runtime error `prompt() is not supported` (call stack `saveVersion` → `CRMManager.jsx:2472`). The Next.js 16 dev runtime blocks native `window.prompt()`/`window.confirm()`/`alert()`.
+- **Root cause:** `saveVersion` used `window.prompt(...)` to name the version, and `restoreVersion` used `window.confirm(...)` — both unsupported in this runtime.
+- **Fix:** replaced both native dialogs with in-app modals using the existing `Modal`/`ConfirmModal` primitives. **Save version** now opens a small name modal (defaults to "Version N", Enter or button to confirm, `commitVersion` does the snapshot). **Restore** now routes through `ConfirmModal` (title "Restore version", non-danger). Behavior is otherwise identical.
+
+---
+
 ## 2026-06-08 — Newsletter: footer Donate + Become-a-member buttons, editable membership link, new Scholarship block
 
 App code only (`lib/newsletter.js`). Effort: low. `npm run build` passes.

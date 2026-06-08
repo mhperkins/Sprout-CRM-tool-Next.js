@@ -2361,6 +2361,10 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
   const [testTo,setTestTo]=useState("");   // manually-added extra addresses
   const [listSeg,setListSeg]=useState("all");
   const [sending,setSending]=useState("");   // "" | "test" | "list"
+  // Version-history modals (window.prompt/confirm aren't supported in the Next dev runtime).
+  const [nameVersion,setNameVersion]=useState(null);   // { defaultLabel } when the name-version modal is open
+  const [versionLabel,setVersionLabel]=useState("");
+  const [restoreV,setRestoreV]=useState(null);         // the version pending a restore confirm
   // Auto-size the preview iframe to its content so the whole template shows without an inner
   // scrollbar; the page scrolls instead. Re-measures on every srcDoc reload (i.e. as you type).
   const previewRef=useRef(null);
@@ -2463,13 +2467,22 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
     showToast(wasNew?"Draft saved ✓":"Saved ✓");
   };
 
-  // Save version — commit a point-in-time snapshot to the version history, then persist (stay in editor).
+  // Save version — open the name modal; commitVersion does the snapshot once the user confirms a name.
   const saveVersion = () => {
     const d=draftRef.current;
     if(!draftHasContent(d)){ showToast("Add a subject or some copy first","err"); return; }
+    const n=(Array.isArray(d.versions)?d.versions:[]).length+1;
+    const def=`Version ${n}`;
+    setVersionLabel(def);
+    setNameVersion({defaultLabel:def});
+  };
+
+  // Commit a point-in-time snapshot to the version history, then persist (stay in editor).
+  const commitVersion = (rawLabel) => {
+    const d=draftRef.current;
     const versions=Array.isArray(d.versions)?d.versions:[];
     const n=versions.length+1;
-    const label=(window.prompt(`Name this version (optional):`,`Version ${n}`)||`Version ${n}`).trim()||`Version ${n}`;
+    const label=(rawLabel||"").trim()||`Version ${n}`;
     const snap={
       id:`v_${n}_${Date.now()}`,
       savedAt:new Date().toISOString(),
@@ -2493,7 +2506,6 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
   // Restore the editor content from a saved version. History is left intact; the user must Save
   // (draft or version) to keep the restore.
   const restoreVersion = (v) => {
-    if(!window.confirm(`Restore "${v.label}"? Your current unsaved edits will be replaced (the version history is kept).`)) return;
     setDraft(p=>({
       ...p,
       subject:v.subject??p.subject,
@@ -2615,7 +2627,7 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
                         <div style={{fontSize:10,color:"var(--g500)"}}>{v.savedAt?new Date(v.savedAt).toLocaleString():""}</div>
                       </div>
                       <div style={{display:"flex",gap:6,flexShrink:0}}>
-                        <button className="btn btn-ghost btn-sm" style={{padding:"2px 9px",fontSize:11}} onClick={()=>restoreVersion(v)}>↩ Restore</button>
+                        <button className="btn btn-ghost btn-sm" style={{padding:"2px 9px",fontSize:11}} onClick={()=>setRestoreV(v)}>↩ Restore</button>
                         <button className="btn btn-ghost btn-sm" style={{padding:"2px 7px",fontSize:11}} onClick={()=>deleteVersion(v.id)}>🗑</button>
                       </div>
                     </div>
@@ -2817,6 +2829,18 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
       </div>
 
       {confirmDel&&<ConfirmModal message={`Delete "${draft.subject||"this newsletter"}"? This cannot be undone.`} onConfirm={()=>doDelete(confirmDel)} onCancel={()=>setConfirmDel(null)}/>}
+
+      {nameVersion&&<Modal title="Save version" onClose={()=>setNameVersion(null)}
+        footer={<><button className="btn btn-ghost btn-sm" onClick={()=>setNameVersion(null)}>Cancel</button><button className="btn btn-blk btn-sm" onClick={()=>{ commitVersion(versionLabel); setNameVersion(null); }}>📌 Save version</button></>}>
+        <label className="fl" style={{marginBottom:6}}>Name this version (optional)</label>
+        <input className="fi" autoFocus value={versionLabel} placeholder={nameVersion.defaultLabel}
+          onChange={e=>setVersionLabel(e.target.value)}
+          onKeyDown={e=>{ if(e.key==="Enter"){ commitVersion(versionLabel); setNameVersion(null); } }}/>
+      </Modal>}
+
+      {restoreV&&<ConfirmModal title="Restore version" confirmLabel="Restore" danger={false}
+        message={`Restore "${restoreV.label}"? Your current unsaved edits will be replaced (the version history is kept).`}
+        onConfirm={()=>{ restoreVersion(restoreV); setRestoreV(null); }} onCancel={()=>setRestoreV(null)}/>}
     </div>
   );
 }
