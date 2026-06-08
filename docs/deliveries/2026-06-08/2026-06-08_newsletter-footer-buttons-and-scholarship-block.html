@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Newsletter footer buttons + Scholarship block</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Lato',Helvetica,Arial,sans-serif; background:#030000; color:#F7F7F6; padding:40px 20px; }
+  .wrap { max-width:880px; margin:0 auto; }
+  .head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:28px; }
+  .title { font-size:30px; font-weight:900; line-height:1.2; }
+  .title .accent { color:#C6C902; }
+  .sub { font-size:14px; color:#9a9a96; margin-top:6px; }
+  .meta { text-align:right; font-size:12px; color:#9a9a96; line-height:1.8; }
+  .badge { display:inline-block; background:#2a8ca0; color:#fff; font-weight:900; font-size:11px; letter-spacing:1px; padding:4px 10px; border-radius:5px; text-transform:uppercase; }
+  .hash { font-family:monospace; background:#1a1a1a; color:#FAD100; padding:2px 8px; border-radius:4px; }
+  .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+  .card { background:#0f0f0f; border-radius:12px; padding:22px; border-left:6px solid #FAD100; box-shadow:0 4px 14px rgba(0,0,0,0.4); }
+  .card.fuchsia { border-left-color:#E10098; }
+  .card.cyan { border-left-color:#2a8ca0; }
+  .card.acid { border-left-color:#C6C902; }
+  .card h3 { font-size:17px; font-weight:900; margin-bottom:8px; }
+  .card p { font-size:13.5px; line-height:1.6; color:#cfcfca; }
+  .card .field { display:inline-block; font-family:monospace; font-size:11px; background:#1a1a1a; color:#73C4D6; padding:2px 7px; border-radius:4px; margin:6px 4px 0 0; }
+  .chip { display:inline-block; font-weight:900; font-size:12px; padding:8px 16px; border-radius:5px; margin-top:12px; }
+  .chip.fuchsia { background:#E10098; color:#fff; }
+  .chip.cyan { background:#2a8ca0; color:#fff; }
+  .chip.acid { background:#C6C902; color:#030000; }
+  .foot { margin-top:26px; font-size:12px; color:#9a9a96; text-align:center; line-height:1.8; }
+  .foot .file { font-family:monospace; color:#73C4D6; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <div class="title">Newsletter: footer buttons <span class="accent">+ Scholarship block</span></div>
+        <div class="sub">Compact template — editable links across the footer + a new give-back section</div>
+      </div>
+      <div class="meta">
+        <span class="badge">Shipped</span><br>
+        commit <span class="hash">07272eb</span><br>
+        branch <strong style="color:#F7F7F6;">main</strong><br>
+        2026-06-08 · Effort: low
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card fuchsia">
+        <h3>① Footer · Donate button</h3>
+        <p>New editable link field. Renders a fuchsia button in the footer, only when filled. Accepts a bare URL or <code>[label](URL)</code>.</p>
+        <span class="field">donateLink</span>
+        <div class="chip fuchsia">Donate →</div>
+      </div>
+
+      <div class="card cyan">
+        <h3>② Footer · Become a member</h3>
+        <p>Cyan button sitting right beside Donate, with a spacer between them. Either one renders alone if only one link is set.</p>
+        <span class="field">memberLink</span>
+        <div class="chip cyan">Become a member →</div>
+      </div>
+
+      <div class="card">
+        <h3>③ Membership link · now editable</h3>
+        <p>The membership CTA button's URL was hardcoded to the Givebutter page with no field. Added a link field that defaults to that same URL when blank — no change for existing drafts, overridable any time.</p>
+        <span class="field">membershipLink</span>
+        <span class="field">membershipBtn (label)</span>
+      </div>
+
+      <div class="card acid">
+        <h3>④ New Scholarship block</h3>
+        <p>Acid-green block with the banana left bar, between Marketing and Community Spotlight. Renders only when its message is filled. Dark ink text for contrast + black button with editable label.</p>
+        <span class="field">scholarship</span>
+        <span class="field">scholarshipBtn</span>
+        <span class="field">scholarshipLink</span>
+        <div class="chip acid">Learn more →</div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span class="file">lib/newsletter.js</span> · all in <span class="file">COMPACT_SECTIONS</span> + <span class="file">buildCompact()</span><br>
+      npm run build passes · dev server live at localhost:3000
+    </div>
+  </div>
+</body>
+</html>
