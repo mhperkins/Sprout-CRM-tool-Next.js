@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-08 — Newsletter: footer Donate + Become-a-member buttons, editable membership link, new Scholarship block
+
+App code only (`lib/newsletter.js`). Effort: low. `npm run build` passes.
+
+- **Footer Donate button** — new `donateLink` field; renders a fuchsia `#E10098` button in the footer (between the brand line and Unsubscribe) only when filled. Bare URL → "Donate →", or `[label](URL)` via `parseBtn()`.
+- **Footer Become-a-member button** — new `memberLink` field beside Donate; cyan `#2a8ca0` button with a spacer cell between the two. Either renders alone if only one is set.
+- **Editable membership-block link** — the Membership CTA button's URL was hardcoded to `https://givebutter.com/sproutmembership`. Added a `membershipLink` field that defaults to that same URL when blank (no change for existing drafts), overridable by typing a new URL.
+- **New Scholarship block** — acid-green `#C6C902` block with the banana `#FAD100` left bar, inserted between Marketing and Community Spotlight, rendered only when its message is filled. Dark ink `#030000` text for contrast + black button with banana label. Fields: `scholarship` (message + Polish), `scholarshipBtn` (button label, default "Learn more"), `scholarshipLink` (button URL).
+
+---
+
 ## 2026-06-08 — Newsletter: "See more events" button auto-scrolls again (was a hardcoded Luma link)
 
 App code only (`lib/newsletter.js`). Effort: diagnose low / fix low. `npm run build` passes.
