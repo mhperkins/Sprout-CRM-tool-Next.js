@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-08 — Newsletter: "See more events" button auto-scrolls again (was a hardcoded Luma link)
+
+App code only (`lib/newsletter.js`). Effort: diagnose low / fix low. `npm run build` passes.
+
+- **Bug:** the featured "See more events" button always linked out to `https://luma.com/sproutsociety` in a new tab, even with the link field empty. It used to auto-scroll down to the Upcoming events section.
+- **Root cause:** the `seeMoreLink` field's render used `tval(v.seeMoreLink, "https://luma.com/sproutsociety")`; `tval` returns its fallback when the field is blank, so an empty field still produced the Luma URL + `target="_blank"`. The May draft's stored `seeMoreLink` is `null` (verified via Supabase) — the URL was purely the fallback default.
+- **Fix:** button now defaults to `href="#events"` (scrolls to the existing `#events` row at the Upcoming section, no `target`); if a URL is typed into the field, it links out to that URL in a new tab. Relabeled the editor field/placeholder to "(blank = scroll to Upcoming)".
+- Email caveat unchanged: Gmail/Outlook strip `id` anchors, so the in-email scroll may not fire there — the typed-URL fallback covers that case if ever needed.
+
+---
+
 ## 2026-06-08 — Comms: wire the Foundational Language deck into all rewrites (Polish + agent)
 
 App route + virtual-agency docs (`app/api/polish/route.js`, `virtual-agency/employees/Communications/`). Effort: medium. `npm run build` passes.
