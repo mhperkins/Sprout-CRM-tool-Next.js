@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Foundational Language into all rewrites</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --acid:#C6C902; --fuchsia:#E10098;
+    --cyan:#73C4D6; --banana:#FAD100; --grey:#6b6b69;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',Helvetica,Arial,sans-serif;background:var(--ink);color:var(--ink);
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+  .slide{width:100%;max-width:980px;background:var(--paper);border-radius:18px;overflow:hidden;
+    box-shadow:0 24px 70px rgba(0,0,0,.5)}
+  .top{background:var(--ink);color:var(--paper);padding:32px 40px 28px;position:relative}
+  .eyebrow{font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan)}
+  .eyebrow .dot{color:var(--fuchsia)}
+  h1{font-size:30px;font-weight:900;line-height:1.15;margin-top:10px;max-width:760px}
+  h1 .hl{color:var(--banana)}
+  .sub{margin-top:12px;color:#cfcfcd;font-size:15px;max-width:720px;line-height:1.5}
+  .wrap{padding:30px 40px 36px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{border:1px solid #e2e2df;border-radius:12px;padding:18px 18px 16px;background:#fff;
+    box-shadow:0 4px 14px rgba(0,0,0,.06);position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px}
+  .card.c1::before{background:var(--cyan)}
+  .card.c2::before{background:var(--fuchsia)}
+  .card.c3::before{background:var(--acid)}
+  .card.c4::before{background:var(--banana)}
+  .card h3{font-size:15px;font-weight:900;display:flex;align-items:center;gap:8px}
+  .card p{font-size:13.5px;color:var(--grey);line-height:1.5;margin-top:7px}
+  .card code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:#f0f0ee;
+    padding:1px 5px;border-radius:4px;color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:34px}
+  .chip{font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:999px;border:1px solid #dcdcd9;
+    background:#fff;color:var(--ink)}
+  .chip b{color:var(--fuchsia)}
+  .foot{display:flex;align-items:center;justify-content:space-between;gap:16px;
+    margin-top:30px;padding-top:18px;border-top:1px solid #e2e2df;flex-wrap:wrap}
+  .meta{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--grey)}
+  .meta b{color:var(--ink)}
+  .brand{font-weight:900;font-size:14px;letter-spacing:.02em}
+  .brand .heart{color:var(--fuchsia)}
+  .note{margin-top:18px;font-size:12.5px;color:var(--grey);background:#fff;border:1px dashed #d4d4d1;
+    border-radius:10px;padding:11px 14px;line-height:1.5}
+  .note b{color:var(--ink)}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="top">
+      <div class="eyebrow"><span class="dot">●</span> Delivery · 2026-06-08 · Communications</div>
+      <h1>Foundational Language deck, wired into <span class="hl">every rewrite</span></h1>
+      <p class="sub">Sprout's new foundational-messaging deck now drives both copy surfaces: the in-app
+        ✨ Polish button and the Comms agent. Rewrites stay on-message and can't invent stats.</p>
+    </div>
+
+    <div class="wrap">
+      <div class="cards">
+        <div class="card c1">
+          <h3>📑 One source of truth</h3>
+          <p>Distilled the deck into <code>foundational-language.md</code> in the Comms folder:
+            mission, problem framing, the four offerings, founding story, verified numbers, CTAs.
+            Both prompts trace back to it.</p>
+        </div>
+        <div class="card c2">
+          <h3>✨ Polish recognizes it</h3>
+          <p>Foundational block added to the <code>SYSTEM</code> prompt in
+            <code>app/api/polish/route.js</code> — the one place that controls Polish output.
+            Every newsletter rewrite now follows it.</p>
+        </div>
+        <div class="card c3">
+          <h3>🤖 Comms agent references it</h3>
+          <p>New "Foundational Language (read this first)" section + tooling-table rows in the
+            agent's system prompt, pointing at the <code>.md</code> and the source <code>.pdf</code>.</p>
+        </div>
+        <div class="card c4">
+          <h3>🚫 Verified-stats whitelist</h3>
+          <p>5,000+ served · 50+ programs · $1.7M raised · $120K to 32 artists.
+            "If a number isn't here, don't state it." No invented figures.</p>
+        </div>
+      </div>
+
+      <div class="chips">
+        <span class="chip">Mission: end the loneliness epidemic in creative communities</span>
+        <span class="chip">Throughline: no one builds a creative life alone</span>
+        <span class="chip">4 offerings</span>
+        <span class="chip">3 "Give" CTAs</span>
+        <span class="chip"><b>No em dashes</b> kept (deck uses them; we don't)</span>
+      </div>
+
+      <div class="note">
+        <b>Sync rule:</b> the Polish route carries a condensed copy of the foundational block.
+        When the deck / <code>foundational-language.md</code> changes, re-sync that block in
+        <code>route.js</code> (a comment marks it). <code>npm run build</code> passes.
+      </div>
+
+      <div class="foot">
+        <div class="meta">commit <b>9e990e5</b> · branch <b>main</b> · 11 files, +662</div>
+        <div class="brand">SPROUT S<span class="heart">♥</span>CIETY</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
