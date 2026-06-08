@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery — Newsletter Testimonial Pop-out</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6;
+    --paper:#FBFBF7; --muted:#5b5b57; --line:#ECECEA;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);
+       padding:40px 20px;display:flex;justify-content:center;}
+  .slide{width:100%;max-width:920px;}
+  .head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
+  .head h1{font-size:30px;font-weight:900;letter-spacing:-0.5px;}
+  .chip{display:inline-block;font-size:11px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;
+        padding:5px 11px;border-radius:999px;}
+  .chip.acid{background:var(--acid);color:var(--ink)}
+  .chip.banana{background:var(--banana);color:var(--ink)}
+  .chip.cyan{background:var(--cyan);color:#0d3d49}
+  .sub{color:var(--muted);font-size:14px;margin:8px 0 26px;}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px;}
+  .meta span{font-size:12px;font-weight:700;background:#fff;border:1px solid var(--line);
+             border-radius:8px;padding:7px 12px;}
+  .meta code{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--ink);color:#fff;
+             padding:2px 7px;border-radius:5px;font-size:11px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:680px){.grid{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;
+        box-shadow:0 4px 14px rgba(0,0,0,0.06);}
+  .card h3{font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
+           color:var(--fuchsia);margin-bottom:10px;}
+  .card ul{list-style:none}
+  .card li{font-size:14px;line-height:1.65;padding-left:20px;position:relative;margin-bottom:7px;}
+  .card li::before{content:"▸";position:absolute;left:0;color:var(--cyan);font-weight:900;}
+  .card li code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
+                background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:1px 5px;}
+  /* live demo of the pop-out */
+  .demo{margin-top:6px;background:var(--acid);border-radius:10px;
+        box-shadow:0 6px 18px rgba(0,0,0,0.22);padding:20px 28px 18px;}
+  .demo p{font-size:15px;line-height:1.6;font-style:italic;font-weight:600;color:var(--ink);}
+  .q{font-family:Georgia,'Times New Roman',serif;font-size:46px;line-height:0;font-weight:900;
+     color:var(--banana);vertical-align:-16px;}
+  .q.open{padding-right:6px} .q.close{padding-left:4px}
+  .foot{margin-top:24px;font-size:12px;color:var(--muted);text-align:center;}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="head">
+      <h1>Newsletter — Testimonial Pop-out</h1>
+      <span class="chip acid">Shipped</span>
+      <span class="chip banana">Effort: Low</span>
+    </div>
+    <p class="sub">A pop-out testimonial / quote block inside the Community Spotlight — acid-green, shadowed, capped by big banana quotation marks.</p>
+
+    <div class="meta">
+      <span>Branch <code>main</code></span>
+      <span>Commit <code>e83ac91</code></span>
+      <span>File <code>lib/newsletter.js</code></span>
+      <span>Build ✓ passing</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>What changed</h3>
+        <ul>
+          <li>New editor field <code>spotlightTestimonial</code> (textarea + ✨ Polish) in <code>COMPACT_SECTIONS</code></li>
+          <li>New render block in <code>buildCompact()</code> inside the spotlight card</li>
+          <li>Acid-green <code>#C6C902</code> block, rounded corners, shadow <code>0 6px 18px</code></li>
+          <li>Renders <strong>only when filled</strong> — no empty green box</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Quote-mark polish (live)</h3>
+        <ul>
+          <li>Marks bumped to <strong>46px</strong></li>
+          <li>Recolored to <strong>banana <code>#FAD100</code></strong></li>
+          <li>Placed <strong>inline</strong>: opening mark before the first word, closing after the last</li>
+          <li>Dropped via <code>vertical-align:-16px</code> to cap the italic text</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h3>How it looks</h3>
+      <div class="demo">
+        <p><span class="q open">&ldquo;</span>I was really stunned by how incredible Sprout Society pulled together our showcase. The organizers were so beyond diligent, making sure all of our needs were met with great care. They are a very, very special community.<span class="q close">&rdquo;</span></p>
+      </div>
+    </div>
+
+    <p class="foot">Sprout CRM Next · 2026-06-06 · Reload the editor and fill the new spotlight field to see it live.</p>
+  </div>
+</body>
+</html>

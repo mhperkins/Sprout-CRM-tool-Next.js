@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-06-08 — Comms: wire the Foundational Language deck into all rewrites (Polish + agent)
+
+App route + virtual-agency docs (`app/api/polish/route.js`, `virtual-agency/employees/Communications/`). Effort: medium. `npm run build` passes.
+
+- Distilled Sprout's new **Foundational Language** deck (`Sprout Society - Foundational Language.pdf`, in the Comms folder) into a clean, version-controlled reference: **`virtual-agency/employees/Communications/foundational-language.md`** — canonical mission/vision, the loneliness-epidemic problem framing, the four offerings, the Russell "Sprouts" Efros founding story, the verified impact numbers (5,000+ served, 50+ programs, $1.7M raised, $120K to 32 artists via the Sprout Fund), and the three "Give" CTAs. This is the single source of truth for what Sprout says about itself.
+- **✨ Polish button now recognizes it:** extended the `SYSTEM` prompt in [app/api/polish/route.js](app/api/polish/route.js) with a foundational-language block (mission line + throughline, the four offerings, a verified-stats whitelist with "if a number isn't here, don't state it", the CTAs, vocabulary cues). Every newsletter Polish rewrite now stays on-message and can't invent stats.
+- **Comms agent now references it:** added a "Foundational Language (read this first)" section to [communications-manager-system-prompt_v1.md](virtual-agency/employees/Communications/system-prompts/communications-manager-system-prompt_v1.md) and two rows in its Newsletter Tooling table pointing at the `.md` + `.pdf`.
+- **Em-dash call:** the deck uses em dashes throughout; Max's rule + both prompts forbid them. Kept the ban — both surfaces take the deck's language and facts, not its punctuation. Placeholder slides (leadership/board names, "What's next" XXX columns) left out as unfilled.
+- ⚠️ The Polish route carries a *condensed copy* of the foundational block. When the deck / `.md` changes, re-sync that block in `route.js` (a comment marks it).
+
+---
+
 ## 2026-06-08 — Newsletter: version history (Save version + restore/delete)
 
 App code + schema (`components/CRMManager.jsx`, `lib/schemas.js`). Effort: medium. `npm run build` passes.

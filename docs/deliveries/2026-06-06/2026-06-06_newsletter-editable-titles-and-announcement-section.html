@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Editable titles + Announcement section</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Lato',Helvetica,Arial,sans-serif; background:#F7F7F6; color:#030000; padding:40px 20px; }
+  .wrap { max-width:880px; margin:0 auto; }
+  .head { background:#030000; border-radius:16px; padding:34px 36px; color:#F7F7F6; position:relative; overflow:hidden; }
+  .head::after { content:""; position:absolute; right:-40px; top:-40px; width:200px; height:200px; background:#C6C902; opacity:.12; border-radius:50%; }
+  .eyebrow { font-size:12px; font-weight:900; letter-spacing:3px; text-transform:uppercase; color:#73C4D6; }
+  h1 { font-size:30px; font-weight:900; line-height:1.2; margin:10px 0 14px; }
+  .meta { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .chip { font-size:12px; font-weight:900; padding:5px 12px; border-radius:20px; }
+  .c-acid { background:#C6C902; color:#030000; }
+  .c-ban { background:#FAD100; color:#3a3000; }
+  .c-fux { background:#E10098; color:#fff; }
+  .c-cy { background:#73C4D6; color:#0d3d49; }
+  .c-dk { background:#1c1c1c; color:#F7F7F6; border:1px solid #333; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:22px; }
+  .card { background:#fff; border-radius:14px; padding:22px 24px; box-shadow:0 4px 14px rgba(0,0,0,.10); border-left:6px solid #73C4D6; }
+  .card.fux { border-left-color:#E10098; }
+  .card.acid { border-left-color:#C6C902; }
+  .card.ban { border-left-color:#FAD100; }
+  .card.full { grid-column:1 / -1; }
+  .card h2 { font-size:17px; font-weight:900; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+  .card p { font-size:14px; line-height:1.6; color:#3a3a38; }
+  .card ul { list-style:none; margin-top:8px; }
+  .card li { font-size:13.5px; line-height:1.55; color:#3a3a38; padding-left:18px; position:relative; margin-bottom:6px; }
+  .card li::before { content:"›"; position:absolute; left:0; color:#E10098; font-weight:900; }
+  code { background:#F0F0EE; border-radius:4px; padding:1px 6px; font-family:'SF Mono',Consolas,monospace; font-size:12px; color:#030000; }
+  .pills { display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
+  .pill { font-size:12px; font-weight:700; background:#F0F0EE; border:1px solid #e2e2df; border-radius:7px; padding:5px 10px; font-family:'SF Mono',Consolas,monospace; }
+  .foot { display:flex; align-items:center; justify-content:space-between; margin-top:22px; padding:16px 22px; background:#fff; border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,.08); flex-wrap:wrap; gap:10px; }
+  .foot .commit { font-family:'SF Mono',Consolas,monospace; font-size:13px; font-weight:700; }
+  .foot .hash { background:#030000; color:#FAD100; padding:3px 9px; border-radius:6px; }
+  .warn { background:#FFF8E1; border-left:6px solid #FAD100; }
+  .warn p { color:#5a4a00; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <div class="eyebrow">Sprout CRM · Delivery · 2026-06-06</div>
+    <h1>Newsletter: every title is now editable + a reusable Announcement section</h1>
+    <div class="meta">
+      <span class="chip c-cy">Effort: low → medium</span>
+      <span class="chip c-acid">build passes ✓</span>
+      <span class="chip c-fux">lib/newsletter.js</span>
+      <span class="chip c-fux">CRMManager.jsx</span>
+      <span class="chip c-dk">May draft · DB</span>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <div class="card acid full">
+      <h2>📝 Proofread the May newsletter</h2>
+      <p>Read every field of the draft and corrected the copy in place:</p>
+      <ul>
+        <li>Intro: fixed the broken sentence ("...into our space<b>.</b> launched..." → one flowing sentence).</li>
+        <li>Spotlight blurb: "instagram"→"Instagram", "Soundcloud"→"SoundCloud", added the missing period.</li>
+        <li>Standardized the event name to <b>"Sprout 'N' Tell"</b> everywhere · trimmed trailing spaces.</li>
+        <li>Per your calls: left the testimonial punctuation alone, kept "Last month" (ships in June).</li>
+      </ul>
+    </div>
+
+    <div class="card fux">
+      <h2>🔤 Titles & subheaders → fields</h2>
+      <p>New <code>kind:"header"</code> field type + a <code>tval()</code> helper. Blank falls back to the original default text, so old drafts render unchanged — no migration, no placeholder leak.</p>
+      <div class="pills">
+        <span class="pill">mastheadLabel</span>
+        <span class="pill">featuredEyebrow</span>
+        <span class="pill">seeMoreLabel</span>
+        <span class="pill">spotlightEyebrow</span>
+        <span class="pill">membershipBtn</span>
+        <span class="pill">upcomingTitle</span>
+        <span class="pill">pastTitle</span>
+        <span class="pill">footerBrand</span>
+      </div>
+    </div>
+
+    <div class="card cy">
+      <h2>📣 Coworking → Announcement</h2>
+      <p>"It won't always be coworking." The block is now generic:</p>
+      <ul>
+        <li>Editable eyebrow / title / body.</li>
+        <li>Highlight chip label editable (<code>coworkingChip</code>, default "Sprout-by-Day").</li>
+        <li>Highlight line renders only when filled.</li>
+        <li>Generic defaults; May written explicitly so it still reads as coworking.</li>
+      </ul>
+    </div>
+
+    <div class="card ban full warn">
+      <h2>⚠️ One step before sending</h2>
+      <p>The May copy edits went straight to the database, so the draft's baked HTML is stale. Open the draft in the editor and hit <b>Save draft</b> once to rebake it — the live preview already shows the corrected copy when you open it.</p>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <div class="commit">commit <span class="hash">4fe151a</span> → <b>main</b></div>
+    <div class="commit" style="color:#8a8a86;">3 files · +59 / −18 · npm run build ✓</div>
+  </div>
+
+</div>
+</body>
+</html>

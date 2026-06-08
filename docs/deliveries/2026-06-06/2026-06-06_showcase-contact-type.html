@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Showcase contact type</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6;
+    --paper:#FBFBF7; --line:#E6E6DF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',sans-serif;background:var(--paper);color:var(--ink);padding:40px 24px;line-height:1.45}
+  .wrap{max-width:840px;margin:0 auto}
+  .head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .pill{display:inline-block;font-weight:900;font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+    background:var(--cyan);color:var(--ink);padding:6px 12px;border-radius:999px}
+  h1{font-size:30px;font-weight:900;letter-spacing:-.5px;margin:14px 0 4px}
+  .sub{font-size:15px;color:#555;margin-bottom:26px}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:30px}
+  .chip{font-size:12px;font-weight:700;padding:6px 11px;border-radius:8px;border:1px solid var(--line);background:#fff}
+  .chip b{font-weight:900}
+  .chip.hash{background:var(--ink);color:#fff;border-color:var(--ink);font-family:ui-monospace,monospace}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:18px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.06);overflow:hidden;position:relative}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--banana)}
+  .card h2{font-size:17px;font-weight:900;margin-bottom:12px;display:flex;align-items:center;gap:9px}
+  .card h2 .ico{font-size:20px}
+  .tag-demo{display:inline-block;background:var(--acid);color:var(--ink);font-weight:900;font-size:13px;
+    padding:5px 12px;border-radius:7px;letter-spacing:.02em}
+  ul{list-style:none}
+  li{padding:7px 0 7px 26px;position:relative;font-size:14.5px;border-bottom:1px dashed var(--line)}
+  li:last-child{border-bottom:0}
+  li::before{content:"✓";position:absolute;left:0;color:var(--fuchsia);font-weight:900}
+  code{font-family:ui-monospace,monospace;font-size:12.5px;background:#F2F2EC;padding:2px 6px;border-radius:5px}
+  .sync{display:grid;grid-template-columns:1fr;gap:8px}
+  .sync .row{display:flex;align-items:center;gap:10px;font-size:14px;padding:9px 12px;background:#F8F8F2;border-radius:9px}
+  .sync .row .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;
+    font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center}
+  .warn{background:#FFF7DC;border:1px solid var(--banana);border-radius:12px;padding:14px 18px;font-size:14px;font-weight:700}
+  .warn::before{content:"";width:0}
+  .foot{text-align:center;font-size:12px;color:#999;margin-top:26px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head"><span class="pill">Delivered</span></div>
+  <h1>New “Showcase” contact type</h1>
+  <p class="sub">For people who have performed or displayed at Sprout Society.</p>
+
+  <div class="meta">
+    <span class="chip hash">4bc754f</span>
+    <span class="chip">branch <b>main</b></span>
+    <span class="chip">5 files · +17 / −3</span>
+    <span class="chip">Effort <b>low</b></span>
+    <span class="chip">build <b>✓ passes</b></span>
+  </div>
+
+  <div class="card">
+    <h2><span class="ico">🎭</span> What shipped</h2>
+    <p style="margin-bottom:14px;font-size:14.5px">A new community relationship type renders everywhere as a chip:</p>
+    <span class="tag-demo">Showcase</span>
+    <ul style="margin-top:16px">
+      <li>Selectable in the Add &amp; Edit contact modals</li>
+      <li>Shows in the detail panel, contact list, and org list chips</li>
+      <li>Available in the type filter dropdown</li>
+      <li>Settable &amp; searchable through the CRM MCP tools</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="ico">🔗</span> All four schemas-sync points updated</h2>
+    <div class="sync">
+      <div class="row"><span class="n">1</span><span><code>REL_TYPES</code> — CRMManager.jsx</span></div>
+      <div class="row"><span class="n">2</span><span>Zod <code>relationship_types</code> enum — lib/schemas.js</span></div>
+      <div class="row"><span class="n">3</span><span>MCP inputSchemas ×2 — mcp/server.js (search + merge)</span></div>
+      <div class="row"><span class="n">4</span><span>Enum row — docs/CRM-db-schema.md</span></div>
+    </div>
+    <p style="margin-top:14px;font-size:13.5px;color:#666">Placed after <code>attendee</code>, before <code>sprout_society</code>. People-only — not mirrored into the org high-signal tags list.</p>
+  </div>
+
+  <div class="warn">⚠️ Reload the VS Code window so the running MCP server picks up the new enum value.</div>
+
+  <p class="foot">Sprout CRM Next · 2026-06-06</p>
+</div>
+</body>
+</html>

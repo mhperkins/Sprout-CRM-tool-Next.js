@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Newsletter Version History</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6;
+    --paper:#F7F7F6; --g200:#e5e5e3; --g500:#6b6b68; --g700:#2f2f2d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Lato',-apple-system,sans-serif;background:var(--paper);color:var(--ink);
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;}
+  .slide{width:100%;max-width:920px;background:#fff;border-radius:20px;overflow:hidden;
+    box-shadow:0 18px 50px rgba(3,0,0,0.18);}
+  .hd{background:var(--ink);color:#fff;padding:34px 40px;position:relative;overflow:hidden;}
+  .hd::after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;
+    background:linear-gradient(90deg,var(--cyan) 0 25%,var(--fuchsia) 25% 50%,var(--acid) 50% 75%,var(--banana) 75% 100%);}
+  .tag{display:inline-block;font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;
+    color:var(--ink);background:var(--acid);padding:5px 12px;border-radius:6px;margin-bottom:14px;}
+  .hd h1{font-size:30px;font-weight:900;line-height:1.15;}
+  .hd .sub{margin-top:8px;font-size:15px;color:#cfcfce;font-weight:400;}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;padding:20px 40px 4px;}
+  .chip{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--g200);
+    color:var(--g700);background:#fff;}
+  .chip b{font-weight:900;color:var(--ink);}
+  .chip.hash{background:var(--ink);color:#fff;border-color:var(--ink);font-family:monospace;}
+  .chip.branch{background:var(--cyan);border-color:var(--cyan);color:var(--ink);}
+  .body{padding:22px 40px 36px;}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;}
+  .card{border:1px solid var(--g200);border-radius:14px;padding:18px 18px 16px;background:#fff;
+    position:relative;overflow:hidden;}
+  .card::before{content:"";position:absolute;top:0;left:0;bottom:0;width:6px;}
+  .card.c1::before{background:var(--fuchsia);}
+  .card.c2::before{background:var(--cyan);}
+  .card.c3::before{background:var(--banana);}
+  .card.c4::before{background:var(--acid);}
+  .card .ico{font-size:22px;}
+  .card h3{font-size:16px;font-weight:900;margin:8px 0 6px;}
+  .card p{font-size:13.5px;line-height:1.55;color:var(--g700);}
+  .card code{background:var(--paper);border:1px solid var(--g200);border-radius:5px;padding:1px 5px;
+    font-size:12px;}
+  .full{grid-column:1 / -1;}
+  .ft{margin-top:20px;border-top:1px dashed var(--g200);padding-top:14px;display:flex;
+    justify-content:space-between;align-items:center;font-size:12.5px;color:var(--g500);}
+  .ft b{color:var(--ink);}
+  .pills{display:flex;gap:8px;}
+  .pill{font-size:11px;font-weight:900;padding:4px 10px;border-radius:6px;}
+  .pill.green{background:#e7f3d6;color:#3a5a00;}
+  .pill.acid{background:var(--acid);color:var(--ink);}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="hd">
+      <span class="tag">Delivery · 2026-06-08</span>
+      <h1>Newsletter Version History 📌</h1>
+      <div class="sub">Save named snapshots and restore them any time — alongside Save draft.</div>
+    </div>
+
+    <div class="meta">
+      <span class="chip hash">18981b2</span>
+      <span class="chip branch">main</span>
+      <span class="chip"><b>Effort:</b> medium</span>
+      <span class="chip"><b>Files:</b> 2 + changelog</span>
+      <span class="chip"><b>build:</b> ✓ passes</span>
+    </div>
+
+    <div class="body">
+      <div class="cards">
+        <div class="card c1">
+          <div class="ico">📌</div>
+          <h3>Save version button</h3>
+          <p>New button in the editor's action bar. Prompts for an optional name, then commits a snapshot of subject, month, template, all <code>field_values</code>, spotlight, limits + the baked HTML.</p>
+        </div>
+        <div class="card c2">
+          <div class="ico">🗂️</div>
+          <h3>Version history card</h3>
+          <p>Lists every saved version newest-first with name + timestamp. Each row offers <b>↩ Restore</b> (behind a confirm, history kept) and <b>🗑 delete</b>.</p>
+        </div>
+        <div class="card c3">
+          <div class="ico">🧬</div>
+          <h3>Persisted, no migration</h3>
+          <p>New JSONB-only <code>versions[]</code> on <code>NewsletterSchema</code>, defaults to <code>[]</code>. Rides the existing save path and survives reloads.</p>
+        </div>
+        <div class="card c4">
+          <div class="ico">🎯</div>
+          <h3>Intentional by design</h3>
+          <p>A version is created <b>only</b> by the 📌 button — Save draft, auto-save, and sending do not. Restore loads into the editor; you decide whether to keep it.</p>
+        </div>
+        <div class="card full c2">
+          <div class="ico">🔧</div>
+          <h3>Where it lives</h3>
+          <p><code>components/CRMManager.jsx</code> — <code>saveVersion</code> / <code>restoreVersion</code> / <code>deleteVersion</code> + the Version history card in <code>NewsletterEditor</code>. &nbsp;·&nbsp; <code>lib/schemas.js</code> — the <code>versions</code> field. Deep-clone on both save and restore so snapshots never share references with the live draft.</p>
+        </div>
+      </div>
+
+      <div class="ft">
+        <div>Sprout CRM Next · <b>Newsletter editor</b></div>
+        <div class="pills">
+          <span class="pill green">committed</span>
+          <span class="pill green">pushed</span>
+          <span class="pill acid">build ✓</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

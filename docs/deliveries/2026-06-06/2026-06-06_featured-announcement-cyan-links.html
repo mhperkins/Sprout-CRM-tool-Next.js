@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery — Featured Announcement + Cyan Links</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098;
+    --cyan:#73C4D6; --cyandeep:#2a8ca0; --grey:#ECECEA;
+    --paper:#FBFBF7; --muted:#5b5b57; --line:#ECECEA;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);
+       padding:40px 20px;display:flex;justify-content:center;}
+  .slide{width:100%;max-width:920px;}
+  .head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
+  .head h1{font-size:28px;font-weight:900;letter-spacing:-0.5px;}
+  .chip{display:inline-block;font-size:11px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;
+        padding:5px 11px;border-radius:999px;}
+  .chip.acid{background:var(--acid);color:var(--ink)}
+  .chip.banana{background:var(--banana);color:var(--ink)}
+  .sub{color:var(--muted);font-size:14px;margin:8px 0 24px;}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;}
+  .meta span{font-size:12px;font-weight:700;background:#fff;border:1px solid var(--line);
+             border-radius:8px;padding:7px 12px;}
+  .meta code{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--ink);color:#fff;
+             padding:2px 7px;border-radius:5px;font-size:11px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:680px){.grid{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;
+        box-shadow:0 4px 14px rgba(0,0,0,0.06);}
+  .card h3{font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
+           color:var(--fuchsia);margin-bottom:10px;}
+  .card.cy h3{color:var(--cyandeep);}
+  .card ul{list-style:none}
+  .card li{font-size:14px;line-height:1.65;padding-left:20px;position:relative;margin-bottom:7px;}
+  .card li::before{content:"▸";position:absolute;left:0;color:var(--cyan);font-weight:900;}
+  .card li code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
+                background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:1px 5px;}
+  /* live demo of the announcement box */
+  .announce{margin-top:6px;background:var(--grey);border-radius:8px;padding:14px 18px;
+            font-size:15px;line-height:1.5;font-weight:900;color:var(--fuchsia);}
+  .announce a{color:var(--cyandeep);text-decoration:underline;font-weight:700;}
+  .swatch{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;margin-right:16px;}
+  .dot{width:15px;height:15px;border-radius:4px;border:1px solid rgba(0,0,0,.15);display:inline-block;}
+  .foot{margin-top:24px;font-size:12px;color:var(--muted);text-align:center;}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="head">
+      <h1>Featured Announcement + Cyan Links</h1>
+      <span class="chip acid">Shipped</span>
+      <span class="chip banana">Effort: Low</span>
+    </div>
+    <p class="sub">An optional grey/fuchsia announcement box on the featured event, plus every inline newsletter hyperlink recolored to cyan.</p>
+
+    <div class="meta">
+      <span>Branch <code>main</code></span>
+      <span>Commit <code>f283e75</code></span>
+      <span>File <code>lib/newsletter.js</code></span>
+      <span>Build ✓ passing</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Featured announcement box</h3>
+        <ul>
+          <li>New optional field <code>featuredAnnounce</code> (textarea + ✨ Polish)</li>
+          <li>Grey <code>#ECECEA</code> box, bold fuchsia <code>#E10098</code> text</li>
+          <li>Sits between the recap and the "See more events" button</li>
+          <li>Renders <strong>only when filled</strong> — no empty grey box</li>
+        </ul>
+      </div>
+      <div class="card cy">
+        <h3>Cyan hyperlinks (global)</h3>
+        <ul>
+          <li>Markdown links work in <strong>any</strong> box: <code>[label](https://url)</code></li>
+          <li>Parameterized <code>linkify(html, color)</code> + <code>cval(v, t, linkColor)</code></li>
+          <li>Global default now cyan — every inline link is uniform</li>
+          <li>Used <strong><code>#2a8ca0</code></strong> for legibility, not light brand <code>#73C4D6</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h3>How it looks</h3>
+      <div class="announce">UPCOMING: <a href="#">Sprout n Tell Vol. 2</a> | Friday 6/26 7-10PM | 24 Scott Ave</div>
+      <div style="margin-top:14px;">
+        <span class="swatch"><span class="dot" style="background:#2a8ca0"></span>Link cyan <code style="font-size:12px">#2a8ca0</code></span>
+        <span class="swatch"><span class="dot" style="background:#73C4D6"></span>Brand cyan <code style="font-size:12px">#73C4D6</code> (too light for text)</span>
+      </div>
+    </div>
+
+    <p class="foot">Sprout CRM Next · 2026-06-06 · Reload the editor; fill the new featured-announcement field and use markdown links anywhere.</p>
+  </div>
+</body>
+</html>

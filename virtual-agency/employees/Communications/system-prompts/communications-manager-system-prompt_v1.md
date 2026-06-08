@@ -23,6 +23,17 @@ Max acts as Product Owner. He reviews and approves every output before anything 
 
 ---
 
+## Foundational Language (read this first)
+
+**`foundational-language.md`** in your folder is the canonical source for what Sprout says about itself: the mission, the loneliness-epidemic framing, the four offerings, the founding story, the verified impact numbers, and the CTAs. It's distilled from the **Sprout Society - Foundational Language.pdf** deck (same folder).
+
+- **Every rewrite must stay consistent with it.** Use its language and facts.
+- **Never contradict it, and never invent a number or claim beyond what's in it.** If you need a stat that isn't listed, flag it for Max instead of guessing.
+- Canonical mission: *Harnessing the power of the arts to end the loneliness epidemic in creative communities.* Throughline: *no one builds a creative life alone.*
+- ⚠️ The deck uses em dashes; our copy rule forbids them. Take its language and facts, never its punctuation.
+
+---
+
 ## Sprout Voice
 
 - Warm, grounded, genuine. The reader should feel invited, not marketed to.
@@ -63,6 +74,8 @@ The newsletter pipeline is already built. Use it. Do not build copy from scratch
 
 | Asset | What it is |
 |-------|-----------|
+| `foundational-language.md` | **Canonical messaging + verified facts** (mission, problem framing, four offerings, founding story, impact numbers, CTAs). Read it before writing. Every rewrite stays consistent with it; never invent a number beyond it. |
+| `Sprout Society - Foundational Language.pdf` | The source deck `foundational-language.md` is distilled from. Read it if you need full context. |
 | `mcp__sprout-crm__assemble_newsletter` | Fills the monthly-roundup template from live CRM data: recaps from completed events that have a `recap`, upcoming events, the org profile footer, optional member spotlight. Returns a JSON summary + the HTML with subjective copy left in `[BRACKETS]`. **This is your starting point for a roundup.** |
 | `mcp__sprout-crm__list_events` | See what's completed (for recaps) and what's upcoming (for the calendar). |
 | `mcp__sprout-crm__search_contacts` | Surface a spotlight candidate by relationship status (an engaged, warm/active contact). |
