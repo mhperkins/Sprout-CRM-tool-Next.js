@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Save version crash fix</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#2a8ca0;
+    --paper:#F7F7F6; --card:#FFFFFF; --g700:#4a4a48; --line:#e6e6e3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',system-ui,sans-serif;background:var(--paper);color:var(--ink);
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+  .slide{width:100%;max-width:880px;background:var(--card);border-radius:20px;overflow:hidden;
+    box-shadow:0 18px 50px rgba(0,0,0,0.18)}
+  .top{background:var(--ink);color:#fff;padding:34px 40px 30px;position:relative;overflow:hidden}
+  .top::after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;
+    background:linear-gradient(90deg,var(--cyan),var(--fuchsia),var(--acid),var(--banana))}
+  .kicker{font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:var(--banana)}
+  .ttl{font-size:30px;font-weight:900;line-height:1.15;margin-top:10px}
+  .sub{font-size:15px;color:#cfcfcd;margin-top:10px;max-width:640px;line-height:1.55}
+  .body{padding:30px 40px 36px}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+  .tag{font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;
+    padding:5px 12px;border-radius:999px}
+  .t-bug{background:#ffe1f3;color:var(--fuchsia)}
+  .t-eff{background:#eef0c2;color:#6b6c00}
+  .t-build{background:#d6eef2;color:var(--cyan)}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;position:relative;
+    overflow:hidden;background:#fff}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px}
+  .card.bug::before{background:var(--fuchsia)}
+  .card.cause::before{background:var(--banana)}
+  .card.fix1::before{background:var(--cyan)}
+  .card.fix2::before{background:var(--acid)}
+  .card.wide{grid-column:1 / -1}
+  .c-h{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;
+    display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .c-h .em{font-size:17px}
+  .c-b{font-size:13.5px;line-height:1.6;color:var(--g700)}
+  .c-b code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
+    background:var(--paper);padding:1px 6px;border-radius:5px;color:var(--ink)}
+  .foot{margin-top:24px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;
+    border-top:1px dashed var(--line);padding-top:18px;font-size:12.5px}
+  .pill{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;
+    background:var(--ink);color:#fff;padding:5px 11px;border-radius:8px}
+  .pill.cyan{background:var(--cyan)}
+  .file{color:var(--g700)}
+  .file code{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div class="kicker">Sprout CRM · Newsletter · 2026-06-08</div>
+    <div class="ttl">Fixed: "Save version" crash &mdash;<br>prompt() is not supported</div>
+    <div class="sub">Next.js 16's dev runtime blocks native browser dialogs. The version-history flow used <code style="color:#fff">window.prompt</code> and <code style="color:#fff">window.confirm</code>; both now run through in-app modals.</div>
+  </div>
+  <div class="body">
+    <div class="tags">
+      <span class="tag t-bug">🐛 Crash fix</span>
+      <span class="tag t-eff">Effort · diagnose low / fix low</span>
+      <span class="tag t-build">✓ npm run build passes</span>
+    </div>
+    <div class="cards">
+      <div class="card bug">
+        <div class="c-h"><span class="em">🐛</span> The bug</div>
+        <div class="c-b">Clicking <strong>📌 Save version</strong> threw a runtime error <code>prompt() is not supported</code> &mdash; call stack landed on <code>saveVersion</code>.</div>
+      </div>
+      <div class="card cause">
+        <div class="c-h"><span class="em">🔎</span> Root cause</div>
+        <div class="c-b">Next 16 blocks native <code>prompt</code> / <code>confirm</code> / <code>alert</code>. <code>saveVersion</code> used a prompt to name versions; <code>restoreVersion</code> used a confirm.</div>
+      </div>
+      <div class="card fix1">
+        <div class="c-h"><span class="em">📌</span> Fix · Save version</div>
+        <div class="c-b">Now opens a small <strong>name modal</strong> (defaults to "Version N", autofocused, Enter to confirm). New <code>commitVersion()</code> does the snapshot/persist.</div>
+      </div>
+      <div class="card fix2">
+        <div class="c-h"><span class="em">↩</span> Fix · Restore</div>
+        <div class="c-b">Routes through the existing <strong>ConfirmModal</strong> ("Restore version", non-danger) instead of <code>window.confirm</code>.</div>
+      </div>
+      <div class="card wide" style="border-color:#e6e6e3">
+        <div class="c-h" style="color:var(--cyan)"><span class="em">🧭</span> Lesson</div>
+        <div class="c-b">Never use native <code>prompt</code>/<code>confirm</code>/<code>alert</code> in this app &mdash; use the <code>Modal</code> / <code>ConfirmModal</code> primitives. This was the only place that still slipped through. Both behaviors are otherwise identical to before.</div>
+      </div>
+    </div>
+    <div class="foot">
+      <span class="pill">main · 41d956d</span>
+      <span class="pill cyan">pushed ✓</span>
+      <span class="file">Changed: <code>components/CRMManager.jsx</code></span>
+    </div>
+  </div>
+</div>
+</body>
+</html>
