@@ -2463,6 +2463,55 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
     showToast(wasNew?"Draft saved ✓":"Saved ✓");
   };
 
+  // Save version — commit a point-in-time snapshot to the version history, then persist (stay in editor).
+  const saveVersion = () => {
+    const d=draftRef.current;
+    if(!draftHasContent(d)){ showToast("Add a subject or some copy first","err"); return; }
+    const versions=Array.isArray(d.versions)?d.versions:[];
+    const n=versions.length+1;
+    const label=(window.prompt(`Name this version (optional):`,`Version ${n}`)||`Version ${n}`).trim()||`Version ${n}`;
+    const snap={
+      id:`v_${n}_${Date.now()}`,
+      savedAt:new Date().toISOString(),
+      label,
+      subject:d.subject||"",
+      month:d.month||"",
+      template:d.template,
+      field_values:JSON.parse(JSON.stringify(d.field_values||{})),
+      spotlight_contact_id:d.spotlight_contact_id||null,
+      recap_limit:d.recap_limit,
+      upcoming_limit:d.upcoming_limit,
+      html:builtRef.current.html,
+    };
+    const nextVersions=[...versions,snap];
+    const {wasNew,id,rec}=makeRecord({...d,versions:nextVersions});
+    onSaveStay(rec);
+    setDraft(p=>({...p,versions:nextVersions,...(wasNew?{id,_isNew:false}:{})}));
+    showToast(`📌 ${label} saved ✓`);
+  };
+
+  // Restore the editor content from a saved version. History is left intact; the user must Save
+  // (draft or version) to keep the restore.
+  const restoreVersion = (v) => {
+    if(!window.confirm(`Restore "${v.label}"? Your current unsaved edits will be replaced (the version history is kept).`)) return;
+    setDraft(p=>({
+      ...p,
+      subject:v.subject??p.subject,
+      month:v.month??p.month,
+      template:v.template??p.template,
+      field_values:JSON.parse(JSON.stringify(v.field_values||{})),
+      spotlight_contact_id:v.spotlight_contact_id??null,
+      recap_limit:v.recap_limit??p.recap_limit,
+      upcoming_limit:v.upcoming_limit??p.upcoming_limit,
+    }));
+    showToast(`Restored "${v.label}" — Save draft to keep`);
+  };
+
+  // Delete a saved version from the history.
+  const deleteVersion = (vid) => {
+    setDraft(p=>({...p,versions:(p.versions||[]).filter(v=>v.id!==vid)}));
+  };
+
   // Save & close.
   const saveClose = () => {
     const d=draftRef.current;
@@ -2534,6 +2583,7 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
           {!draft._isNew&&<button className="btn btn-ghost btn-sm" onClick={()=>onDelete(draft.id)}>Delete</button>}
           <button className="btn btn-ghost btn-sm" onClick={copyHtml}>Copy HTML</button>
           <button className="btn btn-ghost btn-sm" onClick={saveDraft}>💾 Save draft</button>
+          <button className="btn btn-ghost btn-sm" onClick={saveVersion}>📌 Save version</button>
           <button className="btn btn-acid btn-sm" onClick={saveClose}>Save &amp; close</button>
         </div>
       </div>
@@ -2549,6 +2599,28 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
               <div className="fg"><label className="fl">Send date</label><input type="date" className="fi" value={draft.send_date||""} onChange={e=>s("send_date",e.target.value||null)}/></div>
             </div>
             <div className="fg"><label className="fl">Month label</label><input className="fi" value={draft.month} onChange={e=>s("month",e.target.value)} placeholder="e.g. June 2026"/></div>
+          </div></div>
+
+          <div className="card"><div className="card-hd"><span className="card-ttl">Version history</span><span style={{fontSize:11,color:"var(--g500)"}}>{(draft.versions||[]).length} saved</span></div><div className="card-bd">
+            <div style={{fontSize:11,color:"var(--g500)",marginBottom:10,lineHeight:1.5}}>
+              📌 <b>Save version</b> (top bar) commits a snapshot you can restore later. Saving a draft or sending does not create one.
+            </div>
+            {(draft.versions||[]).length===0
+              ? <div style={{fontSize:12,color:"var(--g400)"}}>No versions saved yet.</div>
+              : <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  {draft.versions.slice().reverse().map(v=>(
+                    <div key={v.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,background:"#fff",border:"1px solid var(--g200)",borderRadius:6,padding:"7px 9px"}}>
+                      <div style={{minWidth:0}}>
+                        <div style={{fontSize:13,fontWeight:700,color:"var(--g700)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{v.label}</div>
+                        <div style={{fontSize:10,color:"var(--g500)"}}>{v.savedAt?new Date(v.savedAt).toLocaleString():""}</div>
+                      </div>
+                      <div style={{display:"flex",gap:6,flexShrink:0}}>
+                        <button className="btn btn-ghost btn-sm" style={{padding:"2px 9px",fontSize:11}} onClick={()=>restoreVersion(v)}>↩ Restore</button>
+                        <button className="btn btn-ghost btn-sm" style={{padding:"2px 7px",fontSize:11}} onClick={()=>deleteVersion(v.id)}>🗑</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>}
           </div></div>
 
           {isMonthly&&(

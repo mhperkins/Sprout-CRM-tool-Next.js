@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-08 — Newsletter: version history (Save version + restore/delete)
+
+App code + schema (`components/CRMManager.jsx`, `lib/schemas.js`). Effort: medium. `npm run build` passes.
+
+- Added a **`📌 Save version`** button to the newsletter editor's action bar (next to 💾 Save draft). It prompts for an optional name (default "Version N") and commits a point-in-time snapshot of the editable content (`subject`, `month`, `template`, deep-cloned `field_values`, `spotlight_contact_id`, `recap_limit`, `upcoming_limit`, and the baked `html`) with a `savedAt` timestamp + `label`, then persists via the existing `onSaveStay`/`makeRecord` path (stays in the editor).
+- Added a **"Version history" card** in the left form column under Details: lists saved versions newest-first with name + localized timestamp, each with **↩ Restore** (loads the snapshot back into the editor behind a confirm; history is kept) and **🗑** (delete that version). Empty state when none saved.
+- New **`versions: z.array(z.any()).default([])`** field on `NewsletterSchema` — JSONB-only, defaults to `[]`, rides the existing save path, survives reloads, no migration needed.
+- Design: a version is created **only** by the explicit button (Save draft / auto-save / send do not), keeping the history meaningful. Restore loads into the editor and does not auto-overwrite the DB. Deep-clone on save + restore so snapshots and the live draft never share `field_values` references.
+
+---
+
 ## 2026-06-06 — Contacts: new "Showcase" relationship type
 
 App code + MCP + docs (`components/CRMManager.jsx`, `lib/schemas.js`, `mcp/server.js`, `docs/CRM-db-schema.md`). Effort: low. `npm run build` passes.
