@@ -1323,6 +1323,10 @@ function ContactsView({contacts,orgs,events,onUpdate,onDelete,onUpdateEvents,sho
   const [segment,setSegment]=useState("community");
   const [fType,setFType]=useState("all");
   const [fStatus,setFStatus]=useState("all");
+  const [needsName,setNeedsName]=useState(false);
+  const [sortBy,setSortBy]=useState("name");
+  const [perPage,setPerPage]=useState(50);
+  const [page,setPage]=useState(1);
   const [selected,setSelected]=useState(null);
   const [adding,setAdding]=useState(false);
   const [ncDrawer,setNcDrawer]=useState(false);
@@ -1361,8 +1365,28 @@ const blank={first_name:"",last_name:"",org_id:"",org_ids:[],_pendingEventIds:[]
       if (!types.includes(fType)) return false;
     }
     if (fStatus!=="all"&&c.relationship_status!==fStatus) return false;
+    if (needsName && (`${c.first_name||""}${c.last_name||""}`).trim()) return false;
     return true;
-  }), [contacts, segment, search, fType, fStatus]);
+  }), [contacts, segment, search, fType, fStatus, needsName]);
+
+  // Sort the filtered set (default Name A–Z so the paginated list is scannable).
+  const sorted=useMemo(()=>{
+    const arr=[...filtered];
+    const nameOf=c=>`${c.last_name||""} ${c.first_name||""}`.trim().toLowerCase()||(c.email||"").toLowerCase()||"zzz";
+    const given=c=>Number(c.financial_relationship?.total_given||0);
+    if(sortBy==="name") arr.sort((a,b)=>nameOf(a).localeCompare(nameOf(b)));
+    else if(sortBy==="newest") arr.sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
+    else if(sortBy==="health") arr.sort((a,b)=>(contactMeta[b.id]?.score||0)-(contactMeta[a.id]?.score||0));
+    else if(sortBy==="given") arr.sort((a,b)=>given(b)-given(a));
+    return arr;
+  }, [filtered, sortBy, contactMeta]);
+
+  // Pagination
+  const pageCount=Math.max(1, Math.ceil(sorted.length/perPage));
+  const safePage=Math.min(page, pageCount);
+  const paged=useMemo(()=>sorted.slice((safePage-1)*perPage, safePage*perPage), [sorted, safePage, perPage]);
+  // Reset to page 1 whenever the result set changes.
+  useEffect(()=>{ setPage(1); }, [segment, search, fType, fStatus, needsName, sortBy, perPage]);
 
 const [editing,setEditing]=useState(null);
   const [editingTab,setEditingTab]=useState("overview"); // pre-select tab on open
@@ -1403,7 +1427,9 @@ const [editing,setEditing]=useState(null);
         <input className="fi" placeholder="Search name or title…" value={search} onChange={e=>setSearch(e.target.value)}/>
         <select className="fs" value={fType} onChange={e=>setFType(e.target.value)}><option value="all">All types</option>{Object.entries(REL_TYPES).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
 <select className="fs" value={fStatus} onChange={e=>setFStatus(e.target.value)}><option value="all">All statuses</option>{Object.entries(REL_STATUS).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
-{(search||fType!=="all"||fStatus!=="all")&&<button className="btn btn-ghost btn-sm" onClick={()=>{setSearch("");setFType("all");setFStatus("all");}}>✕ Clear</button>}
+<select className="fs" value={sortBy} onChange={e=>setSortBy(e.target.value)} title="Sort"><option value="name">Sort: Name A–Z</option><option value="newest">Sort: Newest added</option><option value="health">Sort: Health</option>{segment==="donor"&&<option value="given">Sort: Most given</option>}</select>
+<button className={`btn btn-sm ${needsName?"btn-blk":"btn-ghost"}`} onClick={()=>setNeedsName(v=>!v)} title="Show only contacts with no name (email-only)">👤 Needs a name</button>
+{(search||fType!=="all"||fStatus!=="all"||needsName)&&<button className="btn btn-ghost btn-sm" onClick={()=>{setSearch("");setFType("all");setFStatus("all");setNeedsName(false);}}>✕ Clear</button>}
       </div>
 {adding&&(
         <Modal title="Add Contact" onClose={()=>{setAdding(false);setNc(blank);}}
@@ -1455,16 +1481,24 @@ const [editing,setEditing]=useState(null);
           </>}
         </Modal>
       )}
-      {contacts.length>0&&<div style={{fontSize:12,color:"var(--g600)",marginBottom:12,display:"flex",alignItems:"center",gap:6}}>
-        <span><strong style={{color:"var(--black)"}}>{filtered.length}</strong> of {segCounts[segment]||0} in {SEGMENTS[segment]}</span>
-        {(search||fType!=="all"||fStatus!=="all")&&<span style={{fontSize:11,background:"var(--cyan-lt)",color:"#155e6e",padding:"1px 7px",borderRadius:10,fontWeight:700}}>filtered</span>}
+      {contacts.length>0&&<div style={{fontSize:12,color:"var(--g600)",marginBottom:12,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+        <span>{sorted.length>0
+          ? <>Showing <strong style={{color:"var(--black)"}}>{(safePage-1)*perPage+1}–{Math.min(safePage*perPage,sorted.length)}</strong> of <strong style={{color:"var(--black)"}}>{sorted.length}</strong> in {SEGMENTS[segment]}</>
+          : <><strong style={{color:"var(--black)"}}>0</strong> of {segCounts[segment]||0} in {SEGMENTS[segment]}</>}</span>
+        {(search||fType!=="all"||fStatus!=="all"||needsName)&&<span style={{fontSize:11,background:"var(--cyan-lt)",color:"#155e6e",padding:"1px 7px",borderRadius:10,fontWeight:700}}>filtered</span>}
+        <span style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:6}}>
+          <span style={{color:"var(--g400)"}}>Per page</span>
+          <select className="fs" style={{padding:"3px 6px"}} value={perPage} onChange={e=>setPerPage(Number(e.target.value))}>
+            {[20,50,100,250].map(n=><option key={n} value={n}>{n}</option>)}
+          </select>
+        </span>
       </div>}
-      {filtered.length===0
+      {sorted.length===0
         ? <div className="empty"><div className="empty-ico">👤</div><div className="empty-ttl">{contacts.length===0?"No contacts yet":"No results"}</div><div className="empty-txt">{contacts.length===0?"Add contacts manually or import JSON profiles from Claude.":"Try adjusting your filters."}</div></div>
       : <div className="tbl-wrap"><table className="tbl">
             <thead><tr><th>Name</th><th>Type</th><th>{segment==="donor"?"Campaign":"Affiliation"}</th><th>Status</th><th>Next Action</th><th>Health</th><th></th></tr></thead>
             <tbody>
-{filtered.map(c=>{
+{paged.map(c=>{
               const cOrgIds=(c.org_ids&&c.org_ids.length)?c.org_ids:(c.org_id?[c.org_id]:[]);
               const cOrgs=orgs.filter(o=>cOrgIds.includes(o.id));
               const { score, overdue: od } = contactMeta[c.id] || { score:0, overdue:false };              return <tr key={c.id} onClick={()=>setSelected(c.id)}>
@@ -1505,6 +1539,11 @@ const [editing,setEditing]=useState(null);
             })}
 </tbody></table></div>
       }
+      {sorted.length>perPage&&<div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:14}}>
+        <button className="btn btn-ghost btn-sm" disabled={safePage<=1} onClick={()=>setPage(p=>Math.max(1,p-1))}>← Prev</button>
+        <span style={{fontSize:12,color:"var(--g600)"}}>Page <strong style={{color:"var(--black)"}}>{safePage}</strong> of {pageCount}</span>
+        <button className="btn btn-ghost btn-sm" disabled={safePage>=pageCount} onClick={()=>setPage(p=>Math.min(pageCount,p+1))}>Next →</button>
+      </div>}
 {sel&&<ContactDetail contact={sel} orgs={orgs} events={events||[]} onClose={()=>setSelected(null)} onUpdate={updateContact} onEdit={()=>setEditing({...sel})} showToast={showToast}/>}
 {quickLog!==null&&<QuickLogModal
         contacts={contacts}

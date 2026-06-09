@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-09 — Bulk email-list import (3,609 contacts) + 1,000-row fetch fix + paginated/sorted contact list
+
+Data write (3,609 contacts) + app code (`lib/services.js`, `components/CRMManager.jsx`). Effort: high. `npm run build` passes.
+
+- **Import:** loaded a ~3,500-row historical email dump from two Drive folders (Funraise donor transactions + 20 Campaign Monitor `Name,Email` lists). Bucketed by file title — donor-titled → **Donor**, real events → **Community** (`attendee`), subscriber/partner lists → **Prospect**. Dedupe precedence Donor > Community > Prospect; cross-file name backfill + conservative email-based name guessing; filtered staff (`@sproutsociety.org`), bot/test/junk, and blank rows. Funraise gift amount/date carried into `financial_relationship`. Result: **3,609 net-new** (donor 2,151 / community 1,110 / prospect 348), 46 already-in-CRM left untouched.
+- **Write path:** throwaway service-role script with collision-safe id generation (seeded with all 138 existing ids so no record could be overwritten), real Zod `validateContact` (0/3,609 failures), whole batch tagged `email_list_import_2026_06_09` for filtering/undo, upserted in 500-row batches. Existing 12 Community-contacts-also-on-a-donor-list left un-upgraded per request. Throwaway scripts deleted after.
+- **Fix — 1,000-row read cap:** the app showed only 1,000 contacts because `fetchContacts` did a single `.select()` and Supabase/PostgREST caps a request at 1,000 rows. Now pages through in 1,000-row chunks (`.order("id").range(...)`) until exhausted.
+- **Contact list for scale (`ContactsView`):** added pagination (50/page default; 20/50/100/250; Prev·Page X of Y·Next), a Sort dropdown (Name A–Z default + Newest / Health / Most-given-on-donor-tab), "Showing X–Y of N" with a per-page selector, and a **👤 Needs a name** toggle that filters to email-only contacts (verified all 2,211 nameless rows carry a valid email). Existing search/type/status filters unchanged.
+
+---
+
 ## 2026-06-08 — Newsletter: fix "prompt() is not supported" crash on Save version
 
 App code only (`components/CRMManager.jsx`). Effort: diagnose low / fix low. `npm run build` passes.
