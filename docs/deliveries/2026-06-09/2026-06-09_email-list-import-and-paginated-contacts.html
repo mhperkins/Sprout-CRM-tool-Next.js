@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Email-List Import + Paginated Contacts</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6; --cyan-dk:#2a8ca0;
+    --paper:#f6f6f3; --card:#ffffff; --line:#e6e6e1; --g600:#55554f; --g400:#8a8a82;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',sans-serif;background:var(--paper);color:var(--ink);padding:40px 20px;line-height:1.45}
+  .wrap{max-width:1080px;margin:0 auto}
+  .head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;border-bottom:4px solid var(--ink);padding-bottom:18px;margin-bottom:8px}
+  .eyebrow{font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan-dk)}
+  h1{font-size:30px;font-weight:900;line-height:1.1;margin-top:4px}
+  .meta{text-align:right;font-size:12px;color:var(--g600);white-space:nowrap}
+  .meta .hash{font-family:ui-monospace,Menlo,monospace;background:var(--ink);color:#fff;padding:3px 9px;border-radius:6px;font-weight:700;font-size:12px}
+  .meta .row{margin-top:6px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;position:relative;overflow:hidden}
+  .stat .bar{position:absolute;left:0;top:0;bottom:0;width:6px}
+  .stat .n{font-size:30px;font-weight:900;line-height:1}
+  .stat .l{font-size:12px;color:var(--g600);font-weight:700;margin-top:5px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 4px 14px rgba(0,0,0,.06);overflow:hidden}
+  .card.wide{grid-column:1 / -1}
+  .card h2{font-size:16px;font-weight:900;display:flex;align-items:center;gap:9px;margin-bottom:12px}
+  .pill{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:20px}
+  .pill.fix{background:var(--cyan);color:#fff}
+  .pill.data{background:var(--fuchsia);color:#fff}
+  .pill.feat{background:var(--acid);color:var(--ink)}
+  ul{list-style:none}
+  li{font-size:13.5px;color:#26261f;padding:5px 0 5px 22px;position:relative}
+  li::before{content:"";position:absolute;left:2px;top:11px;width:8px;height:8px;border-radius:50%;background:var(--banana)}
+  li b{color:var(--ink)}
+  .buckets{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .bk{flex:1;min-width:120px;border-radius:12px;padding:12px 14px;color:#fff}
+  .bk .bn{font-size:24px;font-weight:900;line-height:1}
+  .bk .bl{font-size:11px;font-weight:700;opacity:.95;margin-top:3px}
+  .foot{margin-top:22px;font-size:12px;color:var(--g400);text-align:center;border-top:1px solid var(--line);padding-top:14px}
+  .note{background:#fff7d6;border:1px solid var(--banana);border-radius:12px;padding:12px 14px;font-size:12.5px;color:#6b5500;margin-top:14px}
+  .note b{color:var(--ink)}
+  code{font-family:ui-monospace,Menlo,monospace;background:#efeee9;padding:1px 5px;border-radius:5px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div>
+      <div class="eyebrow">Sprout CRM · Delivery</div>
+      <h1>Email-List Import + Paginated Contacts</h1>
+    </div>
+    <div class="meta">
+      <div class="row"><span class="hash">4fc3358</span></div>
+      <div class="row">branch <b>main</b></div>
+      <div class="row">2026-06-09</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="bar" style="background:var(--fuchsia)"></div><div class="n">3,609</div><div class="l">net-new contacts imported</div></div>
+    <div class="stat"><div class="bar" style="background:var(--ink)"></div><div class="n">138 → 3,747</div><div class="l">total CRM contacts</div></div>
+    <div class="stat"><div class="bar" style="background:var(--cyan)"></div><div class="n">1,000-cap</div><div class="l">fetch limit fixed</div></div>
+    <div class="stat"><div class="bar" style="background:var(--acid)"></div><div class="n">0 / 3,609</div><div class="l">Zod validation failures</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2><span class="pill data">Data</span> The import</h2>
+      <ul>
+        <li>20 CSVs from 2 Drive folders (Funraise donors + Campaign Monitor), pulled via the Workspace OAuth token</li>
+        <li><b>Bucketed by file title</b> with precedence Donor &gt; Community &gt; Prospect</li>
+        <li><b>Cross-file name backfill</b> + conservative email-based guessing</li>
+        <li>Filtered 34 staff, 28 bot/test/junk, 98 blank rows</li>
+        <li>Funraise gift amount + last date → <code>financial_relationship</code></li>
+        <li>Whole batch tagged <code>email_list_import_2026_06_09</code> (filterable + 1-delete undo)</li>
+      </ul>
+      <div class="buckets">
+        <div class="bk" style="background:var(--fuchsia)"><div class="bn">2,151</div><div class="bl">Donors</div></div>
+        <div class="bk" style="background:var(--cyan-dk)"><div class="bn">1,110</div><div class="bl">Community</div></div>
+        <div class="bk" style="background:var(--ink)"><div class="bn">348</div><div class="bl">Prospects</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="pill fix">Fix</span> The 1,000-row cap</h2>
+      <ul>
+        <li>App showed only 1,000 contacts (128 + 849 + 23) — looked like data loss</li>
+        <li><b>Cause:</b> <code>fetchContacts</code> did a single <code>.select()</code>; Supabase/PostgREST caps a request at 1,000 rows</li>
+        <li><b>Fix:</b> page through in 1,000-row chunks (<code>.order("id").range(...)</code>) until exhausted</li>
+        <li>All 3,747 contacts now load in the app</li>
+      </ul>
+    </div>
+
+    <div class="card wide">
+      <h2><span class="pill feat">Feature</span> Contact list, rebuilt for scale</h2>
+      <ul>
+        <li><b>Pagination</b> — 50/page default, switch 20 / 50 / 100 / 250, with a Prev · Page X of Y · Next navigator</li>
+        <li><b>Sort dropdown</b> — Name A–Z (default), Newest added, Health, and <b>Most given</b> on the Donor tab</li>
+        <li><b>👤 Needs a name</b> toggle — shows only email-only contacts for backfilling (all 2,211 verified to carry a valid email)</li>
+        <li>"Showing 1–50 of 849" range readout + per-page selector; page resets on any filter/sort/tab change</li>
+        <li>Existing search / type / status filters kept — still the right cuts for this data</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Open items:</b> 12 existing Community contacts appear on a donor list (left un-upgraded per request, listed in chat). Two Funraise gifts look large — <b>James Belfer $50,000</b>, <b>Jan Testori-Markman $10,000</b> — imported as-is, pending confirmation they're real major gifts.
+  </div>
+
+  <div class="foot">Sprout CRM Next · committed + pushed to <b>main</b> · <code>4fc3358</code> · 2026-06-09</div>
+</div>
+</body>
+</html>
