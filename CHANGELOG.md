@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-06-09 — Quick Hit newsletter: branded header/footer, stacked + centered footer buttons, dark-mode meta tags
+
+App code only (`lib/newsletter.js`). Effort: low. `npm run build` passes. Committed + pushed.
+
+- **Quick Hit (single-topic) header + footer now match the Monthly Roundup compact:** header is a black bar with the white logo on the left; footer is the black branded footer (brand line, `Brooklyn, NY · @sproutsociety`, Donate + Become-a-member buttons, mailto unsubscribe + address + EIN, white logo on the right). Removed the dead `[WEBSITE]`/Mailchimp `*|UNSUB|*` merge tags.
+- Donate/membership URLs hardcoded in Quick Hit (it's a bracket template with no link fields): `givebutter.com/sproutspacedonors` (donate, slug pulled live via Givebutter MCP) + `givebutter.com/sproutmembership` (member).
+- **Footer buttons stacked top/bottom for mobile** in BOTH templates (Quick Hit + compact roundup) — previously side by side. The compact footer IIFE now renders each `parseBtn` cell as its own `<tr>` with a 10px spacer.
+- **Button labels centered** in both templates: `<td width="220">` + anchor `display:block; text-align:center` → uniform 220px buttons with centered text.
+- **Dark-mode accommodation:** added `<meta name="color-scheme">` + `<meta name="supported-color-schemes">` + a `:root` color-scheme hint to both templates' `<head>` (and `x-apple-disable-message-reformatting` to Quick Hit). Stops Apple Mail's forced dark-mode color inversion. Caveat: Gmail/Outlook ignore these and may still invert.
+
+---
+
 ## 2026-06-09 — Decision: migrate newsletter email channel from Givebutter to Campaign Monitor (planning only)
 
 No code, data, or config change — conversation/planning session. Blocked on Campaign Monitor account reactivation.
