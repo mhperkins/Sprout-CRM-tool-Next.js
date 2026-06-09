@@ -2404,14 +2404,66 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
   const [nameVersion,setNameVersion]=useState(null);   // { defaultLabel } when the name-version modal is open
   const [versionLabel,setVersionLabel]=useState("");
   const [restoreV,setRestoreV]=useState(null);         // the version pending a restore confirm
-  // Auto-size the preview iframe to its content so the whole template shows without an inner
-  // scrollbar; the page scrolls instead. Re-measures on every srcDoc reload (i.e. as you type).
+  // ── Field ⇄ preview sync ──────────────────────────────────────────────────
+  // The preview is a sticky, internally-scrolling panel (see below). Each editable
+  // field maps to a "group" id that is stamped onto the matching block in the email
+  // HTML as data-sec="…" (in lib/newsletter.js). Focusing a field scrolls the preview
+  // to that block + flashes it; clicking a block scrolls the editor to its first field.
   const previewRef=useRef(null);
-  const [previewH,setPreviewH]=useState(700);
-  const fitPreview=()=>{
+  const flashTimer=useRef(null);
+  const previewScroll=useRef(0);   // remembered internal scroll, restored across srcDoc reloads
+  // field key → block group id
+  const SEC_GROUP={
+    mastheadLabel:"masthead",
+    headline:"intro", intro:"intro",
+    featuredEyebrow:"featured", featuredTitle:"featured", featuredRecap:"featured", featuredAnnounce:"featured", featuredPhoto:"featured",
+    coworkingEyebrow:"announce", coworkingTitle:"announce", coworking:"announce", coworkingChip:"announce", coworkingThurs:"announce",
+    membership:"membership", membershipBtn:"membership", membershipLink:"membership",
+    marketing:"marketing", marketingLink:"marketing",
+    scholarship:"scholarship", scholarshipBtn:"scholarship", scholarshipLink:"scholarship",
+    spotlightEyebrow:"spotlight", spotlightName:"spotlight", spotlightBlurb:"spotlight", spotlightImage:"spotlight", spotlightIG:"spotlight", spotlightWeb:"spotlight", spotlightTestimonial:"spotlight",
+    upcomingTitle:"upcoming", upcoming:"upcoming",
+    pastTitle:"past", past:"past",
+    footerBrand:"footer", donateLink:"footer", memberLink:"footer",
+  };
+  // block group id → first editable field key (for reverse sync)
+  const GROUP_FIRST={ masthead:"mastheadLabel", intro:"headline", featured:"featuredEyebrow", announce:"coworkingEyebrow", membership:"membership", marketing:"marketing", scholarship:"scholarship", spotlight:"spotlightEyebrow", upcoming:"upcomingTitle", past:"pastTitle", footer:"footerBrand" };
+  const flashEls=(els)=>{
+    els.forEach(e=>{ e.style.transition="outline-color .2s ease"; e.style.outline="3px solid #E10098"; e.style.outlineOffset="-3px"; e.style.borderRadius="4px"; });
+    if(flashTimer.current) clearTimeout(flashTimer.current);
+    flashTimer.current=setTimeout(()=>els.forEach(e=>{ e.style.outline=""; }),1400);
+  };
+  // Focus a field → scroll the preview (internally) to its block + flash it.
+  const focusScroll=(key)=>{
     try{
-      const doc=previewRef.current&&previewRef.current.contentDocument;
-      if(doc){ const h=doc.documentElement.scrollHeight||doc.body.scrollHeight; if(h) setPreviewH(h); }
+      const grp=SEC_GROUP[key]; if(!grp) return;
+      const ifr=previewRef.current; if(!ifr||!ifr.contentWindow||!ifr.contentDocument) return;
+      const els=ifr.contentDocument.querySelectorAll(`[data-sec="${grp}"]`);
+      if(!els.length) return;
+      const dest=Math.max(0,els[0].getBoundingClientRect().top+ifr.contentWindow.scrollY-24);
+      previewScroll.current=dest;
+      ifr.contentWindow.scrollTo({top:dest,behavior:"smooth"});
+      flashEls(els);
+    }catch{}
+  };
+  // On every preview (re)load: srcDoc reloads on each keystroke and resets the iframe scroll to
+  // top, so restore the remembered position, then (re)wire reverse-sync clicks + a scroll tracker.
+  const onPreviewLoad=()=>{
+    try{
+      const ifr=previewRef.current; const doc=ifr&&ifr.contentDocument; if(!doc||!ifr.contentWindow) return;
+      ifr.contentWindow.scrollTo(0,previewScroll.current);
+      ifr.contentWindow.addEventListener("scroll",()=>{ previewScroll.current=ifr.contentWindow.scrollY; },{passive:true});
+      doc.querySelectorAll("[data-sec]").forEach(el=>{
+        el.style.cursor="pointer";
+        el.addEventListener("click",(ev)=>{
+          // let real links/buttons do their own thing
+          if(ev.target.closest("a,button")) return;
+          const key=GROUP_FIRST[el.getAttribute("data-sec")]; if(!key) return;
+          const node=document.querySelector(`[data-fkey="${key}"]`); if(!node) return;
+          node.scrollIntoView({behavior:"smooth",block:"center"});
+          setTimeout(()=>{ const i=node.querySelector("input,textarea"); if(i) i.focus(); },80);
+        });
+      });
     }catch{}
   };
   async function runPolish(fieldId,label,current,apply){
@@ -2639,7 +2691,7 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
         </div>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"minmax(0,380px) 1fr",gap:16,alignItems:"start"}}>
+      <div style={{display:"grid",gridTemplateColumns:"minmax(0,380px) 1fr",gap:16,alignItems:"stretch"}}>
 
         {/* ── Form ── */}
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
@@ -2705,7 +2757,7 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
                       // New upload recenters the crop.
                       const applyUpload=(u)=>{ setField(sec.key,u); if(sec.crop) setField(posKey,"50% 50%"); };
                       return (
-                        <div className="fg" key={sec.key}>
+                        <div className="fg" key={sec.key} data-fkey={sec.key}>
                           <label className="fl" style={LBL}>{sec.label}</label>
                           {url
                             ? (sec.crop
@@ -2728,21 +2780,21 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
                     if(sec.kind==="header"){
                       // Editable static title/subheader. Blank = the default (shown as placeholder).
                       return (
-                        <div className="fg" key={sec.key}>
+                        <div className="fg" key={sec.key} data-fkey={sec.key}>
                           <label className="fl" style={LBL}>{sec.label}</label>
-                          <input className="fi" value={fv[sec.key]||""} onChange={e=>setField(sec.key,e.target.value)} placeholder={sec.ph||"Type your copy…"}/>
+                          <input className="fi" value={fv[sec.key]||""} onFocus={()=>focusScroll(sec.key)} onChange={e=>setField(sec.key,e.target.value)} placeholder={sec.ph||"Type your copy…"}/>
                         </div>
                       );
                     }
                     if(sec.kind==="single"){
                       const fid=sec.key;
                       return (
-                        <div className="fg" key={sec.key}>
+                        <div className="fg" key={sec.key} data-fkey={sec.key}>
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
                             <label className="fl" style={{...LBL,margin:0}}>{sec.label}</label>
                             {sec.polish&&<button className="btn btn-ghost btn-sm" style={PB} disabled={busy[fid]==="polish"} onClick={()=>runPolish(fid,sec.label,fv[sec.key]||"",t=>setField(sec.key,t))}>{busy[fid]==="polish"?"Polishing…":(polishOut[fid]?"✨ Re-polish":"✨ Polish")}</button>}
                           </div>
-                          <textarea className="fta" rows={sec.rows||2} value={fv[sec.key]||""} onChange={e=>setField(sec.key,e.target.value)} placeholder={sec.polish?"Brain-dump here, then ✨ Polish…":"Type your copy…"}/>
+                          <textarea className="fta" rows={sec.rows||2} value={fv[sec.key]||""} onFocus={()=>focusScroll(sec.key)} onChange={e=>setField(sec.key,e.target.value)} placeholder={sec.polish?"Brain-dump here, then ✨ Polish…":"Type your copy…"}/>
                           {polishPanel(fid)}
                         </div>
                       );
@@ -2750,7 +2802,7 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
                     // repeat
                     const items=(fv[sec.key]&&fv[sec.key].length?fv[sec.key]:[blankCompactItem(sec)]);
                     return (
-                      <div key={sec.key} style={{borderTop:"1px solid var(--g100)",paddingTop:12}}>
+                      <div key={sec.key} data-fkey={sec.key} style={{borderTop:"1px solid var(--g100)",paddingTop:12}}>
                         <label className="fl" style={{...LBL,marginBottom:8,display:"block"}}>{sec.label}</label>
                         {items.map((item,idx)=>{
                           const imgFid=`${sec.key}.${idx}.image`;
@@ -2765,7 +2817,7 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
                                 return (
                                   <div key={f.k}>
                                     {f.polish&&<div style={{textAlign:"right",marginBottom:2}}><button className="btn btn-ghost btn-sm" style={{padding:"1px 7px",fontSize:11}} disabled={busy[fid]==="polish"} onClick={()=>runPolish(fid,f.ph,item[f.k]||"",t=>setItem(sec.key,idx,f.k,t))}>{busy[fid]==="polish"?"Polishing…":(polishOut[fid]?"✨ Re-polish":"✨ Polish")}</button></div>}
-                                    <input className="fi" value={item[f.k]||""} onChange={e=>setItem(sec.key,idx,f.k,e.target.value)} placeholder={f.ph}/>
+                                    <input className="fi" value={item[f.k]||""} onFocus={()=>focusScroll(sec.key)} onChange={e=>setItem(sec.key,idx,f.k,e.target.value)} placeholder={f.ph}/>
                                     {f.polish&&polishPanel(fid)}
                                   </div>
                                 );
@@ -2857,11 +2909,11 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
             </div>
           </div></div>
 
-          {/* ── Preview ── */}
-          <div className="card">
-            <div className="card-hd"><span className="card-ttl">Preview</span><span style={{fontSize:11,color:"var(--g500)"}}>live · full template</span></div>
-            <div style={{height:previewH,minHeight:480,background:"#F7F7F6",borderRadius:"0 0 10px 10px",overflow:"hidden"}}>
-              <iframe ref={previewRef} title="newsletter-preview" onLoad={fitPreview} sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" srcDoc={previewHtml} style={{width:"100%",height:"100%",border:"none"}}/>
+          {/* ── Preview (sticky panel that scrolls to whatever field you focus) ── */}
+          <div className="card" style={{position:"sticky",top:12}}>
+            <div className="card-hd"><span className="card-ttl">Preview</span><span style={{fontSize:11,color:"var(--g500)"}}>live · follows the field you're editing</span></div>
+            <div style={{height:"calc(100vh - 96px)",minHeight:480,background:"#F7F7F6",borderRadius:"0 0 10px 10px",overflow:"hidden"}}>
+              <iframe ref={previewRef} title="newsletter-preview" onLoad={onPreviewLoad} sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" srcDoc={previewHtml} style={{width:"100%",height:"100%",border:"none"}}/>
             </div>
           </div>
         </div>

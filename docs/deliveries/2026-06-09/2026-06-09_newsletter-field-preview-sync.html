@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Newsletter field ↔ preview sync</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --cyan-d:#2a8ca0; --g500:#6b6b67; --g300:#cfcfca;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);padding:40px 20px;line-height:1.55}
+  .wrap{max-width:920px;margin:0 auto}
+  .top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .pill{display:inline-block;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:6px 12px;border-radius:20px}
+  .pill-acid{background:var(--acid);color:var(--ink)}
+  .pill-fuchsia{background:var(--fuchsia);color:#fff}
+  .pill-cyan{background:var(--cyan-d);color:#fff}
+  h1{font-size:30px;font-weight:900;line-height:1.2;margin:14px 0 4px}
+  .sub{font-size:15px;color:var(--g500);margin-bottom:26px}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  .card{background:#fff;border:1px solid #ECECEA;border-radius:12px;padding:20px 22px;box-shadow:0 4px 14px rgba(0,0,0,0.10)}
+  .card.bar-fuchsia{border-left:6px solid var(--fuchsia)}
+  .card.bar-cyan{border-left:6px solid var(--cyan-d)}
+  .card.bar-acid{border-left:6px solid var(--acid)}
+  .card.bar-banana{border-left:6px solid var(--banana)}
+  .card.full{grid-column:1 / -1}
+  .icn{font-size:20px;margin-bottom:8px;display:block}
+  .ttl{font-size:16px;font-weight:900;margin-bottom:8px}
+  .bd{font-size:13.5px;color:#2c2c2a}
+  .bd b{color:var(--ink)}
+  code{background:#f0f0ee;border:1px solid #e2e2df;border-radius:4px;padding:1px 5px;font-size:12px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  ul{margin:6px 0 0 18px}
+  li{margin-bottom:5px;font-size:13.5px}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+  .chip{font-size:12px;font-weight:700;background:#fff;border:1px solid var(--g300);border-radius:8px;padding:8px 12px}
+  .chip b{font-weight:900}
+  .foot{margin-top:24px;font-size:12px;color:var(--g500);text-align:center}
+  .flag{background:#FFF8DC;border:1px solid var(--banana);border-radius:10px;padding:14px 18px;font-size:13.5px;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <span class="pill pill-acid">Delivered</span>
+    <span class="pill pill-fuchsia">Newsletter editor</span>
+    <span class="pill pill-cyan">Effort · Medium</span>
+  </div>
+  <h1>Field ↔ preview sync 🌱</h1>
+  <div class="sub">Focus a section field and the live preview scrolls to that block (and flashes it). Click a block and the editor jumps to its field. The preview is now a pinned panel.</div>
+
+  <div class="grid">
+
+    <div class="card bar-fuchsia">
+      <span class="icn">🎯</span>
+      <div class="ttl">Forward sync — focus → scroll</div>
+      <div class="bd">Every section field got an <code>onFocus</code> that maps its key to a block group and scrolls the preview iframe to <code>[data-sec=…]</code>, with a <b>fuchsia outline flash</b> (~1.4s) so it's obvious which block you're editing.</div>
+    </div>
+
+    <div class="card bar-cyan">
+      <span class="icn">👆</span>
+      <div class="ttl">Reverse sync — click → field</div>
+      <div class="bd">Clicking a block in the preview scrolls the editor to that section's first field and focuses it. Real links and buttons inside a block still work normally.</div>
+    </div>
+
+    <div class="card bar-acid">
+      <span class="icn">🏷️</span>
+      <div class="ttl">11 blocks tagged</div>
+      <div class="bd">Each block in <code>buildCompact()</code> carries <code>data-sec="&lt;group&gt;"</code> (17 tagged cells). These are <b>inert in email</b> — Gmail/Outlook/Apple Mail ignore unknown attributes, so the sent newsletter is unchanged.</div>
+    </div>
+
+    <div class="card bar-banana">
+      <span class="icn">📌</span>
+      <div class="ttl">Sticky preview panel</div>
+      <div class="bd">The preview is now <code>position:sticky</code> with internal scroll, so it can move to a block <b>without pushing your field off-screen</b>. Its scroll position survives the per-keystroke reloads.</div>
+    </div>
+
+    <div class="card full bar-fuchsia">
+      <span class="icn">🐛</span>
+      <div class="ttl">Bug caught + fixed in the same session</div>
+      <div class="bd">First pass rendered the preview narrow &amp; compact with a stray horizontal scrollbar. Cause: <code>alignSelf:"flex-start"</code> on the card — in a column flex container that's the <b>horizontal</b> axis, so it collapsed the card to content width and the email reflowed to its phone layout. Removed it → card fills the column again, preview back to full size.</div>
+    </div>
+
+  </div>
+
+  <div class="flag">
+    <b>Trade-off noted to Max:</b> the preview changed from "auto-grows to full height, page scrolls" to a pinned panel that scrolls internally to what you're editing — better for editing. A toggle between "follow my edits" and "full-length" view modes is available on request.
+  </div>
+
+  <div class="meta">
+    <span class="chip">Files · <b>lib/newsletter.js</b> · <b>components/CRMManager.jsx</b></span>
+    <span class="chip">Build · <b>npm run build ✓</b></span>
+    <span class="chip">Branch · <b>main</b></span>
+  </div>
+
+  <div class="foot">Sprout CRM Next · 2026-06-09 · field ↔ preview sync</div>
+
+</div>
+</body>
+</html>

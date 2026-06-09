@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-06-09 — Newsletter editor: field ↔ preview sync (focus a field → preview scrolls to that block)
+
+App code (`lib/newsletter.js` + `components/CRMManager.jsx`). Effort: medium. `npm run build` passes. Committed + pushed.
+
+- **The ask:** line up the editor text boxes with the block being edited in the live preview. Literal per-pixel pinning isn't feasible (fields and rendered blocks have different heights; in the old shared-page-scroll layout the same section sat at different Y in each column). Shipped focus → scroll instead.
+- **Block tagging** — every section block in `buildCompact()` carries `data-sec="<group>"` (11 groups, 17 tagged `<td>`s). Inert in email clients (unknown attributes ignored), so the sent newsletter is unchanged.
+- **Forward sync** — each section field has `onFocus` → `focusScroll(key)`, which maps the field key to its block group (`SEC_GROUP`), scrolls the preview iframe to `[data-sec=…]`, and flashes a fuchsia outline (~1.4s). Fields carry `data-fkey` for reverse lookup.
+- **Reverse sync** — clicking a block in the preview scrolls the editor to that section's first field (`GROUP_FIRST`) and focuses it; real links/buttons inside a block are left alone.
+- **Sticky preview** — the preview is now `position:sticky; top:12` with fixed `height:calc(100vh - 96px)` and internal scroll, so it can scroll to a block without pushing the focused field off-screen. Grid `alignItems` changed `start`→`stretch` so the right column gets full height and the panel stays pinned through the whole form. A `previewScroll` ref restores the iframe's scroll across the per-keystroke `srcDoc` reloads.
+- **Bug fixed same session:** preview rendered narrow/compact with a horizontal scrollbar — `alignSelf:"flex-start"` on the card was collapsing it to content width (in a column flex container `alignSelf` is the horizontal axis), reflowing the email to its phone layout. Removed it; card fills the column width again.
+- **Trade-off:** preview changed from "auto-grows to full content height, page scrolls" to a pinned internally-scrolling panel. Offered a toggle between "follow my edits" and "full-length" modes if wanted later.
+
+---
+
 ## 2026-06-09 — Newsletter mobile-readability pass: removed dead "See more events" button, trimmed side padding, 16px body copy
 
 App code only (`lib/newsletter.js`). Effort: low. `npm run build` passes after every change. Committed + pushed.
