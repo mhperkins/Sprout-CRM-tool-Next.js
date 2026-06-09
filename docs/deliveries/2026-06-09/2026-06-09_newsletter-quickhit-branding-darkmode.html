@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Quick Hit branding + footer buttons + dark mode</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Lato',Helvetica,Arial,sans-serif; background:#F7F7F6; color:#030000; padding:40px 20px; }
+  .wrap { max-width:880px; margin:0 auto; }
+  .head { background:#030000; border-radius:16px; padding:34px 36px; display:flex; align-items:center; justify-content:space-between; gap:20px; }
+  .head h1 { color:#fff; font-size:26px; font-weight:900; line-height:1.2; }
+  .head .meta { color:#9a9a96; font-size:13px; margin-top:8px; }
+  .bar { height:4px; background:#C6C902; border-radius:2px; margin:0 6px; }
+  .badges { display:flex; gap:8px; flex-wrap:wrap; margin:22px 0 28px; }
+  .badge { font-size:12px; font-weight:900; letter-spacing:0.5px; padding:7px 14px; border-radius:20px; }
+  .b-commit { background:#030000; color:#C6C902; }
+  .b-branch { background:#2a8ca0; color:#fff; }
+  .b-build { background:#C6C902; color:#030000; }
+  .b-file { background:#ECECEA; color:#3a3a38; }
+  .cards { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .card { background:#fff; border-radius:14px; padding:22px 24px; box-shadow:0 4px 14px rgba(0,0,0,0.08); border-left:6px solid #FAD100; }
+  .card.fuchsia { border-left-color:#E10098; }
+  .card.cyan { border-left-color:#2a8ca0; }
+  .card.green { border-left-color:#C6C902; }
+  .card h2 { font-size:16px; font-weight:900; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+  .card p { font-size:14px; line-height:1.55; color:#3a3a38; }
+  .card .em { color:#E10098; font-weight:900; }
+  .full { grid-column:1 / -1; }
+  .foot { margin-top:26px; font-size:12px; color:#8a8a86; text-align:center; }
+  code { background:#ECECEA; padding:2px 6px; border-radius:4px; font-size:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div>
+      <h1>Newsletter polish: Quick Hit branding, mobile buttons &amp; dark mode</h1>
+      <div class="meta">Sprout CRM Next · 2026-06-09 · single-file template edits (<code>lib/newsletter.js</code>)</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:40px;">📨</div>
+    </div>
+  </div>
+
+  <div class="badges">
+    <span class="badge b-commit">commit c106290</span>
+    <span class="badge b-branch">branch main</span>
+    <span class="badge b-build">✓ build passes</span>
+    <span class="badge b-file">lib/newsletter.js</span>
+  </div>
+
+  <div class="cards">
+    <div class="card fuchsia">
+      <h2>🎨 Quick Hit = branded header + footer</h2>
+      <p>The single-topic template now matches the Monthly Roundup: black header with the <span class="em">white logo on the left</span>, and the full branded footer (brand line, IG, Donate + Become-a-member buttons, white logo on the right). Killed the old dead <code>[WEBSITE]</code> / Mailchimp merge tags.</p>
+    </div>
+    <div class="card cyan">
+      <h2>🔗 Real Givebutter links</h2>
+      <p>Footer buttons hardcoded to live URLs — Donate → <code>sproutspacedonors</code> (slug pulled from the Givebutter API), Become a member → <code>sproutmembership</code>. Both work out of the box.</p>
+    </div>
+    <div class="card green">
+      <h2>📱 Buttons stacked for mobile</h2>
+      <p>Donate / membership now sit <span class="em">top &amp; bottom</span> instead of side by side — in <strong>both</strong> templates. The compact footer IIFE renders each button as its own row with a 10px spacer.</p>
+    </div>
+    <div class="card">
+      <h2>🎯 Centered labels</h2>
+      <p>Both buttons are a uniform <strong>220px</strong> wide with centered text (<code>display:block; text-align:center</code>) — no more uneven shrink-to-text widths.</p>
+    </div>
+    <div class="card full" style="border-left-color:#030000;">
+      <h2>🌙 Dark-mode accommodation</h2>
+      <p>Added <code>color-scheme</code> + <code>supported-color-schemes</code> meta tags (plus a <code>:root</code> hint, and <code>x-apple-disable-message-reformatting</code> to Quick Hit) to both templates. This <span class="em">stops Apple Mail from force-inverting</span> the black header/footer in dark mode. Honest caveat: Gmail/Outlook ignore these and may still invert — no per-recipient override exists. <strong>Next:</strong> send a test to your phone and check both templates in dark mode.</p>
+    </div>
+  </div>
+
+  <div class="foot">Sprout Society · committed &amp; pushed to main · CHANGELOG updated</div>
+</div>
+</body>
+</html>

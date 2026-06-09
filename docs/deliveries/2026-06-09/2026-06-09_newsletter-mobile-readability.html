@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Newsletter Mobile Readability</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Lato',Helvetica,Arial,sans-serif; background:#F7F7F6; color:#030000; padding:40px 20px; }
+  .wrap { max-width:920px; margin:0 auto; }
+  .head { background:#030000; border-radius:16px 16px 0 0; padding:34px 40px; color:#fff; }
+  .eyebrow { font-size:12px; font-weight:900; letter-spacing:2px; text-transform:uppercase; color:#C6C902; }
+  h1 { font-size:30px; font-weight:900; line-height:1.2; margin-top:8px; }
+  .meta { margin-top:14px; font-size:13px; color:#9a9a96; }
+  .meta b { color:#73C4D6; }
+  .body { background:#fff; padding:34px 40px; border-radius:0 0 16px 16px; box-shadow:0 4px 18px rgba(0,0,0,0.10); }
+  .card { border-radius:10px; padding:22px 24px; margin-bottom:18px; border-left:6px solid #FAD100; box-shadow:0 3px 12px rgba(0,0,0,0.08); }
+  .c1 { background:#FFF7FB; border-left-color:#E10098; }
+  .c2 { background:#F4FBFD; border-left-color:#73C4D6; }
+  .c3 { background:#FBFBE9; border-left-color:#C6C902; }
+  .card .n { font-size:11px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; color:#8a8a86; }
+  .card h2 { font-size:19px; font-weight:900; margin:4px 0 8px 0; }
+  .card p { font-size:15px; line-height:1.6; color:#3a3a38; }
+  .pill { display:inline-block; font-size:12px; font-weight:900; padding:4px 11px; border-radius:20px; margin:8px 8px 0 0; }
+  .pillk { background:#030000; color:#FAD100; }
+  .pillm { background:#73C4D6; color:#fff; }
+  .foot { display:flex; flex-wrap:wrap; gap:18px; justify-content:space-between; align-items:center; margin-top:8px; padding-top:20px; border-top:1px solid #ECECEA; font-size:13px; color:#3a3a38; }
+  .hash { font-family:'Courier New',monospace; background:#030000; color:#C6C902; padding:5px 11px; border-radius:6px; font-weight:700; }
+  .warn { background:#FFF8E6; border-left:6px solid #FAD100; border-radius:8px; padding:14px 18px; font-size:14px; line-height:1.55; color:#3a3a38; margin-top:6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="eyebrow">Sprout CRM · Delivery</div>
+    <h1>Newsletter mobile-readability pass</h1>
+    <div class="meta"><b>2026-06-09</b> &nbsp;·&nbsp; branch <b>main</b> &nbsp;·&nbsp; <b>lib/newsletter.js</b> &nbsp;·&nbsp; Effort: low &nbsp;·&nbsp; build ✓</div>
+  </div>
+  <div class="body">
+
+    <div class="card c1">
+      <div class="n">1 · Removed</div>
+      <h2>Dead "See more events" button</h2>
+      <p>The button used an in-page <b>#events</b> anchor — works in the rendered preview, but Gmail / Outlook / Apple Mail strip <code>id</code> attributes, so it never scrolled in the actual email. Not a bug, a hard email limitation. Removed it and its two editor fields; the flow already drops into Community Co-Working.</p>
+    </div>
+
+    <div class="card c2">
+      <div class="n">2 · Trimmed</div>
+      <h2>Side padding (less squished on mobile)</h2>
+      <p>Padding was stacking three deep on the testimonial block (~78px of left inset). Trimmed every level of the compact template:</p>
+      <span class="pill pillm">outer cells 28 → 18px</span>
+      <span class="pill pillm">colored blocks 22–24 → 18px</span>
+      <span class="pill pillm">testimonial 28 → 20px</span>
+      <span class="pill pillm">footer 28 → 20px</span>
+    </div>
+
+    <div class="card c3">
+      <div class="n">3 · Bumped</div>
+      <h2>Body copy → 16px (professional standard)</h2>
+      <p>Lifted reading text from 15px to the modern email-newsletter default of 16px, in both templates. Labels, eyebrows, headlines, and the 17px membership/marketing copy left as-is.</p>
+      <span class="pill pillk">Compact: intro · recap · announcement · spotlight · testimonial</span>
+      <span class="pill pillk">Quick Hit: intro recap</span>
+    </div>
+
+    <div class="warn">⚠️ The May draft's stored HTML predates these edits — open the draft and <b>Save once</b> to rebake before sending. The live preview already shows the new sizing.</div>
+
+    <div class="foot">
+      <span>Committed + pushed to <b>main</b></span>
+      <span class="hash">097e03f</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

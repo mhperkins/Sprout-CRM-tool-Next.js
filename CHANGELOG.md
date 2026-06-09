@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-06-09 — Conversation: Discord bot rename + newsletter passphrase location (no code change)
+
+Pure Q&A + dev-server start. No code, data, or config change.
+
+- **Rename the Discord bot** — Developer Portal action, not a codebase change. Bot username: portal → "Russel Sprout" → Bot → Username. Application name: General Information → Name. Per-server display: right-click bot → Edit Server Profile → Nickname. Renaming the username does not reset `DISCORD_TOKEN`.
+- **Newsletter send passphrase** = `NEWSLETTER_SEND_SECRET`, set independently in `.env.local` (localhost dev) and Vercel (live). `app/api/send/route.js` validates against `process.env.NEWSLETTER_SEND_SECRET` of the running environment, so the two having drifted apart (`russ…` local vs `sk_…` Vercel) is harmless — the live app only checks the Vercel value. The `sk_…` Vercel value is the real working passphrase for the deployed site.
+- **Started dev server** at http://localhost:3000 (cleared port 3000 first).
+
+---
+
 ## 2026-06-09 — Newsletter editor: field ↔ preview sync (focus a field → preview scrolls to that block)
 
 App code (`lib/newsletter.js` + `components/CRMManager.jsx`). Effort: medium. `npm run build` passes. Committed + pushed.

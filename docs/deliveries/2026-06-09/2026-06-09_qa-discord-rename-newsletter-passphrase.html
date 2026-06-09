@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session Delivery — Discord rename + newsletter passphrase</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#2a8ca0; --paper:#f4f4ef; --card:#ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',system-ui,sans-serif;background:var(--paper);color:var(--ink);padding:40px 20px;line-height:1.5}
+  .wrap{max-width:880px;margin:0 auto}
+  .top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+  .chip{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;padding:5px 12px;border-radius:999px}
+  .chip.conv{background:var(--cyan);color:#fff}
+  .chip.nocode{background:var(--banana);color:var(--ink)}
+  h1{font-size:30px;font-weight:900;line-height:1.15;margin:10px 0 6px}
+  .sub{font-size:15px;color:#555;margin-bottom:26px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:680px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border-radius:16px;padding:22px;box-shadow:0 4px 16px rgba(0,0,0,.10);border-left:6px solid var(--cyan)}
+  .card.b2{border-left-color:var(--fuchsia)}
+  .card.b3{border-left-color:var(--acid)}
+  .card.full{grid-column:1/-1;border-left-color:var(--banana)}
+  .eyebrow{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--cyan);margin-bottom:8px}
+  .card.b2 .eyebrow{color:var(--fuchsia)}
+  .card.b3 .eyebrow{color:#8a8c00}
+  .card.full .eyebrow{color:#b89400}
+  .card h2{font-size:18px;font-weight:900;margin-bottom:10px}
+  .card p{font-size:14.5px;margin-bottom:9px}
+  .card p:last-child{margin-bottom:0}
+  code{background:#ececea;border-radius:5px;padding:1px 6px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:var(--ink)}
+  .key{color:var(--fuchsia);font-weight:700}
+  .foot{margin-top:26px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:#555}
+  .badge{background:var(--ink);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-size:12px}
+  .badge.acid{background:var(--acid);color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="chip conv">Conversation</span>
+    <span class="chip nocode">No code change</span>
+  </div>
+  <h1>Discord bot rename &amp; the newsletter passphrase mystery 🌱</h1>
+  <div class="sub">2026-06-09 · Three quick asks, answered. Plus a dev link spun up.</div>
+
+  <div class="grid">
+    <div class="card b1">
+      <div class="eyebrow">Ask 1 · Discord</div>
+      <h2>Renaming the bot</h2>
+      <p>It's a <strong>Developer Portal</strong> action, not a codebase change. Three names:</p>
+      <p><span class="key">Bot username</span> → app "Russel Sprout" → Bot → Username</p>
+      <p><span class="key">App name</span> → General Information → Name</p>
+      <p><span class="key">Server nickname</span> → right-click bot → Edit Server Profile</p>
+      <p>Renaming does <strong>not</strong> reset <code>DISCORD_TOKEN</code> — no config edit needed.</p>
+    </div>
+
+    <div class="card b2">
+      <div class="eyebrow">Ask 2 · Newsletter</div>
+      <h2>Where the passphrase lives</h2>
+      <p>It's the <span class="key">NEWSLETTER_SEND_SECRET</span> env var, set in <strong>two</strong> places:</p>
+      <p><code>.env.local</code> → localhost dev only</p>
+      <p><strong>Vercel</strong> (sprout-crm-tool-next-js) → the live app</p>
+      <p>Each environment validates against <em>its own</em> copy — so edit the live one in Vercel + redeploy.</p>
+    </div>
+
+    <div class="card full">
+      <div class="eyebrow">The "wait, why does it still work?" clarification</div>
+      <h2>The two values drifted apart — and that's fine</h2>
+      <p><code>.env.local</code> starts <code>russ…</code>, Vercel starts <code>sk_…</code>, yet sending works perfectly. Why? <code>app/api/send/route.js</code> checks the entered passphrase against <code>process.env.NEWSLETTER_SEND_SECRET</code> of <strong>whichever environment is running it</strong>. The live site only ever compares against the Vercel value.</p>
+      <p><strong>Bottom line:</strong> the <code>sk_…</code> Vercel value is your real working passphrase for the deployed app. The <code>russ…</code> local one is a stale leftover that only matters if you send from <code>npm run dev</code>.</p>
+    </div>
+
+    <div class="card b3">
+      <div class="eyebrow">Ask 3 · Dev link</div>
+      <h2>Server started</h2>
+      <p>Cleared port 3000, ran <code>npm run dev</code> — ready in ~408ms.</p>
+      <p><strong>→ http://localhost:3000</strong></p>
+      <p>Reminder: on localhost the send passphrase is the <code>.env.local</code> (<code>russ…</code>) value.</p>
+    </div>
+
+    <div class="card b1">
+      <div class="eyebrow">Files touched</div>
+      <h2>Docs only</h2>
+      <p><code>CHANGELOG.md</code> — session entry</p>
+      <p><code>CLAUDE.md</code> — Current State (gitignored)</p>
+      <p>No app code, data, or config changed.</p>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span class="badge">branch: main</span>
+    <span class="badge acid">Pure conversation</span>
+    <span>Sprout CRM Next · update current state</span>
+  </div>
+</div>
+</body>
+</html>
