@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-06-09 — Decision: migrate newsletter email channel from Givebutter to Campaign Monitor (planning only)
+
+No code, data, or config change — conversation/planning session. Blocked on Campaign Monitor account reactivation.
+
+- **Driver:** Givebutter Engage is template-only and won't accept raw HTML, so the custom Sprout newsletter template can't be used there. Campaign Monitor accepts full HTML import, so `buildCompact()` output renders as designed. Givebutter stays as the donation platform; only the email channel moves.
+- **Second driver:** post-import the CRM is ~3,750 contacts; the current Gmail-BCC `app/api/send` path (45/batch, 2,000/day Workspace cap, no real unsubscribe) won't scale — a real ESP was needed regardless.
+- **Decided:** full API send (in-app Send card flow unchanged, engine swaps Gmail → Campaign Monitor). Deliverability concern dropped — most of the 3,600 already donated/attended, and the 20 "Email Lists (Campaign Monitor)" CSVs came from the existing Campaign Monitor account (already-consented subscribers).
+- **To build when account is reactivated + Max provides API key + Client ID:** (a) CRM → Campaign Monitor contact sync by bucket (Community/Donors/Prospects), matched on email; (b) rewrite `app/api/send` to create a campaign from the built HTML and trigger send via Campaign Monitor's API. Point footer unsubscribe at Campaign Monitor's merge tag instead of `mailto:`.
+- **First check when live:** whether the old subscriber lists still exist in the reactivated account (would make sync a reconcile, not a full push).
+
+---
+
 ## 2026-06-09 — Bulk email-list import (3,609 contacts) + 1,000-row fetch fix + paginated/sorted contact list
 
 Data write (3,609 contacts) + app code (`lib/services.js`, `components/CRMManager.jsx`). Effort: high. `npm run build` passes.

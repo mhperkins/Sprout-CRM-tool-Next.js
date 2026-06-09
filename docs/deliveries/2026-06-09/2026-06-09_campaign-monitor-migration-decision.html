@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprout CRM — Campaign Monitor Migration Decision</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#2a8ca0; --paper:#f5f5f0; --card:#ffffff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Lato',sans-serif;background:var(--paper);color:var(--ink);padding:40px 20px;line-height:1.5}
+  .wrap{max-width:920px;margin:0 auto}
+  .top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+  .pill{display:inline-block;background:var(--ink);color:#fff;font-weight:900;font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:6px 12px;border-radius:999px}
+  .pill.plan{background:var(--cyan)}
+  h1{font-size:34px;font-weight:900;line-height:1.12;margin:14px 0 6px}
+  .sub{font-size:17px;color:#444;font-weight:700;margin-bottom:26px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .card{background:var(--card);border-radius:16px;padding:22px 24px;box-shadow:0 4px 14px rgba(0,0,0,.10);overflow:hidden;position:relative}
+  .card.full{grid-column:1 / -1}
+  .bar{position:absolute;left:0;top:0;bottom:0;width:6px}
+  .b-fuchsia{background:var(--fuchsia)} .b-cyan{background:var(--cyan)}
+  .b-acid{background:var(--acid)} .b-banana{background:var(--banana)}
+  .ct{font-size:13px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#888;margin-bottom:10px;padding-left:10px}
+  .card h2{font-size:20px;font-weight:900;margin-bottom:10px;padding-left:10px}
+  .card p,.card li{font-size:15px;color:#222;padding-left:10px}
+  ul{list-style:none;margin-top:6px}
+  li{position:relative;margin:7px 0;padding-left:30px}
+  li:before{content:"→";position:absolute;left:10px;color:var(--fuchsia);font-weight:900}
+  .swap{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-left:10px;margin-top:6px}
+  .chip{font-weight:900;font-size:15px;padding:9px 16px;border-radius:10px}
+  .out{background:#fde8e8;color:#b3001b;text-decoration:line-through}
+  .in{background:#e6f4ee;color:#0d6e4f}
+  .keep{background:#eef0f5;color:#333}
+  .arrow{font-size:22px;font-weight:900;color:var(--cyan)}
+  .blocked{background:var(--banana);border-radius:14px;padding:16px 20px;font-weight:700;font-size:15px;margin-top:22px;display:flex;gap:12px;align-items:flex-start}
+  .blocked b{font-weight:900}
+  .foot{margin-top:26px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:13px;color:#666;font-weight:700}
+  .hash{font-family:'Courier New',monospace;background:var(--ink);color:#fff;padding:5px 11px;border-radius:7px;font-size:12px}
+  .tag{font-size:13px;color:#777;padding-left:10px;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="pill plan">Planning / Decision</span>
+    <span class="pill">No code change</span>
+    <span class="pill">2026-06-09</span>
+  </div>
+  <h1>Migrate the newsletter email channel:<br>Givebutter → Campaign Monitor</h1>
+  <div class="sub">Build the newsletter in the CRM, send its full custom HTML natively via Campaign Monitor's API.</div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="bar b-fuchsia"></div>
+      <div class="ct">Why switch</div>
+      <h2>Full HTML import</h2>
+      <p>Givebutter Engage is <b>template-only</b> — it rejects raw HTML, so the custom Sprout template (crop boxes, colored blocks, footer buttons) can't be used. Campaign Monitor accepts full HTML, so <b>buildCompact()</b> renders exactly as designed.</p>
+    </div>
+
+    <div class="card">
+      <div class="bar b-cyan"></div>
+      <div class="ct">Why now</div>
+      <h2>Scale: ~3,750 contacts</h2>
+      <p>The 06-09 import pushed the CRM past 3,700 contacts. The current Gmail-BCC send (45/batch, 2,000/day cap, no real unsubscribe) <b>won't scale</b>. A real ESP was needed regardless of the HTML issue.</p>
+    </div>
+
+    <div class="card full">
+      <div class="bar b-banana"></div>
+      <div class="ct">What changes</div>
+      <div class="swap">
+        <span class="chip out">Gmail BCC send</span>
+        <span class="arrow">→</span>
+        <span class="chip in">Campaign Monitor API</span>
+        <span class="arrow">·</span>
+        <span class="chip keep">Givebutter = donations (unchanged)</span>
+      </div>
+      <p class="tag">The in-app Send card flow (passphrase → test → approve → send to list) stays identical. Only the engine underneath swaps.</p>
+    </div>
+
+    <div class="card">
+      <div class="bar b-acid"></div>
+      <div class="ct">Decisions locked</div>
+      <h2>Settled this session</h2>
+      <ul>
+        <li><b>Full API send</b> from inside the CRM</li>
+        <li>Deliverability concern <b>dropped</b> — most contacts already donated/attended</li>
+        <li>The 20 "Campaign Monitor" CSVs came from the existing account → already-consented</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="bar b-cyan"></div>
+      <div class="ct">To build (when unblocked)</div>
+      <h2>Two pieces</h2>
+      <ul>
+        <li><b>Contact sync</b> — CRM → CM lists by bucket (Community / Donors / Prospects), matched on email</li>
+        <li><b>Rewrite app/api/send</b> — create a campaign from the HTML, trigger send via CM's API</li>
+        <li>Point footer unsubscribe at CM's merge tag</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="blocked">
+    <span>⏳</span>
+    <div><b>Blocked on:</b> Campaign Monitor membership is currently inactive — Max is reactivating it. Needs the <b>API key + Client ID</b> to start. First check when live: do the old subscriber lists still exist (sync becomes a reconcile, not a full push)?</div>
+  </div>
+
+  <div class="foot">
+    <span>Sprout CRM Next · planning session · docs + changelog only</span>
+    <span class="hash">main</span>
+  </div>
+</div>
+</body>
+</html>
