@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-09 — Newsletter mobile-readability pass: removed dead "See more events" button, trimmed side padding, 16px body copy
+
+App code only (`lib/newsletter.js`). Effort: low. `npm run build` passes after every change. Committed + pushed.
+
+- **Removed the "See more events" button** from the compact Monthly Roundup. It used an in-page `href="#events"` anchor that works in the rendered preview but not in email — Gmail/Outlook/Apple Mail strip `id` attributes, so the anchor had nothing to scroll to. Not a bug; a documented email-anchor limitation with no CSS/HTML fix. Deleted the render IIFE from `buildCompact()` and the `seeMoreLabel`/`seeMoreLink` fields from `COMPACT_SECTIONS`; left the `<tr id="events">` anchor (harmless). Existing drafts with a saved `seeMoreLink` ignore it (no migration).
+- **Trimmed compact template side padding** to fix text looking squished on mobile (padding stacked ~78px deep on the testimonial block): outer content cells 28→18px L/R, colored blocks (membership/marketing/scholarship/spotlight) 22–24→18px, testimonial pop-out 28→20px, footer 28→20px.
+- **Body copy bumped 15→16px** (professional newsletter standard) in the compact (intro, featured recap, announcement/co-working body + highlight, spotlight blurb 14→16, testimonial 15→16) and in the Quick Hit template (intro recap 15→16). Labels, eyebrows, event-card names, bold callouts, and the 17px membership/marketing copy left as-is.
+- ⚠️ The May draft's stored HTML is now older than these edits — open the draft and Save once to rebake before sending.
+
+---
+
 ## 2026-06-09 — Quick Hit newsletter: branded header/footer, stacked + centered footer buttons, dark-mode meta tags
 
 App code only (`lib/newsletter.js`). Effort: low. `npm run build` passes. Committed + pushed.
