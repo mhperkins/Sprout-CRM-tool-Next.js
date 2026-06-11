@@ -1413,6 +1413,27 @@ const [editing,setEditing]=useState(null);
   const updateContact=(updated)=>onUpdate(contacts.map(c=>c.id===updated.id?updated:c));
   const sel=contacts.find(c=>c.id===selected);
 
+  // Export the full current bucket (Community/Donors) to a Campaign Monitor-ready CSV.
+  // Ignores search/filters on purpose — CM wants the whole list. Email is required;
+  // rows without one (or duplicate emails) are dropped. CM auto-applies its suppressions on import.
+  const exportSegmentCSV = () => {
+    const seen = new Set();
+    const rows = contacts.filter(c => {
+      if ((c.segment||"community")!==segment) return false;
+      const em=(c.email||"").trim().toLowerCase();
+      if(!em||seen.has(em)) return false;
+      seen.add(em); return true;
+    });
+    if(!rows.length){ showToast(`No ${SEGMENTS[segment]} contacts have an email to export`); return; }
+    const esc = s => { const v=(s==null?"":String(s)).trim(); return /[",\n\r]/.test(v)?`"${v.replace(/"/g,'""')}"`:v; };
+    const csv = [["Email","First Name","Last Name"].join(",")]
+      .concat(rows.map(c=>[c.email,c.first_name,c.last_name].map(esc).join(","))).join("\r\n");
+    const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"}));
+    const a=document.createElement("a"); a.href=url; a.download=`sprout-${segment}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    showToast(`Exported ${rows.length} ${SEGMENTS[segment]} → sprout-${segment}.csv ✓`);
+  };
+
   return (
     <div className="page">
       <div className="pg-hd"><div><div className="pg-ttl">Contacts</div><div className="pg-sub">{contacts.length} individuals · {contacts.filter(isOverdue).length} overdue</div></div><button className="btn btn-blk" onClick={()=>{setNc({...blank,segment});setAdding(true);}}>+ Add to {SEGMENTS[segment]}</button></div>
@@ -1430,6 +1451,7 @@ const [editing,setEditing]=useState(null);
 <select className="fs" value={sortBy} onChange={e=>setSortBy(e.target.value)} title="Sort"><option value="name">Sort: Name A–Z</option><option value="newest">Sort: Newest added</option><option value="health">Sort: Health</option>{segment==="donor"&&<option value="given">Sort: Most given</option>}</select>
 <button className={`btn btn-sm ${needsName?"btn-blk":"btn-ghost"}`} onClick={()=>setNeedsName(v=>!v)} title="Show only contacts with no name (email-only)">👤 Needs a name</button>
 {(search||fType!=="all"||fStatus!=="all"||needsName)&&<button className="btn btn-ghost btn-sm" onClick={()=>{setSearch("");setFType("all");setFStatus("all");setNeedsName(false);}}>✕ Clear</button>}
+{segment!=="prospect"&&<button className="btn btn-blk btn-sm" style={{marginLeft:"auto"}} onClick={exportSegmentCSV} title={`Download all ${SEGMENTS[segment]} contacts with an email as a CSV for Campaign Monitor (ignores filters)`}>⬇ Export {SEGMENTS[segment]} CSV</button>}
       </div>
 {adding&&(
         <Modal title="Add Contact" onClose={()=>{setAdding(false);setNc(blank);}}
