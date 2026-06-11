@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-10 — Campaign Monitor: connect audience via UI + in-app per-bucket CSV export
+
+Connected the CRM newsletter audience to Campaign Monitor. The API key path is blocked (the login is a client-level user, not the account administrator — Danielle is checking who the admin is), so we used CM's UI instead of the API for now.
+
+- **Decision:** stay with CM, send via the UI. CM holds the 877-person suppression list (opt-outs/bounces) + deliverability — the can't-DIY value. CRM owns the deduped master audience + the `buildCompact()` HTML builder.
+- **List structure:** 2 CM lists — **Sprout Community** + **Sprout Donors** (prospects excluded). No name/no-name split — handled by a template personalization fallback. CRM segments are mutually exclusive, so the lists don't overlap; a send selects both and CM dedupes.
+- **New feature (`components/CRMManager.jsx`):** `exportSegmentCSV` + a `⬇ Export {Community|Donors} CSV` button on the Contacts filter bar (hidden on Prospects). Exports the full current bucket regardless of active filters, deduped by lowercased email, columns Email / First Name / Last Name, client-side Blob download `sprout-{segment}.csv`. Additive, read-only, no schema change. `npm run build` passes. Commit `ac62394`.
+- **Result:** imported both CSVs into CM → Sprout-Community 1,190 active (~10 suppressed), Sprout-Donors 2,076 active (~100 suppressed). Total reachable ≈ 3,266. The active-count gap vs. the export (1,200 / 2,176 unique) is the suppression list working as intended.
+
+---
+
 ## 2026-06-09 — Conversation: Discord bot rename + newsletter passphrase location (no code change)
 
 Pure Q&A + dev-server start. No code, data, or config change.

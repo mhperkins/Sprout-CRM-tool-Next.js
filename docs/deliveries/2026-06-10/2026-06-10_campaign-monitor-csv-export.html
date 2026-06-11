@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Campaign Monitor CSV Export (2026-06-10)</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098;
+    --cyan:#2a8ca0; --cyan-lt:#73C4D6; --paper:#f6f6f3; --card:#ffffff;
+    --g400:#9a9a96; --g600:#6b6b67; --g800:#2c2c2a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',system-ui,sans-serif;background:var(--paper);color:var(--ink);padding:40px 24px;line-height:1.45}
+  .wrap{max-width:980px;margin:0 auto}
+  .top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .tag{font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:5px 12px;border-radius:20px}
+  .tag-acid{background:var(--acid);color:var(--ink)}
+  .tag-cyan{background:var(--cyan);color:#fff}
+  .tag-ghost{background:#fff;border:2px solid var(--ink);color:var(--ink)}
+  h1{font-size:34px;font-weight:900;line-height:1.1;margin:14px 0 6px}
+  .sub{font-size:16px;color:var(--g600);margin-bottom:28px}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .card{background:var(--card);border-radius:16px;padding:22px 22px;box-shadow:0 4px 16px rgba(0,0,0,.08);border-left:6px solid var(--acid)}
+  .card.fuchsia{border-left-color:var(--fuchsia)}
+  .card.cyan{border-left-color:var(--cyan)}
+  .card.banana{border-left-color:var(--banana)}
+  .card h2{font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--g800);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .card p{font-size:15px;color:var(--g800);margin-bottom:8px}
+  .card .icon{font-size:20px}
+  ul{list-style:none;font-size:14.5px;color:var(--g800)}
+  ul li{padding:4px 0 4px 20px;position:relative}
+  ul li::before{content:"▸";position:absolute;left:0;color:var(--fuchsia);font-weight:900}
+  .full{grid-column:1/-1}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #ececea}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--g400);font-weight:900}
+  td.num{font-weight:900;font-variant-numeric:tabular-nums}
+  .chip{display:inline-block;font-size:12px;font-weight:900;padding:2px 9px;border-radius:11px}
+  .chip-comm{background:var(--cyan-lt);color:#0f4654}
+  .chip-don{background:var(--banana);color:var(--ink)}
+  .chip-mut{background:#ececea;color:var(--g600)}
+  .commit{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:26px;font-size:13px;color:var(--g600)}
+  .commit code{background:var(--ink);color:var(--acid);padding:4px 10px;border-radius:7px;font-weight:900;font-family:ui-monospace,monospace}
+  .footer{margin-top:22px;font-size:12px;color:var(--g400);text-align:center}
+  .blocked{background:#fff7f0;border-left-color:var(--fuchsia)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="tag tag-acid">Delivery</span>
+    <span class="tag tag-cyan">2026-06-10</span>
+    <span class="tag tag-ghost">Effort: Low</span>
+  </div>
+  <h1>Campaign Monitor — audience connected via UI<br>+ in-app CSV export</h1>
+  <p class="sub">Pushed the deduped CRM audience into two clean Campaign Monitor lists and shipped a one-click export so re-syncs are self-serve. ~3,266 reachable contacts now loaded.</p>
+
+  <div class="grid">
+
+    <div class="card cyan">
+      <h2><span class="icon">🎯</span>What shipped</h2>
+      <ul>
+        <li>New <strong>⬇ Export Community / Donors CSV</strong> button on the Contacts filter bar</li>
+        <li>Exports the <strong>full bucket</strong> regardless of filters, deduped by email</li>
+        <li>Columns: Email / First Name / Last Name → <code style="font-size:12px">sprout-{segment}.csv</code></li>
+        <li>Prospects excluded (button hidden on that tab)</li>
+      </ul>
+    </div>
+
+    <div class="card fuchsia">
+      <h2><span class="icon">🧭</span>Why CM, not DIY</h2>
+      <ul>
+        <li>CM holds the <strong>877-person suppression list</strong> (opt-outs / bounces)</li>
+        <li>CM provides <strong>deliverability + sender reputation</strong> — can't DIY safely</li>
+        <li>CRM owns the <strong>deduped audience + HTML builder</strong></li>
+        <li>Split: CRM = audience + content · CM = send + compliance</li>
+      </ul>
+    </div>
+
+    <div class="card full banana">
+      <h2><span class="icon">📊</span>Loaded into Campaign Monitor</h2>
+      <table>
+        <thead><tr><th>CM List</th><th>From CRM</th><th>Unique emails</th><th>Active in CM</th><th>Suppressed</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip chip-comm">Sprout-Community</span></td><td>segment = community</td><td class="num">1,200</td><td class="num">1,190</td><td>~10</td></tr>
+          <tr><td><span class="chip chip-don">Sprout-Donors</span></td><td>segment = donor</td><td class="num">2,176</td><td class="num">2,076</td><td>~100</td></tr>
+          <tr><td><span class="chip chip-mut">— Prospects</span></td><td>excluded by design</td><td class="num">350</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:12px;font-size:14px;color:var(--g600)">Total reachable ≈ <strong style="color:var(--ink)">3,266</strong>. The active-count gap vs. the export is the suppression list working as intended — CM accepts the import but never emails opt-outs.</p>
+    </div>
+
+    <div class="card full blocked">
+      <h2><span class="icon">🚧</span>Blocked: the API key</h2>
+      <p>The CM login (Danielle) is a <strong>client-level user</strong>, so the account API key at <code style="font-size:12px;background:#fff;color:var(--ink);border:1px solid #eee">/admin/account/apikeys</code> is inaccessible (bounces to Overview). <strong>Danielle is checking who the account administrator is.</strong> Once we have admin access → build the CRM→CM API sync + rewrite the send route to fire a CM campaign. Until then, the UI export/import path above is the workflow.</p>
+    </div>
+
+  </div>
+
+  <div class="commit">
+    <span>Committed + pushed to</span><code>main</code>
+    <span>·</span><code>ac62394</code>
+    <span>·</span><span>components/CRMManager.jsx · build passes</span>
+  </div>
+  <div class="footer">Sprout CRM Next · session 2026-06-10 · Campaign Monitor migration (phase 1 of channel swap)</div>
+</div>
+</body>
+</html>
