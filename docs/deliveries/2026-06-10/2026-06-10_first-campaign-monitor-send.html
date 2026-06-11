@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · First Campaign Monitor Send</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Lato',Helvetica,Arial,sans-serif; background:#F7F7F6; color:#030000; padding:40px 20px; }
+  .wrap { max-width:920px; margin:0 auto; }
+  .head { background:#030000; border-radius:14px; padding:30px 32px; color:#fff; position:relative; overflow:hidden; }
+  .head::after { content:""; position:absolute; right:-40px; top:-40px; width:180px; height:180px; background:#C6C902; opacity:.18; border-radius:50%; }
+  .eyebrow { font-size:12px; font-weight:900; letter-spacing:3px; color:#C6C902; text-transform:uppercase; }
+  .head h1 { font-size:30px; font-weight:900; line-height:1.2; margin-top:8px; }
+  .head p { font-size:15px; color:#cfcfca; margin-top:10px; line-height:1.5; }
+  .meta { display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+  .chip { font-size:12px; font-weight:900; padding:6px 12px; border-radius:20px; }
+  .chip.hash { background:#73C4D6; color:#0d3d49; }
+  .chip.branch { background:#FAD100; color:#3a3000; }
+  .chip.build { background:#C6C902; color:#1a1a00; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px; }
+  .card { background:#fff; border-radius:12px; padding:22px 24px; box-shadow:0 4px 14px rgba(0,0,0,0.10); }
+  .card.full { grid-column:1 / -1; }
+  .card h2 { font-size:13px; font-weight:900; letter-spacing:2px; text-transform:uppercase; color:#E10098; display:flex; align-items:center; gap:8px; }
+  .card .ico { width:26px; height:26px; border-radius:7px; display:inline-flex; align-items:center; justify-content:center; font-size:14px; }
+  .card ul { list-style:none; margin-top:12px; }
+  .card li { font-size:14px; line-height:1.55; color:#3a3a38; padding-left:20px; position:relative; margin-bottom:8px; }
+  .card li::before { content:"▸"; position:absolute; left:0; color:#73C4D6; font-weight:900; }
+  code { background:#ECECEA; padding:1px 6px; border-radius:4px; font-size:12.5px; font-family:'SF Mono',Consolas,monospace; color:#030000; }
+  .file { font-family:'SF Mono',Consolas,monospace; font-size:12.5px; color:#2a8ca0; font-weight:700; }
+  .foot { text-align:center; font-size:12px; color:#8a8a86; margin-top:24px; }
+  .stat { display:flex; gap:24px; margin-top:14px; flex-wrap:wrap; }
+  .stat div { }
+  .stat .n { font-size:26px; font-weight:900; color:#030000; }
+  .stat .l { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#8a8a86; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="eyebrow">🌱 Sprout CRM · Delivery</div>
+    <h1>First Campaign Monitor Send + Unsubscribe Tag</h1>
+    <p>Exported the June "Sprout Monthly" roundup HTML from the database and made the footer unsubscribe Campaign-Monitor compliant. First real newsletter off the new ESP.</p>
+    <div class="meta">
+      <span class="chip hash">commit · main</span>
+      <span class="chip branch">branch · main</span>
+      <span class="chip build">✓ npm run build passes</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2><span class="ico" style="background:#73C4D6;">📤</span> Exported June HTML</h2>
+      <ul>
+        <li>Pulled the baked HTML out of the <code>sprout_newsletters</code> record <code>nl_may_2026_roundup</code> (subject "Sprout Monthly: June 2026", ~28.5KB).</li>
+        <li>Saved to a new folder: <span class="file">virtual-agency/employees/Communications/deliverables/june-2026-monthly-roundup.html</span></li>
+        <li>The app bakes HTML into JSONB on save, so there was no file before this.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2><span class="ico" style="background:#E10098;color:#fff;">🔗</span> Unsubscribe → CM Tag</h2>
+      <ul>
+        <li>Swapped the footer <code>mailto:</code> unsubscribe for Campaign Monitor's <code>&lt;unsubscribe&gt;</code> tag in both active templates.</li>
+        <li>CM now makes the branded footer link the real one-click unsubscribe <b>and stops appending its duplicate</b>.</li>
+        <li>Inner <code>&lt;span&gt;</code> preserves the grey/underline styling.</li>
+        <li><b>Caveat:</b> the tag only works via Campaign Monitor — renders as literal text in the in-app Gmail send.</li>
+      </ul>
+    </div>
+
+    <div class="card full">
+      <h2><span class="ico" style="background:#C6C902;">🚀</span> Campaign Monitor Setup (advice, no code)</h2>
+      <ul>
+        <li><b>Subject:</b> <code>🌱 Sprout Monthly - June 2026</code> — one emoji, sprout over carrot, front-loaded.</li>
+        <li><b>Preview text:</b> "Inside: our first Sprout 'N' Tell, weekly Co-Working, and a June lineup." — complements the subject, teases content.</li>
+        <li><b>No name personalization this send</b> — ~2,200 of ~3,750 contacts have no first name, so a merge token would hit the fallback for thousands.</li>
+        <li><b>Tested live:</b> unsubscribe + all links work → cleared to Prepare to send.</li>
+      </ul>
+      <div class="stat">
+        <div><div class="n">1,190</div><div class="l">Sprout-Community</div></div>
+        <div><div class="n">2,076</div><div class="l">Sprout-Donors</div></div>
+        <div><div class="n">3,266</div><div class="l">Unique recipients</div></div>
+        <div><div class="n">~348</div><div class="l">Prospects (excluded)</div></div>
+      </div>
+    </div>
+
+    <div class="card full">
+      <h2><span class="ico" style="background:#FAD100;">📁</span> Files Touched</h2>
+      <ul>
+        <li><span class="file">lib/newsletter.js</span> — footer unsubscribe tag in <code>buildCompact()</code> (~line 593) + <code>QUICK_HIT</code> (~line 1009).</li>
+        <li><span class="file">virtual-agency/employees/Communications/deliverables/june-2026-monthly-roundup.html</span> — new exported deliverable (matches the CM tag).</li>
+        <li><span class="file">CHANGELOG.md</span> — session entry.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="foot">Sprout Society · CRM Next — delivery slide · 2026-06-10</div>
+</div>
+</body>
+</html>

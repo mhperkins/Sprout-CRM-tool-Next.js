@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-10 — First Campaign Monitor send: export June HTML + Campaign Monitor unsubscribe tag
+
+Shipped the June "Sprout Monthly" newsletter through Campaign Monitor (the first real send off the new ESP) and made the footer unsubscribe compliant with CM.
+
+- **Exported the baked June roundup HTML from the DB** (`sprout_newsletters` record `nl_may_2026_roundup`, subject "Sprout Monthly: June 2026") to a new folder: `virtual-agency/employees/Communications/deliverables/june-2026-monthly-roundup.html`. The app bakes HTML into JSONB on save, so there was no file before.
+- **Footer unsubscribe → Campaign Monitor tag (`lib/newsletter.js`).** Replaced the `mailto:hello@sproutsociety.org?subject=Unsubscribe` anchor with `<unsubscribe><span style="…">Unsubscribe</span></unsubscribe>` in both active templates (compact `buildCompact()` footer + `QUICK_HIT` footer). CM turns this into the real one-click unsubscribe and stops appending its duplicate auto-link. The inner span preserves grey/underline styling. **Caveat:** the tag only works when sending through Campaign Monitor — it renders as literal text in the in-app Gmail send path. `npm run build` passes.
+- **CM campaign setup (advice, no code):** subject `🌱 Sprout Monthly - June 2026` (one emoji, sprout not carrot, front-loaded); preview text "Inside: our first Sprout 'N' Tell, weekly Co-Working, and a June lineup."; no name personalization this send (~2,200 contacts have no first name → fallback would hit thousands).
+- **Recipients:** Sprout-Community (1,190) + Sprout-Donors (2,076) = 3,266 unique; Prospects (~348) left off this send. Tested live — unsubscribe + all links work.
+
+---
+
 ## 2026-06-10 — Campaign Monitor: connect audience via UI + in-app per-bucket CSV export
 
 Connected the CRM newsletter audience to Campaign Monitor. The API key path is blocked (the login is a client-level user, not the account administrator — Danielle is checking who the admin is), so we used CM's UI instead of the API for now.
