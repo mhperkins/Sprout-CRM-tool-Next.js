@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-06-17 — Quick Hit one-off matched to the Monthly Roundup look
+
+Rebuilt the "Quick Hit" single-focus template's chrome so it matches the Monthly Roundup (compact) exactly in format and coloring. App code only (`lib/newsletter.js`; `npm run build` passes).
+
+- **Masthead** — replaced the black header bar + white logo with the roundup's white masthead: black-heart logo left, "Sprout Society / [MONTH YEAR]" label right, acid-green (`#C6C902`) 3px rule beneath. `[MONTH YEAR]` auto-fills from the issue month (same as the roundup).
+- **Card** — same `#F7F7F6` page with `40px 12px` padding wrapping one white `max-width:600px` card (`border-radius:8px; overflow:hidden`), so the black footer corners clip rounded.
+- **Typography/colors** — headline 22px/900 `#030000`, recap 16px/1.6 `#3a3a38` (was a 24px h1 + `#4B5563`), matching the roundup intro block.
+- **"Next up" box** — gained the cyan left accent bar (`#73C4D6`) + card shadow, mirroring the roundup announcement block; kept the fuchsia "NEXT UP" eyebrow.
+- **CTA + footer** — aligned padding and color tokens to the roundup.
+- **Footer Instagram** — changed `@sproutsociety` → `@sproutsocietyorg` (link + label). Note: this template's footer IG is hardcoded; the roundup pulls IG from the org profile.
+
+---
+
 ## 2026-06-10 — First Campaign Monitor send: export June HTML + Campaign Monitor unsubscribe tag
 
 Shipped the June "Sprout Monthly" newsletter through Campaign Monitor (the first real send off the new ESP) and made the footer unsubscribe compliant with CM.
