@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Login Wall + Auth (Phase 1)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap">
+<style>
+  :root{
+    --black:#030000; --white:#F7F7F6; --cyan:#73C4D6; --fuchsia:#E10098;
+    --acid:#C6C902; --banana:#FAD100; --g200:#E5E7EB; --g400:#9CA3AF; --g600:#4B5563;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Lato',sans-serif;background:var(--white);color:var(--black);padding:40px 20px;line-height:1.5;}
+  .slide{max-width:920px;margin:0 auto;background:#fff;border-radius:18px;border:1.5px solid var(--g200);
+    box-shadow:0 18px 50px rgba(0,0,0,0.12);overflow:hidden;}
+  .hd{background:var(--black);color:var(--white);padding:30px 36px;}
+  .hd .kicker{font-size:10px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--cyan);}
+  .hd h1{font-size:27px;font-weight:900;margin-top:8px;letter-spacing:-0.01em;}
+  .hd .meta{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;letter-spacing:0.03em;}
+  .chip-cyan{background:var(--cyan);color:var(--black);}
+  .chip-acid{background:var(--acid);color:var(--black);}
+  .chip-ghost{background:rgba(247,247,246,0.1);color:var(--white);border:1px solid rgba(247,247,246,0.25);}
+  .chip-fuchsia{background:var(--fuchsia);color:#fff;}
+  .body{padding:30px 36px 36px;}
+  .sec-lbl{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--g400);margin:0 0 12px;}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:26px;}
+  .card{border:1.5px solid var(--g200);border-radius:11px;padding:16px 18px;background:#fff;}
+  .card .t{font-size:14px;font-weight:900;display:flex;align-items:center;gap:8px;}
+  .card .d{font-size:12.5px;color:var(--g600);margin-top:6px;line-height:1.55;}
+  .bar{width:34px;height:4px;border-radius:3px;margin-bottom:11px;}
+  .b-cyan{background:var(--cyan);} .b-fuchsia{background:var(--fuchsia);}
+  .b-acid{background:var(--acid);} .b-banana{background:var(--banana);}
+  .status{background:#FFF8E1;border:1.5px solid var(--banana);border-radius:11px;padding:16px 18px;margin-bottom:24px;}
+  .status .t{font-size:13px;font-weight:900;color:#7a5c00;display:flex;align-items:center;gap:7px;}
+  .status .d{font-size:12.5px;color:#6b5300;margin-top:6px;line-height:1.6;}
+  .steps{border:1.5px solid var(--g200);border-radius:11px;padding:6px 0;}
+  .step{display:flex;gap:13px;padding:12px 18px;border-bottom:1px solid var(--g200);}
+  .step:last-child{border-bottom:none;}
+  .num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--black);color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;}
+  .num.done{background:var(--acid);color:var(--black);}
+  .step .txt{font-size:12.5px;line-height:1.5;}
+  .step .txt b{font-weight:900;}
+  .ft{padding:18px 36px;background:var(--g200);font-size:11px;color:var(--g600);font-weight:700;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;letter-spacing:0.02em;}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:4px;}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="hd">
+    <div class="kicker">Sprout CRM · Delivery</div>
+    <h1>🔐 Login Wall + Authentication</h1>
+    <div class="meta">
+      <span class="chip chip-cyan">Effort: High</span>
+      <span class="chip chip-acid">Build ✓ passes</span>
+      <span class="chip chip-fuchsia">Lockdown complete ✓</span>
+      <span class="chip chip-ghost">commit e3d66f3 · main</span>
+    </div>
+  </div>
+
+  <div class="body">
+    <p class="sec-lbl">What shipped</p>
+    <div class="grid">
+      <div class="card">
+        <div class="bar b-cyan"></div>
+        <div class="t">🚪 Login gate</div>
+        <div class="d">New <code>AuthGate</code> wraps the whole CRM: email/password sign-in, a set-password screen for invite &amp; reset links, and forgot-password. Invite-only — no public sign-up.</div>
+      </div>
+      <div class="card">
+        <div class="bar b-fuchsia"></div>
+        <div class="t">🎨 Branded sign-in</div>
+        <div class="d">Sprout-styled screen with dark inputs + white text that stays readable even when the browser autofills a saved password, plus a cyan focus ring.</div>
+      </div>
+      <div class="card">
+        <div class="bar b-acid"></div>
+        <div class="t">🔑 Authenticated access</div>
+        <div class="d">Migration grants the logged-in role read/write on the 5 CRM tables. The shared grant-tool tables were left untouched.</div>
+      </div>
+      <div class="card">
+        <div class="bar b-banana"></div>
+        <div class="t">⎋ Sign out + sessions</div>
+        <div class="d">Sign-out button in the sidebar; sessions persist across reloads and auto-refresh. Send route reads recipients with a server-only key so blasts survive the lockdown.</div>
+      </div>
+    </div>
+
+    <div class="status" style="background:#EAF7EE;border-color:#9ed8b1;">
+      <div class="t" style="color:#157f3b;">✅ Lockdown complete &amp; verified</div>
+      <div class="d" style="color:#1c6b3a;">Logged-out (anon) requests now return <b>0 rows</b> — confirmed directly at the database, so even with the anon key in the browser bundle a visitor reads nothing. All <b>3,747 contacts / 11 orgs / 7 events</b> verified intact throughout (the brief "0 contacts" after login was a permission-role gap, not data loss).</div>
+    </div>
+
+    <p class="sec-lbl">Cutover — all done</p>
+    <div class="steps">
+      <div class="step"><div class="num done">✓</div><div class="txt"><b>Login wall + authenticated access</b> — built &amp; deployed.</div></div>
+      <div class="step"><div class="num done">✓</div><div class="txt"><b>Supabase dashboard</b> — public sign-up off (invite-only); Site URL + Redirect URLs fixed (was localhost — the reason the first invite failed).</div></div>
+      <div class="step"><div class="num done">✓</div><div class="txt"><b>Production login confirmed</b>; Vercel SSO wall turned off so the public reaches the app login.</div></div>
+      <div class="step"><div class="num done">✓</div><div class="txt"><b>Anon access removed</b> — incognito shows the app login with nothing behind it.</div></div>
+    </div>
+
+    <p class="sec-lbl" style="margin-top:22px;">Two quick follow-ups</p>
+    <div class="steps">
+      <div class="step"><div class="num">1</div><div class="txt"><b>Redeploy Vercel</b> so the send route has the service-role key — needed for newsletter "Send to list" (login/browse work without it).</div></div>
+      <div class="step"><div class="num">2</div><div class="txt"><b>Resend Danielle's invite</b> — her first link was built against the old localhost URL and is dead; a fresh one carries the production URL.</div></div>
+    </div>
+  </div>
+
+  <div class="ft">
+    <span>Sprout Society CRM</span>
+    <span>2026-06-17 · branch main · e3d66f3</span>
+  </div>
+</div>
+</body>
+</html>

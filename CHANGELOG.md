@@ -2,9 +2,9 @@
 
 ---
 
-## 2026-06-17 — Login wall (Supabase Auth, invite-only) + authenticated RLS (Phase 1 of lockdown)
+## 2026-06-17 — Login wall (Supabase Auth, invite-only) + authenticated-only RLS — full lockdown
 
-Added real authentication to the previously-public CRM. App code + one DB migration (`npm run build` passes). **The app is not fully secured yet** — this is Phase 1; anon access is intentionally still open until the login wall is deployed and Phase 2 (drop anon policies) is approved.
+Closed the previously-public CRM. App code + two DB migrations + dashboard config (`npm run build` passes). The app now requires login, and the database is readable only by logged-in users — verified that an anonymous request returns 0 rows.
 
 - **Why** — the app had no auth at all (public at `/`), so a Supabase *invite* couldn't grant access (it connected to nothing), and the public link failed for the teammate (wrong invite redirect URL). Chose invite-only access + full lockdown.
 - **`components/AuthGate.jsx` (new)** — wraps `CRMManager`. Email/password sign-in, a forced set-password screen for invite/reset links (`detectSessionInUrl` → `updateUser`), and forgot-password. Self-contained inline Sprout styling; dark inputs with white text that survives browser autofill (`.ag-input:-webkit-autofill` box-shadow trick).
@@ -12,8 +12,11 @@ Added real authentication to the previously-public CRM. App code + one DB migrat
 - **`lib/services.js` + sidebar** — `signOut()` export + a **⎋ Sign out** button in the sidebar footer.
 - **`app/api/send/route.js`** — recipient lookup now uses `SUPABASE_SERVICE_ROLE_KEY` server-side (falls back to anon) so list-sends keep working after anon is locked out.
 - **Migration `sprout_crm_authenticated_read_write`** — added `authenticated_all` (`for all to authenticated using true / with check true`) to the 5 CRM tables only (contacts/orgs/events/newsletters/profile). Existing anon policies left in place for now. `sprout_grants` and other shared grant-tool policies untouched.
-- **RLS visibility gotcha** — logging in switched the browser to the `authenticated` role; the old anon-only policies stopped applying, so the app briefly showed 0 contacts/orgs (events/profile use `public`-role policies, so they stayed visible). No data lost (verified 3,747 contacts intact via service-role count); the migration above restored visibility.
-- **Pending (Phase 2, awaiting explicit approval):** deploy login wall to prod → confirm login → drop anon policies → verify incognito shows nothing. Plus dashboard steps (disable public sign-up, set Site URL/Redirect URLs) and `SUPABASE_SERVICE_ROLE_KEY` on Vercel.
+- **RLS visibility gotcha** — logging in switched the browser to the `authenticated` role; the old anon-only policies stopped applying, so the app briefly showed 0 contacts/orgs (events/profile use `public`-role policies, so they stayed visible). No data lost (verified 3,747 contacts intact via service-role count); the Phase 1 migration restored visibility.
+- **Migration `sprout_crm_lockdown_drop_anon` (Phase 2)** — dropped the `anon_all` (and `sprout_profile`'s `"Allow all"`) policies on all 5 CRM tables, leaving only `authenticated_all`. Verified `set local role anon; select count(*) from sprout_contacts` → 0. Reversible by recreating the anon policies.
+- **Vercel** — turned OFF Deployment Protection ("Vercel Authentication") so the public reaches the app's login instead of a Vercel SSO wall; added `SUPABASE_SERVICE_ROLE_KEY` (Production) for the send route's recipient lookup.
+- **Supabase Auth config** — Site URL was `http://localhost:3000` (why the first invite failed); set to the prod URL + added prod/localhost Redirect URLs. Public sign-up disabled (invite-only).
+- **Follow-ups:** redeploy Vercel so the send route picks up the service-role key (else "Send to list" resolves 0 recipients); resend any invite generated before the Site URL fix (old links are dead).
 
 ---
 
