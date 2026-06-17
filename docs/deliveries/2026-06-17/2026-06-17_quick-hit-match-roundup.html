@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Quick Hit matched to Monthly Roundup</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Lato',Helvetica,Arial,sans-serif; background:#F7F7F6; color:#030000; padding:40px 20px; }
+  .wrap { max-width:860px; margin:0 auto; }
+  .card { background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 6px 24px rgba(0,0,0,0.10); }
+  .head { background:#030000; padding:30px 34px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  .head h1 { color:#fff; font-size:24px; font-weight:900; line-height:1.2; }
+  .head .badge { background:#C6C902; color:#030000; font-size:12px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; padding:7px 14px; border-radius:6px; }
+  .rule { height:4px; background:#C6C902; }
+  .meta { display:flex; flex-wrap:wrap; gap:10px; padding:22px 34px 6px; }
+  .chip { font-size:12px; font-weight:700; padding:7px 13px; border-radius:20px; }
+  .chip.b { background:#030000; color:#fff; }
+  .chip.f { background:#E10098; color:#fff; }
+  .chip.c { background:#73C4D6; color:#0d3d49; }
+  .chip.y { background:#FAD100; color:#3a3000; }
+  .body { padding:14px 34px 34px; }
+  .sec-title { font-size:13px; font-weight:900; letter-spacing:2px; text-transform:uppercase; color:#E10098; margin:24px 0 12px; }
+  .item { background:#F7F7F6; border-radius:8px; box-shadow:0 4px 14px rgba(0,0,0,0.10); margin-bottom:12px; display:flex; overflow:hidden; }
+  .item .bar { width:6px; background:#73C4D6; flex:0 0 6px; }
+  .item .txt { padding:14px 18px; font-size:15px; line-height:1.55; color:#3a3a38; }
+  .item .txt b { color:#030000; }
+  .foot { background:#030000; padding:22px 34px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+  .foot .commit { font-family:'Courier New',monospace; font-size:13px; color:#FAD100; font-weight:700; }
+  .foot .sub { font-size:12px; color:#9a9a96; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="head">
+        <h1>Quick Hit one-off &rarr; matched to the Monthly Roundup</h1>
+        <span class="badge">Delivered</span>
+      </div>
+      <div class="rule"></div>
+      <div class="meta">
+        <span class="chip b">2026-06-17</span>
+        <span class="chip f">lib/newsletter.js</span>
+        <span class="chip c">Effort: low</span>
+        <span class="chip y">build &#10003; passes</span>
+      </div>
+      <div class="body">
+        <div class="sec-title">What shipped</div>
+
+        <div class="item"><div class="bar"></div><div class="txt"><b>Masthead</b> — replaced the black header bar + white logo with the roundup's white masthead: black-heart logo left, &ldquo;Sprout Society / [MONTH&nbsp;YEAR]&rdquo; label right, acid-green <b>#C6C902</b> 3px rule beneath. Month auto-fills.</div></div>
+
+        <div class="item"><div class="bar" style="background:#E10098;"></div><div class="txt"><b>Card chrome</b> — one white <b>max-width:600px</b> card, <b>border-radius:8px; overflow:hidden</b> on a #F7F7F6 page (40px 12px). Footer corners now clip rounded.</div></div>
+
+        <div class="item"><div class="bar" style="background:#C6C902;"></div><div class="txt"><b>Typography &amp; color</b> — headline 22px/900 #030000, recap 16px/1.6 <b>#3a3a38</b> (was 24px h1 + #4B5563), matching the roundup intro block.</div></div>
+
+        <div class="item"><div class="bar"></div><div class="txt"><b>&ldquo;Next up&rdquo; box</b> — gained the cyan <b>#73C4D6</b> left accent bar + card shadow, mirroring the roundup announcement block. Fuchsia eyebrow kept.</div></div>
+
+        <div class="item"><div class="bar" style="background:#FAD100;"></div><div class="txt"><b>CTA + footer</b> — fuchsia button + footer padding/tokens aligned to the roundup.</div></div>
+
+        <div class="item"><div class="bar" style="background:#E10098;"></div><div class="txt"><b>Footer Instagram</b> — changed <b>@sproutsociety &rarr; @sproutsocietyorg</b> (link + label). Note: this template's footer IG is hardcoded.</div></div>
+      </div>
+      <div class="foot">
+        <span class="commit">cf04cbb &nbsp;·&nbsp; main</span>
+        <span class="sub">pushed to mhperkins/Sprout-CRM-tool-Next.js</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
