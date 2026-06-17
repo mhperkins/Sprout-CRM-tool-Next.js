@@ -25,6 +25,7 @@ import {
   deleteNewsletterById,
   DEFAULT_PROFILE,
   uploadNewsletterImage,
+  signOut,
 } from "../lib/services";
 import { buildNewsletter, TEMPLATES, defaultMonthYear, COMPACT_SECTIONS, blankCompactItem } from "../lib/newsletter";
 import { validateContact, validateOrg } from "../lib/schemas";
@@ -284,6 +285,8 @@ const STYLES = `
 
   .sb-log-btn { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; padding:7px 10px; border-radius:6px; border:1px solid rgba(247,247,246,0.12); background:transparent; color:rgba(247,247,246,0.45); font-size:10px; font-weight:700; font-family:'Lato',sans-serif; cursor:pointer; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:10px; transition:all 0.12s; }
   .sb-log-btn:hover { background:rgba(247,247,246,0.07); color:var(--white); border-color:rgba(247,247,246,0.25); }
+  .sb-out-btn { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; padding:6px 10px; border-radius:6px; border:1px solid rgba(247,247,246,0.10); background:transparent; color:rgba(247,247,246,0.35); font-size:10px; font-weight:700; font-family:'Lato',sans-serif; cursor:pointer; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:12px; transition:all 0.12s; }
+  .sb-out-btn:hover { background:rgba(225,0,152,0.12); color:#fff; border-color:rgba(225,0,152,0.4); }
 
   @media (max-width:820px) {
     .main { margin-left:0; } .sb { display:none; }
@@ -1007,6 +1010,7 @@ function Sidebar({view,setView,contacts,events,profile,onQuickLog}) {
       </div>
 <div className="sb-foot">
         <button className="sb-log-btn" onClick={onQuickLog}>+ Log Touchpoint</button>
+        <button className="sb-out-btn" onClick={()=>signOut()}>⎋ Sign out</button>
         <div className="sb-foot-txt">
           {profile?.legalName||"Sprout Society Inc."}
           {profile?.ein&&<><br/>EIN {profile.ein}</>}

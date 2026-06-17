@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-06-17 — Login wall (Supabase Auth, invite-only) + authenticated RLS (Phase 1 of lockdown)
+
+Added real authentication to the previously-public CRM. App code + one DB migration (`npm run build` passes). **The app is not fully secured yet** — this is Phase 1; anon access is intentionally still open until the login wall is deployed and Phase 2 (drop anon policies) is approved.
+
+- **Why** — the app had no auth at all (public at `/`), so a Supabase *invite* couldn't grant access (it connected to nothing), and the public link failed for the teammate (wrong invite redirect URL). Chose invite-only access + full lockdown.
+- **`components/AuthGate.jsx` (new)** — wraps `CRMManager`. Email/password sign-in, a forced set-password screen for invite/reset links (`detectSessionInUrl` → `updateUser`), and forgot-password. Self-contained inline Sprout styling; dark inputs with white text that survives browser autofill (`.ag-input:-webkit-autofill` box-shadow trick).
+- **`lib/supabase.js`** — explicit `persistSession` / `autoRefreshToken` / `detectSessionInUrl`.
+- **`lib/services.js` + sidebar** — `signOut()` export + a **⎋ Sign out** button in the sidebar footer.
+- **`app/api/send/route.js`** — recipient lookup now uses `SUPABASE_SERVICE_ROLE_KEY` server-side (falls back to anon) so list-sends keep working after anon is locked out.
+- **Migration `sprout_crm_authenticated_read_write`** — added `authenticated_all` (`for all to authenticated using true / with check true`) to the 5 CRM tables only (contacts/orgs/events/newsletters/profile). Existing anon policies left in place for now. `sprout_grants` and other shared grant-tool policies untouched.
+- **RLS visibility gotcha** — logging in switched the browser to the `authenticated` role; the old anon-only policies stopped applying, so the app briefly showed 0 contacts/orgs (events/profile use `public`-role policies, so they stayed visible). No data lost (verified 3,747 contacts intact via service-role count); the migration above restored visibility.
+- **Pending (Phase 2, awaiting explicit approval):** deploy login wall to prod → confirm login → drop anon policies → verify incognito shows nothing. Plus dashboard steps (disable public sign-up, set Site URL/Redirect URLs) and `SUPABASE_SERVICE_ROLE_KEY` on Vercel.
+
+---
+
 ## 2026-06-17 — Quick Hit one-off matched to the Monthly Roundup look
 
 Rebuilt the "Quick Hit" single-focus template's chrome so it matches the Monthly Roundup (compact) exactly in format and coloring. App code only (`lib/newsletter.js`; `npm run build` passes).

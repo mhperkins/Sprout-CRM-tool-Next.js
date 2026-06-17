@@ -9,7 +9,7 @@
 // who found the URL could blast the list). All Gmail creds live in env and never reach the browser.
 //
 // Env: GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN, GMAIL_SENDER, NEWSLETTER_SEND_SECRET,
-//      NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY.
+//      NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (recipient read; falls back to anon key).
 
 import { NextResponse } from "next/server";
 
@@ -66,7 +66,11 @@ const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((s || "").trim());
 
 async function fetchRecipients(segment) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Use the service-role key server-side so this read works after RLS is locked to
+  // authenticated-only (this route has no user session). The key never leaves the
+  // server, and the route is already gated by NEWSLETTER_SEND_SECRET. Falls back to
+  // the anon key if the service-role key isn't set (e.g. before env is configured).
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const r = await fetch(`${url}/rest/v1/sprout_contacts?select=email,data`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
   });
