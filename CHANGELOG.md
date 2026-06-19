@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-06-19 — Newsletter preview: fix typing-scrolls-to-top + per-item field sync + same mechanism in Quick Hit
+
+Fixed the newsletter editor's live preview jumping to the top on every keystroke, made the focus→scroll target individual repeat-event cards (not just the section), and ported the whole field↔preview sync mechanism to the Quick Hit one-off template. App code only (`components/CRMManager.jsx`, `lib/newsletter.js`; `npm run build` passes). **Effort: diagnose medium / fix low.**
+
+- **Bug: preview scrolled to top on every keystroke.** Each keystroke rebuilt the preview HTML and swapped the iframe's `srcDoc`, forcing a full document reload that reset scroll to 0; the restore logic flickered to the top and landed short before layout settled. **Fix:** the iframe now loads a static shell once (`srcDoc` never changes → window/document persist) and each update swaps only the inner DOM (`documentElement.innerHTML`), so the scroll position is preserved naturally — no reload, no reset, no restore guesswork. Also avoids re-fetching every image per keystroke. The reverse-sync click handlers are re-wired after each swap (innerHTML drops listeners).
+- **Per-item scroll for repeat sections.** Upcoming/Past events shared one `data-sec` marker, so focusing any event field scrolled to the first card. Each rendered card now carries `data-sec-item="upcoming-<i>"` / `past-<i>` (`lib/newsletter.js`), and `focusScroll(key, idx)` targets the specific card, falling back to the section marker.
+- **Same mechanism in the Quick Hit template.** Quick Hit is bracket-based (no structured sections), so it had no sync wiring. Added inert `data-sec` markers (`qh-headline`, `qh-recap`, `qh-nextup`, `qh-cta`) to its blocks, a keyword resolver (`qhGroupForKey`) mapping each bracket placeholder to its block, and template-aware `groupForKey` / `firstKeyForGroup` helpers so `focusScroll` + reverse click-to-jump work for either template. Wired `onFocus` + `data-fkey` onto the Quick Hit fields.
+
+---
+
 ## 2026-06-17 — Login wall (Supabase Auth, invite-only) + authenticated-only RLS — full lockdown
 
 Closed the previously-public CRM. App code + two DB migrations + dashboard config (`npm run build` passes). The app now requires login, and the database is readable only by logged-in users — verified that an anonymous request returns 0 rows.

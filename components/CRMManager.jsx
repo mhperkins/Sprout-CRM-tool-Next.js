@@ -2454,17 +2454,38 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
   };
   // block group id → first editable field key (for reverse sync)
   const GROUP_FIRST={ masthead:"mastheadLabel", intro:"headline", featured:"featuredEyebrow", announce:"coworkingEyebrow", membership:"membership", marketing:"marketing", scholarship:"scholarship", spotlight:"spotlightEyebrow", upcoming:"upcomingTitle", past:"pastTitle", footer:"footerBrand" };
+  // Quick Hit (bracket template) has no structured sections — map a placeholder's bracket text to
+  // its preview block group by keyword so the same focus→scroll mechanism works there too.
+  const qhGroupForKey=(key)=>{
+    const k=(key||"").toLowerCase();
+    if(k.includes("headline")) return "qh-headline";
+    if(k.includes("recap")) return "qh-recap";
+    if(k.includes("event name")||k.includes("date")) return "qh-nextup";
+    if(k.includes("rsvp")||k.includes("scholarship")||k.includes("apply")) return "qh-cta";
+    return null;   // e.g. the hidden one-line preview — nothing to scroll to
+  };
+  // key → preview group (compact uses the static map; quick-hit resolves by keyword).
+  const groupForKey=(key)=> isCompact ? SEC_GROUP[key] : qhGroupForKey(key);
+  // group → the data-fkey of its first editable field (for reverse sync clicks).
+  const firstKeyForGroup=(grp)=>{
+    if(isCompact) return GROUP_FIRST[grp];
+    const i=built.placeholders.findIndex(ph=>qhGroupForKey(ph.key)===grp);
+    return i<0?null:`qh-${i}`;
+  };
   const flashEls=(els)=>{
     els.forEach(e=>{ e.style.transition="outline-color .2s ease"; e.style.outline="3px solid #E10098"; e.style.outlineOffset="-3px"; e.style.borderRadius="4px"; });
     if(flashTimer.current) clearTimeout(flashTimer.current);
     flashTimer.current=setTimeout(()=>els.forEach(e=>{ e.style.outline=""; }),1400);
   };
   // Focus a field → scroll the preview (internally) to its block + flash it.
-  const focusScroll=(key)=>{
+  // For repeat sections (upcoming/past) pass the item index so it targets that one card,
+  // not just the section header. Each rendered item carries data-sec-item="<group>-<idx>".
+  const focusScroll=(key,idx)=>{
     try{
-      const grp=SEC_GROUP[key]; if(!grp) return;
+      const grp=groupForKey(key); if(!grp) return;
       const ifr=previewRef.current; if(!ifr||!ifr.contentWindow||!ifr.contentDocument) return;
-      const els=ifr.contentDocument.querySelectorAll(`[data-sec="${grp}"]`);
+      let els=(idx!=null)?ifr.contentDocument.querySelectorAll(`[data-sec-item="${grp}-${idx}"]`):[];
+      if(!els.length) els=ifr.contentDocument.querySelectorAll(`[data-sec="${grp}"]`);
       if(!els.length) return;
       const dest=Math.max(0,els[0].getBoundingClientRect().top+ifr.contentWindow.scrollY-24);
       previewScroll.current=dest;
@@ -2472,26 +2493,41 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
       flashEls(els);
     }catch{}
   };
-  // On every preview (re)load: srcDoc reloads on each keystroke and resets the iframe scroll to
-  // top, so restore the remembered position, then (re)wire reverse-sync clicks + a scroll tracker.
-  const onPreviewLoad=()=>{
-    try{
-      const ifr=previewRef.current; const doc=ifr&&ifr.contentDocument; if(!doc||!ifr.contentWindow) return;
-      ifr.contentWindow.scrollTo(0,previewScroll.current);
-      ifr.contentWindow.addEventListener("scroll",()=>{ previewScroll.current=ifr.contentWindow.scrollY; },{passive:true});
-      doc.querySelectorAll("[data-sec]").forEach(el=>{
-        el.style.cursor="pointer";
-        el.addEventListener("click",(ev)=>{
-          // let real links/buttons do their own thing
-          if(ev.target.closest("a,button")) return;
-          const key=GROUP_FIRST[el.getAttribute("data-sec")]; if(!key) return;
-          const node=document.querySelector(`[data-fkey="${key}"]`); if(!node) return;
-          node.scrollIntoView({behavior:"smooth",block:"center"});
-          setTimeout(()=>{ const i=node.querySelector("input,textarea"); if(i) i.focus(); },80);
-        });
+  // Reverse sync: clicking a block in the preview scrolls the editor to its first field.
+  // Re-wired after every in-place content swap (innerHTML replacement drops old listeners).
+  const wirePreview=(doc)=>{
+    doc.querySelectorAll("[data-sec]").forEach(el=>{
+      el.style.cursor="pointer";
+      el.addEventListener("click",(ev)=>{
+        // let real links/buttons do their own thing
+        if(ev.target.closest("a,button")) return;
+        const fkey=firstKeyForGroup(el.getAttribute("data-sec")); if(!fkey) return;
+        const node=document.querySelector(`[data-fkey="${fkey}"]`); if(!node) return;
+        node.scrollIntoView({behavior:"smooth",block:"center"});
+        setTimeout(()=>{ const i=node.querySelector("input,textarea"); if(i) i.focus(); },80);
       });
-    }catch{}
+    });
   };
+  // The iframe loads a static shell ONCE (srcDoc never changes), so its window/document persist.
+  // We then swap only the inner DOM on each keystroke instead of reloading srcDoc — that keeps the
+  // scroll position naturally intact (no reload → no reset → no jump-to-top), and avoids re-fetching
+  // every image. (The old srcDoc-per-keystroke approach reloaded the whole document and then tried
+  // to restore scroll, which flickered to the top and landed short before layout settled.)
+  const PREVIEW_SHELL='<!doctype html><html><head><meta charset="utf-8"><base href="about:srcdoc"></head><body style="margin:0"></body></html>';
+  const previewReady=useRef(false);
+  const writePreview=()=>{
+    const ifr=previewRef.current; const doc=ifr&&ifr.contentDocument; if(!doc) return;
+    const m=previewHtml.match(/<html[^>]*>([\s\S]*)<\/html>/i);
+    const inner=m?m[1]:previewHtml;
+    const win=ifr.contentWindow;
+    const y=win?win.scrollY:0;
+    doc.documentElement.innerHTML=inner;
+    if(win) win.scrollTo(0,y);   // hold position if the shorter/taller new content nudged it
+    wirePreview(doc);
+  };
+  const onPreviewLoad=()=>{ previewReady.current=true; writePreview(); };
+  // Push new content into the persistent document whenever the built HTML changes.
+  useEffect(()=>{ if(previewReady.current) writePreview(); },[previewHtml]);   // eslint-disable-line react-hooks/exhaustive-deps
   async function runPolish(fieldId,label,current,apply){
     if(!current||!current.trim()){ showToast("Write some notes first","err"); return; }
     setBusy(b=>({...b,[fieldId]:"polish"}));
@@ -2843,7 +2879,7 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
                                 return (
                                   <div key={f.k}>
                                     {f.polish&&<div style={{textAlign:"right",marginBottom:2}}><button className="btn btn-ghost btn-sm" style={{padding:"1px 7px",fontSize:11}} disabled={busy[fid]==="polish"} onClick={()=>runPolish(fid,f.ph,item[f.k]||"",t=>setItem(sec.key,idx,f.k,t))}>{busy[fid]==="polish"?"Polishing…":(polishOut[fid]?"✨ Re-polish":"✨ Polish")}</button></div>}
-                                    <input className="fi" value={item[f.k]||""} onFocus={()=>focusScroll(sec.key)} onChange={e=>setItem(sec.key,idx,f.k,e.target.value)} placeholder={f.ph}/>
+                                    <input className="fi" value={item[f.k]||""} onFocus={()=>focusScroll(sec.key,idx)} onChange={e=>setItem(sec.key,idx,f.k,e.target.value)} placeholder={f.ph}/>
                                     {f.polish&&polishPanel(fid)}
                                   </div>
                                 );
@@ -2879,10 +2915,10 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
               : built.placeholders.length===0
                 ? <div style={{fontSize:12,color:"var(--g500)"}}>Nothing left to fill — every placeholder is resolved. 🎉</div>
                 : <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                    {built.placeholders.map(ph=>(
-                      <div className="fg" key={ph.key}>
+                    {built.placeholders.map((ph,i)=>(
+                      <div className="fg" key={ph.key} data-fkey={`qh-${i}`}>
                         <label className="fl" style={{textTransform:"none",letterSpacing:0,color:"var(--g600)",fontWeight:600}}>{ph.label}</label>
-                        <textarea className="fta" rows={2} value={draft.field_values[ph.key]||""} onChange={e=>setField(ph.key,e.target.value)} placeholder="Type your copy…"/>
+                        <textarea className="fta" rows={2} value={draft.field_values[ph.key]||""} onFocus={()=>focusScroll(ph.key)} onChange={e=>setField(ph.key,e.target.value)} placeholder="Type your copy…"/>
                       </div>
                     ))}
                   </div>}
@@ -2939,7 +2975,7 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
           <div className="card" style={{position:"sticky",top:12}}>
             <div className="card-hd"><span className="card-ttl">Preview</span><span style={{fontSize:11,color:"var(--g500)"}}>live · follows the field you're editing</span></div>
             <div style={{height:"calc(100vh - 96px)",minHeight:480,background:"#F7F7F6",borderRadius:"0 0 10px 10px",overflow:"hidden"}}>
-              <iframe ref={previewRef} title="newsletter-preview" onLoad={onPreviewLoad} sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" srcDoc={previewHtml} style={{width:"100%",height:"100%",border:"none"}}/>
+              <iframe ref={previewRef} title="newsletter-preview" onLoad={onPreviewLoad} sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" srcDoc={PREVIEW_SHELL} style={{width:"100%",height:"100%",border:"none"}}/>
             </div>
           </div>
         </div>
