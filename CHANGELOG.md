@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-06-20 — Discord server structure for the Sprout community
+
+Stood up the Sprout Society Discord server scaffolding via the `discord` MCP. Discord config only — no app code, CRM data, or repo change. **Effort: low.**
+
+- **Goal** — serve the community from 0 members without overwhelming people: member-only networking/promotion, official announcements, and an events channel. Launched lean (empty channels read as a dead server; split later as activity grows).
+- **Created** (guild "Sprout Society") — 3 categories: `START HERE`, `COMMUNITY`, `MEMBERS`; 7 text channels with topics: `welcome`, `announcements`, `events`, `introductions`, `members-lounge`, `networking`, `promote`. The pre-existing `#general` stays in COMMUNITY.
+- **Member gate (decided)** — reaction/verify gate: agree to rules → `Verified` role; `Member` is a separate role for paying members, used to unlock the MEMBERS category.
+- **MCP limits hit** — the bot needed **Manage Channels** added to its role before any create succeeded (recommended scoped perms, not Administrator). `discord_create_text_channel` has no category param and the MCP exposes no role/permission tools, so the rest is manual in Discord: drag channels into categories, create the two roles, hide MEMBERS from `@everyone`, lock `#announcements`/`#events` to staff-post-only, wire the ✅ verify in `#welcome`.
+- **Also** — bot renamed to "Russell Sprout"; exposed bot token still pending a reset.
+
+---
+
 ## 2026-06-19 — Newsletter preview: fix typing-scrolls-to-top + per-item field sync + same mechanism in Quick Hit
 
 Fixed the newsletter editor's live preview jumping to the top on every keystroke, made the focus→scroll target individual repeat-event cards (not just the section), and ported the whole field↔preview sync mechanism to the Quick Hit one-off template. App code only (`components/CRMManager.jsx`, `lib/newsletter.js`; `npm run build` passes). **Effort: diagnose medium / fix low.**

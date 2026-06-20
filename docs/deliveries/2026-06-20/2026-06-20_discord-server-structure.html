@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery — Discord Server Structure · 2026-06-20</title>
+<style>
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --cyan-d:#2a8ca0; --muted:#6b6b66;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Lato','Segoe UI',system-ui,sans-serif; background:var(--paper);
+    color:var(--ink); padding:40px 16px; line-height:1.5;
+  }
+  .wrap{max-width:920px; margin:0 auto;}
+  .card{
+    background:#fff; border-radius:14px; overflow:hidden;
+    box-shadow:0 8px 30px rgba(0,0,0,.12);
+  }
+  .masthead{
+    background:var(--ink); color:#fff; padding:30px 34px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  .masthead h1{font-size:26px; font-weight:900; letter-spacing:.3px;}
+  .masthead .sub{color:var(--cyan); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:2px; margin-top:6px;}
+  .badge{
+    background:var(--acid); color:var(--ink); font-weight:900; font-size:12px;
+    text-transform:uppercase; letter-spacing:1.5px; padding:8px 14px; border-radius:999px; white-space:nowrap;
+  }
+  .rule{height:4px; background:var(--acid);}
+  .body{padding:30px 34px;}
+  .lead{font-size:16px; color:#3a3a38; margin-bottom:24px;}
+  .lead b{color:var(--ink);}
+  .sec-title{
+    font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:2px;
+    color:var(--fuchsia); margin:26px 0 12px;
+  }
+  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  @media(max-width:640px){.grid{grid-template-columns:1fr;}}
+  .cat{
+    border-radius:10px; padding:16px; border:1px solid #eee;
+    background:var(--paper);
+  }
+  .cat .h{font-size:11px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:10px;}
+  .cat .h.start{color:var(--cyan-d);}
+  .cat .h.comm{color:var(--ink);}
+  .cat .h.mem{color:var(--fuchsia);}
+  .ch{
+    display:flex; align-items:center; gap:6px; font-size:14px; font-weight:700;
+    padding:5px 0; color:var(--ink);
+  }
+  .ch .lock{font-size:11px; color:var(--muted); font-weight:400;}
+  .ch .hash{color:var(--muted); font-weight:900;}
+  ul.checks{list-style:none; margin:8px 0 0;}
+  ul.checks li{padding:8px 0 8px 28px; position:relative; font-size:15px; color:#3a3a38; border-top:1px solid #f0f0ee;}
+  ul.checks li:first-child{border-top:0;}
+  ul.checks li::before{
+    content:"☐"; position:absolute; left:0; top:6px; color:var(--fuchsia); font-size:16px; font-weight:900;
+  }
+  ul.checks li b{color:var(--ink);}
+  .pills{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;}
+  .pill{font-size:12px; font-weight:700; padding:6px 12px; border-radius:999px;}
+  .pill.cyan{background:var(--cyan); color:var(--ink);}
+  .pill.banana{background:var(--banana); color:var(--ink);}
+  .pill.ink{background:var(--ink); color:#fff;}
+  .footer{
+    background:var(--ink); color:#fff; padding:20px 34px; font-size:13px;
+    display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center;
+  }
+  .footer .mono{font-family:ui-monospace,'Cascadia Code',monospace; color:var(--cyan); font-size:12px;}
+  .warn{
+    background:#fff7d6; border-left:5px solid var(--banana); border-radius:8px;
+    padding:14px 16px; margin-top:18px; font-size:14px; color:#5a4d00;
+  }
+  .warn b{color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="masthead">
+      <div>
+        <h1>Discord Server Structure</h1>
+        <div class="sub">Sprout Society · Delivery</div>
+      </div>
+      <span class="badge">2026-06-20</span>
+    </div>
+    <div class="rule"></div>
+    <div class="body">
+      <p class="lead">
+        Stood up the <b>Sprout Society Discord</b> for the community, starting from 0 members.
+        Launched <b>lean</b> so it doesn't read as a dead server. Created <b>3 categories</b> and
+        <b>7 channels</b> via the Discord MCP; the member-gate model is designed and ready to wire up by hand.
+      </p>
+
+      <div class="sec-title">Created via the bot</div>
+      <div class="grid">
+        <div class="cat">
+          <div class="h start">▸ Start Here</div>
+          <div class="ch"><span class="hash">#</span>welcome</div>
+          <div class="ch"><span class="hash">#</span>announcements <span class="lock">· staff post</span></div>
+          <div class="ch"><span class="hash">#</span>events <span class="lock">· staff post</span></div>
+        </div>
+        <div class="cat">
+          <div class="h comm">▸ Community</div>
+          <div class="ch"><span class="hash">#</span>general</div>
+          <div class="ch"><span class="hash">#</span>introductions</div>
+        </div>
+        <div class="cat">
+          <div class="h mem">▸ Members 🔒</div>
+          <div class="ch"><span class="hash">#</span>members-lounge</div>
+          <div class="ch"><span class="hash">#</span>networking</div>
+          <div class="ch"><span class="hash">#</span>promote</div>
+        </div>
+      </div>
+
+      <div class="pills">
+        <span class="pill cyan">3 categories</span>
+        <span class="pill banana">7 channels</span>
+        <span class="pill ink">Reaction / verify gate</span>
+      </div>
+
+      <div class="sec-title">Manual steps left in Discord</div>
+      <ul class="checks">
+        <li><b>Drag</b> the 7 channels into their categories (the MCP can't place them).</li>
+        <li><b>Create roles</b> <b>Verified</b> (agreed to rules) + <b>Member</b> (paying members).</li>
+        <li><b>Gate MEMBERS</b> — hide the category from @everyone, grant it to Member.</li>
+        <li><b>Lock</b> #announcements + #events to staff-post-only.</li>
+        <li><b>Verify flow</b> — rules + ✅ reaction in #welcome (manual now, reaction-bot later).</li>
+      </ul>
+
+      <div class="warn">
+        <b>⚠️ MCP limits & security:</b> the bot needed <b>Manage Channels</b> added before creates worked
+        (kept scoped, not Administrator). The MCP has no role/permission tools, so the gate is manual.
+        The exposed bot token is still <b>pending a reset</b>.
+      </div>
+    </div>
+    <div class="footer">
+      <span>Discord config only · no app code / CRM / repo change</span>
+      <span class="mono">guild 1511441473512669244</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

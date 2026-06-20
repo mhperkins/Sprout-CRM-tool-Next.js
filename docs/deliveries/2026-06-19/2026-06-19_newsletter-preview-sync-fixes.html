@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery · Newsletter preview sync fixes · 2026-06-19</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{--ink:#030000;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--paper:#F7F7F6;--g500:#6a6a66;--g300:#cfcfca;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Lato',Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);padding:40px 16px;display:flex;justify-content:center;}
+  .slide{width:100%;max-width:840px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.14);}
+  .top{background:var(--ink);color:#fff;padding:26px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .top h1{font-size:21px;font-weight:900;line-height:1.25;}
+  .top .date{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--acid);}
+  .rule{height:4px;background:var(--acid);}
+  .meta{display:flex;flex-wrap:wrap;gap:10px;padding:18px 32px;background:#fafaf9;border-bottom:1px solid #ECECEA;}
+  .chip{font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;border:1.5px solid var(--g300);color:var(--g500);}
+  .chip.hash{background:var(--ink);color:#fff;border-color:var(--ink);font-family:monospace;}
+  .chip.branch{background:var(--cyan);color:var(--ink);border-color:var(--cyan);}
+  .chip.effort{background:var(--banana);color:var(--ink);border-color:var(--banana);}
+  .body{padding:24px 32px 32px;}
+  .card{border:1px solid #ECECEA;border-left:6px solid var(--fuchsia);border-radius:10px;padding:16px 18px;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,0.06);}
+  .card:nth-child(2){border-left-color:var(--cyan);}
+  .card:nth-child(3){border-left-color:var(--acid);}
+  .card h2{font-size:15px;font-weight:900;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+  .card .tag{font-size:10px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:#fff;background:var(--fuchsia);padding:2px 7px;border-radius:4px;}
+  .card:nth-child(2) .tag{background:var(--cyan);color:var(--ink);}
+  .card:nth-child(3) .tag{background:var(--acid);color:var(--ink);}
+  .card p{font-size:13.5px;line-height:1.6;color:#3a3a38;}
+  .card code{font-family:monospace;font-size:12px;background:var(--paper);padding:1px 5px;border-radius:4px;}
+  .files{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .file{font-family:monospace;font-size:11px;background:var(--paper);border:1px solid var(--g300);border-radius:6px;padding:3px 8px;color:var(--g500);}
+  .foot{padding:16px 32px;background:var(--ink);color:#fff;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .foot .ok{color:var(--acid);font-weight:900;}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="top">
+      <h1>Newsletter editor: preview-sync fixes</h1>
+      <span class="date">Delivered · 2026-06-19</span>
+    </div>
+    <div class="rule"></div>
+    <div class="meta">
+      <span class="chip hash">a0da53c</span>
+      <span class="chip branch">main</span>
+      <span class="chip effort">Effort: diagnose med / fix low</span>
+      <span class="chip">build ✓ passes</span>
+    </div>
+    <div class="body">
+
+      <div class="card">
+        <h2><span class="tag">Fix 1</span> Preview no longer jumps to top while typing</h2>
+        <p>Each keystroke was swapping the iframe <code>srcDoc</code>, forcing a full reload that reset scroll to 0; the restore flickered and landed short. Now the iframe loads a <strong>static shell once</strong> and each update swaps only the inner DOM (<code>documentElement.innerHTML</code>) — the window persists, so scroll stays exactly where you're editing. Bonus: images stop re-fetching on every keystroke.</p>
+      </div>
+
+      <div class="card">
+        <h2><span class="tag">Fix 2</span> Per-event scroll in repeat sections</h2>
+        <p>Upcoming/Past events shared one section marker, so clicking any event field scrolled to the first card. Each card now carries <code>data-sec-item="upcoming-&lt;i&gt;"</code> / <code>past-&lt;i&gt;</code> and <code>focusScroll(key, idx)</code> jumps to the exact card you're editing.</p>
+      </div>
+
+      <div class="card">
+        <h2><span class="tag">Fix 3</span> Same mechanism in the Quick Hit template</h2>
+        <p>The one-off bracket template had no sync wiring. Added inert <code>data-sec</code> markers (headline / recap / next-up / CTA), a keyword resolver mapping each placeholder to its block, and template-aware group helpers so focus→scroll and click→focus both work there too.</p>
+        <div class="files">
+          <span class="file">components/CRMManager.jsx</span>
+          <span class="file">lib/newsletter.js</span>
+          <span class="file">CHANGELOG.md</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="foot">
+      <span>Sprout CRM Next · newsletter editor</span>
+      <span class="ok">committed + pushed to main ✓</span>
+    </div>
+  </div>
+</body>
+</html>
