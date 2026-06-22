@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-22 — Copy May 19 event checklist onto June 26 Sprout n Tell
+
+Copied the 18-item planning checklist from the May 19 **Show n Tell** (`evt_mordmhe4e6nj`) onto the June 26 **Sprout n Tell** (`evt_mpn2a3rtn29n`). Data-only — one `execute_sql` UPDATE on `sprout_events` via the Supabase MCP; no app code or repo change. **Effort: low.**
+
+- **Before** — June 26 had 2 checklist items (Confirm Musicians, Confirm Artists); May 19 had 18, all completed.
+- **Transform** — appended all 18 to June 26 with: new collision-safe ids (`md5(orig||'_jun26')`), `completed:false` (reset for the new event), and due dates shifted **+38 days** (the May 19→June 26 gap) so lead-times stay meaningful.
+- **Result** — 20 items total (original 2 preserved via `coalesce(...) || new_items`), verified with `jsonb_array_length`.
+- **Notes** — checklist is JSONB-only (`data->checklist`), no SQL column/Zod gate; no MCP event-write tool exists so raw SQL is the path; conceptual overlap with the existing Confirm-Musicians/Artists items left in place for Max to prune in-app.
+
+---
+
 ## 2026-06-20 — Discord server structure for the Sprout community
 
 Stood up the Sprout Society Discord server scaffolding via the `discord` MCP. Discord config only — no app code, CRM data, or repo change. **Effort: low.**
