@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Welcome to Sprout Society</title>
+
+<!-- ============================================================
+     CONFIG  — edit these two values, nothing else.
+     1) SCRIPT_URL: paste your Apps Script Web App URL (see SETUP.md)
+     2) GOOGLE_CLIENT_ID: optional. Paste an OAuth Web client ID to
+        enable the "Continue with Google" button. Leave the
+        placeholder to hide it and use name/email only.
+     ============================================================ -->
+<script>
+  const CONFIG = {
+    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbx6ZtzOsDWAAKXARa_6-CgwxkZ98ZGKBzYGlxKLyqz0r-lj-sO4HYygAqOLYV8xM5DZyw/exec",
+    GOOGLE_CLIENT_ID: "PASTE_GOOGLE_OAUTH_CLIENT_ID_HERE",
+    // Givebutter donation campaign (slug-stable). Amount is appended as ?amount=
+    DONATE_URL: "https://givebutter.com/sproutspacedonors",
+    MEMBERSHIP_URL: "https://givebutter.com/sproutmembership",
+    HOSTING_FORM: "https://forms.gle/M1kvwPqTyw7Xz8sEA",
+    HOSTING_NONMEMBER_FORM: "https://docs.google.com/forms/d/e/1FAIpQLSfLVqr1nvJoxBVIEiB7s9O1r5LuhqUnPHqI0y_OYAOiB1FA4Q/viewform"
+  };
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --cyan-deep:#2a8ca0;
+    --paper:#F7F7F6; --muted:#8a8a86;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:'Lato',-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--paper); color:var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh; padding:24px;
+  }
+  .card{
+    width:100%; max-width:560px; background:#fff; border-radius:18px;
+    box-shadow:0 18px 50px rgba(0,0,0,0.18); overflow:hidden;
+  }
+  .masthead{
+    background:var(--ink); padding:26px 30px; display:flex;
+    align-items:center; gap:14px;
+  }
+  .logo-dot{width:34px;height:34px;border-radius:50%;background:var(--acid);flex:0 0 auto;}
+  .masthead h1{color:#fff; font-size:21px; font-weight:900; letter-spacing:.3px;}
+  .masthead .sub{color:#bdbdba; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:2px; margin-top:2px;}
+  .acid-rule{height:4px;background:var(--acid);}
+  .body{padding:34px 30px 30px;}
+
+  .step{display:none; animation:fade .35s ease;}
+  .step.active{display:block;}
+  @keyframes fade{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;}}
+
+  h2{font-size:26px; font-weight:900; line-height:1.2; margin-bottom:8px;}
+  .lede{font-size:16px; line-height:1.55; color:#3a3a38; margin-bottom:22px;}
+
+  label{display:block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1.4px; color:var(--muted); margin:0 0 7px 2px;}
+  .field{
+    width:100%; padding:15px 16px; font-size:17px; font-family:inherit;
+    border:2px solid #e3e3e0; border-radius:11px; background:#fff; color:var(--ink);
+    margin-bottom:18px; transition:border-color .15s;
+  }
+  .field:focus{outline:none; border-color:var(--cyan-deep);}
+
+  .btn{
+    display:block; width:100%; text-align:center; cursor:pointer;
+    padding:16px 20px; font-size:17px; font-weight:900; font-family:inherit;
+    border:none; border-radius:11px; text-decoration:none; transition:transform .08s, filter .15s;
+  }
+  .btn:active{transform:scale(.985);}
+  .btn-primary{background:var(--fuchsia); color:#fff;}
+  .btn-primary:hover{filter:brightness(1.06);}
+  .btn-ink{background:var(--ink); color:#fff;}
+  .btn-ghost{background:#fff; color:var(--ink); border:2px solid #e3e3e0; font-weight:700;}
+  .btn-cyan{background:var(--cyan-deep); color:#fff;}
+
+  .divider{display:flex; align-items:center; gap:14px; margin:20px 0; color:var(--muted); font-size:13px; font-weight:700;}
+  .divider::before,.divider::after{content:""; flex:1; height:1px; background:#e3e3e0;}
+
+  #gbtn{display:flex; justify-content:center; margin-bottom:6px; min-height:44px;}
+  .gfallback{font-size:13px; color:var(--muted); text-align:center; margin-bottom:18px;}
+
+  .note{font-size:12.5px; color:var(--muted); text-align:center; line-height:1.5; margin-top:16px;}
+  .err{color:var(--fuchsia); font-weight:700; font-size:14px; text-align:center; margin-bottom:14px; display:none;}
+
+  /* Donation step */
+  .blurb{
+    background:var(--paper); border-left:6px solid var(--acid); border-radius:10px;
+    padding:18px 20px; font-size:15px; line-height:1.6; color:#3a3a38; margin-bottom:24px;
+  }
+  .amts{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:14px;}
+  .amt{
+    padding:18px 6px; font-size:20px; font-weight:900; border:2px solid #e3e3e0;
+    border-radius:12px; background:#fff; cursor:pointer; text-align:center; color:var(--ink);
+    text-decoration:none; transition:.12s;
+  }
+  .amt:hover{border-color:var(--fuchsia); color:var(--fuchsia);}
+  .amt.feature{background:var(--banana); border-color:var(--banana);}
+
+  /* Tabs / landing */
+  .tabs{display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap;}
+  .tab{
+    flex:1; min-width:96px; padding:12px 8px; font-size:14px; font-weight:900; cursor:pointer;
+    border:2px solid #e3e3e0; border-radius:10px; background:#fff; color:var(--muted); text-align:center; transition:.12s;
+  }
+  .tab.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+  .panel{display:none;}
+  .panel.active{display:block; animation:fade .3s ease;}
+  .panel h3{font-size:19px; font-weight:900; margin-bottom:10px;}
+  .panel p{font-size:15px; line-height:1.6; color:#3a3a38; margin-bottom:14px;}
+  .pricerow{display:flex; justify-content:space-between; padding:11px 0; border-bottom:1px dashed #e3e3e0; font-size:15px;}
+  .pricerow b{font-weight:900;}
+  .pricerow:last-of-type{border-bottom:none;}
+  .stack > a{margin-bottom:10px;}
+  .restart{margin-top:18px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="masthead">
+    <div class="logo-dot"></div>
+    <div>
+      <h1>Sprout Society</h1>
+      <div class="sub">Welcome &amp; Sign In</div>
+    </div>
+  </div>
+  <div class="acid-rule"></div>
+
+  <div class="body">
+
+    <!-- STEP 1 — SIGN IN -->
+    <section class="step active" id="step1">
+      <h2>Welcome in 👋</h2>
+      <p class="lede">Sign in so we can stay in touch about programs, events, and community happenings.</p>
+
+      <div id="gbtn"></div>
+      <div class="gfallback" id="gfallback" style="display:none">or enter your details below</div>
+
+      <div class="err" id="err"></div>
+
+      <label for="name">Your name</label>
+      <input class="field" id="name" type="text" autocomplete="name" placeholder="First and last name" />
+
+      <label for="email">Email</label>
+      <input class="field" id="email" type="email" autocomplete="email" inputmode="email" placeholder="you@email.com" />
+
+      <button class="btn btn-primary" id="submitBtn">Sign in →</button>
+      <p class="note">By signing in you agree to receive occasional updates from Sprout Society. We never share your info.</p>
+    </section>
+
+    <!-- STEP 2 — DONATION -->
+    <section class="step" id="step2">
+      <h2>You're in. Thank you 🌱</h2>
+      <div class="blurb">
+        Sprout Society is a registered <b>501(c)(3) nonprofit</b>. Every dollar goes directly into future
+        programming and community offerings: free and low-cost events, scholarships, and a space where
+        no one builds a creative life alone. A small gift makes a real difference.
+      </div>
+      <label>Suggested donation</label>
+      <div class="amts" id="amts">
+        <a class="amt" data-amt="10">$10</a>
+        <a class="amt feature" data-amt="25">$25</a>
+        <a class="amt" data-amt="50">$50</a>
+      </div>
+      <a class="amt" id="customAmt" style="display:block; margin-bottom:18px;">Give another amount →</a>
+      <button class="btn btn-ghost" id="skipDonate">Maybe later — continue</button>
+    </section>
+
+    <!-- STEP 3 — LANDING -->
+    <section class="step" id="step3">
+      <h2>Get involved</h2>
+      <div class="tabs">
+        <div class="tab active" data-tab="member">Membership</div>
+        <div class="tab" data-tab="host">Host an event</div>
+        <div class="tab" data-tab="donate">Donate</div>
+      </div>
+
+      <div class="panel active" id="panel-member">
+        <h3>Become a member</h3>
+        <p>Members get access to our space, community events, and a creative home in Brooklyn.</p>
+        <div class="pricerow"><span>Day pass</span><b>$17</b></div>
+        <div class="pricerow"><span>Monthly</span><b>$55</b></div>
+        <div class="pricerow"><span>Annual</span><b>$495</b></div>
+        <a class="btn btn-fuchsia btn-primary" id="memberBtn" target="_blank" rel="noopener" style="margin-top:16px;">Join Sprout Society →</a>
+      </div>
+
+      <div class="panel" id="panel-host">
+        <h3>Host at Sprout Society</h3>
+        <p>From workshops to private events, our space is available to the community. Tell us what you have in mind and we'll be in touch.</p>
+        <div class="stack">
+          <a class="btn btn-cyan" id="hostBtn" target="_blank" rel="noopener">Private event inquiry →</a>
+          <a class="btn btn-ghost" id="hostNonMemberBtn" target="_blank" rel="noopener">Host as a non-member →</a>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-donate">
+        <h3>Support our mission</h3>
+        <p>As a 501(c)(3) nonprofit, your donation funds free and low-cost programming, scholarships, and community offerings. Gifts are tax-deductible.</p>
+        <a class="btn btn-primary" id="donateBtn2" target="_blank" rel="noopener">Donate to Sprout Society →</a>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  const $ = id => document.getElementById(id);
+  const show = id => {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    $(id).classList.add('active');
+    window.scrollTo(0,0);
+  };
+
+  // ---- Wire Givebutter links ----
+  $('memberBtn').href = CONFIG.MEMBERSHIP_URL;
+  $('hostBtn').href = CONFIG.HOSTING_FORM;
+  $('hostNonMemberBtn').href = CONFIG.HOSTING_NONMEMBER_FORM;
+  $('donateBtn2').href = CONFIG.DONATE_URL;
+
+  // ---- Submit handler: send to Google Sheet via Apps Script ----
+  let submitting = false;
+  async function signIn(name, email, source){
+    if(submitting) return;
+    const err = $('err'); err.style.display='none';
+    name = (name||'').trim(); email = (email||'').trim();
+    if(!name){ err.textContent='Please enter your name.'; err.style.display='block'; return; }
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent='Please enter a valid email.'; err.style.display='block'; return; }
+    if(CONFIG.SCRIPT_URL.startsWith('PASTE')){ err.textContent='Setup needed: add your Apps Script URL (see SETUP.md).'; err.style.display='block'; return; }
+
+    submitting = true; $('submitBtn').textContent = 'Signing in…';
+    try {
+      // text/plain avoids a CORS preflight; no-cors lets the write succeed from any host.
+      await fetch(CONFIG.SCRIPT_URL, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ name, email, source: source||'kiosk', ts:new Date().toISOString() })
+      });
+      show('step2');
+    } catch(e){
+      err.textContent='Could not save — check your connection and try again.'; err.style.display='block';
+    } finally {
+      submitting = false; $('submitBtn').textContent = 'Sign in →';
+    }
+  }
+
+  $('submitBtn').addEventListener('click', () => signIn($('name').value, $('email').value, 'kiosk'));
+  $('email').addEventListener('keydown', e => { if(e.key==='Enter') signIn($('name').value, $('email').value, 'kiosk'); });
+
+  // ---- Tabs ----
+  function selectTab(name){
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab===name));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id==='panel-'+name));
+  }
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => selectTab(t.dataset.tab)));
+
+  // ---- Step 2 → 3 (donation selection advances into the landing page, no popup) ----
+  function goDonate(amt){
+    $('donateBtn2').href = CONFIG.DONATE_URL + (amt ? '?amount=' + amt : '');
+    show('step3');
+    selectTab('donate');
+  }
+  document.querySelectorAll('#amts .amt').forEach(a =>
+    a.addEventListener('click', e => { e.preventDefault(); goDonate(a.dataset.amt); })
+  );
+  $('customAmt').addEventListener('click', e => { e.preventDefault(); goDonate(null); });
+  $('skipDonate').addEventListener('click', () => { selectTab('member'); show('step3'); });
+
+  // ---- Google Sign-In (optional, client-side) ----
+  function decodeJwt(t){ try{ return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }catch(e){ return null; } }
+  window.handleGoogle = function(resp){
+    const p = decodeJwt(resp.credential);
+    if(!p){ return; }
+    $('name').value = p.name || ((p.given_name||'')+' '+(p.family_name||'')).trim();
+    $('email').value = p.email || '';
+    signIn($('name').value, $('email').value, 'google');
+  };
+  window.addEventListener('load', () => {
+    if(CONFIG.GOOGLE_CLIENT_ID.startsWith('PASTE') || !window.google){ return; }
+    try{
+      google.accounts.id.initialize({ client_id: CONFIG.GOOGLE_CLIENT_ID, callback: window.handleGoogle });
+      google.accounts.id.renderButton($('gbtn'), { theme:'filled_black', size:'large', text:'continue_with', shape:'pill', width:300 });
+      $('gfallback').style.display='block';
+    }catch(e){ /* leave manual entry only */ }
+  });
+</script>
+</body>
+</html>
