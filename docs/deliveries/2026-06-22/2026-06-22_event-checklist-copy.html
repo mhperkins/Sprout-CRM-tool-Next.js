@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Copy Event Checklist · 2026-06-22</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --paper:#F7F7F6; --muted:#6a6a66;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',sans-serif;background:var(--paper);color:var(--ink);
+    padding:40px 16px;display:flex;justify-content:center}
+  .slide{width:100%;max-width:860px;background:#fff;border-radius:14px;
+    overflow:hidden;box-shadow:0 10px 36px rgba(0,0,0,.14)}
+  .top{background:var(--ink);color:#fff;padding:30px 36px;
+    display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+  .top h1{font-size:25px;font-weight:900;line-height:1.18}
+  .top .sub{color:var(--cyan);font-size:13px;font-weight:700;
+    text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
+  .badge{background:var(--acid);color:var(--ink);font-weight:900;font-size:11px;
+    padding:7px 12px;border-radius:20px;text-transform:uppercase;
+    letter-spacing:1px;white-space:nowrap}
+  .rule{height:4px;background:var(--acid)}
+  .body{padding:30px 36px 36px}
+  .lead{font-size:16px;line-height:1.6;color:#3a3a38;margin-bottom:26px}
+  .lead b{color:var(--ink)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:26px}
+  .card{border:1px solid #ececea;border-radius:10px;padding:18px 18px;
+    border-left:6px solid var(--cyan)}
+  .card.fx{border-left-color:var(--fuchsia)}
+  .card.bn{border-left-color:var(--banana)}
+  .card h3{font-size:11px;font-weight:900;text-transform:uppercase;
+    letter-spacing:1.4px;color:var(--muted);margin-bottom:8px}
+  .card .big{font-size:30px;font-weight:900;line-height:1}
+  .card .big small{font-size:14px;font-weight:700;color:var(--muted)}
+  .card p{font-size:14px;line-height:1.5;color:#3a3a38;margin-top:6px}
+  .steps{list-style:none;display:flex;flex-direction:column;gap:11px;margin-bottom:28px}
+  .steps li{display:flex;gap:13px;align-items:flex-start;font-size:15px;
+    line-height:1.5;color:#3a3a38}
+  .steps .dot{flex:none;width:22px;height:22px;border-radius:50%;
+    background:var(--acid);color:var(--ink);font-weight:900;font-size:12px;
+    display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .steps b{color:var(--ink)}
+  code{background:#f2f2ef;border-radius:5px;padding:1px 6px;font-size:13px;
+    font-family:ui-monospace,monospace}
+  .foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+    border-top:1px solid #ececea;padding-top:20px}
+  .chip{font-size:12px;font-weight:700;padding:6px 12px;border-radius:18px;
+    background:var(--paper);border:1px solid #e2e2df;color:#3a3a38}
+  .chip.k{background:var(--ink);color:#fff;border-color:var(--ink);
+    font-family:ui-monospace,monospace}
+  @media(max-width:620px){.grid{grid-template-columns:1fr}.top{flex-direction:column}}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="top">
+      <div>
+        <div class="sub">Sprout CRM · Delivery</div>
+        <h1>Copied the May 19 checklist<br>onto the June 26 Sprout n Tell</h1>
+      </div>
+      <span class="badge">Data only · Effort: low</span>
+    </div>
+    <div class="rule"></div>
+    <div class="body">
+      <p class="lead">Pulled the full <b>18-item planning checklist</b> from the
+        May 19 <b>Show n Tell</b> and appended it to the June 26
+        <b>Sprout n Tell</b> event — reset to unchecked, with due dates
+        re-timed for the new date.</p>
+
+      <div class="grid">
+        <div class="card bn">
+          <h3>June 26 — before</h3>
+          <div class="big">2 <small>items</small></div>
+          <p>Confirm Musicians · Confirm Artists</p>
+        </div>
+        <div class="card fx">
+          <h3>June 26 — after</h3>
+          <div class="big">20 <small>items</small></div>
+          <p>Original 2 preserved + 18 copied from May 19</p>
+        </div>
+      </div>
+
+      <ul class="steps">
+        <li><span class="dot">1</span><div>Appended all 18 May items with
+          <b>new collision-safe ids</b> (<code>md5(orig+'_jun26')</code>).</div></li>
+        <li><span class="dot">2</span><div>Reset every copied item to
+          <b>completed: false</b> — fresh planning for the new event.</div></li>
+        <li><span class="dot">3</span><div>Shifted each due date
+          <b>+38 days</b> (the May 19 → June 26 gap) so lead-times stay
+          meaningful — e.g. Flyers Posted 5/7 → 6/14.</div></li>
+        <li><span class="dot">4</span><div>Concatenated onto the existing array,
+          so the original 2 items survive. Verified <b>20 total</b>.</div></li>
+      </ul>
+
+      <div class="foot">
+        <span class="chip k">commit 6d45189</span>
+        <span class="chip k">branch main</span>
+        <span class="chip">sprout_events · data→checklist</span>
+        <span class="chip">evt_mordmhe4e6nj → evt_mpn2a3rtn29n</span>
+        <span class="chip">Supabase MCP · execute_sql</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

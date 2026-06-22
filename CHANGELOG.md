@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-06-22 — Editable checklist calendar on the event detail page
+
+Made the event-detail checklist calendar fully editable. App code only (`components/CRMManager.jsx`, inside `EventDetailPage`). **Effort: medium.**
+
+- **Edit name + date** — clicking an item dot opens a popover with an editable name field (commits on blur/Enter), a due-date picker (moves the item), the complete toggle, and a Delete button.
+- **Add by clicking a day** — clicking a day cell opens an inline input prefilled with that date; Enter adds. The calendar now always renders, so the first item can be added to an empty checklist.
+- **Drag-drop** — item dots are draggable; drop on another day to re-date, or onto the "No due date" section to clear the date. Days outline dashed-cyan while dragging.
+- **No-date section** — rows are now inline-editable (name, date, delete, drag handle).
+- New helpers `updateChecklistItem`/`deleteChecklistItem`/`addChecklistItem`/`openAdd`/`dropOnDay`; state `editText`/`addDate`/`addText`/`dragId`. All edits persist through the existing `onUpdateEvent` path.
+- **Bug fixed same session** — initial version threw `item is not defined` (popover rendered outside `items.map`); moved it inside the map, each dot wrapped in a `position:relative` container.
+
+---
+
 ## 2026-06-22 — Event sign-in page → Google Sheet, hosted, with QR code
 
 Built a standalone branded HTML sign-in page that writes each entry into a Google Sheet via an Apps Script web app, hosted it on Vercel, and generated a QR code + printable flyer. New files only — no change to the CRM app code, schemas, or DB. **Effort: medium.**

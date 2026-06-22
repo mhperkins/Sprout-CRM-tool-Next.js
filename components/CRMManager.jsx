@@ -3207,6 +3207,10 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
   const defaultMonth=(event.event_date||today).slice(0,7);
   const [calMonth,setCalMonth]=useState(defaultMonth);
   const [popover,setPopover]=useState(null); // {itemId}
+  const [editText,setEditText]=useState("");  // local draft for popover name edit
+  const [addDate,setAddDate]=useState(null);  // dateStr → inline add input shown in that cell
+  const [addText,setAddText]=useState("");
+  const [dragId,setDragId]=useState(null);    // checklist item id being dragged
 
   const onToggleConfirm = (cId) => {
     const ids=event.confirmed_ids||[];
@@ -3216,6 +3220,19 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
     const updated=(event.checklist||[]).map(i=>i.id===id?{...i,completed:!i.completed}:i);
     onUpdateEvent({...event, checklist:updated});
   };
+  const updateChecklistItem = (id,patch) => {
+    onUpdateEvent({...event, checklist:(event.checklist||[]).map(i=>i.id===id?{...i,...patch}:i)});
+  };
+  const deleteChecklistItem = (id) => {
+    onUpdateEvent({...event, checklist:(event.checklist||[]).filter(i=>i.id!==id)});
+    setPopover(null);
+  };
+  const addChecklistItem = (dateStr,text) => {
+    if(!text.trim()) return;
+    onUpdateEvent({...event, checklist:[...(event.checklist||[]),{id:uid(),text:text.trim(),date:dateStr||null,completed:false}]});
+  };
+  const openAdd = (dayStr) => { if(addDate===dayStr) return; setPopover(null); setAddDate(dayStr); setAddText(""); };
+  const dropOnDay = (dayStr) => { if(dragId){ updateChecklistItem(dragId,{date:dayStr}); setDragId(null); } };
 
   const cl=event.checklist||[];
   const clTotal=cl.length;
@@ -3254,8 +3271,6 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
     }
   });
 
-  const popoverItem=popover?cl.find(i=>i.id===popover.itemId):null;
-
   const ContactRow=({c})=>{
     const confirmed=(event.confirmed_ids||[]).includes(c.id);
     const initials=((c.first_name||"").charAt(0)+(c.last_name||"").charAt(0)).toUpperCase();
@@ -3277,7 +3292,7 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
   };
 
   return (
-    <div className="page" onClick={()=>popover&&setPopover(null)}>
+    <div className="page" onClick={()=>{if(popover)setPopover(null);if(addDate!==null)setAddDate(null);}}>
       {/* PAGE HEADER */}
       <div className="pg-hd">
         <div>
@@ -3338,11 +3353,13 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
       </div>
 
       {/* FULL-WIDTH CHECKLIST CALENDAR */}
-      {clTotal>0&&<div style={{borderTop:"1.5px solid var(--g200)",paddingTop:20}}>
+      <div style={{borderTop:"1.5px solid var(--g200)",paddingTop:20}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <div className="dp-sect-lbl" style={{margin:0}}>Checklist</div>
-            <span style={{fontSize:11,color:"var(--g500)"}}>{clDone} / {clTotal} done</span>
+            {clTotal>0
+              ? <span style={{fontSize:11,color:"var(--g500)"}}>{clDone} / {clTotal} done</span>
+              : <span style={{fontSize:11,color:"var(--g400)"}}>Click a day to add an item</span>}
           </div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <button className="btn btn-ghost btn-sm" onClick={prevMonth}>←</button>
@@ -3367,42 +3384,79 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
             const dayStr=`${calMonth}-${String(day).padStart(2,"0")}`;
             const isToday=dayStr===today;
             const items=itemsByDay[day]||[];
+            const isDropTarget=dragId!=null;
             return (
-              <div key={day} className={`cal-day${isToday?" today":""}`} style={{cursor:items.length?"pointer":"default",position:"relative"}}>
+              <div key={day} className={`cal-day${isToday?" today":""}`}
+                style={{cursor:"pointer",position:"relative",outline:isDropTarget?"1.5px dashed var(--cyan)":"none"}}
+                onClick={()=>openAdd(dayStr)}
+                onDragOver={e=>{if(dragId)e.preventDefault();}}
+                onDrop={e=>{e.preventDefault();dropOnDay(dayStr);}}>
                 <div className="cal-date">{day}</div>
                 {items.map(item=>(
-                  <div key={item.id} className="cal-dot" onClick={e=>{e.stopPropagation();setPopover(popover?.itemId===item.id?null:{itemId:item.id});}}
-                    style={{background:item.completed?"var(--cyan-lt)":(!item.completed&&item.date<=today)?"var(--fuchsia-lt)":"var(--acid-lt)",color:item.completed?"#155e6e":(!item.completed&&item.date<=today)?"#8b0057":"#3a3d00",textDecoration:item.completed?"line-through":"none"}}>
-                    {item.text}
+                  <div key={item.id} style={{position:"relative"}}>
+                    <div className="cal-dot" draggable
+                      onDragStart={e=>{e.stopPropagation();setPopover(null);setDragId(item.id);}}
+                      onDragEnd={()=>setDragId(null)}
+                      onClick={e=>{e.stopPropagation();const opening=popover?.itemId!==item.id;setPopover(opening?{itemId:item.id}:null);if(opening)setEditText(item.text);setAddDate(null);}}
+                      style={{background:item.completed?"var(--cyan-lt)":(!item.completed&&item.date<=today)?"var(--fuchsia-lt)":"var(--acid-lt)",color:item.completed?"#155e6e":(!item.completed&&item.date<=today)?"#8b0057":"#3a3d00",textDecoration:item.completed?"line-through":"none"}}>
+                      {item.text}
+                    </div>
+                    {/* EDIT POPOVER */}
+                    {popover?.itemId===item.id&&(
+                      <div onClick={e=>e.stopPropagation()} style={{position:"absolute",top:"100%",left:0,zIndex:300,background:"#fff",border:"1.5px solid var(--g200)",borderRadius:8,padding:"10px 12px",boxShadow:"var(--sh-lg)",minWidth:210,marginTop:4}}>
+                        <label className="fl">Item</label>
+                        <input className="fi" style={{fontSize:12,marginBottom:8}} value={editText}
+                          onChange={e=>setEditText(e.target.value)}
+                          onKeyDown={e=>{if(e.key==="Enter"){updateChecklistItem(item.id,{text:editText.trim()||item.text});setPopover(null);}}}
+                          onBlur={()=>{const t=editText.trim();if(t&&t!==item.text)updateChecklistItem(item.id,{text:t});}}/>
+                        <label className="fl">Due date</label>
+                        <input type="date" className="fi" style={{fontSize:11,marginBottom:8}} value={item.date||""}
+                          onChange={e=>updateChecklistItem(item.id,{date:e.target.value||null})}/>
+                        <label style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",fontSize:12,marginBottom:8}}>
+                          <input type="checkbox" checked={item.completed} onChange={()=>onToggleChecklist(item.id)} style={{accentColor:"var(--cyan)"}}/>
+                          {item.completed?"Completed":"Mark complete"}
+                        </label>
+                        <button className="btn btn-danger btn-sm" style={{width:"100%"}} onClick={()=>deleteChecklistItem(item.id)}>Delete item</button>
+                      </div>
+                    )}
                   </div>
                 ))}
-                {/* POPOVER */}
-                {popoverItem&&popover?.itemId&&items.find(i=>i.id===popover.itemId)&&(
-                  <div onClick={e=>e.stopPropagation()} style={{position:"absolute",top:"100%",left:0,zIndex:300,background:"#fff",border:"1.5px solid var(--g200)",borderRadius:8,padding:"10px 12px",boxShadow:"var(--sh-lg)",minWidth:180,marginTop:4}}>
-                    <div style={{fontSize:12,fontWeight:700,marginBottom:8,lineHeight:1.4}}>{popoverItem.text}</div>
-                    {popoverItem.date&&<div style={{fontSize:10,color:"var(--g400)",marginBottom:8}}>{fmtDate(popoverItem.date)}</div>}
-                    <label style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",fontSize:12}}>
-                      <input type="checkbox" checked={popoverItem.completed} onChange={()=>onToggleChecklist(popoverItem.id)} style={{accentColor:"var(--cyan)"}}/>
-                      {popoverItem.completed?"Mark incomplete":"Mark complete"}
-                    </label>
+                {/* INLINE ADD */}
+                {addDate===dayStr&&(
+                  <div onClick={e=>e.stopPropagation()} style={{marginTop:3}}>
+                    <input autoFocus className="fi" style={{fontSize:9,padding:"2px 5px",height:"auto",lineHeight:1.3}}
+                      placeholder="New item… ↵" value={addText}
+                      onChange={e=>setAddText(e.target.value)}
+                      onKeyDown={e=>{if(e.key==="Enter"){addChecklistItem(dayStr,addText);setAddText("");setAddDate(null);}if(e.key==="Escape")setAddDate(null);}}
+                      onBlur={()=>setAddDate(null)}/>
                   </div>
                 )}
               </div>
             );
           })}
         </div>
+        <div style={{fontSize:10,color:"var(--g400)",marginTop:8}}>Click a day to add · click an item to edit its name and date · drag an item to move it</div>
 
         {/* NO-DATE ITEMS */}
-        {clNoDate.length>0&&<div style={{marginTop:16}}>
-          <div className="dp-sect-lbl" style={{marginBottom:8}}>No due date</div>
+        {clNoDate.length>0&&<div style={{marginTop:16}}
+          onDragOver={e=>{if(dragId)e.preventDefault();}}
+          onDrop={e=>{e.preventDefault();if(dragId){updateChecklistItem(dragId,{date:null});setDragId(null);}}}>
+          <div className="dp-sect-lbl" style={{marginBottom:8}}>No due date <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--g400)"}}>· drag here to clear a date</span></div>
           {clNoDate.map(item=>(
-            <div key={item.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}>
-              <input type="checkbox" checked={item.completed} onChange={()=>onToggleChecklist(item.id)} style={{accentColor:"var(--cyan)",cursor:"pointer"}}/>
-              <span style={{flex:1,fontSize:12,textDecoration:item.completed?"line-through":"none",color:item.completed?"var(--g400)":"inherit"}}>{item.text}</span>
+            <div key={item.id} draggable onDragStart={()=>setDragId(item.id)} onDragEnd={()=>setDragId(null)}
+              style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderBottom:"1px solid var(--g100)"}}>
+              <span style={{cursor:"grab",color:"var(--g300)",fontSize:13,lineHeight:1}} title="Drag to a day">⠿</span>
+              <input type="checkbox" checked={item.completed} onChange={()=>onToggleChecklist(item.id)} style={{accentColor:"var(--cyan)",cursor:"pointer",flexShrink:0}}/>
+              <input className="fi" style={{flex:1,fontSize:12,padding:"3px 6px"}} defaultValue={item.text}
+                onBlur={e=>{const t=e.target.value.trim();if(t&&t!==item.text)updateChecklistItem(item.id,{text:t});}}
+                onKeyDown={e=>{if(e.key==="Enter")e.target.blur();}}/>
+              <input type="date" className="fi" style={{width:140,fontSize:11,padding:"3px 6px",flexShrink:0}} value={item.date||""}
+                onChange={e=>updateChecklistItem(item.id,{date:e.target.value||null})}/>
+              <button onClick={()=>deleteChecklistItem(item.id)} style={{background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:14,lineHeight:1,padding:"0 2px",flexShrink:0}}>×</button>
             </div>
           ))}
         </div>}
-      </div>}
+      </div>
 
       {/* CONTACTS MODAL */}
       {showContactsModal&&(

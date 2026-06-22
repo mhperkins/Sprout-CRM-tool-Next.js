@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Editable Checklist Calendar · 2026-06-22</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --paper:#F7F7F6; --muted:#6a6a66;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',sans-serif;background:var(--paper);color:var(--ink);
+    padding:40px 16px;display:flex;justify-content:center}
+  .slide{width:100%;max-width:880px;background:#fff;border-radius:14px;
+    overflow:hidden;box-shadow:0 10px 36px rgba(0,0,0,.14)}
+  .top{background:var(--ink);color:#fff;padding:30px 36px;
+    display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+  .top h1{font-size:24px;font-weight:900;line-height:1.2}
+  .top .sub{color:var(--cyan);font-size:13px;font-weight:700;
+    text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
+  .badge{background:var(--acid);color:var(--ink);font-weight:900;font-size:11px;
+    padding:7px 12px;border-radius:20px;text-transform:uppercase;
+    letter-spacing:1px;white-space:nowrap}
+  .rule{height:4px;background:var(--acid)}
+  .body{padding:30px 36px 34px}
+  .lead{font-size:16px;line-height:1.6;color:#3a3a38;margin-bottom:26px}
+  .lead b{color:var(--ink)}
+  .feat{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:26px}
+  .card{border:1px solid #ececea;border-radius:10px;padding:17px 18px;
+    border-left:6px solid var(--cyan)}
+  .card.fx{border-left-color:var(--fuchsia)}
+  .card.bn{border-left-color:var(--banana)}
+  .card.ac{border-left-color:var(--acid)}
+  .card h3{font-size:13px;font-weight:900;margin-bottom:6px;
+    display:flex;align-items:center;gap:8px}
+  .card .ic{font-size:16px}
+  .card p{font-size:13.5px;line-height:1.55;color:#3a3a38}
+  .card p code{background:#f2f2ef;border-radius:4px;padding:1px 5px;
+    font-size:12px;font-family:ui-monospace,monospace}
+  .note{background:var(--paper);border-radius:10px;padding:16px 18px;
+    font-size:13.5px;line-height:1.6;color:#3a3a38;margin-bottom:24px;
+    border-left:5px solid var(--fuchsia)}
+  .note b{color:var(--ink)}
+  .foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+    border-top:1px solid #ececea;padding-top:20px}
+  .chip{font-size:12px;font-weight:700;padding:6px 12px;border-radius:18px;
+    background:var(--paper);border:1px solid #e2e2df;color:#3a3a38}
+  .chip.k{background:var(--ink);color:#fff;border-color:var(--ink);
+    font-family:ui-monospace,monospace}
+  @media(max-width:640px){.feat{grid-template-columns:1fr}.top{flex-direction:column}}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="top">
+      <div>
+        <div class="sub">Sprout CRM · Delivery</div>
+        <h1>Editable checklist calendar<br>on the event detail page</h1>
+      </div>
+      <span class="badge">App code · Effort: medium</span>
+    </div>
+    <div class="rule"></div>
+    <div class="body">
+      <p class="lead">The event checklist calendar was read-only beyond a
+        mark-complete toggle. It's now a <b>full planning surface</b> — edit,
+        add, and re-schedule items right on the month grid.</p>
+
+      <div class="feat">
+        <div class="card cy">
+          <h3><span class="ic">✏️</span> Edit name + date</h3>
+          <p>Click an item → popover with an editable name field, a due-date
+            picker, complete toggle, and delete.</p>
+        </div>
+        <div class="card ac">
+          <h3><span class="ic">➕</span> Click a day to add</h3>
+          <p>Click any day cell → inline input prefilled with that date.
+            Enter to add. Works on an empty checklist too.</p>
+        </div>
+        <div class="card fx">
+          <h3><span class="ic">✋</span> Drag to move</h3>
+          <p>Drag an item dot to another day to re-date it. Days outline
+            dashed-cyan while dragging.</p>
+        </div>
+        <div class="card bn">
+          <h3><span class="ic">🗓️</span> No-date section</h3>
+          <p>Inline-editable rows; drag a dated item onto it to
+            <b>clear</b> its date.</p>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Bug caught + fixed same session:</b> first build threw
+        <code>item is not defined</code> — the edit popover was rendered
+        outside the <code>items.map</code>. Moved it inside the loop, each
+        dot wrapped in its own relative container. Build passes.
+      </div>
+
+      <div class="foot">
+        <span class="chip k">branch main</span>
+        <span class="chip">components/CRMManager.jsx · EventDetailPage</span>
+        <span class="chip">persists via onUpdateEvent</span>
+        <span class="chip">npm run build ✓</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
