@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-06-22 — Event sign-in page → Google Sheet, hosted, with QR code
+
+Built a standalone branded HTML sign-in page that writes each entry into a Google Sheet via an Apps Script web app, hosted it on Vercel, and generated a QR code + printable flyer. New files only — no change to the CRM app code, schemas, or DB. **Effort: medium.**
+
+- **The page** (`public/sprout-sign-in.html`) — 3 steps: name/email sign-in (+ optional client-side "Continue with Google"), a 501(c)(3) suggested-donation step (Givebutter), and a tabbed Get Involved landing page (Membership / Host / Donate). Self-contained, Sprout-branded; a top-of-file `CONFIG` block holds the script URL + Givebutter/form links.
+- **The sink** (`sign-in-kiosk/apps-script.gs`) — a Google Apps Script web app bound to the Sheet; `doPost` appends `Timestamp · Name · Email · Source`, creates the `Sign-ins` tab on demand, and serializes concurrent submits with `LockService`. The page POSTs JSON `no-cors` with `text/plain` to dodge the CORS preflight.
+- **Hosting** — moved the HTML into `public/` so it deploys at `https://sprout-crm-tool-next-js.vercel.app/sprout-sign-in.html`. Static files bypass the AuthGate login wall, so the public reaches it without signing in (verified live).
+- **QR + flyer** — `sign-in-kiosk/sign-in-qr.png` (encodes the live URL) + `sign-in-kiosk/sign-in-flyer.html` (letter-size "Scan to sign in" sheet embedding the QR).
+- **Mid-build tweaks** — donation amount selection now advances into the landing page (no popup) carrying the amount into the Donate button; removed the "Done — sign in someone new" button (self-service, not a shared kiosk).
+- **Verified** — a real test sign-in landed in the Sheet. Apps Script gotchas resolved: multi-account "unable to open the file", and the first deploy's domain-login redirect (fixed by setting Who-has-access = Anyone).
+- **Open** — wire "Continue with Google" (OAuth client ID), and optionally also pipe sign-ins into `sprout_contacts`.
+
+---
+
 ## 2026-06-22 — Copy May 19 event checklist onto June 26 Sprout n Tell
 
 Copied the 18-item planning checklist from the May 19 **Show n Tell** (`evt_mordmhe4e6nj`) onto the June 26 **Sprout n Tell** (`evt_mpn2a3rtn29n`). Data-only — one `execute_sql` UPDATE on `sprout_events` via the Supabase MCP; no app code or repo change. **Effort: low.**

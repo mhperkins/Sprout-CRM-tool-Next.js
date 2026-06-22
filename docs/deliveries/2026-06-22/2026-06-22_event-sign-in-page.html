@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Delivery — Event Sign-In Page</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#030000;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--cyan-deep:#2a8ca0;--paper:#F7F7F6;--muted:#8a8a86;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Lato',sans-serif;background:var(--paper);color:var(--ink);padding:40px 20px;}
+  .wrap{max-width:920px;margin:0 auto;}
+  .head{background:var(--ink);border-radius:18px 18px 0 0;padding:32px 36px;display:flex;align-items:center;gap:16px;}
+  .dot{width:40px;height:40px;border-radius:50%;background:var(--acid);flex:0 0 auto;}
+  .head h1{color:#fff;font-size:26px;font-weight:900;}
+  .head .sub{color:#bdbdba;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-top:3px;}
+  .acid{height:5px;background:var(--acid);}
+  .body{background:#fff;border-radius:0 0 18px 18px;padding:34px 36px 40px;box-shadow:0 14px 40px rgba(0,0,0,.1);}
+  .badges{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:26px;}
+  .badge{font-size:12.5px;font-weight:900;padding:7px 13px;border-radius:20px;}
+  .b-green{background:var(--acid);color:var(--ink);}
+  .b-cyan{background:var(--cyan);color:var(--ink);}
+  .b-banana{background:var(--banana);color:var(--ink);}
+  .b-ghost{background:#fff;border:2px solid #e3e3e0;color:var(--muted);}
+  h2{font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin:26px 0 14px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .card{border:2px solid #eee;border-radius:13px;padding:18px 20px;}
+  .card .n{font-size:24px;}
+  .card h3{font-size:17px;font-weight:900;margin:8px 0 6px;}
+  .card p{font-size:14px;line-height:1.55;color:#3a3a38;}
+  .flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 4px;}
+  .pill{background:var(--paper);border:2px solid #e3e3e0;border-radius:10px;padding:11px 15px;font-size:14px;font-weight:700;}
+  .arrow{color:var(--fuchsia);font-weight:900;font-size:18px;}
+  .url{display:inline-block;background:var(--ink);color:#fff;font-weight:700;font-size:14px;padding:11px 16px;border-radius:10px;text-decoration:none;word-break:break-all;}
+  .ship{display:flex;align-items:flex-start;gap:10px;font-size:14.5px;line-height:1.5;margin-bottom:9px;}
+  .ship .chk{color:var(--cyan-deep);font-weight:900;}
+  .foot{margin-top:30px;padding-top:18px;border-top:2px dashed #e3e3e0;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:13px;color:var(--muted);}
+  code{background:var(--paper);padding:2px 7px;border-radius:6px;font-size:13px;}
+  .open{font-size:14px;line-height:1.6;color:#3a3a38;}
+  .open b{color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="dot"></div>
+    <div>
+      <h1>Event Sign-In Page → Google Sheet</h1>
+      <div class="sub">Sprout Society · Delivered 2026-06-22</div>
+    </div>
+  </div>
+  <div class="acid"></div>
+  <div class="body">
+
+    <div class="badges">
+      <span class="badge b-green">LIVE &amp; PUBLIC</span>
+      <span class="badge b-cyan">HOSTED ON VERCEL</span>
+      <span class="badge b-banana">QR + PRINTABLE FLYER</span>
+      <span class="badge b-ghost">EFFORT: MEDIUM</span>
+    </div>
+
+    <h2>The flow</h2>
+    <div class="flow">
+      <span class="pill">📱 Scan QR</span><span class="arrow">→</span>
+      <span class="pill">✍️ Name + Email</span><span class="arrow">→</span>
+      <span class="pill">🌱 Suggested donation</span><span class="arrow">→</span>
+      <span class="pill">🔖 Membership / Host / Donate</span>
+    </div>
+    <div class="flow" style="margin-top:14px;">
+      <span class="pill">HTML page</span><span class="arrow">→</span>
+      <span class="pill">Apps Script web app</span><span class="arrow">→</span>
+      <span class="pill">Google Sheet row</span>
+    </div>
+
+    <h2>What shipped</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="n">🖥️</div>
+        <h3>The sign-in page</h3>
+        <p><code>public/sprout-sign-in.html</code> — branded 3-step page: sign-in (+ optional Continue with Google), 501(c)(3) donation prompt, tabbed landing.</p>
+      </div>
+      <div class="card">
+        <div class="n">📊</div>
+        <h3>The Sheet sink</h3>
+        <p><code>apps-script.gs</code> — Apps Script web app appends <b>Timestamp · Name · Email · Source</b> per sign-in, with a lock for concurrent submits.</p>
+      </div>
+      <div class="card">
+        <div class="n">🔳</div>
+        <h3>QR + flyer</h3>
+        <p><code>sign-in-qr.png</code> encodes the live URL; <code>sign-in-flyer.html</code> is a letter-size "Scan to sign in" sheet to print for events.</p>
+      </div>
+      <div class="card">
+        <div class="n">📄</div>
+        <h3>Setup guide</h3>
+        <p><code>SETUP.md</code> — 5-minute walkthrough: deploy the script, paste the URL, optional Google button.</p>
+      </div>
+    </div>
+
+    <h2>Verified end to end</h2>
+    <div class="ship"><span class="chk">✓</span><span>Test sign-in landed in the Sheet: <code>Max Perkins · maxwellhperkins@gmail.com · kiosk</code></span></div>
+    <div class="ship"><span class="chk">✓</span><span>Public URL reachable with no login wall (static files bypass the AuthGate)</span></div>
+    <div class="ship"><span class="chk">✓</span><span>Apps Script web app set to <b>Anyone</b> access — returns <code>{"ok":true}</code>, no domain redirect</span></div>
+    <div class="ship"><span class="chk">✓</span><span>Donation selection advances into the landing page (no popup); "Done" button removed (self-service)</span></div>
+
+    <h2>Live URL</h2>
+    <a class="url" href="https://sprout-crm-tool-next-js.vercel.app/sprout-sign-in.html">sprout-crm-tool-next-js.vercel.app/sprout-sign-in.html</a>
+
+    <h2>Open follow-ups</h2>
+    <p class="open">
+      • <b>Continue with Google</b> — wire a Google OAuth Web client ID (with the Vercel origin authorized) into <code>CONFIG.GOOGLE_CLIENT_ID</code> to light up the button.<br/>
+      • <b>Optional CRM pipe</b> — also drop each sign-in into <code>sprout_contacts</code> (segment <code>community</code>), not just the Sheet.
+    </p>
+
+    <div class="foot">
+      <span>Commits <code>bb016ad</code> · <code>11d5412</code> → <code>main</code></span>
+      <span>Sheet: Sprout Society — Sign-Ins (hello@)</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>
