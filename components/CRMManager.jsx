@@ -2455,7 +2455,7 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
     spotlightEyebrow:"spotlight", spotlightName:"spotlight", spotlightBlurb:"spotlight", spotlightImage:"spotlight", spotlightIG:"spotlight", spotlightWeb:"spotlight", spotlightTestimonial:"spotlight",
     upcomingTitle:"upcoming", upcoming:"upcoming",
     pastTitle:"past", past:"past",
-    footerBrand:"footer", donateLink:"footer", memberLink:"footer",
+    footerBrand:"footer", donateLink:"footer", memberLink:"footer", footerIG:"footer", footerAddress:"footer", footerEIN:"footer",
   };
   // block group id → first editable field key (for reverse sync)
   const GROUP_FIRST={ masthead:"mastheadLabel", intro:"headline", featured:"featuredEyebrow", announce:"coworkingEyebrow", membership:"membership", marketing:"marketing", scholarship:"scholarship", spotlight:"spotlightEyebrow", upcoming:"upcomingTitle", past:"pastTitle", footer:"footerBrand" };
@@ -2469,9 +2469,12 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
     if(k.includes("rsvp")||k.includes("scholarship")||k.includes("apply")) return "qh-cta";
     return null;   // e.g. the hidden one-line preview — nothing to scroll to
   };
+  // Quick Hit footer fields all live in one footer cell (data-sec="footerBrand").
+  const QH_FOOTER=new Set(["footerBrand","donateLink","memberLink","footerIG","footerAddress","footerEIN"]);
   // key → preview group. Compact uses the static map; Quick Hit (structured) stamps
-  // data-sec="<section key>" so the group IS the key; the old bracket path falls back to keywords.
-  const groupForKey=(key)=> isCompact ? SEC_GROUP[key] : (isQuick ? key : qhGroupForKey(key));
+  // data-sec="<section key>" so the group IS the key (footer fields share footerBrand);
+  // the old bracket path falls back to keywords.
+  const groupForKey=(key)=> isCompact ? SEC_GROUP[key] : (isQuick ? (QH_FOOTER.has(key) ? "footerBrand" : key) : qhGroupForKey(key));
   // group → the data-fkey of its first editable field (for reverse sync clicks).
   const firstKeyForGroup=(grp)=>{
     if(isCompact) return GROUP_FIRST[grp];
