@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-06-23 — One-off "Quick Hit" newsletter: same section editor as the roundup
+
+Rebuilt the one-off Quick Hit template to use the **exact same structured-section editor** as the Monthly Roundup (it was previously a bracket-fill template with none of the section machinery). App code only (`lib/newsletter.js`, `components/CRMManager.jsx`). **Effort: medium.** `npm run build` passes; node render verified.
+
+- **New `QUICK_HIT_SECTIONS` + `buildQuickHit()`** — sections: Heading, Body, Announcements (repeatable), Upcoming event. Every section gets the same controls: text boxes, ✨ Polish, 🖼 image add, drag-to-crop photo, `[label](url)` clickable-link parsing, live preview, focus→scroll sync.
+- **Upcoming event** — adjustable crop photo + RSVP/clickable link, rendered via the reused `compactUpcomingRows` (identical to the roundup).
+- **Announcements** — new repeatable block between body and upcoming; each has an optional crop photo, title, body (Polish), and a clickable link button. Untouched blank announcements are filtered out so no `[placeholder]` text leaks into the sent email.
+- **`buildNewsletter` routes `quick-hit` → `buildQuickHit`**; deleted the dead `QUICK_HIT` raw template + its `RAW_TEMPLATES` entry.
+- **Editor generalized** — `isQuick`/`SECTIONS`/`isStructured`/`secByKey`; section-rendering branch + labels switched `isCompact` → `isStructured`. Quick Hit stamps `data-sec="<section key>"` so the field↔preview group is the key itself.
+- ⚠️ Old saved Quick Hit drafts (bracket-keyed) open empty since the template is now key-based — no live quick-hit drafts exist, so nothing lost.
+
+---
+
 ## 2026-06-22 — Editable checklist calendar on the event detail page
 
 Made the event-detail checklist calendar fully editable. App code only (`components/CRMManager.jsx`, inside `EventDetailPage`). **Effort: medium.**

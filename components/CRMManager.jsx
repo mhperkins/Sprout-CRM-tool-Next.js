@@ -27,7 +27,7 @@ import {
   uploadNewsletterImage,
   signOut,
 } from "../lib/services";
-import { buildNewsletter, TEMPLATES, defaultMonthYear, COMPACT_SECTIONS, blankCompactItem } from "../lib/newsletter";
+import { buildNewsletter, TEMPLATES, defaultMonthYear, COMPACT_SECTIONS, QUICK_HIT_SECTIONS, blankCompactItem } from "../lib/newsletter";
 import { validateContact, validateOrg } from "../lib/schemas";
 
 /* ─── Styles ───────────────────────────────────────────────────────────────── */
@@ -2400,10 +2400,15 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
 
   const isMonthly = draft.template==="monthly-roundup";
   const isCompact = draft.template==="monthly-roundup-compact";
+  const isQuick   = draft.template==="quick-hit";
+  // Both the compact roundup and the one-off Quick Hit use the structured-section editor.
+  const SECTIONS  = isCompact ? COMPACT_SECTIONS : (isQuick ? QUICK_HIT_SECTIONS : null);
+  const isStructured = !!SECTIONS;
+  const secByKey  = (k)=>(SECTIONS||[]).find(s=>s.key===k);
 
-  // Compact (structured-section) field helpers.
+  // Structured-section field helpers.
   const fv = draft.field_values||{};
-  const setItem   = (k,idx,sub,val)=>setDraft(p=>{ const arr=[...(p.field_values?.[k]||[blankCompactItem(COMPACT_SECTIONS.find(s=>s.key===k))])]; arr[idx]={...arr[idx],[sub]:val}; return {...p,field_values:{...p.field_values,[k]:arr}}; });
+  const setItem   = (k,idx,sub,val)=>setDraft(p=>{ const arr=[...(p.field_values?.[k]||[blankCompactItem(secByKey(k))])]; arr[idx]={...arr[idx],[sub]:val}; return {...p,field_values:{...p.field_values,[k]:arr}}; });
   const addItem   = (sec)=>setDraft(p=>{ const arr=[...(p.field_values?.[sec.key]||[blankCompactItem(sec)])]; arr.push(blankCompactItem(sec)); return {...p,field_values:{...p.field_values,[sec.key]:arr}}; });
   const removeItem= (k,idx)=>setDraft(p=>{ const arr=[...(p.field_values?.[k]||[])]; arr.splice(idx,1); return {...p,field_values:{...p.field_values,[k]:arr}}; });
 
@@ -2464,11 +2469,13 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
     if(k.includes("rsvp")||k.includes("scholarship")||k.includes("apply")) return "qh-cta";
     return null;   // e.g. the hidden one-line preview — nothing to scroll to
   };
-  // key → preview group (compact uses the static map; quick-hit resolves by keyword).
-  const groupForKey=(key)=> isCompact ? SEC_GROUP[key] : qhGroupForKey(key);
+  // key → preview group. Compact uses the static map; Quick Hit (structured) stamps
+  // data-sec="<section key>" so the group IS the key; the old bracket path falls back to keywords.
+  const groupForKey=(key)=> isCompact ? SEC_GROUP[key] : (isQuick ? key : qhGroupForKey(key));
   // group → the data-fkey of its first editable field (for reverse sync clicks).
   const firstKeyForGroup=(grp)=>{
     if(isCompact) return GROUP_FIRST[grp];
+    if(isQuick) return grp;   // structured Quick Hit: group === field key
     const i=built.placeholders.findIndex(ph=>qhGroupForKey(ph.key)===grp);
     return i<0?null:`qh-${i}`;
   };
@@ -2742,7 +2749,7 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
     <div className="page">
       <div className="pg-hd" style={{position:"sticky",top:0,zIndex:30,background:"var(--paper, #F7F7F6)",paddingTop:8,paddingBottom:12,borderBottom:"1px solid var(--g200, #e5e5e3)"}}>
         <div><div className="pg-ttl">{draft._isNew?"New newsletter":"Edit newsletter"}</div>
-          <div className="pg-sub">{TEMPLATES.find(t=>t.id===draft.template)?.name} · {isCompact?"custom sections":`${built.placeholders.length} field${built.placeholders.length!==1?"s":""} to fill`}</div></div>
+          <div className="pg-sub">{TEMPLATES.find(t=>t.id===draft.template)?.name} · {isStructured?"custom sections":`${built.placeholders.length} field${built.placeholders.length!==1?"s":""} to fill`}</div></div>
         <div style={{display:"flex",gap:8}}>
           <button className="btn btn-ghost btn-sm" onClick={onBack}>← Back</button>
           {!draft._isNew&&<button className="btn btn-ghost btn-sm" onClick={()=>onDelete(draft.id)}>Delete</button>}
@@ -2808,10 +2815,10 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
             </div></div>
           )}
 
-          <div className="card"><div className="card-hd"><span className="card-ttl">{isCompact?"Sections":"Fill in the blanks"}</span><span style={{fontSize:11,color:"var(--g500)"}}>{isCompact?`${COMPACT_SECTIONS.length} sections`:`${built.placeholders.length} left`}</span></div><div className="card-bd">
-            {isCompact
+          <div className="card"><div className="card-hd"><span className="card-ttl">{isStructured?"Sections":"Fill in the blanks"}</span><span style={{fontSize:11,color:"var(--g500)"}}>{isStructured?`${SECTIONS.length} sections`:`${built.placeholders.length} left`}</span></div><div className="card-bd">
+            {isStructured
               ? <div style={{display:"flex",flexDirection:"column",gap:16}}>
-                  {COMPACT_SECTIONS.map(sec=>{
+                  {SECTIONS.map(sec=>{
                     const LBL={textTransform:"none",letterSpacing:0,color:"var(--g600)",fontWeight:600};
                     const PB={padding:"2px 8px",fontSize:11};
                     if(sec.kind==="image"){
