@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Editable headers + encoding fix</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--g500:#8a8a86;--g700:#3a3a38;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Lato',Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);padding:40px 16px;line-height:1.5;}
+  .wrap{max-width:840px;margin:0 auto;}
+  .head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:3px solid var(--acid);padding-bottom:18px;margin-bottom:24px;}
+  .brand{font-size:13px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--ink);}
+  .brand span{color:var(--g500);}
+  h1{font-size:24px;font-weight:900;line-height:1.2;margin:14px 0 6px;}
+  .sub{font-size:15px;color:var(--g700);max-width:680px;}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 24px;}
+  .chip{font-size:12px;font-weight:700;padding:6px 12px;border-radius:20px;border:1.5px solid var(--ink);}
+  .chip.ok{background:var(--acid);border-color:var(--acid);}
+  .chip.eff{background:var(--cyan);border-color:var(--cyan);color:#0d3d49;}
+  .chip.hash{background:var(--ink);color:var(--banana);font-family:ui-monospace,Menlo,monospace;}
+  h2{font-size:13px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--g500);margin:8px 0 12px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px;}
+  @media(max-width:600px){.grid{grid-template-columns:1fr;}}
+  .row{background:#fff;border-radius:8px;padding:13px 16px;box-shadow:0 3px 10px rgba(0,0,0,0.08);border-left:5px solid var(--cyan);}
+  .row b{font-size:14px;}
+  .row span{display:block;font-size:12.5px;color:var(--g700);margin-top:2px;}
+  .fix{background:#fff;border-radius:10px;padding:18px 20px;box-shadow:0 4px 14px rgba(0,0,0,0.10);border-left:6px solid var(--fuchsia);margin-bottom:14px;}
+  .fix h3{font-size:15px;font-weight:900;margin-bottom:6px;}
+  .fix p{font-size:13.5px;color:var(--g700);}
+  .fix code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--paper);padding:1px 5px;border-radius:4px;}
+  .lesson{background:#FFF9E6;border-radius:10px;padding:14px 18px;border-left:6px solid var(--banana);font-size:13.5px;color:var(--g700);}
+  .lesson b{color:var(--ink);}
+  .foot{margin-top:24px;font-size:12px;color:var(--g500);text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="brand">SPROUT SOCIETY <span>· delivery</span></div>
+    <div class="brand"><span>2026-06-23 · main</span></div>
+  </div>
+
+  <h1>Quick Hit: every header is editable + the garbled-symbols bug is fixed</h1>
+  <p class="sub">Two things shipped: all hardcoded headers in the one-off are now editable fields with defaults, and the mojibake (<code>Â·</code>, <code>â€"</code>) that crept into both footers and the editor labels is fully repaired.</p>
+
+  <div class="meta">
+    <span class="chip eff">Effort: medium</span>
+    <span class="chip ok">✓ build passes</span>
+    <span class="chip ok">✓ render verified</span>
+    <span class="chip hash">1adfd27 · a817237</span>
+  </div>
+
+  <h2>Now editable (blank = default)</h2>
+  <div class="grid">
+    <div class="row"><b>Masthead label</b><span>default "Sprout Society"</span></div>
+    <div class="row"><b>Announcement header</b><span>default "Announcement" — per card</span></div>
+    <div class="row"><b>Upcoming header</b><span>default "Next up"</span></div>
+    <div class="row"><b>Footer brand</b><span>default "SPROUT SOCIETY"</span></div>
+  </div>
+
+  <div class="fix">
+    <h3>🔧 The garbled-symbols fix</h3>
+    <p>An earlier PowerShell <code>Set-Content -Encoding utf8</code> round-tripped the whole file through the wrong codepage, double-encoding every special character. Restored the pristine file with <code>git checkout</code> and re-applied all changes through the proper UTF-8 editor. Both footers and all editor labels now show clean <code>·</code> and <code>—</code>.</p>
+  </div>
+
+  <div class="lesson">
+    <b>Lesson logged:</b> never rewrite source files with PowerShell <code>Set-Content</code>/<code>Get-Content</code> — they silently re-encode. Use <code>[System.IO.File]::WriteAllText</code> + <code>UTF8Encoding($false)</code>, or the editor. To recover a corrupted tracked file: <code>git checkout &lt;good-commit&gt; -- &lt;path&gt;</code> then re-apply.
+  </div>
+
+  <div class="foot">Sprout CRM Next · <code>lib/newsletter.js</code> · committed + pushed to <strong>main</strong> · 1adfd27 + a817237</div>
+</div>
+</body>
+</html>
