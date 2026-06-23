@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery · Editable footer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--cyan-d:#2a8ca0;--g500:#8a8a86;--g700:#3a3a38;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Lato',Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);padding:40px 16px;line-height:1.5;}
+  .wrap{max-width:840px;margin:0 auto;}
+  .head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:3px solid var(--acid);padding-bottom:18px;margin-bottom:24px;}
+  .brand{font-size:13px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--ink);}
+  .brand span{color:var(--g500);}
+  h1{font-size:24px;font-weight:900;line-height:1.2;margin:14px 0 6px;}
+  .sub{font-size:15px;color:var(--g700);max-width:680px;}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 24px;}
+  .chip{font-size:12px;font-weight:700;padding:6px 12px;border-radius:20px;border:1.5px solid var(--ink);}
+  .chip.ok{background:var(--acid);border-color:var(--acid);}
+  .chip.eff{background:var(--cyan);border-color:var(--cyan);color:#0d3d49;}
+  .chip.hash{background:var(--ink);color:var(--banana);font-family:ui-monospace,Menlo,monospace;}
+  .cols{display:grid;grid-template-columns:1.1fr 1fr;gap:16px;align-items:start;}
+  @media(max-width:640px){.cols{grid-template-columns:1fr;}}
+  h2{font-size:12px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--g500);margin:4px 0 12px;}
+  .row{background:#fff;border-radius:8px;padding:12px 15px;box-shadow:0 3px 10px rgba(0,0,0,0.07);border-left:5px solid var(--cyan);margin-bottom:10px;}
+  .row b{font-size:13.5px;}
+  .row span{display:block;font-size:12px;color:var(--g700);margin-top:2px;font-family:ui-monospace,Menlo,monospace;}
+  .footer-demo{background:#fff;border-radius:10px;padding:22px;box-shadow:0 4px 14px rgba(0,0,0,0.12);}
+  .fb{font-size:14px;font-weight:900;letter-spacing:1px;}
+  .fmeta{font-size:12px;color:#6a6a66;margin:4px 0 12px;}
+  .btn{display:block;width:210px;text-align:center;color:#fff;font-weight:900;font-size:12px;padding:9px 0;border-radius:6px;text-decoration:none;margin-bottom:8px;}
+  .btn.d{background:var(--fuchsia);}
+  .btn.m{background:var(--cyan-d);}
+  .fine{font-size:10.5px;color:var(--g500);margin-top:8px;line-height:1.5;}
+  .note{margin-top:18px;background:#FFF9E6;border-radius:10px;padding:13px 18px;border-left:6px solid var(--banana);font-size:13px;color:var(--g700);}
+  .note b{color:var(--ink);}
+  .foot{margin-top:24px;font-size:12px;color:var(--g500);text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="brand">SPROUT SOCIETY <span>· delivery</span></div>
+    <div class="brand"><span>2026-06-23 · main</span></div>
+  </div>
+
+  <h1>The whole newsletter footer is now editable — both templates</h1>
+  <p class="sub">Change the Donate link (or any footer element) right in the editor. Every field has a default, so leaving it blank keeps the current value.</p>
+
+  <div class="meta">
+    <span class="chip eff">Effort: medium</span>
+    <span class="chip ok">✓ build passes</span>
+    <span class="chip ok">✓ render verified</span>
+    <span class="chip hash">94d2559</span>
+  </div>
+
+  <div class="cols">
+    <div>
+      <h2>Editable footer fields</h2>
+      <div class="row"><b>Donate button</b><span>link + label · givebutter.com/sproutspacedonors</span></div>
+      <div class="row"><b>Become a member button</b><span>link + label · givebutter.com/sproutmembership</span></div>
+      <div class="row"><b>Instagram handle</b><span>@sproutsocietyorg</span></div>
+      <div class="row"><b>Address</b><span>26 Scott Ave, Brooklyn, NY 11237</span></div>
+      <div class="row"><b>EIN</b><span>83-1298420</span></div>
+    </div>
+    <div>
+      <h2>Footer preview</h2>
+      <div class="footer-demo">
+        <div class="fb">SPROUT SOCIETY</div>
+        <div class="fmeta">Brooklyn, NY · @sproutsocietyorg</div>
+        <a class="btn d">Donate →</a>
+        <a class="btn m">Become a member →</a>
+        <div class="fine">Unsubscribe · 26 Scott Ave, Brooklyn, NY 11237<br>Sprout Society is a registered 501(c)(3) nonprofit · EIN 83-1298420</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>How it resolves:</b> per-newsletter field → org profile (Settings) → hard default. Use <code>[Donate today](https://…)</code> in a button field to change both the label and the link. <b>Note:</b> the Monthly Roundup footer now always shows both buttons (before, only when filled).
+  </div>
+
+  <div class="foot">Sprout CRM Next · <code>lib/newsletter.js</code> + <code>CRMManager.jsx</code> · pushed to <strong>main</strong> · 94d2559</div>
+</div>
+</body>
+</html>
