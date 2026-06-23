@@ -12,6 +12,7 @@ Rebuilt the one-off Quick Hit template to use the **exact same structured-sectio
 - **`buildNewsletter` routes `quick-hit` → `buildQuickHit`**; deleted the dead `QUICK_HIT` raw template + its `RAW_TEMPLATES` entry.
 - **Editor generalized** — `isQuick`/`SECTIONS`/`isStructured`/`secByKey`; section-rendering branch + labels switched `isCompact` → `isStructured`. Quick Hit stamps `data-sec="<section key>"` so the field↔preview group is the key itself.
 - ⚠️ Old saved Quick Hit drafts (bracket-keyed) open empty since the template is now key-based — no live quick-hit drafts exist, so nothing lost.
+- **Follow-up:** added a dedicated **Button label** field (`linkLabel`) to each announcement so the link button text is editable directly (was only changeable via the `[text](url)` markdown trick). Resolves as `linkLabel` → markdown label → "Learn more".
 
 ---
 
