@@ -13,6 +13,7 @@ Rebuilt the one-off Quick Hit template to use the **exact same structured-sectio
 - **Editor generalized** — `isQuick`/`SECTIONS`/`isStructured`/`secByKey`; section-rendering branch + labels switched `isCompact` → `isStructured`. Quick Hit stamps `data-sec="<section key>"` so the field↔preview group is the key itself.
 - ⚠️ Old saved Quick Hit drafts (bracket-keyed) open empty since the template is now key-based — no live quick-hit drafts exist, so nothing lost.
 - **Follow-up:** added a dedicated **Button label** field (`linkLabel`) to each announcement so the link button text is editable directly (was only changeable via the `[text](url)` markdown trick). Resolves as `linkLabel` → markdown label → "Learn more".
+- **Follow-up:** **bullet lists in email copy.** New `richText()` helper — lines starting with `-`, `*`, or `•` become a real email-safe `<ul>`/`<li>` list; everything else keeps the `<br>` behavior; links still work inside bullets. Routed `cval` through it, so bullets work in every copy box across both templates. Opt-in by content (plain copy unchanged).
 
 ---
 
