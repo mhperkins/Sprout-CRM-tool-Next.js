@@ -14,6 +14,7 @@ Rebuilt the one-off Quick Hit template to use the **exact same structured-sectio
 - ⚠️ Old saved Quick Hit drafts (bracket-keyed) open empty since the template is now key-based — no live quick-hit drafts exist, so nothing lost.
 - **Follow-up:** added a dedicated **Button label** field (`linkLabel`) to each announcement so the link button text is editable directly (was only changeable via the `[text](url)` markdown trick). Resolves as `linkLabel` → markdown label → "Learn more".
 - **Follow-up:** **bullet lists in email copy.** New `richText()` helper — lines starting with `-`, `*`, or `•` become a real email-safe `<ul>`/`<li>` list; everything else keeps the `<br>` behavior; links still work inside bullets. Routed `cval` through it, so bullets work in every copy box across both templates. Opt-in by content (plain copy unchanged).
+- **Follow-up:** bullets separated by blank lines now collapse into **one** `<ul>` (a blank line inside a bullet run keeps the list open) instead of a separate single-item list per bullet. (A "dashes still showing" report was a stale dev server, not a code bug — restarted it; node render confirmed the conversion.)
 
 ---
 
