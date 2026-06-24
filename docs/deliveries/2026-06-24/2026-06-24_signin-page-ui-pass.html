@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Delivery — Sign-in page UI pass</title>
+<style>
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --muted:#6b6b66;
+    --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6; --cyan-deep:#2a8ca0;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; font-family:'Lato','Segoe UI',system-ui,sans-serif; background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:960px; margin:0 auto; padding:42px 24px 64px;}
+  .masthead{display:flex; align-items:center; justify-content:space-between; gap:16px; border-bottom:4px solid var(--acid); padding-bottom:18px; margin-bottom:30px; flex-wrap:wrap;}
+  .brand{font-size:13px; font-weight:900; letter-spacing:2px; text-transform:uppercase; color:var(--muted);}
+  h1{font-size:30px; line-height:1.18; margin:0 0 8px; font-weight:900;}
+  .sub{font-size:16px; color:var(--muted); margin:0;}
+  .badges{display:flex; gap:9px; flex-wrap:wrap; margin:22px 0 30px;}
+  .badge{font-size:12px; font-weight:800; padding:7px 13px; border-radius:999px; letter-spacing:.4px;}
+  .b-commit{background:var(--ink); color:#fff; font-family:'SFMono-Regular',Consolas,monospace;}
+  .b-branch{background:var(--cyan); color:var(--ink);}
+  .b-scope{background:#fff; color:var(--muted); border:2px solid #e3e3e0;}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  @media(max-width:680px){.grid{grid-template-columns:1fr;}}
+  .card{background:#fff; border-radius:14px; padding:22px; box-shadow:0 4px 16px rgba(0,0,0,.08); border-left:6px solid var(--cyan); overflow:hidden;}
+  .card.fuchsia{border-left-color:var(--fuchsia);}
+  .card.acid{border-left-color:var(--acid);}
+  .card.banana{border-left-color:var(--banana);}
+  .card.ink{border-left-color:var(--ink);}
+  .card h2{font-size:13px; text-transform:uppercase; letter-spacing:1.5px; margin:0 0 12px; color:var(--muted); font-weight:900;}
+  .card p{margin:0 0 8px; font-size:15px; line-height:1.55;}
+  .card .was{color:var(--muted); text-decoration:line-through;}
+  code{background:#f0f0ee; padding:2px 6px; border-radius:5px; font-family:'SFMono-Regular',Consolas,monospace; font-size:13px;}
+  .flow{display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-weight:800; font-size:14px; margin-top:4px;}
+  .pill{background:var(--paper); border:2px solid #e3e3e0; border-radius:9px; padding:8px 12px;}
+  .pill.live{border-color:var(--acid);}
+  .arrow{color:var(--muted);}
+  .todo{background:#fff8f8; border:2px solid #f4cdd6; border-radius:14px; padding:20px 22px; margin-top:26px;}
+  .todo h2{color:var(--fuchsia); font-size:13px; text-transform:uppercase; letter-spacing:1.5px; margin:0 0 12px; font-weight:900;}
+  .todo ul{margin:0; padding-left:20px; font-size:15px; line-height:1.6;}
+  .foot{margin-top:34px; font-size:13px; color:var(--muted); text-align:center; border-top:1px solid #e3e3e0; padding-top:18px;}
+  .foot a{color:var(--cyan-deep);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div class="brand">🌱 Sprout Society · Delivery</div>
+    <div class="brand">2026-06-24</div>
+  </div>
+
+  <h1>Event sign-in page — UI pass</h1>
+  <p class="sub">Streamlined the kiosk flow, branded the header, and softened the skip link.</p>
+
+  <div class="badges">
+    <span class="badge b-commit">15c716a (head)</span>
+    <span class="badge b-branch">branch main</span>
+    <span class="badge b-scope">HTML only · no CRM / DB change</span>
+  </div>
+
+  <div class="grid">
+    <div class="card fuchsia">
+      <h2>① Donation screen removed</h2>
+      <p>Sign-in now goes <b>straight to the tabbed landing page</b> (Membership tab).</p>
+      <div class="flow">
+        <span class="pill">Sign in</span><span class="arrow">→</span>
+        <span class="was pill">Donation step</span><span class="arrow">→</span>
+        <span class="pill live">Get involved</span>
+      </div>
+      <p style="margin-top:10px;">Donating still lives as a tab there. <span class="was">$5/$10/$15 amounts</span> mooted by this.</p>
+    </div>
+
+    <div class="card ink">
+      <h2>② White logo in the header</h2>
+      <p>Replaced the green dot + "Sprout Society / Welcome &amp; Sign In" text with the email template's hosted white logo (48px).</p>
+      <p><code>brand/sprout-logo-white.png</code> · verified live 200</p>
+    </div>
+
+    <div class="card cyan">
+      <h2>③ "Prefer not to sign in" link</h2>
+      <p>Subtle skip link that jumps to the landing page for people who don't want to sign in.</p>
+      <p>Merged into the disclaimer line, muted, only <span style="text-decoration:underline;">here</span> underlined — not eye-catching, per request.</p>
+    </div>
+
+    <div class="card acid">
+      <h2>④ Live sheet realigned</h2>
+      <p>A real test row landed under the wrong header. Rewrote the sheet's D/E cells via the Sheets API:</p>
+      <p>Header → <b>How heard</b> (D) / <b>Source</b> (E); shifted old "kiosk" values into E.</p>
+      <p style="color:var(--muted);">The script only appends rows — old-data cleanup is a direct edit, not a redeploy.</p>
+    </div>
+  </div>
+
+  <div class="todo">
+    <h2>⚠ Still on Max</h2>
+    <ul>
+      <li><b>Set the new Apps Script deployment to "Anyone"</b> access — a fresh deployment defaults to Workspace-only, which walls off the public kiosk POST.</li>
+      <li><b>Quick live test</b> — sign in from a phone, confirm a new row lands in the sheet with the dropdown value in the How heard column.</li>
+    </ul>
+  </div>
+
+  <div class="foot">
+    Live: <a href="https://sprout-crm-tool-next-js.vercel.app/sprout-sign-in.html">sprout-crm-tool-next-js.vercel.app/sprout-sign-in.html</a>
+    · File: <code>public/sprout-sign-in.html</code>
+  </div>
+</div>
+</body>
+</html>

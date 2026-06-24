@@ -13,6 +13,15 @@ Added a referral-source dropdown to the event sign-in kiosk and moved its Google
 - **Moved the [Sprout Society — Sign-Ins sheet](https://docs.google.com/spreadsheets/d/1VokUNOaYOiVzvbKAUoZldNI9pCssaD9F2AeRLd_R4ss/edit)** out of hello@'s My Drive into the **Sprout Society Team** shared drive → **03 Surveys & Forms** (folder `1sJZAT3tG1W3WWAfsYq2tUJ3pZ6N7nWWG`) via the Drive API (moving a file, not a folder, into a shared drive is supported). The bound Apps Script moves with it.
 - **Note:** the "unable to open the file" screen Max hit is Google's multi-account routing (hello@ not the browser's default account) — fixed with a `/u/N/` URL or incognito, not a permissions problem.
 
+### Same day — sign-in page UI pass (HTML only)
+
+- **Live sheet realigned via the Sheets API** — a real test row landed misaligned (new script writes `heard` into col D, but the live tab's header still labeled D "Source"). Rewrote the D/E cells: header → `How heard` / `Source`, and shifted old rows' "kiosk" from D to E. The Apps Script only appends rows, so existing-data cleanup had to be a direct edit, not a redeploy.
+- **Donation amounts** $10/$25/$50 → $5/$10/$15 (then mooted by the next change).
+- **Removed the donation screen** — sign-in now routes straight to the tabbed landing page (Membership tab). Deleted the donation `<section>` + its `goDonate`/`amts`/`customAmt`/`skipDonate` JS. Donating still lives as a tab on the landing page.
+- **White logo in the header** — replaced the green dot + "Sprout Society / WELCOME & SIGN IN" text with the email template's hosted white logo (`newsletter-images/brand/sprout-logo-white.png`, 48px tall).
+- **"Prefer not to sign in? Click here." skip link** — jumps to the landing page; merged into the existing disclaimer paragraph as a subtle continuation (muted, only "here" underlined), per Max's preference (not a blue button).
+- Commits: `aa05ccf`, `84d0983`, `e18de1c`, `a59c679`→`091eb16`→`15c716a`.
+
 ---
 
 ## 2026-06-23 — One-off "Quick Hit" newsletter: same section editor as the roundup
