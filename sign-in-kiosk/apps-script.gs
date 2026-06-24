@@ -19,13 +19,14 @@ function doPost(e) {
     let sheet = ss.getSheetByName(SHEET_NAME);
     if (!sheet) {
       sheet = ss.insertSheet(SHEET_NAME);
-      sheet.appendRow(['Timestamp', 'Name', 'Email', 'Source']);
+      sheet.appendRow(['Timestamp', 'Name', 'Email', 'How heard', 'Source']);
       sheet.setFrozenRows(1);
     }
     sheet.appendRow([
       data.ts ? new Date(data.ts) : new Date(),
       String(data.name || ''),
       String(data.email || ''),
+      String(data.heard || ''),
       String(data.source || 'kiosk')
     ]);
     return json({ ok: true });

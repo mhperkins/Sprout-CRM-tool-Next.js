@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-06-24 — Sign-in page: "How did you hear about us?" dropdown + sheet moved to shared drive
+
+Added a referral-source dropdown to the event sign-in kiosk and moved its Google Sheet into the team shared drive. App-adjacent files only (`public/sprout-sign-in.html`, `sign-in-kiosk/apps-script.gs`); no CRM app code, schema, or DB change. **Effort: low.**
+
+- **New "How did you hear about us?" `<select>`** after the email field on [public/sprout-sign-in.html](public/sprout-sign-in.html), styled with the existing `.field` class. Options: A friend, Social media, Flyer, Reddit, Other (no fill-in for Other). Defaults to a disabled "Select one…" placeholder; **optional** (no validation gate).
+- **Wired into `signIn()`** — the selected value sends as `heard` in the POST body to the Apps Script.
+- **Apps Script updated** ([sign-in-kiosk/apps-script.gs](sign-in-kiosk/apps-script.gs)) — header row now `Timestamp · Name · Email · How heard · Source`; each appended row writes `data.heard` in the 4th column. ⚠️ The live "Sign-ins" tab already has a header row, so the new column header won't auto-insert — add a "How heard" column header to the live sheet manually so old/new rows line up.
+- **New Apps Script deployment** — Max created a new deployment (new `/exec` URL); swapped `CONFIG.SCRIPT_URL` in the HTML to the new URL. Going forward, redeploy via **Manage deployments → edit → New version** (keeps the same URL, no HTML change).
+- **Moved the [Sprout Society — Sign-Ins sheet](https://docs.google.com/spreadsheets/d/1VokUNOaYOiVzvbKAUoZldNI9pCssaD9F2AeRLd_R4ss/edit)** out of hello@'s My Drive into the **Sprout Society Team** shared drive → **03 Surveys & Forms** (folder `1sJZAT3tG1W3WWAfsYq2tUJ3pZ6N7nWWG`) via the Drive API (moving a file, not a folder, into a shared drive is supported). The bound Apps Script moves with it.
+- **Note:** the "unable to open the file" screen Max hit is Google's multi-account routing (hello@ not the browser's default account) — fixed with a `/u/N/` URL or incognito, not a permissions problem.
+
+---
+
 ## 2026-06-23 — One-off "Quick Hit" newsletter: same section editor as the roundup
 
 Rebuilt the one-off Quick Hit template to use the **exact same structured-section editor** as the Monthly Roundup (it was previously a bracket-fill template with none of the section machinery). App code only (`lib/newsletter.js`, `components/CRMManager.jsx`). **Effort: medium.** `npm run build` passes; node render verified.

@@ -14,7 +14,7 @@
      ============================================================ -->
 <script>
   const CONFIG = {
-    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbx6ZtzOsDWAAKXARa_6-CgwxkZ98ZGKBzYGlxKLyqz0r-lj-sO4HYygAqOLYV8xM5DZyw/exec",
+    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbx2nDf8kk99Vi4RdDjpJPORugMIrwNVpClSrxaWvYvJS0vypqFrpHQRJue3so2aIXs2kQ/exec",
     GOOGLE_CLIENT_ID: "PASTE_GOOGLE_OAUTH_CLIENT_ID_HERE",
     // Givebutter donation campaign (slug-stable). Amount is appended as ?amount=
     DONATE_URL: "https://givebutter.com/sproutspacedonors",
@@ -150,6 +150,16 @@
       <label for="email">Email</label>
       <input class="field" id="email" type="email" autocomplete="email" inputmode="email" placeholder="you@email.com" />
 
+      <label for="heard">How did you hear about us?</label>
+      <select class="field" id="heard">
+        <option value="" disabled selected>Select one…</option>
+        <option value="A friend">A friend</option>
+        <option value="Social media">Social media</option>
+        <option value="Flyer">Flyer</option>
+        <option value="Reddit">Reddit</option>
+        <option value="Other">Other</option>
+      </select>
+
       <button class="btn btn-primary" id="submitBtn">Sign in →</button>
       <p class="note">By signing in you agree to receive occasional updates from Sprout Society. We never share your info.</p>
     </section>
@@ -230,6 +240,7 @@
     if(submitting) return;
     const err = $('err'); err.style.display='none';
     name = (name||'').trim(); email = (email||'').trim();
+    const heard = ($('heard') && $('heard').value || '').trim();
     if(!name){ err.textContent='Please enter your name.'; err.style.display='block'; return; }
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent='Please enter a valid email.'; err.style.display='block'; return; }
     if(CONFIG.SCRIPT_URL.startsWith('PASTE')){ err.textContent='Setup needed: add your Apps Script URL (see SETUP.md).'; err.style.display='block'; return; }
@@ -240,7 +251,7 @@
       await fetch(CONFIG.SCRIPT_URL, {
         method:'POST', mode:'no-cors',
         headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body: JSON.stringify({ name, email, source: source||'kiosk', ts:new Date().toISOString() })
+        body: JSON.stringify({ name, email, heard, source: source||'kiosk', ts:new Date().toISOString() })
       });
       show('step2');
     } catch(e){
