@@ -164,25 +164,7 @@
       <p class="note">By signing in you agree to receive occasional updates from Sprout Society. We never share your info.</p>
     </section>
 
-    <!-- STEP 2 — DONATION -->
-    <section class="step" id="step2">
-      <h2>You're in. Thank you 🌱</h2>
-      <div class="blurb">
-        Sprout Society is a registered <b>501(c)(3) nonprofit</b>. Every dollar goes directly into future
-        programming and community offerings: free and low-cost events, scholarships, and a space where
-        no one builds a creative life alone. A small gift makes a real difference.
-      </div>
-      <label>Suggested donation</label>
-      <div class="amts" id="amts">
-        <a class="amt" data-amt="5">$5</a>
-        <a class="amt feature" data-amt="10">$10</a>
-        <a class="amt" data-amt="15">$15</a>
-      </div>
-      <a class="amt" id="customAmt" style="display:block; margin-bottom:18px;">Give another amount →</a>
-      <button class="btn btn-ghost" id="skipDonate">Maybe later — continue</button>
-    </section>
-
-    <!-- STEP 3 — LANDING -->
+    <!-- STEP 2 — LANDING -->
     <section class="step" id="step3">
       <h2>Get involved</h2>
       <div class="tabs">
@@ -253,7 +235,8 @@
         headers:{'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify({ name, email, heard, source: source||'kiosk', ts:new Date().toISOString() })
       });
-      show('step2');
+      selectTab('member');
+      show('step3');
     } catch(e){
       err.textContent='Could not save — check your connection and try again.'; err.style.display='block';
     } finally {
@@ -270,18 +253,6 @@
     document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id==='panel-'+name));
   }
   document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => selectTab(t.dataset.tab)));
-
-  // ---- Step 2 → 3 (donation selection advances into the landing page, no popup) ----
-  function goDonate(amt){
-    $('donateBtn2').href = CONFIG.DONATE_URL + (amt ? '?amount=' + amt : '');
-    show('step3');
-    selectTab('donate');
-  }
-  document.querySelectorAll('#amts .amt').forEach(a =>
-    a.addEventListener('click', e => { e.preventDefault(); goDonate(a.dataset.amt); })
-  );
-  $('customAmt').addEventListener('click', e => { e.preventDefault(); goDonate(null); });
-  $('skipDonate').addEventListener('click', () => { selectTab('member'); show('step3'); });
 
   // ---- Google Sign-In (optional, client-side) ----
   function decodeJwt(t){ try{ return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }catch(e){ return null; } }
