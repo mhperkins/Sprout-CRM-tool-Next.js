@@ -85,8 +85,7 @@
   .gfallback{font-size:13px; color:var(--muted); text-align:center; margin-bottom:18px;}
 
   .note{font-size:12.5px; color:var(--muted); text-align:center; line-height:1.5; margin-top:16px;}
-  .skip-link{color:var(--cyan-deep); font-weight:800; text-decoration:none;}
-  .skip-link:hover{text-decoration:underline;}
+  .skip-link{color:inherit; text-decoration:underline;}
   .err{color:var(--fuchsia); font-weight:700; font-size:14px; text-align:center; margin-bottom:14px; display:none;}
 
   /* Donation step */
@@ -158,7 +157,7 @@
 
       <button class="btn btn-primary" id="submitBtn">Sign in →</button>
       <p class="note">By signing in you agree to receive occasional updates from Sprout Society. We never share your info.</p>
-      <p class="note"><a href="#" id="skipSignIn" class="skip-link">Click here if you prefer not to sign in →</a></p>
+      <p class="note">Prefer not to sign in? Click <a href="#" id="skipSignIn" class="skip-link">here</a>.</p>
     </section>
 
     <!-- STEP 2 — LANDING -->
