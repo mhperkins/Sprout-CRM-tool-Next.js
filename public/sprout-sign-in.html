@@ -341,6 +341,11 @@
   }
   document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => selectTab(t.dataset.tab)));
 
+  // ---- Bypass sign-in: a separate QR points here (?welcome) and lands on the program directly ----
+  if(/(^|[?&])welcome\b/.test(location.search) || location.hash.toLowerCase()==='#welcome'){
+    selectTab('welcome'); show('step3');
+  }
+
   // ---- Google Sign-In (optional, client-side) ----
   function decodeJwt(t){ try{ return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }catch(e){ return null; } }
   window.handleGoogle = function(resp){

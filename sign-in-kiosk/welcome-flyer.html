@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Sprout Society — Scan for Tonight's Program</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  @page { size: letter; margin: 0; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Lato',sans-serif; color:#030000; background:#fff;}
+  .sheet{
+    width:8.5in; height:11in; margin:0 auto; padding:0.9in 0.8in;
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+  }
+  .logo{height:120px; width:auto; display:block; margin-bottom:24px;}
+  .sub{font-size:20px; font-weight:700; color:#8a8a86; text-transform:uppercase; letter-spacing:3px; margin-bottom:40px;}
+  .qrbox{
+    border:6px solid #030000; border-radius:24px; padding:28px; background:#fff;
+    box-shadow:0 12px 36px rgba(0,0,0,0.12); margin-bottom:34px;
+  }
+  .qrbox img{width:3.6in; height:3.6in; display:block;}
+  .cta{font-size:30px; font-weight:900; margin-bottom:8px;}
+  .cta .arrow{color:#E10098;}
+  .url{font-size:17px; color:#2a8ca0; font-weight:700; margin-bottom:46px; word-break:break-all;}
+  .foot{margin-top:auto; font-size:14px; color:#8a8a86; line-height:1.5;}
+  .acid{height:8px; width:120px; background:#C6C902; border-radius:4px; margin:0 auto 22px;}
+</style>
+</head>
+<body>
+  <div class="sheet">
+    <img class="logo" src="https://ixdnmjchvjzytyhmripc.supabase.co/storage/v1/object/public/newsletter-images/brand/sprout-logo-blackheart.png" alt="Sprout Society" />
+    <div class="sub">Tonight's program</div>
+
+    <div class="qrbox">
+      <img src="welcome-qr.png" alt="Scan for tonight's program" />
+    </div>
+
+    <div class="cta">Scan with your phone camera <span class="arrow">&rarr;</span></div>
+    <div class="url">sprout-crm-tool-next-js.vercel.app/sprout-sign-in.html?welcome</div>
+
+    <div class="foot">
+      <div class="acid"></div>
+      A creative home in Brooklyn &nbsp;·&nbsp; 501(c)(3) nonprofit &nbsp;·&nbsp; hello@sproutsociety.org
+    </div>
+  </div>
+</body>
+</html>
