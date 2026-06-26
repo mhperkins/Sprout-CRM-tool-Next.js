@@ -118,6 +118,30 @@
   .pricerow:last-of-type{border-bottom:none;}
   .stack > a{margin-bottom:10px;}
   .restart{margin-top:18px;}
+
+  /* Welcome / program */
+  .program-sec{margin-bottom:22px;}
+  .program-sec h4{
+    font-size:13px; font-weight:900; text-transform:uppercase; letter-spacing:1.4px;
+    color:var(--fuchsia); margin-bottom:10px;
+  }
+  .lineup{display:flex; flex-direction:column; gap:9px;}
+  .act{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:12px 14px; background:#fff; border:2px solid #e3e3e0; border-radius:11px;
+  }
+  .act .name{font-size:16px; font-weight:700; color:var(--ink);}
+  .act .links{display:flex; gap:8px; flex-shrink:0;}
+  .pill{
+    padding:8px 14px; font-size:13px; font-weight:900; border-radius:999px;
+    text-decoration:none; color:#fff; transition:filter .12s, transform .08s; white-space:nowrap;
+  }
+  .pill:active{transform:scale(.96);}
+  .pill-venmo{background:#3D95CE;}
+  .pill-ig{background:var(--fuchsia);}
+  .pill-link{background:#43E660; color:var(--ink);}
+  .pill-web{background:var(--ink);}
+  .pill:hover{filter:brightness(1.08);}
 </style>
 </head>
 <body>
@@ -161,14 +185,81 @@
 
     <!-- STEP 2 — LANDING -->
     <section class="step" id="step3">
-      <h2>Get involved</h2>
       <div class="tabs">
-        <div class="tab active" data-tab="member">Membership</div>
+        <div class="tab active" data-tab="welcome">Welcome</div>
+        <div class="tab" data-tab="member">Membership</div>
         <div class="tab" data-tab="host">Host an event</div>
         <div class="tab" data-tab="donate">Donate</div>
       </div>
 
-      <div class="panel active" id="panel-member">
+      <div class="panel active" id="panel-welcome">
+        <h3 style="font-size:24px; margin-bottom:6px;">Welcome to Sprout Society</h3>
+        <p>Here's the program for tonight. Tap a name to learn more.</p>
+
+        <div class="program-sec">
+          <h4>Artists</h4>
+          <div class="lineup">
+            <div class="act">
+              <span class="name">Michael NeJame</span>
+              <span class="links">
+                <a class="pill pill-venmo" href="https://venmo.com/u/fractalgarden" target="_blank" rel="noopener">Venmo</a>
+                <a class="pill pill-ig" href="https://instagram.com/paint.mn" target="_blank" rel="noopener">Instagram</a>
+              </span>
+            </div>
+            <div class="act">
+              <span class="name">Tim Smith</span>
+              <span class="links">
+                <a class="pill pill-venmo" href="https://venmo.com/u/Tim-Smith79" target="_blank" rel="noopener">Venmo</a>
+                <a class="pill pill-ig" href="https://instagram.com/timsmithstudio" target="_blank" rel="noopener">Instagram</a>
+              </span>
+            </div>
+            <div class="act">
+              <span class="name">Alexandra Galvis</span>
+              <span class="links">
+                <a class="pill pill-venmo" href="https://venmo.com/u/AlexandraGalvis" target="_blank" rel="noopener">Venmo</a>
+                <a class="pill pill-link" href="https://linktr.ee/xelaontheflip" target="_blank" rel="noopener">Links</a>
+              </span>
+            </div>
+            <div class="act">
+              <span class="name">PictureManBob</span>
+              <span class="links">
+                <a class="pill pill-web" href="https://picturemanbob.square.site/" target="_blank" rel="noopener">Website</a>
+                <a class="pill pill-ig" href="https://www.instagram.com/b.o.l.o.ties/" target="_blank" rel="noopener">Bolo Ties</a>
+              </span>
+            </div>
+            <div class="act">
+              <span class="name">Jaclyn</span>
+              <span class="links">
+                <a class="pill pill-web" href="https://www.jjkc.art" target="_blank" rel="noopener">Website</a>
+                <a class="pill pill-ig" href="https://www.instagram.com/b.o.l.o.ties/" target="_blank" rel="noopener">Bolo Ties</a>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="program-sec">
+          <h4>Music</h4>
+          <div class="lineup">
+            <div class="act">
+              <span class="name">ClassV</span>
+              <span class="links">
+                <a class="pill pill-venmo" href="https://account.venmo.com/u/franklin-speck" target="_blank" rel="noopener">Tips</a>
+                <a class="pill pill-ig" href="https://www.instagram.com/class.v.music/" target="_blank" rel="noopener">Instagram</a>
+              </span>
+            </div>
+            <div class="act">
+              <span class="name">Proactive Panic</span>
+              <span class="links">
+                <a class="pill pill-venmo" href="https://account.venmo.com/u/patrick-hopkins-5" target="_blank" rel="noopener">Tips</a>
+                <a class="pill pill-ig" href="https://www.instagram.com/proactive.panic/" target="_blank" rel="noopener">Instagram</a>
+                <a class="pill pill-link" href="https://linktr.ee/proactivepanic" target="_blank" rel="noopener">Links</a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-member">
         <h3>Become a member</h3>
         <p>Members get access to our space, community events, and a creative home in Brooklyn.</p>
         <div class="pricerow"><span>Day pass</span><b>$17</b></div>
@@ -230,7 +321,7 @@
         headers:{'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify({ name, email, heard, source: source||'kiosk', ts:new Date().toISOString() })
       });
-      selectTab('member');
+      selectTab('welcome');
       show('step3');
     } catch(e){
       err.textContent='Could not save — check your connection and try again.'; err.style.display='block';
@@ -241,7 +332,7 @@
 
   $('submitBtn').addEventListener('click', () => signIn($('name').value, $('email').value, 'kiosk'));
   $('email').addEventListener('keydown', e => { if(e.key==='Enter') signIn($('name').value, $('email').value, 'kiosk'); });
-  $('skipSignIn').addEventListener('click', e => { e.preventDefault(); selectTab('member'); show('step3'); });
+  $('skipSignIn').addEventListener('click', e => { e.preventDefault(); selectTab('welcome'); show('step3'); });
 
   // ---- Tabs ----
   function selectTab(name){

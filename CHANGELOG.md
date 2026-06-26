@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-26 — Sign-in page: "Welcome" landing tab with the night's program
+
+Added a Welcome tab to the event sign-in page that people land on first after signing in, showing the night's lineup with inline link buttons per act. Sign-in HTML only ([public/sprout-sign-in.html](public/sprout-sign-in.html)); no CRM app code, schema, or DB change. **Effort: low.**
+
+- **New "Welcome" tab + `#panel-welcome`** as the first tab on the landing page (`#step3`), before Membership/Host/Donate. The three post-sign-in / skip-link `selectTab(...)` calls now default to `selectTab('welcome')`.
+- **Program layout** — "Welcome to Sprout Society" heading + an **Artists** section (Michael NeJame, Tim Smith, Alexandra Galvis, PictureManBob, Jaclyn) and a **Music** section (ClassV, Proactive Panic). Each `.act` row: name left, pill buttons right.
+- **Pill button system** — `.pill` (rounded 999px) in four variants: `.pill-venmo` (blue, also used for "Tips"), `.pill-ig` (fuchsia, also used for "Bolo Ties"), `.pill-link` (green, linktr.ee), `.pill-web` (ink, Website).
+- **Links filled in** per act: Venmo/Instagram/Website/Links/Tips/Bolo Ties as supplied. "Bolo Ties" = a shared fuchsia button on PictureManBob + Jaclyn → `instagram.com/b.o.l.o.ties`; "Tips" = blue Venmo buttons for the two music acts. All buttons open in a new tab. No remaining placeholders.
+
+---
+
 ## 2026-06-24 — Sign-in page: "How did you hear about us?" dropdown + sheet moved to shared drive
 
 Added a referral-source dropdown to the event sign-in kiosk and moved its Google Sheet into the team shared drive. App-adjacent files only (`public/sprout-sign-in.html`, `sign-in-kiosk/apps-script.gs`); no CRM app code, schema, or DB change. **Effort: low.**
