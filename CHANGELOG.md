@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-07-03 — Sprout n Tell email list + Campaign Monitor import (Sheets/Drive only)
+
+Compiled a deduped "Sprout n Tell" email spreadsheet from all three data sources (the interest form + two separate sign-in sheets), split into participants vs. attendees, then added a Campaign Monitor import tab. Google Sheets / Drive work only via the `google-workspace` MCP (as hello@sproutsociety.org); no app code, repo, CRM, or DB change. **Effort: low.**
+
+- **Sources (source noted per row):** (1) *Sprout N Tell - Interest Form (Responses)* — "Showcasing" → Participants, "Attending" → Attendees; (2) *Sprout Society - Check-In (Responses)* — the 5/19 Show n Tell (Vol 1) sign-in; (3) *Sprout Society — Sign-Ins* — the 6/26 kiosk sign-in.
+- **Deliverable:** new spreadsheet *Sprout n Tell — Email List (Participants & Attendees)* (`1WlbcQHX56WQe1VMgWz8j1HgGn6JhIeH0pAuHCBkPiRs`). **Master List** tab = 60 unique emails (13 participants + 47 attendees); people on multiple lists show all their sources on one row.
+- **Campaign Monitor Import** tab = 52 subscribers, CM-native columns (Email Address / First Name / Last Name / Role / Source). Excluded the 7 rows Max annotated "don't include" plus the junk `jshgdgsh@` address; kept both Nina emails per Max.
+- **Search lesson:** the second sign-in sheet only surfaced with `search_drive_files corpora='allDrives'` — run the all-drives search before concluding a sheet doesn't exist.
+- **Sheets-write gotcha:** notes beginning with `+` throw a formula parse error under the default `USER_ENTERED`; rephrase or use `value_input_option:"RAW"`.
+
+---
+
 ## 2026-06-26 — Sign-in page: "Welcome" landing tab with the night's program
 
 Added a Welcome tab to the event sign-in page that people land on first after signing in, showing the night's lineup with inline link buttons per act. Sign-in HTML only ([public/sprout-sign-in.html](public/sprout-sign-in.html)); no CRM app code, schema, or DB change. **Effort: low.**

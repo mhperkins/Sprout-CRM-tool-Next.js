@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery — Sprout n Tell Email List + Campaign Monitor</title>
+<style>
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --card:#ffffff;
+    --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6;
+    --muted:#6b6b67; --line:#e6e6e2;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:'Lato',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;padding:40px 16px}
+  .wrap{max-width:900px;margin:0 auto}
+  .top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .badge{display:inline-block;font-size:11px;font-weight:900;letter-spacing:1.5px;
+    text-transform:uppercase;padding:5px 11px;border-radius:999px;background:var(--ink);color:#fff}
+  .badge.low{background:var(--acid);color:var(--ink)}
+  .badge.data{background:var(--cyan);color:var(--ink)}
+  h1{font-size:27px;font-weight:900;margin:12px 0 4px;line-height:1.2}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 26px}
+  .rule{height:4px;background:var(--acid);border-radius:4px;margin:0 0 26px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:16px 14px;box-shadow:0 4px 14px rgba(0,0,0,0.06)}
+  .stat .n{font-size:30px;font-weight:900;line-height:1}
+  .stat .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:6px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:20px 22px;margin-bottom:16px;box-shadow:0 4px 14px rgba(0,0,0,0.07)}
+  .card h2{font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:1.2px;
+    margin:0 0 14px;display:flex;align-items:center;gap:9px}
+  .bar{width:6px;height:18px;border-radius:3px;display:inline-block}
+  ul{margin:0;padding-left:20px}
+  li{margin:7px 0;font-size:14.5px}
+  .src{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--line)}
+  .src:last-child{border-bottom:0}
+  .pill{font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap;margin-top:2px}
+  .p-form{background:var(--banana);color:var(--ink)}
+  .p-si{background:var(--cyan);color:var(--ink)}
+  .src .t{font-size:14px}
+  .src .t b{display:block}
+  .src .t span{color:var(--muted);font-size:12.5px}
+  .foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;
+    margin-top:8px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+  code{background:#efefec;padding:1px 6px;border-radius:5px;font-size:12.5px}
+  a{color:var(--fuchsia);font-weight:700;text-decoration:none}
+  .tag{font-size:11px;font-weight:800;color:var(--ink);background:var(--acid);
+    padding:2px 8px;border-radius:5px}
+  @media(max-width:620px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="badge data">Data / Sheets</span>
+    <span class="badge low">Effort: Low</span>
+    <span class="badge">2026-07-03</span>
+  </div>
+  <h1>Sprout n Tell — Email List &amp; Campaign Monitor Import</h1>
+  <p class="sub">One deduped spreadsheet of every email tied to Sprout n Tell, split participants vs. attendees, plus a CM-ready import tab. No app code or DB change.</p>
+  <div class="rule"></div>
+
+  <div class="grid">
+    <div class="stat"><div class="n">3</div><div class="l">Sources merged</div></div>
+    <div class="stat"><div class="n">60</div><div class="l">Unique emails (master)</div></div>
+    <div class="stat"><div class="n">52</div><div class="l">CM subscribers</div></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="bar" style="background:var(--fuchsia)"></span>Sources pulled (each row tagged with its list)</h2>
+    <div class="src">
+      <span class="pill p-form">Interest Form</span>
+      <div class="t"><b>Sprout N Tell - Interest Form (Responses)</b><span>"Showcasing" &rarr; Participants &nbsp;·&nbsp; "Attending" &rarr; Attendees</span></div>
+    </div>
+    <div class="src">
+      <span class="pill p-si">Sign-in #1</span>
+      <div class="t"><b>Sprout Society - Check-In (Responses)</b><span>5/19 Show n Tell (Vol 1) check-in &rarr; Attendees</span></div>
+    </div>
+    <div class="src">
+      <span class="pill p-si">Sign-in #2</span>
+      <div class="t"><b>Sprout Society — Sign-Ins</b><span>6/26 kiosk sign-in &rarr; Attendees</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="bar" style="background:var(--cyan)"></span>What shipped</h2>
+    <ul>
+      <li><b>Master List tab</b> — 60 unique emails (13 participants + 47 attendees). Columns: Email · Name · Role · Source(s) · Notes. Deduped so anyone on multiple lists shows all their sources on one row.</li>
+      <li><b>Campaign Monitor Import tab</b> — 52 subscribers, CM-native columns <code>Email Address · First Name · Last Name · Role · Source</code> (First/Last split matches the existing Sprout-Community / Donors lists).</li>
+      <li>Excluded the <b>7 rows Max annotated "don't include"</b> + the junk <code>jshgdgsh@</code> address; <b>kept both Nina emails</b> per Max.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="bar" style="background:var(--banana)"></span>Lessons banked</h2>
+    <ul>
+      <li>The 2nd sign-in sheet only surfaced with <code>search_drive_files corpora='allDrives'</code> — run the all-drives search before concluding a sheet is missing.</li>
+      <li>Notes starting with <code>+</code> throw a formula parse error under default <code>USER_ENTERED</code> — rephrase or write with <code>value_input_option:"RAW"</code>.</li>
+      <li>The Check-In sheet has two email columns (login vs. typed) that sometimes differ — used the typed one, noted divergences.</li>
+    </ul>
+  </div>
+
+  <div class="foot">
+    <span>Spreadsheet: <span class="tag">Sprout n Tell — Email List</span> &nbsp; <a href="https://docs.google.com/spreadsheets/d/1WlbcQHX56WQe1VMgWz8j1HgGn6JhIeH0pAuHCBkPiRs/edit">open in Drive</a></span>
+    <span>branch <code>main</code> · CHANGELOG + delivery slide only</span>
+  </div>
+</div>
+</body>
+</html>
