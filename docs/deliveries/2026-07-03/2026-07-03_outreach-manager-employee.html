@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery — Outreach Manager Employee</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --acid:#C6C902; --fuchsia:#E10098;
+    --cyan:#73C4D6; --banana:#FAD100; --muted:#6b6b67;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',system-ui,sans-serif;background:var(--ink);color:var(--ink);
+    padding:32px 16px;display:flex;justify-content:center;min-height:100vh}
+  .slide{width:100%;max-width:960px;background:var(--paper);border-radius:16px;overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.4)}
+  .top{background:var(--ink);color:var(--paper);padding:34px 40px 30px}
+  .eyebrow{font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--acid)}
+  h1{font-size:30px;font-weight:900;line-height:1.15;margin-top:8px}
+  h1 .accent{color:var(--fuchsia)}
+  .sub{font-size:15px;color:#c9c9c5;margin-top:10px;line-height:1.5}
+  .rule{height:4px;background:linear-gradient(90deg,var(--cyan) 0 25%,var(--fuchsia) 25% 50%,var(--acid) 50% 75%,var(--banana) 75% 100%)}
+  .body{padding:32px 40px 8px}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px}
+  .badge{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;border:1.5px solid var(--ink)}
+  .badge.b-cyan{background:var(--cyan)} .badge.b-banana{background:var(--banana)}
+  .badge.b-acid{background:var(--acid)} .badge.b-ghost{background:transparent;color:var(--muted);border-color:#cfcfca}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:680px){.grid{grid-template-columns:1fr}}
+  .card{background:#fff;border-radius:12px;padding:20px;border:1px solid #ececea;
+    box-shadow:0 4px 14px rgba(0,0,0,.06)}
+  .card.span{grid-column:1/-1}
+  .card h3{font-size:12px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;margin-bottom:12px;
+    display:flex;align-items:center;gap:8px}
+  .bar{width:6px;height:16px;border-radius:3px;display:inline-block}
+  .bar-fuchsia{background:var(--fuchsia)} .bar-cyan{background:var(--cyan)}
+  .bar-acid{background:var(--acid)} .bar-banana{background:var(--banana)}
+  ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+  li{font-size:14px;line-height:1.45;padding-left:20px;position:relative;color:#26261f}
+  li::before{content:"";position:absolute;left:0;top:7px;width:8px;height:8px;border-radius:2px;background:var(--ink)}
+  li b{font-weight:900}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;background:#f1f1ee;
+    padding:1px 6px;border-radius:5px;color:#333}
+  .files{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.7;color:#26261f}
+  .files .new{color:#1a7a3c;font-weight:700}
+  .files .mv{color:var(--fuchsia);font-weight:700}
+  .foot{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center;justify-content:space-between;
+    padding:22px 40px 30px;border-top:1px solid #e7e7e4;margin-top:24px}
+  .commit{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+  .hash{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--ink);color:var(--acid);
+    padding:4px 10px;border-radius:6px;font-weight:700;font-size:13px}
+  .pill{font-size:12px;font-weight:700;color:#fff;background:var(--fuchsia);padding:5px 12px;border-radius:999px}
+  .next{background:#fff;border:1px dashed #cbcbc6;border-radius:12px;padding:18px 20px;margin-top:16px}
+  .next h3{color:var(--muted)}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="top">
+      <div class="eyebrow">Sprout Society · Virtual Agency · Delivery</div>
+      <h1>Built the <span class="accent">Outreach Manager</span> employee</h1>
+      <p class="sub">The third AI employee. Owns the top of the relationship pipeline: discovery → research briefs → tiering → first-touch outreach. Docs only, no app / CRM / DB change.</p>
+    </div>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="badges">
+        <span class="badge b-cyan">Effort: medium</span>
+        <span class="badge b-banana">Virtual agency</span>
+        <span class="badge b-acid">Docs / scaffolding</span>
+        <span class="badge b-ghost">No code · no data · no DB</span>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3><span class="bar bar-fuchsia"></span>What it owns</h3>
+          <ul>
+            <li><b>Discovery triage</b> — a raw follower scrape or sign-in sheet into tiered, landed records</li>
+            <li><b>Relationship Research Briefs</b> — the full Phase A–G workup per contact/org</li>
+            <li><b>Tiering &amp; cultivation paths</b> — the honest fit read + a 3-step arc</li>
+            <li><b>First-touch copy</b> — IG comments, DMs, story replies, warm intros, emails</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3><span class="bar bar-cyan"></span>Guardrails baked in</h3>
+          <ul>
+            <li><b>Never fabricate</b> — no invented email, name, follower count, or quote</li>
+            <li><b>Confidence flags</b> — HIGH (primary source) vs MEDIUM on every fact</li>
+            <li><b>Merge, don't duplicate</b> — <code>check_existing</code> first, every time</li>
+            <li><b>Never clobber</b> verified data; never write raw SQL</li>
+          </ul>
+        </div>
+        <div class="card span">
+          <h3><span class="bar bar-acid"></span>Files created</h3>
+          <div class="files">
+            <div><span class="new">A</span>&nbsp; employees/Outreach/system-prompts/outreach-manager-system-prompt_v1.md &nbsp;<i>— core training doc</i></div>
+            <div><span class="new">A</span>&nbsp; employees/Outreach/outreach-manager-jobDescription.md</div>
+            <div><span class="new">A</span>&nbsp; employees/Outreach/work-log.md &nbsp;<i>— seeded with the July batch</i></div>
+            <div><span class="mv">R</span>&nbsp; employees/Outreach/briefs/Relationship_Research_Briefs_July2026.md &nbsp;<i>— moved from the VA root</i></div>
+            <div><span class="new">M</span>&nbsp; virtual-agency.md &nbsp;<i>— roster · handoff note · build order</i></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="next">
+        <h3><span class="bar bar-banana"></span>Not yet run live</h3>
+        <ul>
+          <li>The 3 July orgs (Buzzkill NYC · Sober Supper Club · Dance Support NYC) are researched + filed but <b>not yet landed in the CRM</b>.</li>
+          <li>First live run: merge Buzzkill into <code>org_mr3ulu05pxlg</code> (recategorize vendor → community_builder, cold → warm), create the other two, then chase Rachel's identity.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot">
+      <div class="commit">
+        <span class="hash">4d5823d</span>
+        <span>branch <b>main</b> · pushed</span>
+      </div>
+      <span class="pill">Outreach Manager · v1</span>
+    </div>
+  </div>
+</body>
+</html>
