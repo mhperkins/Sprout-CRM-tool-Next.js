@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Delivery — Sign-in Welcome Tab</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --cyan-deep:#2a8ca0;
+    --paper:#F7F7F6; --muted:#8a8a86; --venmo:#3D95CE; --green:#43E660;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Lato',-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--paper); color:var(--ink);
+    min-height:100vh; padding:40px 20px; display:flex; justify-content:center;
+  }
+  .slide{width:100%; max-width:880px;}
+  .masthead{
+    background:var(--ink); border-radius:16px 16px 0 0; padding:30px 36px;
+    display:flex; align-items:center; gap:16px;
+  }
+  .dot{width:18px; height:18px; border-radius:50%; background:var(--acid); flex-shrink:0;}
+  .masthead h1{color:#fff; font-size:26px; font-weight:900; line-height:1.15;}
+  .masthead .sub{color:var(--cyan); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:2px; margin-top:3px;}
+  .acid-rule{height:5px; background:var(--acid);}
+  .body{background:#fff; border-radius:0 0 16px 16px; padding:32px 36px 36px; box-shadow:0 18px 50px rgba(0,0,0,0.12);}
+
+  .badges{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:26px;}
+  .badge{font-size:12px; font-weight:900; padding:7px 14px; border-radius:999px; text-transform:uppercase; letter-spacing:.6px;}
+  .b-ship{background:var(--fuchsia); color:#fff;}
+  .b-effort{background:var(--banana); color:var(--ink);}
+  .b-scope{background:#fff; color:var(--ink); border:2px solid #e3e3e0;}
+  .b-commit{background:var(--ink); color:#fff; font-family:ui-monospace,Menlo,monospace; letter-spacing:0;}
+
+  h2{font-size:21px; font-weight:900; margin:0 0 16px;}
+  .cards{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:26px;}
+  .card{border:2px solid #e3e3e0; border-radius:13px; padding:18px 20px;}
+  .card.full{grid-column:1 / -1;}
+  .card .ico{font-size:22px; margin-bottom:8px;}
+  .card h3{font-size:15px; font-weight:900; margin-bottom:6px;}
+  .card p{font-size:14px; line-height:1.55; color:#3a3a38;}
+  .card.accent{border-left:6px solid var(--fuchsia);}
+  .card.accent2{border-left:6px solid var(--cyan-deep);}
+  .card.accent3{border-left:6px solid var(--acid);}
+
+  .pills{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
+  .pill{padding:6px 13px; font-size:12px; font-weight:900; border-radius:999px; color:#fff; white-space:nowrap;}
+  .pill-venmo{background:var(--venmo);}
+  .pill-ig{background:var(--fuchsia);}
+  .pill-link{background:var(--green); color:var(--ink);}
+  .pill-web{background:var(--ink);}
+
+  .lineup{display:flex; flex-direction:column; gap:8px; margin-top:6px;}
+  .act{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 14px; border:2px solid #e3e3e0; border-radius:11px;}
+  .act .name{font-size:14px; font-weight:700;}
+  .act .links{display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;}
+  .sec-label{font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:1.4px; color:var(--fuchsia); margin:18px 0 8px;}
+
+  .foot{margin-top:6px; font-size:13px; color:var(--muted); line-height:1.6; border-top:1px dashed #e3e3e0; padding-top:18px;}
+  .foot b{color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="masthead">
+    <span class="dot"></span>
+    <div>
+      <h1>Sign-in page — Welcome landing tab</h1>
+      <div class="sub">Delivery · 2026-06-26</div>
+    </div>
+  </div>
+  <div class="acid-rule"></div>
+
+  <div class="body">
+    <div class="badges">
+      <span class="badge b-ship">Shipped</span>
+      <span class="badge b-effort">Effort: Low</span>
+      <span class="badge b-scope">Sign-in HTML only · no CRM / DB change</span>
+      <span class="badge b-commit">a9b8103 · main</span>
+    </div>
+
+    <h2>What shipped</h2>
+    <div class="cards">
+      <div class="card accent">
+        <div class="ico">🌱</div>
+        <h3>New "Welcome" tab — first landing</h3>
+        <p>After sign-in (and via the skip link) people now land on a Welcome tab first: "Welcome to Sprout Society" + the night's program. Added before Membership / Host / Donate.</p>
+      </div>
+      <div class="card accent2">
+        <div class="ico">🎟️</div>
+        <h3>Inline buttons per act</h3>
+        <p>Each act shows its name with a cluster of pill buttons on the right. Iterated from a whole-row link to per-act buttons per request.</p>
+        <div class="pills">
+          <span class="pill pill-venmo">Venmo</span>
+          <span class="pill pill-ig">Instagram</span>
+          <span class="pill pill-link">Links</span>
+          <span class="pill pill-web">Website</span>
+          <span class="pill pill-venmo">Tips</span>
+          <span class="pill pill-ig">Bolo Ties</span>
+        </div>
+      </div>
+
+      <div class="card full accent3">
+        <div class="ico">🎤</div>
+        <h3>The program — all links filled in</h3>
+        <div class="sec-label">Artists</div>
+        <div class="lineup">
+          <div class="act"><span class="name">Michael NeJame</span><span class="links"><span class="pill pill-venmo">Venmo</span><span class="pill pill-ig">Instagram</span></span></div>
+          <div class="act"><span class="name">Tim Smith</span><span class="links"><span class="pill pill-venmo">Venmo</span><span class="pill pill-ig">Instagram</span></span></div>
+          <div class="act"><span class="name">Alexandra Galvis</span><span class="links"><span class="pill pill-venmo">Venmo</span><span class="pill pill-link">Links</span></span></div>
+          <div class="act"><span class="name">PictureManBob</span><span class="links"><span class="pill pill-web">Website</span><span class="pill pill-ig">Bolo Ties</span></span></div>
+          <div class="act"><span class="name">Jaclyn</span><span class="links"><span class="pill pill-web">Website</span><span class="pill pill-ig">Bolo Ties</span></span></div>
+        </div>
+        <div class="sec-label">Music</div>
+        <div class="lineup">
+          <div class="act"><span class="name">ClassV</span><span class="links"><span class="pill pill-venmo">Tips</span><span class="pill pill-ig">Instagram</span></span></div>
+          <div class="act"><span class="name">Proactive Panic</span><span class="links"><span class="pill pill-venmo">Tips</span><span class="pill pill-ig">Instagram</span><span class="pill pill-link">Links</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <b>File:</b> public/sprout-sign-in.html &nbsp;·&nbsp;
+      <b>Live (after deploy):</b> sprout-crm-tool-next-js.vercel.app/sprout-sign-in.html<br>
+      "Bolo Ties" links both PictureManBob + Jaclyn to instagram.com/b.o.l.o.ties · "Tips" = blue Venmo buttons for the music acts · all buttons open in a new tab.
+    </div>
+  </div>
+</div>
+</body>
+</html>

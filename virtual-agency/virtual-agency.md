@@ -14,14 +14,15 @@ The shared memory is the live Sprout CRM (Supabase project `ixdnmjchvjzytyhmripc
 
 ```
 Sprout Society
-  Communications Manager   (drafts newsletters, marketing, outreach copy)
+  Communications Manager   (drafts newsletters, marketing, email campaigns)
+  Outreach Manager         (relationship research, tiering, cultivation paths, first-touch outreach)
   Web & Graphic Designer    (PRIMARY: HTML newsletter design; also social graphics, flyers, slides, web look-and-feel)
   Grant Manager            (research, write, track deadlines)
   CRM Manager              (pipeline review, follow-ups, data hygiene via the sprout-crm MCP)
   Social Media             (post copy, content calendar, platform execution)
 ```
 
-**Note:** Communications owns outcomes (newsletter sends, email campaigns, audience growth). Social Media is a content producer (post copy, calendar, platform-specific execution). The Web & Graphic Designer owns the *visual* layer across surfaces (Communications owns the words, Design owns the picture; they hand off). They are distinct agents. "Full-Stack Developer" is Claude Code itself, not a role.
+**Note:** Communications owns outcomes (newsletter sends, email campaigns, audience growth). The Outreach Manager owns the top of the relationship pipeline (discovery → research briefs → tiering → first contact) and hands a warmed relationship to Communications (for a campaign/spotlight) or to the CRM Manager (for ongoing cadence). Outreach lands *clean records at intake*; the CRM Manager keeps the *whole base* healthy. Social Media is a content producer (post copy, calendar, platform-specific execution). The Web & Graphic Designer owns the *visual* layer across surfaces (Communications owns the words, Design owns the picture; they hand off). They are distinct agents. "Full-Stack Developer" is Claude Code itself, not a role.
 
 ---
 
@@ -90,7 +91,7 @@ Stack in hand:
 Shared artifact templates so agents can hand off to each other and to Max without ambiguity.
 
 ### 3. Remaining agents
-In rough priority: Web & Graphic Designer, Grant Manager, CRM Manager, Social Media.
+In rough priority: Web & Graphic Designer (built), Outreach Manager (built), Grant Manager, CRM Manager, Social Media.
 
 ---
 
@@ -108,27 +109,32 @@ In rough priority: Web & Graphic Designer, Grant Manager, CRM Manager, Social Me
 
 *(Rewritten each session — snapshot, not a log.)*
 
-**Last session:** 2026-06-03 — Built the second employee: the Web & Graphic Designer (the visual counterpart to Communications). Mirrors the Communications folder pattern.
+**Last session:** 2026-07-03 — Built the third employee: the **Outreach Manager** (owns discovery → research briefs → tiering → first contact). Mirrors the Communications/Design folder pattern. Its first deliverable already existed: the July 2026 Relationship Research Briefs (3 orgs), which moved into the employee's `briefs/` folder and seeded its work log.
 
 **What was built:**
-- Web & Graphic Designer agent:
-  - `employees/Design/system-prompts/design-lead-system-prompt_v1.md` — system prompt, brand rules (palette + Lato + accent rotation), design stack, the known Canva pixel-exact-vs-editable limit, standard formats, design protocol.
-  - `employees/Design/design-lead-jobDescription.md` — role description, responsibilities, scope boundaries vs Communications/Social, tools.
-  - `employees/Design/work-log.md` + empty `sprints/` and `briefs/` folders.
-- Updated this org doc: roster, build-order, and the Communications↔Design handoff note (Communications owns the words, Design owns the picture).
+- Outreach Manager agent:
+  - `employees/Outreach/system-prompts/outreach-manager-system-prompt_v1.md` — system prompt built on the **Relationship Research Protocol** (`CRM Research Protocol.md`): the golden no-fabrication rule, the Phase A–G method table, tiering, the Instagram pipeline (Stages 1–4, ambient engagement, draft-Max-posts), the merge/dedupe discipline (`check_existing` first, never duplicate, never clobber verified data), the full `sprout-crm` MCP tool stack, and scope boundaries vs Communications / CRM Manager / Social.
+  - `employees/Outreach/outreach-manager-jobDescription.md` — role summary, responsibilities, out-of-scope, working relationships, tools, session protocol.
+  - `employees/Outreach/work-log.md` — seeded with the 2026-07-03 July discovery batch (Buzzkill NYC B, Sober Supper Club B, Dance Support NYC C; Peace Action NYS excluded).
+  - `employees/Outreach/briefs/Relationship_Research_Briefs_July2026.md` — the existing brief, relocated here (was at `virtual-agency/` root).
+  - Empty `sprints/` folder.
+- Updated this org doc: roster (added Outreach Manager), the handoff note (Outreach → Communications / CRM Manager), build-order status.
 
 **Build order status:**
 - Communications Manager: built. First live run done (caption proof, 2026-06-03).
-- Web & Graphic Designer: built (system prompt + job description). No deliverable yet.
+- Web & Graphic Designer: built. No deliverable yet.
+- **Outreach Manager: built.** First brief (July discovery batch) done and filed; records not yet landed in the CRM.
 - Grant Manager, CRM Manager, Social Media: not started.
 
 **Invocation:**
 - Communications: `claude --system-prompt virtual-agency/employees/Communications/system-prompts/communications-manager-system-prompt_v1.md`
 - Design: `claude --system-prompt virtual-agency/employees/Design/system-prompts/design-lead-system-prompt_v1.md`
-- Or spawn either as a sub-agent via the Agent tool.
+- Outreach: `claude --system-prompt virtual-agency/employees/Outreach/system-prompts/outreach-manager-system-prompt_v1.md`
+- Or spawn any as a sub-agent via the Agent tool.
 
 **Resume here:**
-- ⬜ Run the Web & Graphic Designer's first deliverable: an HTML newsletter design pass (its primary job) — revise `01-monthly-roundup.html` + the `lib/newsletter.js` engine string for email-client safety and the new logo header, tested via `assemble_newsletter`.
-- ⬜ Run the Communications Manager's first newsletter (June roundup brief is pre-filled).
+- ⬜ Run the Outreach Manager to **land the July brief's 3 records** in the CRM: merge Buzzkill NYC into the existing `org_mr3ulu05pxlg` (don't duplicate; recategorize vendor → community_builder/partner, cold → warm), create Dance Support NYC + Sober Supper Club. Then chase Rachel's last name/handle to link her to Buzzkill.
+- ⬜ Run the Web & Graphic Designer's first deliverable (HTML newsletter design pass).
+- ⬜ Run the Communications Manager's next newsletter.
 - ⬜ Build the next agent (Grant Manager or CRM Manager).
 - ⬜ Add PMBOK artifact templates.

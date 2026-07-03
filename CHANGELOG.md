@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-07-03 — Virtual agency: built the Outreach Manager employee (docs only)
+
+Built the third virtual-agency AI employee, the Outreach Manager, mirroring the Communications/Design folder pattern. Docs/scaffolding only; no app code, CRM data, or DB change. **Effort: medium.**
+
+- **Owns:** the top of the relationship pipeline — discovery → Relationship Research Brief (Phase A–G) → tiering → first-touch outreach copy → landed CRM record. Built directly on `CRM Research Protocol.md`.
+- **New files** under `virtual-agency/employees/Outreach/`:
+  - `system-prompts/outreach-manager-system-prompt_v1.md` — core training doc: the golden no-fabrication rule (HIGH/MEDIUM confidence, Claude can't access IG), the Phase A–G method table, tiering (A/B/C, assigned at end of Phase D), the Instagram pipeline (Stages 1–4, draft-Max-posts), the merge/dedupe discipline (`check_existing` first, never duplicate, never clobber verified data), the `sprout-crm` MCP write-tool stack (never raw SQL), Writing Rules, and scope boundaries vs Communications / CRM Manager / Social.
+  - `outreach-manager-jobDescription.md` — role summary, responsibilities, out-of-scope, tools, session protocol.
+  - `work-log.md` — seeded with the 2026-07-03 July IG discovery batch (Buzzkill NYC B, Sober Supper Club B, Dance Support NYC C; Peace Action NYS excluded).
+  - `briefs/Relationship_Research_Briefs_July2026.md` — the existing brief, `git mv`'d from the virtual-agency root into the employee's `briefs/` folder.
+- **Updated `virtual-agency.md`:** roster, the Outreach → Communications / CRM Manager handoff note, build-order status, and Current State.
+- **Not yet run live:** the 3 July records are researched + filed but not yet landed in the CRM.
+
+---
+
 ## 2026-07-03 — Sprout n Tell email list + Campaign Monitor import (Sheets/Drive only)
 
 Compiled a deduped "Sprout n Tell" email spreadsheet from all three data sources (the interest form + two separate sign-in sheets), split into participants vs. attendees, then added a Campaign Monitor import tab. Google Sheets / Drive work only via the `google-workspace` MCP (as hello@sproutsociety.org); no app code, repo, CRM, or DB change. **Effort: low.**
