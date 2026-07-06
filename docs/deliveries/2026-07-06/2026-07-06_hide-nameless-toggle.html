@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery — Hide nameless toggle</title>
+<style>
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --white:#fff;
+    --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6; --cyan-dk:#2a8ca0;
+    --g400:#8a8a86; --g200:#e6e6e3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',-apple-system,system-ui,sans-serif;background:var(--paper);color:var(--ink);
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;}
+  .card{width:100%;max-width:760px;background:var(--white);border-radius:16px;overflow:hidden;
+    box-shadow:0 18px 50px rgba(0,0,0,.16);}
+  .top{background:var(--ink);color:var(--white);padding:26px 32px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .top .emoji{font-size:30px}
+  .top h1{font-size:22px;font-weight:900;letter-spacing:-.3px;line-height:1.15;flex:1;min-width:220px}
+  .rule{height:4px;background:var(--acid)}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;padding:18px 32px 0}
+  .chip{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;
+    padding:5px 11px;border-radius:999px;border:1.5px solid var(--g200)}
+  .chip.branch{background:var(--cyan);color:var(--ink);border-color:var(--cyan)}
+  .chip.hash{background:var(--ink);color:var(--white);border-color:var(--ink);font-family:ui-monospace,Menlo,monospace}
+  .chip.effort{background:var(--acid);color:var(--ink);border-color:var(--acid)}
+  .chip.files{background:var(--banana);color:var(--ink);border-color:var(--banana)}
+  .body{padding:22px 32px 30px}
+  .lede{font-size:16px;line-height:1.55;color:#3a3a38;margin-bottom:22px}
+  .lede b{color:var(--ink)}
+  h2{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--fuchsia);margin:0 0 12px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}}
+  .item{background:var(--paper);border-radius:11px;padding:14px 15px;border-left:5px solid var(--cyan)}
+  .item.b{border-left-color:var(--banana)}
+  .item.f{border-left-color:var(--fuchsia)}
+  .item .t{font-size:14px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:7px}
+  .item .d{font-size:13px;line-height:1.45;color:#54544f}
+  .demo{margin-top:24px;background:var(--ink);border-radius:12px;padding:18px 20px}
+  .demo .lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--g400);margin-bottom:11px}
+  .btns{display:flex;gap:9px;flex-wrap:wrap}
+  .b{font-size:12.5px;font-weight:800;padding:7px 13px;border-radius:8px;border:1.5px solid #444;color:#cfcfcc;background:transparent}
+  .b.on{background:var(--white);color:var(--ink);border-color:var(--white)}
+  .note{margin-top:11px;font-size:12px;color:var(--g400)}
+  .foot{padding:16px 32px;border-top:1px solid var(--g200);font-size:12px;color:var(--g400);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="top">
+      <span class="emoji">🙈</span>
+      <h1>Hide nameless contacts by default</h1>
+    </div>
+    <div class="rule"></div>
+    <div class="meta">
+      <span class="chip effort">Effort: Low</span>
+      <span class="chip branch">main</span>
+      <span class="chip hash">c448fb0</span>
+      <span class="chip files">1 file · CRMManager.jsx</span>
+    </div>
+    <div class="body">
+      <p class="lede">The contact list now <b>hides email-only (nameless) contacts by default</b> — the inverse of the existing “Needs a name” filter. Toggle it off anytime to bring them back.</p>
+
+      <h2>What shipped</h2>
+      <div class="grid">
+        <div class="item">
+          <div class="t">🙈 New toggle</div>
+          <div class="d">“Hide nameless” button on the filter bar, default <b>ON</b> (<code>hideNameless = true</code>).</div>
+        </div>
+        <div class="item b">
+          <div class="t">🔀 Mutually exclusive</div>
+          <div class="d">Turning on either “Hide nameless” or “Needs a name” switches the other off — they’re opposites.</div>
+        </div>
+        <div class="item f">
+          <div class="t">🧹 Clear resets to default</div>
+          <div class="d">✕ Clear restores the default view (nameless hidden) and appears whenever it’s toggled off.</div>
+        </div>
+        <div class="item">
+          <div class="t">🏷️ Badge stays honest</div>
+          <div class="d">The “filtered” chip ignores hide-nameless, since it’s the default state — not an active filter.</div>
+        </div>
+      </div>
+
+      <div class="demo">
+        <div class="lbl">Filter bar — default state</div>
+        <div class="btns">
+          <span class="b on">🙈 Hide nameless</span>
+          <span class="b">👤 Needs a name</span>
+        </div>
+        <div class="note">Nameless contacts hidden · click either to swap · Clear returns here</div>
+      </div>
+    </div>
+    <div class="foot">
+      <span>Sprout CRM Next</span>
+      <span>2026-07-06 · pushed to main</span>
+    </div>
+  </div>
+</body>
+</html>
