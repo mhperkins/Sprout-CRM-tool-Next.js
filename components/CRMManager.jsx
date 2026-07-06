@@ -26,9 +26,13 @@ import {
   DEFAULT_PROFILE,
   uploadNewsletterImage,
   signOut,
+  fetchOutreachDocs,
+  saveOutreachDoc,
+  resetOutreachDoc,
 } from "../lib/services";
 import { buildNewsletter, TEMPLATES, defaultMonthYear, COMPACT_SECTIONS, QUICK_HIT_SECTIONS, blankCompactItem } from "../lib/newsletter";
 import { validateContact, validateOrg } from "../lib/schemas";
+import { blocksOf, firstHeading, parseTableBlock, serializeTable, renderInline } from "../lib/md";
 
 /* ─── Styles ───────────────────────────────────────────────────────────────── */
 const STYLES = `
@@ -133,6 +137,53 @@ const STYLES = `
   .tab { padding:8px 14px; border:none; background:transparent; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--g400); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; font-family:'Lato',sans-serif; transition:all 0.12s; }
   .tab:hover { color:var(--black); }
   .tab.on { color:var(--black); border-bottom-color:var(--cyan); }
+
+  /* Outreach workspace: rendered markdown docs */
+  .md-doc { font-size:13px; line-height:1.65; color:var(--g800); }
+  .md-doc > *:first-child { margin-top:0; }
+  .md-doc h1 { font-size:19px; font-weight:900; margin:20px 0 10px; color:var(--black); line-height:1.25; }
+  .md-doc h2 { font-size:15px; font-weight:900; margin:20px 0 8px; color:var(--black); padding-bottom:5px; border-bottom:1px solid var(--g200); }
+  .md-doc h3 { font-size:13px; font-weight:900; margin:16px 0 6px; color:var(--black); text-transform:uppercase; letter-spacing:0.04em; }
+  .md-doc h4,.md-doc h5,.md-doc h6 { font-size:12px; font-weight:700; margin:12px 0 5px; color:var(--g800); }
+  .md-doc p { margin:8px 0; }
+  .md-doc a { color:#2a8ca0; font-weight:700; text-decoration:none; border-bottom:1px solid rgba(42,140,160,0.35); }
+  .md-doc a:hover { border-bottom-color:#2a8ca0; }
+  .md-doc strong { font-weight:900; color:var(--black); }
+  .md-doc code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px; background:var(--g100); color:#155e6e; padding:1px 5px; border-radius:4px; }
+  .md-doc ul,.md-doc ol { margin:8px 0 8px 20px; }
+  .md-doc li { margin:3px 0; }
+  .md-doc hr { border:none; border-top:1px solid var(--g200); margin:18px 0; }
+  .md-doc blockquote { margin:10px 0; padding:8px 14px; border-left:3px solid var(--cyan); background:var(--cyan-lt); border-radius:0 8px 8px 0; }
+  .md-doc blockquote p { margin:5px 0; font-size:12.5px; }
+  .md-tbl { overflow-x:auto; margin:12px 0; }
+  .md-doc table { border-collapse:collapse; font-size:12px; min-width:100%; }
+  .md-doc th { text-align:left; font-weight:900; background:var(--g100); color:var(--black); padding:7px 10px; border:1px solid var(--g200); white-space:nowrap; }
+  .md-doc td { padding:7px 10px; border:1px solid var(--g200); vertical-align:top; }
+  .md-doc tbody tr:nth-child(even) { background:var(--g50); }
+
+  .ws-doc { border:1px solid var(--g200); border-radius:10px; margin-bottom:12px; overflow:hidden; background:#fff; }
+  .ws-doc-hd { display:flex; align-items:center; gap:10px; padding:13px 16px; cursor:pointer; user-select:none; }
+  .ws-doc-hd:hover { background:var(--g50); }
+  .ws-doc-ttl { font-size:13px; font-weight:900; color:var(--black); }
+  .ws-doc-meta { font-size:10px; color:var(--g400); font-weight:700; text-transform:uppercase; letter-spacing:0.06em; }
+  .ws-doc-caret { margin-left:auto; font-size:12px; color:var(--g400); transition:transform 0.15s; }
+  .ws-doc.open .ws-doc-caret { transform:rotate(90deg); }
+  .ws-doc-bd { padding:4px 18px 18px; border-top:1px solid var(--g100); }
+  /* Inline block editing: each rendered block is click-to-edit in place */
+  .ws-editable .md-block { border-radius:6px; padding:2px 6px; margin:0 -6px; cursor:text; transition:background 0.1s,box-shadow 0.1s; }
+  .ws-editable .md-block:hover { background:rgba(115,196,214,0.12); box-shadow:inset 0 0 0 1px rgba(115,196,214,0.55); }
+  .ws-editable .md-block:hover a { cursor:pointer; }
+  .md-inline-edit { display:block; width:100%; font-family:'Lato',sans-serif; font-size:13px; line-height:1.6; color:var(--black); background:#fff; border:1.5px solid var(--cyan); border-radius:6px; padding:7px 9px; margin:4px 0; outline:none; resize:none; box-shadow:0 0 0 3px rgba(115,196,214,0.16); overflow:hidden; }
+  /* Excel-style per-cell table editing */
+  .ws-tbl .md-cell { cursor:text; transition:background 0.1s,box-shadow 0.1s; }
+  .ws-tbl .md-cell:hover { background:rgba(115,196,214,0.16); box-shadow:inset 0 0 0 1px var(--cyan); }
+  .ws-tbl th.md-cell:hover { background:rgba(115,196,214,0.28); }
+  .ws-tbl .md-cell:hover a { cursor:pointer; }
+  .ws-tbl .md-cell-edit { padding:2px; background:rgba(115,196,214,0.10); }
+  .ws-tbl .md-cell-edit .md-inline-edit { margin:0; font-size:12px; padding:5px 7px; }
+  .ws-stat { background:#fff; border:1px solid var(--g200); border-radius:10px; padding:14px 16px; }
+  .ws-stat-n { font-size:24px; font-weight:900; color:var(--black); line-height:1; }
+  .ws-stat-l { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--g400); margin-top:5px; }
 
   .filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; align-items:center; }
   .filter-bar .fi { width:auto; flex:1; min-width:160px; max-width:260px; font-size:12px; }
@@ -303,6 +354,8 @@ const REL_TYPES  = { music:"Music", art:"Art", event_host:"Event Host", communit
 const ORG_ROLE_TAGS = [["music","Music"],["art","Art"],["event_host","Event Host"],["community_builder","Community Builder"]];
 const SEGMENTS   = { community:"Community", donor:"Donors", prospect:"Prospects" };
 const SEGMENT_OPTS = [{value:"community",label:"Community"},{value:"donor",label:"Donor"},{value:"prospect",label:"Prospect"}];
+const ORG_SEGMENTS   = { active:"Active", prospect:"Prospects" };
+const ORG_SEGMENT_OPTS = [{value:"active",label:"Active"},{value:"prospect",label:"Prospect"}];
 // Givebutter campaigns — synced via the givebutter MCP (list_campaigns). Refresh when campaigns change.
 // `id` is the stable Givebutter campaign id, stored hidden alongside the title (survives a rename).
 const CAMPAIGN_OPTS = [
@@ -838,6 +891,13 @@ function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
   const [notesExpanded, setNotesExpanded] = useState(false);
   const [naExpanded, setNaExpanded] = useState(false);
   const [addingAction, setAddingAction] = useState(false);
+  const curSegment = org.segment || "active";
+  const moveSegment = (v) => {
+    setSegMenuOpen(false);
+    if (v === curSegment) return;
+    onUpdate({...org, segment:v});
+    showToast(`Moved to ${ORG_SEGMENTS[v]} ✓`);
+  };
   useEffect(()=>{ const h=(e)=>{ if(e.key==="Escape") onClose(); }; document.addEventListener("keydown",h); return ()=>document.removeEventListener("keydown",h); },[onClose]);
   const linked = contacts.filter(c=>c.org_id===org.id);
   const completeAction = () => {
@@ -908,6 +968,13 @@ function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
         </div>
         <div className="dp-body">
           <div className="dp-row"><RelTag status={org.relationship_status}/></div>
+          <div className="dp-row" style={{display:"flex",alignItems:"center",gap:8}}>
+            <span style={{fontSize:11,fontWeight:700,color:"var(--g600)"}}>Bucket:</span>
+            <span style={{fontSize:12,fontWeight:700,background:"var(--g100)",color:"var(--g800)",padding:"3px 10px",borderRadius:12}}>{ORG_SEGMENTS[curSegment]}</span>
+            {ORG_SEGMENT_OPTS.filter(o=>o.value!==curSegment).map(o=>(
+              <button key={o.value} className={o.value==="active"?"btn btn-blk btn-xs":"btn btn-ghost btn-xs"} onClick={()=>moveSegment(o.value)}>→ Move to {ORG_SEGMENTS[o.value]}</button>
+            ))}
+          </div>
           {linked.length>0&&<div className="dp-section"><div className="dp-sect-lbl">People ({linked.length})</div>{linked.map(c=><div key={c.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}><div style={{flex:1}}><div style={{fontSize:13,fontWeight:700}}>{c.first_name} {c.last_name}</div></div><RelTag status={c.relationship_status}/></div>)}</div>}
           <div className="dp-section">
             <div className="dp-sect-lbl">Contact Details</div>
@@ -991,7 +1058,7 @@ function Sidebar({view,setView,contacts,events,profile,onQuickLog}) {
     {id:"orgs",label:"Organizations",icon:"🏢"},
     {id:"events",label:"Events",icon:"🗓"},
     {id:"newsletter",label:"Newsletter",icon:"📰"},
-    {id:"outreach",label:"Outreach Log",icon:"📋"},
+    {id:"outreach",label:"Outreach",icon:"📣"},
     {section:"Tools"},
     {id:"import",label:"Import JSON",icon:"⬇"},
     {id:"settings",label:"Settings",icon:"⚙"},
@@ -1609,6 +1676,9 @@ function OrgEditModal({editingOrg,setEditingOrg,onSave}) {
         <div className="fg"><label className="fl">Name *</label><input className="fi" value={editingOrg.name||""} onChange={e=>setEditingOrg({...editingOrg,name:e.target.value})} autoFocus/></div>
         <div className="fg"><label className="fl">Website</label><input className="fi" value={editingOrg.website||""} onChange={e=>setEditingOrg({...editingOrg,website:e.target.value})} placeholder="https://example.org"/></div>
         <div className="fg"><label className="fl">Instagram</label><input className="fi" value={editingOrg.instagram_handle||""} onChange={e=>setEditingOrg({...editingOrg,instagram_handle:e.target.value})} placeholder="@handle"/></div>
+        <div className="fg"><label className="fl">Bucket</label>
+          <RadioGroup options={ORG_SEGMENT_OPTS} value={editingOrg.segment||"active"} onChange={v=>setEditingOrg({...editingOrg,segment:v})}/>
+        </div>
         <div className="fg"><label className="fl">Category</label>
           <SearchSelect options={Object.entries(ORG_CATS).map(([v,l])=>({value:v,label:l}))} value={editingOrg.category||"funder"} onChange={v=>setEditingOrg({...editingOrg,category:v})}/>
         </div>
@@ -1646,18 +1716,22 @@ function OrgsView({orgs,contacts,onUpdate,onDelete,showToast}) {
   const [search,setSearch]=useState("");
   const [fCat,setFCat]=useState("all");
   const [fStatus,setFStatus]=useState("all");
+  const [segment,setSegment]=useState("active");
   const [selected,setSelected]=useState(null);
   const [adding,setAdding]=useState(false);
-const blank={name:"",category:"funder",website:"",instagram_handle:"",phone:"",email:"",relationship_status:"cold",tags:[],notes:"",next_action:"",next_action_date:"",primary_contact_id:""};
+const blank={name:"",category:"funder",segment:"active",website:"",instagram_handle:"",phone:"",email:"",relationship_status:"cold",tags:[],notes:"",next_action:"",next_action_date:"",primary_contact_id:""};
   const [no,setNo]=useState(blank);
   const [noDrawer,setNoDrawer]=useState(false);
 
+  const segCounts=useMemo(()=>{const c={};orgs.forEach(o=>{const s=o.segment||"active";c[s]=(c[s]||0)+1;});return c;},[orgs]);
+
 const filtered=useMemo(()=>orgs.filter(o=>{
+    if ((o.segment||"active")!==segment) return false;
     if (search&&!o.name.toLowerCase().includes(search.toLowerCase())) return false;
     if (fCat!=="all"&&o.category!==fCat) return false;
     if (fStatus!=="all"&&o.relationship_status!==fStatus) return false;
     return true;
-  }),[orgs,search,fCat,fStatus]);
+  }),[orgs,segment,search,fCat,fStatus]);
 
 const [editingOrg,setEditingOrg]=useState(null);
   const [confirmDeleteOrg,setConfirmDeleteOrg]=useState(null);
@@ -1669,15 +1743,22 @@ const [editingOrg,setEditingOrg]=useState(null);
 
   const addOrg=()=>{
     if (!no.name.trim()) return;
-    const o={...no,record_type:"organization",id:`org_${uid()}`,primary_contact_id:"",financial_relationship:{has_given:false,total_given:0,grant_history:[]},touchpoints:[],createdAt:new Date().toISOString()};
-    onUpdate([...orgs,o]); setNo(blank); setAdding(false); showToast("Organization added ✓");
+    const o={...no,record_type:"organization",id:`org_${uid()}`,segment:no.segment||segment,primary_contact_id:"",financial_relationship:{has_given:false,total_given:0,grant_history:[]},touchpoints:[],createdAt:new Date().toISOString()};
+    onUpdate([...orgs,o]); setNo({...blank,segment}); setAdding(false); showToast("Organization added ✓");
   };
   const updateOrg=(updated)=>onUpdate(orgs.map(o=>o.id===updated.id?updated:o));
   const sel=orgs.find(o=>o.id===selected);
 
   return (
     <div className="page">
-      <div className="pg-hd"><div><div className="pg-ttl">Organizations</div><div className="pg-sub">{orgs.length} organizations tracked</div></div><button className="btn btn-blk" onClick={()=>setAdding(true)}>+ Add Org</button></div>
+      <div className="pg-hd"><div><div className="pg-ttl">Organizations</div><div className="pg-sub">{orgs.length} organizations tracked</div></div><button className="btn btn-blk" onClick={()=>{setNo({...blank,segment});setAdding(true);}}>+ Add to {ORG_SEGMENTS[segment]}</button></div>
+      <div className="tabs">
+        {ORG_SEGMENT_OPTS.map(o=>(
+          <button key={o.value} className={`tab ${segment===o.value?"on":""}`} onClick={()=>{setSegment(o.value);setSelected(null);}}>
+            {ORG_SEGMENTS[o.value]} <span style={{opacity:0.55}}>({segCounts[o.value]||0})</span>
+          </button>
+        ))}
+      </div>
       <div className="filter-bar">
         <input className="fi" placeholder="Search organizations…" value={search} onChange={e=>setSearch(e.target.value)}/>
         <select className="fs" value={fCat} onChange={e=>setFCat(e.target.value)}><option value="all">All categories</option>{Object.entries(ORG_CATS).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
@@ -1689,6 +1770,9 @@ const [editingOrg,setEditingOrg]=useState(null);
           footer={<><button className="btn btn-ghost btn-sm" onClick={()=>{setAdding(false);setNo(blank);}}>Cancel</button><button className="btn btn-blk btn-sm" onClick={addOrg} disabled={!no.name.trim()}>Add Organization →</button></>}>
           <div className="fg"><label className="fl">Name *</label><input className="fi" value={no.name} onChange={e=>setNo({...no,name:e.target.value})} autoFocus/></div>
           <div className="fg"><label className="fl">Website</label><input className="fi" value={no.website} onChange={e=>setNo({...no,website:e.target.value})} placeholder="https://example.org"/></div>
+          <div className="fg"><label className="fl">Bucket</label>
+            <RadioGroup options={ORG_SEGMENT_OPTS} value={no.segment||"active"} onChange={v=>setNo({...no,segment:v})}/>
+          </div>
           <div className="fg"><label className="fl">Category</label>
             <SearchSelect options={Object.entries(ORG_CATS).map(([v,l])=>({value:v,label:l}))} value={no.category} onChange={v=>setNo({...no,category:v})}/>
           </div>
@@ -1715,7 +1799,7 @@ const [editingOrg,setEditingOrg]=useState(null);
         </Modal>
       )}
       {filtered.length===0
-        ? <div className="empty"><div className="empty-ico">🏢</div><div className="empty-ttl">No organizations</div><div className="empty-txt">Add organizations manually or import JSON from Claude.</div></div>
+        ? <div className="empty"><div className="empty-ico">🏢</div><div className="empty-ttl">No {ORG_SEGMENTS[segment]} organizations</div><div className="empty-txt">Add organizations manually or import JSON from Claude.</div></div>
         : <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Organization</th><th>Category</th><th>Type</th><th>Status</th><th>Next Action</th><th>Given</th><th></th></tr></thead><tbody>
             {filtered.map(o=>{
               return <tr key={o.id} onClick={()=>setSelected(o.id)}>
@@ -1727,6 +1811,9 @@ const [editingOrg,setEditingOrg]=useState(null);
 <td style={{fontSize:12}}>{o.financial_relationship?.has_given?fmtMoney(o.financial_relationship.total_given):<span style={{color:"var(--g400)"}}>—</span>}</td>
 <td style={{padding:"12px 14px"}}>
                   <div className="row-actions">
+                    {ORG_SEGMENT_OPTS.filter(s=>s.value!==(o.segment||"active")).map(s=>(
+                      <button key={s.value} className={s.value==="active"?"btn btn-blk btn-xs":"btn btn-ghost btn-xs"} onClick={e=>{e.stopPropagation();updateOrg({...o,segment:s.value});showToast(`Moved to ${ORG_SEGMENTS[s.value]} ✓`);}}>→ {ORG_SEGMENTS[s.value]}</button>
+                    ))}
                     <button className="btn btn-ghost btn-xs" onClick={e=>{e.stopPropagation();setEditingOrg({...o});}}>Edit</button>
                     <button className="btn btn-danger btn-xs" onClick={e=>{e.stopPropagation();setConfirmDeleteOrg(o);}}>Del</button>
                   </div>
@@ -1743,44 +1830,314 @@ const [editingOrg,setEditingOrg]=useState(null);
   );
 }
 
-/* ─── Outreach Log ───────────────────────────────────────────────────────────── */
-function OutreachView({contacts,orgs}) {
-  const [search,setSearch]=useState("");
+/* ─── Outreach Workspace ─────────────────────────────────────────────────────── */
+// An auto-growing textarea used for inline block editing.
+function AutoGrow({value,...props}) {
+  const ref=useRef(null);
+  const fit=()=>{ const el=ref.current; if(el){ el.style.height="auto"; el.style.height=(el.scrollHeight+2)+"px"; } };
+  useEffect(()=>{ fit(); },[]); // size on mount
+  return <textarea ref={ref} className="md-inline-edit" value={value} spellCheck={false}
+    onInput={fit} {...props}/>;
+}
 
-  const all=useMemo(()=>{
+// A markdown table rendered with Excel-style per-cell editing: click any cell (or
+// header) and only that cell becomes an editable field. On commit it re-serializes
+// the whole table's markdown and hands it back via onSave.
+function TableBlock({raw,onSave}) {
+  const {header,rows}=useMemo(()=>parseTableBlock(raw),[raw]);
+  const [edit,setEdit]=useState(null); // {r,c}; r=-1 => header row
+  const [draft,setDraft]=useState("");
+  const cancelRef=useRef(false);
+
+  const cellRaw=(r,c)=> r<0 ? (header[c]??"") : (rows[r]?.[c]??"");
+  const openCell=(r,c)=>{ cancelRef.current=false; setEdit({r,c}); setDraft(cellRaw(r,c)); };
+  const commit=()=>{
+    if(!edit) return;
+    const {r,c}=edit, val=draft;
+    setEdit(null);
+    if(cancelRef.current){ cancelRef.current=false; return; }
+    if(val===cellRaw(r,c)) return;
+    const nh=header.slice(), nr=rows.map(x=>x.slice());
+    if(r<0) nh[c]=val; else { while(nr.length<=r) nr.push(header.map(()=>"")); nr[r][c]=val; }
+    onSave(serializeTable(nh,nr));
+  };
+  const onKey=(e)=>{
+    if(e.key==="Escape"){ cancelRef.current=true; e.currentTarget.blur(); }
+    else if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); e.currentTarget.blur(); }
+  };
+  const Cell=(r,c)=>{
+    const El=r<0?"th":"td";
+    if(edit&&edit.r===r&&edit.c===c)
+      return <El key={c} className="md-cell md-cell-edit">
+        <AutoGrow value={draft} autoFocus onChange={e=>setDraft(e.target.value)} onBlur={commit} onKeyDown={onKey}/>
+      </El>;
+    return <El key={c} className="md-cell" title="Click to edit"
+      onClick={e=>{ if(e.target.closest("a")) return; openCell(r,c); }}
+      dangerouslySetInnerHTML={{__html:renderInline(cellRaw(r,c))||"&nbsp;"}}/>;
+  };
+
+  return (
+    <div className="md-tbl ws-tbl">
+      <table>
+        <thead><tr>{header.map((_,c)=>Cell(-1,c))}</tr></thead>
+        <tbody>{rows.map((row,r)=><tr key={r}>{header.map((_,c)=>Cell(r,c))}</tr>)}</tbody>
+      </table>
+    </div>
+  );
+}
+
+// A collapsible, inline-EDITABLE doc. Stays in the rendered display view: click any
+// text block and it turns into an editable field in place. Changes save automatically
+// (an override in Supabase, via onSave); Reset drops the override back to the disk file.
+function EditableDoc({docId,meta,content,isEdited,onSave,onReset,defaultOpen=false}) {
+  const [open,setOpen]=useState(defaultOpen);
+  const [blocks,setBlocks]=useState(()=>blocksOf(content));
+  const [editing,setEditing]=useState(null); // block index being edited
+  const [draft,setDraft]=useState("");
+  const [flash,setFlash]=useState("");
+  const cancelRef=useRef(false);
+
+  // Re-sync when the effective content changes from outside (initial load, reset).
+  useEffect(()=>{ if(editing===null) setBlocks(blocksOf(content)); },[content]); // eslint-disable-line
+
+  const title=useMemo(()=>firstHeading(content)||(meta||"Untitled").replace(/\.md$/i,""),[content,meta]);
+
+  const persist=async(newContent)=>{
+    setFlash("Saving…");
+    const err=await onSave(docId,newContent);
+    setFlash(err?"Save failed":"Saved ✓");
+    setTimeout(()=>setFlash(f=>f==="Saving…"?f:""),2000);
+  };
+
+  const openBlock=(i)=>{ cancelRef.current=false; setEditing(i); setDraft(blocks[i].raw); };
+  const commit=async()=>{
+    if(editing===null) return;
+    const idx=editing, val=draft;
+    if(cancelRef.current){ cancelRef.current=false; setEditing(null); return; }
+    setEditing(null);
+    const before=blocks.map(b=>b.raw);
+    const raws=before.slice();
+    if(val.trim()==="") raws.splice(idx,1); else raws[idx]=val;
+    const newContent=raws.join("\n\n");
+    if(newContent===before.join("\n\n")) return; // no change
+    setBlocks(blocksOf(newContent));
+    await persist(newContent);
+  };
+  // Replace one block's raw source (used by the per-cell table editor) and persist.
+  const saveBlockRaw=async(idx,newRaw)=>{
+    const raws=blocks.map(b=>b.raw);
+    if(raws[idx]===newRaw) return;
+    raws[idx]=newRaw;
+    const newContent=raws.join("\n\n");
+    setBlocks(blocksOf(newContent));
+    await persist(newContent);
+  };
+  const addSection=()=>{
+    const idx=blocks.length;
+    setBlocks(b=>[...b,{raw:"",html:"",type:"paragraph"}]);
+    cancelRef.current=false; setEditing(idx); setDraft(""); setOpen(true);
+  };
+  const reset=async(e)=>{
+    e.stopPropagation();
+    if(!window.confirm("Reset this doc to the original file? Your in-app edits will be discarded.")) return;
+    await onReset(docId);
+  };
+  const onKey=(e)=>{
+    if(e.key==="Escape"){ cancelRef.current=true; e.currentTarget.blur(); }
+    else if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){ e.preventDefault(); e.currentTarget.blur(); }
+  };
+  const blockClick=(i,e)=>{ if(e.target.closest("a")) return; openBlock(i); };
+
+  return (
+    <div className={`ws-doc${open?" open":""}`}>
+      <div className="ws-doc-hd" onClick={()=>editing===null&&setOpen(o=>!o)}>
+        <div style={{minWidth:0}}>
+          <div className="ws-doc-ttl">{title}</div>
+          <div className="ws-doc-meta" style={{marginTop:3,display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+            <span>{meta}</span>
+            {isEdited&&<span style={{color:"var(--fuchsia)"}}>● edited in app</span>}
+            {flash&&<span style={{color:flash==="Save failed"?"var(--fuchsia)":"#2a8ca0"}}>{flash}</span>}
+          </div>
+        </div>
+        <div style={{marginLeft:"auto",display:"flex",gap:6,alignItems:"center"}} onClick={e=>e.stopPropagation()}>
+          {isEdited&&<button className="btn btn-ghost btn-sm" onClick={reset} style={{color:"var(--fuchsia)"}}>↺ Reset to file</button>}
+          <span className="ws-doc-caret" onClick={()=>editing===null&&setOpen(o=>!o)} style={{cursor:"pointer"}}>▶</span>
+        </div>
+      </div>
+      {open&&<div className="ws-doc-bd">
+        <div className="md-doc ws-editable">
+          {blocks.map((b,i)=>{
+            if(b.type==="table") return <TableBlock key={i} raw={b.raw} onSave={(nr)=>saveBlockRaw(i,nr)}/>;
+            return editing===i
+              ? <AutoGrow key={i} value={draft} autoFocus
+                  onChange={e=>setDraft(e.target.value)} onBlur={commit} onKeyDown={onKey}/>
+              : <div key={i} className="md-block" title="Click to edit"
+                  onClick={e=>blockClick(i,e)} dangerouslySetInnerHTML={{__html:b.html}}/>;
+          })}
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginTop:10}}>
+          <button className="btn btn-ghost btn-sm" onClick={addSection}>＋ Add a section</button>
+          <span className="ws-doc-meta">Click any section to edit it in place · Esc cancels · changes save automatically</span>
+        </div>
+      </div>}
+    </div>
+  );
+}
+
+function OutreachView({contacts,orgs}) {
+  const [tab,setTab]=useState("overview");
+  const [ws,setWs]=useState(null);
+  const [loading,setLoading]=useState(true);
+  const [wsErr,setWsErr]=useState("");
+  const [search,setSearch]=useState("");
+  // In-app edits, keyed by file-relative id (e.g. "briefs/Foo.md", "work-log.md").
+  const [overrides,setOverrides]=useState({});
+
+  useEffect(()=>{
+    let alive=true;
+    Promise.all([
+      fetch("/api/outreach").then(r=>{ if(!r.ok) throw new Error(String(r.status)); return r.json(); }),
+      fetchOutreachDocs().catch(()=>({})),
+    ])
+      .then(([d,ov])=>{ if(alive){ setWs(d); setOverrides(ov||{}); setLoading(false); } })
+      .catch(()=>{ if(alive){ setWsErr("Could not load the outreach workspace."); setLoading(false); } });
+    return ()=>{ alive=false; };
+  },[]);
+
+  // Effective content for a doc: the saved in-app edit if present, else the disk seed.
+  const contentOf=(id,seed)=> (overrides[id]!==undefined ? overrides[id].content : seed);
+  const isEdited=(id)=> overrides[id]!==undefined;
+
+  const saveDoc=async(id,content)=>{
+    const { error, updated_at }=await saveOutreachDoc(id,content);
+    if(error) return error;
+    setOverrides(o=>({...o,[id]:{content,updated_at}}));
+    return null;
+  };
+  const resetDoc=async(id)=>{
+    await resetOutreachDoc(id);
+    setOverrides(o=>{ const n={...o}; delete n[id]; return n; });
+  };
+
+  // Live outreach activity: every touchpoint logged across contacts + orgs.
+  const activity=useMemo(()=>{
     const items=[];
     contacts.forEach(c=>(c.touchpoints||[]).forEach(tp=>items.push({...tp,personName:`${c.first_name} ${c.last_name}`,orgName:orgs.find(o=>o.id===c.org_id)?.name||""})));
     orgs.forEach(o=>(o.touchpoints||[]).forEach(tp=>items.push({...tp,personName:o.name,orgName:"Organization record"})));
     return items.sort((a,b)=>new Date(b.date)-new Date(a.date));
   },[contacts,orgs]);
 
-  const filtered=useMemo(()=>all.filter(tp=>{
-    if (search&&!tp.personName.toLowerCase().includes(search.toLowerCase())&&!tp.summary?.toLowerCase().includes(search.toLowerCase())) return false;
+  const filteredActivity=useMemo(()=>activity.filter(tp=>{
+    if(search&&!tp.personName.toLowerCase().includes(search.toLowerCase())&&!tp.summary?.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
-  }),[all,search]);
+  }),[activity,search]);
+
+  const briefs=ws?.briefs||[];
+  const sprints=ws?.sprints||[];
+  const workLog=ws?.workLog||"";
+
+  const TABS=[
+    ["overview","Overview"],
+    ["briefs",`Research Briefs${briefs.length?` (${briefs.length})`:""}`],
+    ["sprints",`Sprints${sprints.length?` (${sprints.length})`:""}`],
+    ["deliverables","Deliverables"],
+    ["activity",`Activity${activity.length?` (${activity.length})`:""}`],
+  ];
 
   return (
     <div className="page">
-      <div className="pg-hd"><div><div className="pg-ttl">Outreach Log</div><div className="pg-sub">{all.length} touchpoints across all records</div></div></div>
-      <div className="filter-bar">
-        <input className="fi" placeholder="Search contact or summary…" value={search} onChange={e=>setSearch(e.target.value)}/>
+      <div className="pg-hd"><div>
+        <div className="pg-ttl">Outreach</div>
+        <div className="pg-sub">Workspace for the Outreach Manager: research briefs, sprints, deliverables, and live activity</div>
+      </div></div>
+
+      <div className="tabs">
+        {TABS.map(([id,label])=>(
+          <button key={id} className={`tab${tab===id?" on":""}`} onClick={()=>setTab(id)}>{label}</button>
+        ))}
       </div>
-      {filtered.length===0
-        ? <div className="empty"><div className="empty-ico">📋</div><div className="empty-ttl">No touchpoints yet</div><div className="empty-txt">Open any contact or org and log a touchpoint to track your outreach history here.</div></div>
-        : <div className="card"><div className="card-bd" style={{padding:0}}>
-            {filtered.map((tp,i)=>(
-              <div key={tp.id||i} style={{padding:"13px 17px",borderBottom:i<filtered.length-1?"1px solid var(--g100)":"none"}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5,flexWrap:"wrap"}}>
-                  <span style={{fontSize:13,fontWeight:700}}>{tp.personName}</span>
-                  {tp.orgName&&<span style={{fontSize:11,color:"var(--g400)"}}>· {tp.orgName}</span>}
-                  <span style={{marginLeft:"auto",fontSize:11,color:"var(--g400)",fontWeight:700}}>{fmtDate(tp.date)}</span>
-                </div>
-                <div style={{fontSize:12,lineHeight:1.6}}>{tp.summary}</div>
-                {tp.next_action&&<div style={{fontSize:11,color:"var(--cyan)",fontWeight:700,marginTop:2}}>→ {tp.next_action}{tp.next_action_date?` · by ${fmtDate(tp.next_action_date)}`:""}</div>}
+
+      {tab==="overview"&&(
+        <div>
+          <div className="info-banner">
+            This is where the <strong>Outreach Manager</strong> employee's work lands. It owns the top of the pipeline: discovery, relationship research briefs, tiering, and first-touch outreach. Everything below is distilled straight from the employee's files in the virtual agency.
+          </div>
+          {loading?<div className="empty"><div className="empty-txt">Loading workspace…</div></div>:(
+            <>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:12,marginBottom:18}}>
+                <div className="ws-stat"><div className="ws-stat-n">{briefs.length}</div><div className="ws-stat-l">Research briefs</div></div>
+                <div className="ws-stat"><div className="ws-stat-n">{sprints.length}</div><div className="ws-stat-l">Sprints</div></div>
+                <div className="ws-stat"><div className="ws-stat-n">{workLog?"✓":"—"}</div><div className="ws-stat-l">Deliverables log</div></div>
+                <div className="ws-stat"><div className="ws-stat-n">{activity.length}</div><div className="ws-stat-l">Logged touchpoints</div></div>
               </div>
-            ))}
-          </div></div>
-      }
+              {wsErr&&<div className="info-banner" style={{borderColor:"var(--fuchsia)",background:"rgba(225,0,152,0.06)"}}>{wsErr}</div>}
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:12}}>
+                <div className="card" style={{cursor:"pointer"}} onClick={()=>setTab("briefs")}><div className="card-bd">
+                  <div style={{fontSize:13,fontWeight:900,marginBottom:4}}>📄 Research Briefs</div>
+                  <div style={{fontSize:12,color:"var(--g600)",lineHeight:1.6}}>Phase A–G relationship research on discovered orgs and prospects. {briefs.length} on file.</div>
+                </div></div>
+                <div className="card" style={{cursor:"pointer"}} onClick={()=>setTab("sprints")}><div className="card-bd">
+                  <div style={{fontSize:13,fontWeight:900,marginBottom:4}}>🎯 Sprints</div>
+                  <div style={{fontSize:12,color:"var(--g600)",lineHeight:1.6}}>Planned, multi-subject outreach campaigns and first-touch copy. {sprints.length} on file.</div>
+                </div></div>
+                <div className="card" style={{cursor:"pointer"}} onClick={()=>setTab("deliverables")}><div className="card-bd">
+                  <div style={{fontSize:13,fontWeight:900,marginBottom:4}}>📦 Deliverables</div>
+                  <div style={{fontSize:12,color:"var(--g600)",lineHeight:1.6}}>Append-only ledger of what the employee has shipped, newest first.</div>
+                </div></div>
+                <div className="card" style={{cursor:"pointer"}} onClick={()=>setTab("activity")}><div className="card-bd">
+                  <div style={{fontSize:13,fontWeight:900,marginBottom:4}}>📣 Activity</div>
+                  <div style={{fontSize:12,color:"var(--g600)",lineHeight:1.6}}>Every outreach touchpoint logged across contacts and orgs. {activity.length} total.</div>
+                </div></div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {tab==="briefs"&&(
+        loading?<div className="empty"><div className="empty-txt">Loading…</div></div>:
+        briefs.length===0
+          ?<div className="empty"><div className="empty-ico">📄</div><div className="empty-ttl">No research briefs yet</div><div className="empty-txt">Briefs the Outreach Manager files in <code>virtual-agency/employees/Outreach/briefs/</code> appear here.</div></div>
+          :<div>{briefs.map((d,i)=>{ const id=`briefs/${d.file}`; return <EditableDoc key={id} docId={id} meta={d.file} content={contentOf(id,d.md)} isEdited={isEdited(id)} onSave={saveDoc} onReset={resetDoc} defaultOpen={i===0}/>; })}</div>
+      )}
+
+      {tab==="sprints"&&(
+        loading?<div className="empty"><div className="empty-txt">Loading…</div></div>:
+        sprints.length===0
+          ?<div className="empty"><div className="empty-ico">🎯</div><div className="empty-ttl">No sprints yet</div><div className="empty-txt">Sprint plans in <code>virtual-agency/employees/Outreach/sprints/</code> appear here.</div></div>
+          :<div>{sprints.map((d,i)=>{ const id=`sprints/${d.file}`; return <EditableDoc key={id} docId={id} meta={d.file} content={contentOf(id,d.md)} isEdited={isEdited(id)} onSave={saveDoc} onReset={resetDoc} defaultOpen={i===0}/>; })}</div>
+      )}
+
+      {tab==="deliverables"&&(()=>{
+        if(loading) return <div className="empty"><div className="empty-txt">Loading…</div></div>;
+        const id="work-log.md"; const content=contentOf(id,workLog);
+        if(!content) return <div className="empty"><div className="empty-ico">📦</div><div className="empty-ttl">No deliverables logged</div><div className="empty-txt">The employee's <code>work-log.md</code> ledger appears here.</div></div>;
+        return <EditableDoc docId={id} meta="work-log.md" content={content} isEdited={isEdited(id)} onSave={saveDoc} onReset={resetDoc} defaultOpen/>;
+      })()}
+
+      {tab==="activity"&&(
+        <div>
+          <div className="filter-bar">
+            <input className="fi" placeholder="Search contact or summary…" value={search} onChange={e=>setSearch(e.target.value)}/>
+          </div>
+          {filteredActivity.length===0
+            ?<div className="empty"><div className="empty-ico">📣</div><div className="empty-ttl">No touchpoints yet</div><div className="empty-txt">Open any contact or org and log a touchpoint to track outreach activity here.</div></div>
+            :<div className="card"><div className="card-bd" style={{padding:0}}>
+                {filteredActivity.map((tp,i)=>(
+                  <div key={tp.id||i} style={{padding:"13px 17px",borderBottom:i<filteredActivity.length-1?"1px solid var(--g100)":"none"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5,flexWrap:"wrap"}}>
+                      <span style={{fontSize:13,fontWeight:700}}>{tp.personName}</span>
+                      {tp.orgName&&<span style={{fontSize:11,color:"var(--g400)"}}>· {tp.orgName}</span>}
+                      <span style={{marginLeft:"auto",fontSize:11,color:"var(--g400)",fontWeight:700}}>{fmtDate(tp.date)}</span>
+                    </div>
+                    <div style={{fontSize:12,lineHeight:1.6}}>{tp.summary}</div>
+                    {tp.next_action&&<div style={{fontSize:11,color:"var(--cyan)",fontWeight:700,marginTop:2}}>→ {tp.next_action}{tp.next_action_date?` · by ${fmtDate(tp.next_action_date)}`:""}</div>}
+                  </div>
+                ))}
+              </div></div>
+          }
+        </div>
+      )}
     </div>
   );
 }
@@ -1966,7 +2323,7 @@ function prepareImportItem(item) {
     return { rt, record:{...item, record_type:"individual", id, segment:"prospect", touchpoints:item.touchpoints||[], tags:item.tags||[], interests:item.interests||[], linked_grants:item.linked_grants||[], createdAt:item.createdAt||new Date().toISOString()} };
   }
   const rawId = item.id || uid(); const id = rawId.startsWith("org_") ? rawId : `org_${rawId}`;
-  return { rt, record:{...item, record_type:"organization", id, touchpoints:item.touchpoints||[], tags:item.tags||[], financial_relationship:item.financial_relationship||{has_given:false,total_given:0,grant_history:[]}, createdAt:item.createdAt||new Date().toISOString()} };
+  return { rt, record:{...item, record_type:"organization", id, segment:"prospect", touchpoints:item.touchpoints||[], tags:item.tags||[], financial_relationship:item.financial_relationship||{has_given:false,total_given:0,grant_history:[]}, createdAt:item.createdAt||new Date().toISOString()} };
 }
 
 function ImportView({contacts,orgs,onImportContact,onImportOrg,showToast}) {

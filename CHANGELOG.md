@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-07-06 — Outreach page → inline-editable Outreach Workspace
+
+Renamed the "Outreach Log" sidebar item to **Outreach** (📣) and rebuilt the whole view into a workspace that surfaces the Outreach Manager virtual-employee's artifacts and makes every displayed doc editable inline. App code + a new API route + a new markdown lib + one new Supabase table. Build passes. **Effort: medium.**
+
+- **New tabbed workspace** (`OutreachView`): Overview / Research Briefs / Sprints / Deliverables / Activity. The first four render the employee's markdown files; Activity keeps the old touchpoint log with search.
+- **New server route `app/api/outreach/route.js`** reads the employee's `.md` files (`briefs/`, `sprints/`, `work-log.md`) live. New files dropped in those folders appear automatically. `next.config.mjs` gains `outputFileTracingIncludes` so the files bundle into the Vercel function.
+- **New `lib/md.js`** — compact Markdown→HTML renderer (headings, GFM tables, blockquotes, lists, code, links) plus `blocksOf()` (splits a doc into editable blocks with stable raw↔render round-trip) and `parseTableBlock()`/`serializeTable()`/`renderInline()` for cell-level table editing.
+- **Inline block editing** (`EditableDoc` + `AutoGrow`): stays in the rendered view — click any paragraph/heading/list/quote and it becomes an editable field in place; click away or Ctrl/Cmd+Enter saves, Esc cancels, empty-and-blur deletes, "＋ Add a section" appends.
+- **Excel-style per-cell table editing** (`TableBlock`): every table cell and header is its own click-to-edit box; editing one cell rewrites only that cell (verified byte-stable, formatting preserved, escaped pipes handled).
+- **Persistence:** edits save to a new `sprout_outreach_docs` table (id = file-relative path, `content`, `updated_at`; authenticated-only RLS matching the other CRM tables) via new `fetchOutreachDocs`/`saveOutreachDoc`/`resetOutreachDoc` in `lib/services.js`. The `.md` files are the seed; a doc shows its saved override if one exists, else the file. **↺ Reset to file** deletes the override. Vercel's read-only FS is why edits live in the DB, not the files.
+- **Committed the previously-untracked source files** (`briefs/Prospect_Outreach_Plan_July2026.md`, `sprints/`) so the Sprints tab and second brief render in production.
+
+---
+
 ## 2026-07-06 — Contact list: "Hide nameless" toggle, default ON
 
 Added a filter to the contact list that hides email-only (nameless) contacts, on by default — the inverse of the existing "Needs a name" filter. App code only (`components/CRMManager.jsx`, `ContactsView`). Build passes. **Effort: low.**
