@@ -1328,6 +1328,7 @@ function ContactsView({contacts,orgs,events,onUpdate,onDelete,onUpdateEvents,sho
   const [fType,setFType]=useState("all");
   const [fStatus,setFStatus]=useState("all");
   const [needsName,setNeedsName]=useState(false);
+  const [hideNameless,setHideNameless]=useState(true);
   const [sortBy,setSortBy]=useState("name");
   const [perPage,setPerPage]=useState(50);
   const [page,setPage]=useState(1);
@@ -1369,9 +1370,11 @@ const blank={first_name:"",last_name:"",org_id:"",org_ids:[],_pendingEventIds:[]
       if (!types.includes(fType)) return false;
     }
     if (fStatus!=="all"&&c.relationship_status!==fStatus) return false;
-    if (needsName && (`${c.first_name||""}${c.last_name||""}`).trim()) return false;
+    const hasName=(`${c.first_name||""}${c.last_name||""}`).trim();
+    if (needsName && hasName) return false;
+    if (hideNameless && !hasName) return false;
     return true;
-  }), [contacts, segment, search, fType, fStatus, needsName]);
+  }), [contacts, segment, search, fType, fStatus, needsName, hideNameless]);
 
   // Sort the filtered set (default Name A–Z so the paginated list is scannable).
   const sorted=useMemo(()=>{
@@ -1390,7 +1393,7 @@ const blank={first_name:"",last_name:"",org_id:"",org_ids:[],_pendingEventIds:[]
   const safePage=Math.min(page, pageCount);
   const paged=useMemo(()=>sorted.slice((safePage-1)*perPage, safePage*perPage), [sorted, safePage, perPage]);
   // Reset to page 1 whenever the result set changes.
-  useEffect(()=>{ setPage(1); }, [segment, search, fType, fStatus, needsName, sortBy, perPage]);
+  useEffect(()=>{ setPage(1); }, [segment, search, fType, fStatus, needsName, hideNameless, sortBy, perPage]);
 
 const [editing,setEditing]=useState(null);
   const [editingTab,setEditingTab]=useState("overview"); // pre-select tab on open
@@ -1453,8 +1456,9 @@ const [editing,setEditing]=useState(null);
         <select className="fs" value={fType} onChange={e=>setFType(e.target.value)}><option value="all">All types</option>{Object.entries(REL_TYPES).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
 <select className="fs" value={fStatus} onChange={e=>setFStatus(e.target.value)}><option value="all">All statuses</option>{Object.entries(REL_STATUS).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
 <select className="fs" value={sortBy} onChange={e=>setSortBy(e.target.value)} title="Sort"><option value="name">Sort: Name A–Z</option><option value="newest">Sort: Newest added</option><option value="health">Sort: Health</option>{segment==="donor"&&<option value="given">Sort: Most given</option>}</select>
-<button className={`btn btn-sm ${needsName?"btn-blk":"btn-ghost"}`} onClick={()=>setNeedsName(v=>!v)} title="Show only contacts with no name (email-only)">👤 Needs a name</button>
-{(search||fType!=="all"||fStatus!=="all"||needsName)&&<button className="btn btn-ghost btn-sm" onClick={()=>{setSearch("");setFType("all");setFStatus("all");setNeedsName(false);}}>✕ Clear</button>}
+<button className={`btn btn-sm ${hideNameless?"btn-blk":"btn-ghost"}`} onClick={()=>setHideNameless(v=>{const nv=!v; if(nv) setNeedsName(false); return nv;})} title="Hide contacts with no name (email-only). On by default.">🙈 Hide nameless</button>
+<button className={`btn btn-sm ${needsName?"btn-blk":"btn-ghost"}`} onClick={()=>setNeedsName(v=>{const nv=!v; if(nv) setHideNameless(false); return nv;})} title="Show only contacts with no name (email-only)">👤 Needs a name</button>
+{(search||fType!=="all"||fStatus!=="all"||needsName||!hideNameless)&&<button className="btn btn-ghost btn-sm" onClick={()=>{setSearch("");setFType("all");setFStatus("all");setNeedsName(false);setHideNameless(true);}}>✕ Clear</button>}
 {segment!=="prospect"&&<button className="btn btn-blk btn-sm" style={{marginLeft:"auto"}} onClick={exportSegmentCSV} title={`Download all ${SEGMENTS[segment]} contacts with an email as a CSV for Campaign Monitor (ignores filters)`}>⬇ Export {SEGMENTS[segment]} CSV</button>}
       </div>
 {adding&&(

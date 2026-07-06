@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-07-06 — Contact list: "Hide nameless" toggle, default ON
+
+Added a filter to the contact list that hides email-only (nameless) contacts, on by default — the inverse of the existing "Needs a name" filter. App code only (`components/CRMManager.jsx`, `ContactsView`). Build passes. **Effort: low.**
+
+- **New `hideNameless` state (`useState(true)`)** — contacts with no first/last name are hidden by default.
+- **Filter logic:** `hideNameless && !hasName → false` (hide nameless) alongside the existing `needsName && hasName → false`; wired into the filter `useMemo` deps and the page-reset effect.
+- **New "🙈 Hide nameless" toggle button** on the filter bar, styled `btn-blk` when active.
+- **Mutually exclusive** with "👤 Needs a name" — clicking either turns the other off (logical opposites).
+- **✕ Clear** resets to default (hideNameless on, needsName off) and shows when `!hideNameless`.
+- The "filtered" badge intentionally ignores `hideNameless` since hiding nameless is the default state.
+
+---
+
 ## 2026-07-03 — Virtual agency: built the Outreach Manager employee (docs only)
 
 Built the third virtual-agency AI employee, the Outreach Manager, mirroring the Communications/Design folder pattern. Docs/scaffolding only; no app code, CRM data, or DB change. **Effort: medium.**
