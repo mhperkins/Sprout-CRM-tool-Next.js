@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Outreach Workspace</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --black:#030000;--white:#F7F7F6;--cyan:#73C4D6;--fuchsia:#E10098;--acid:#C6C902;
+    --banana:#FAD100;--cyan-lt:#C7E7EF;--fuchsia-lt:#FFCDF0;--banana-lt:#FEF4C1;
+    --g100:#F3F4F6;--g200:#E5E7EB;--g400:#9CA3AF;--g600:#4B5563;--g800:#1F2937;
+  }
+  body{font-family:'Lato',sans-serif;background:linear-gradient(135deg,#eef7f9 0%,#f7f7f6 55%,#fdf4fb 100%);color:var(--black);min-height:100vh;padding:40px 22px;line-height:1.55}
+  .wrap{max-width:1080px;margin:0 auto}
+  .masthead{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .dot{width:14px;height:14px;border-radius:50%;background:var(--fuchsia);box-shadow:0 0 0 5px rgba(225,0,152,0.16)}
+  .brand{font-size:12px;font-weight:900;letter-spacing:0.16em;text-transform:uppercase;color:var(--g600)}
+  h1{font-size:30px;font-weight:900;letter-spacing:-0.01em;margin:8px 0 4px}
+  .sub{font-size:15px;color:var(--g600);margin-bottom:8px;max-width:760px}
+  .rule{height:4px;border-radius:4px;background:var(--acid);margin:16px 0 22px;width:100%}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 11px;border-radius:20px;background:#fff;border:1.5px solid var(--g200)}
+  .chip b{font-family:ui-monospace,Menlo,monospace;font-weight:700}
+  .chip.hash{background:var(--black);color:#fff;border-color:var(--black)}
+  .chip.branch{background:var(--cyan-lt);color:#155e6e;border-color:transparent}
+  .chip.effort{background:var(--banana-lt);color:#7a5c00;border-color:transparent}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+  .card{background:#fff;border:1px solid var(--g200);border-radius:14px;padding:17px 18px;box-shadow:0 4px 14px rgba(0,0,0,0.06)}
+  .card h3{font-size:14px;font-weight:900;display:flex;align-items:center;gap:9px;margin-bottom:9px}
+  .ico{width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 auto}
+  .b-cyan{background:var(--cyan-lt)}.b-fuchsia{background:var(--fuchsia-lt)}.b-acid{background:#e9e99a}.b-banana{background:var(--banana-lt)}
+  .card p{font-size:13px;color:var(--g800)}
+  .card ul{list-style:none;margin-top:7px;display:flex;flex-direction:column;gap:6px}
+  .card li{font-size:12.5px;color:var(--g600);padding-left:16px;position:relative}
+  .card li::before{content:"›";position:absolute;left:2px;color:var(--fuchsia);font-weight:900}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--g100);color:#155e6e;padding:1px 5px;border-radius:4px}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}
+  .step{font-size:11.5px;font-weight:700;background:var(--g100);border-radius:6px;padding:5px 9px}
+  .arrow{color:var(--fuchsia);font-weight:900}
+  .note{margin-top:22px;background:linear-gradient(to right,rgba(250,209,0,0.14),rgba(198,201,2,0.06));border:1.5px solid var(--banana);border-radius:12px;padding:13px 16px;font-size:12.5px;color:#5c4a00}
+  .foot{margin-top:24px;display:flex;flex-wrap:wrap;gap:14px;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:0.08em}
+  .span2{grid-column:1/-1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead"><span class="dot"></span><span class="brand">Sprout Society CRM · Delivery</span></div>
+  <h1>Outreach Workspace 📣</h1>
+  <div class="sub">The "Outreach Log" page is now a living workspace for the Outreach Manager employee — with every displayed doc editable inline, and tables editable cell-by-cell like a spreadsheet.</div>
+  <div class="rule"></div>
+  <div class="meta">
+    <span class="chip hash">⬡ <b>f0135bb</b></span>
+    <span class="chip branch">⎇ main</span>
+    <span class="chip effort">◈ Effort: medium</span>
+    <span class="chip">✓ build passes</span>
+    <span class="chip">＋974 / −31 · 8 files</span>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3><span class="ico b-cyan">🗂️</span>The workspace, 5 tabs</h3>
+      <p>Renamed the sidebar item to <b>Outreach</b> and rebuilt the view.</p>
+      <ul>
+        <li><b>Overview</b> — stat tiles + jump cards</li>
+        <li><b>Research Briefs</b> &amp; <b>Sprints</b> — the employee's docs</li>
+        <li><b>Deliverables</b> — the work-log ledger</li>
+        <li><b>Activity</b> — the touchpoint log (kept)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="ico b-fuchsia">✍️</span>Click-to-edit, in place</h3>
+      <p>Stay in the rendered view — click any section and it becomes an editable field right there.</p>
+      <ul>
+        <li>Click away or <code>Cmd/Ctrl+Enter</code> saves</li>
+        <li><code>Esc</code> cancels · clear + blur deletes</li>
+        <li><b>＋ Add a section</b> appends a new block</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="ico b-acid">▦</span>Excel-style tables</h3>
+      <p>Every cell and header is its own click-to-edit box.</p>
+      <ul>
+        <li>Click one cell → only that cell edits</li>
+        <li>Bold / <code>code</code> / links survive edits</li>
+        <li>Verified: other cells stay byte-identical</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="ico b-banana">🔌</span>Live file source</h3>
+      <p>New <code>app/api/outreach</code> route reads the employee's <code>.md</code> files straight from the repo.</p>
+      <ul>
+        <li>New files in <code>briefs/</code> or <code>sprints/</code> auto-appear</li>
+        <li><code>outputFileTracingIncludes</code> bundles them for Vercel</li>
+        <li>New <code>lib/md.js</code>: markdown + editable blocks</li>
+      </ul>
+    </div>
+
+    <div class="card span2">
+      <h3><span class="ico b-cyan">💾</span>How edits persist</h3>
+      <p>Vercel's serverless filesystem is read-only, so edits can't write back to the files. They save to a new Supabase table instead.</p>
+      <div class="flow">
+        <span class="step">.md file (seed)</span>
+        <span class="arrow">→</span>
+        <span class="step">click-edit a block / cell</span>
+        <span class="arrow">→</span>
+        <span class="step">save to <code>sprout_outreach_docs</code></span>
+        <span class="arrow">→</span>
+        <span class="step">override wins on display</span>
+        <span class="arrow">→</span>
+        <span class="step">↺ Reset to file</span>
+      </div>
+      <ul>
+        <li>New table has <b>authenticated-only RLS</b>, matching the other 5 CRM tables · round-trip verified</li>
+        <li>New service fns: <code>fetchOutreachDocs</code> / <code>saveOutreachDoc</code> / <code>resetOutreachDoc</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note">⚠️ <b>Divergence note:</b> once a doc is edited in-app, the saved version wins over the file. If the Outreach employee later regenerates that <code>.md</code>, the new file won't show until you hit <b>↺ Reset to file</b> on that doc. Also committed the previously-untracked <code>Prospect_Outreach_Plan</code> + <code>sprints/</code> so they render in production.</div>
+
+  <div class="foot">
+    <span>Sprout CRM Next</span><span>·</span><span>2026-07-06</span><span>·</span><span>components/CRMManager.jsx · lib/md.js · lib/services.js · app/api/outreach</span>
+  </div>
+</div>
+</body>
+</html>
