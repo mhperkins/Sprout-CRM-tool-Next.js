@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Org Prospect Bucket — Delivery</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098;
+    --cyan:#73C4D6; --cyan-d:#2a8ca0; --paper:#F7F7F6; --g400:#8a8a86; --g600:#5a5a57;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',system-ui,sans-serif;background:var(--paper);color:var(--ink);
+    padding:40px 16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto}
+  .masthead{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:6px}
+  .eyebrow{font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--fuchsia)}
+  h1{font-size:34px;font-weight:900;line-height:1.12;margin:8px 0 6px}
+  .sub{font-size:16px;color:var(--g600);max-width:640px}
+  .rule{height:4px;background:var(--acid);border-radius:2px;margin:18px 0 24px}
+  .pill{display:inline-block;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:1px;
+    padding:4px 12px;border-radius:999px}
+  .pill-med{background:var(--banana);color:var(--ink)}
+  .pill-ok{background:var(--acid);color:var(--ink)}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.grid{grid-template-columns:1fr}h1{font-size:27px}}
+  .card{background:#fff;border-radius:12px;padding:20px 22px;box-shadow:0 4px 14px rgba(0,0,0,0.10);
+    border-left:6px solid var(--cyan)}
+  .card.f{border-left-color:var(--fuchsia)}
+  .card.b{border-left-color:var(--banana)}
+  .card.a{border-left-color:var(--acid)}
+  .card h3{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--g400);margin-bottom:10px}
+  .card .big{font-size:22px;font-weight:900;margin-bottom:8px}
+  .card ul{list-style:none;font-size:14.5px}
+  .card li{padding:5px 0 5px 20px;position:relative;color:var(--ink)}
+  .card li::before{content:"›";position:absolute;left:2px;color:var(--fuchsia);font-weight:900}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;background:var(--paper);
+    padding:1px 6px;border-radius:5px;color:var(--cyan-d)}
+  .tabsdemo{display:flex;gap:8px;margin:8px 0 4px}
+  .tab{font-size:13px;font-weight:700;padding:7px 16px;border-radius:8px 8px 0 0;background:var(--paper);color:var(--g600)}
+  .tab.on{background:var(--ink);color:#fff}
+  .tab .n{opacity:.55}
+  .move{display:inline-block;font-size:12px;font-weight:700;background:var(--ink);color:#fff;
+    padding:4px 12px;border-radius:6px;margin-top:6px}
+  .foot{margin-top:26px;padding-top:16px;border-top:1px solid #e3e3e0;display:flex;flex-wrap:wrap;
+    gap:10px 20px;align-items:center;font-size:13px;color:var(--g600)}
+  .foot .k{font-weight:900;color:var(--ink)}
+  .hash{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--ink);color:var(--acid);
+    padding:3px 10px;border-radius:6px;font-size:12.5px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <span class="eyebrow">Sprout CRM · Delivery</span>
+    <span style="font-size:13px;font-weight:900;color:var(--g400)">2026-07-06</span>
+  </div>
+  <h1>Organizations now have buckets</h1>
+  <p class="sub">Orgs split into <strong>Active | Prospects</strong> tabs, mirroring the contacts bucket system. All 16 existing orgs moved into Prospects, with one-click promote-to-Active controls.</p>
+  <div class="rule"></div>
+  <div class="badges">
+    <span class="pill pill-med">Effort · Medium</span>
+    <span class="pill pill-ok">Build ✓ Passes</span>
+    <span class="pill pill-ok">16 / 16 orgs → Prospects</span>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>The Orgs page</h3>
+      <div class="tabsdemo">
+        <span class="tab">Active <span class="n">(0)</span></span>
+        <span class="tab on">Prospects <span class="n">(16)</span></span>
+      </div>
+      <ul>
+        <li>Tab row with live per-bucket counts</li>
+        <li>List filtered to the active tab</li>
+        <li><strong>+ Add to {bucket}</strong> defaults new orgs to the current tab</li>
+      </ul>
+    </div>
+
+    <div class="card f">
+      <h3>Move controls</h3>
+      <span class="move">→ Move to Active</span>
+      <ul>
+        <li>Direct toggle button in the detail panel</li>
+        <li>One-click <strong>→ Active</strong> promote on every list row</li>
+        <li>Bucket selector in both Add &amp; Edit modals</li>
+      </ul>
+    </div>
+
+    <div class="card a">
+      <h3>Schema · zero migration</h3>
+      <ul>
+        <li>New JSONB-only <code>segment</code> on <code>OrgSchema</code></li>
+        <li><code>"active" | "prospect"</code>, null → <code>active</code></li>
+        <li>Every existing org auto-lands in Active — no backfill needed</li>
+      </ul>
+    </div>
+
+    <div class="card b">
+      <h3>Data + import</h3>
+      <ul>
+        <li>One <code>jsonb_set</code> UPDATE moved all 16 orgs → Prospects</li>
+        <li>Imported orgs now force <code>segment:"prospect"</code></li>
+        <li>Matches the IG-scrape pipeline (contacts already do this)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span><span class="k">Files:</span> <code>lib/schemas.js</code> · <code>components/CRMManager.jsx</code></span>
+    <span><span class="k">Commit:</span> <span class="hash">9b84bd9</span></span>
+    <span><span class="k">Branch:</span> main</span>
+  </div>
+  <p style="font-size:12.5px;color:var(--g400);margin-top:14px">Note: the "Active" bucket is separate from <code>relationship_status:"active"</code> — an org can be in the Active bucket while cold. Hard-refresh (Ctrl+Shift+R) to see all orgs land in Prospects.</p>
+</div>
+</body>
+</html>
