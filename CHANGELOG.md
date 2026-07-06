@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-07-06 — Org buckets: Active | Prospects tabs
+
+Gave organizations a bucket system mirroring contacts, then moved all existing orgs into Prospects and added one-click promote controls. App code (`lib/schemas.js`, `components/CRMManager.jsx`) + one bulk data write via the Supabase MCP. Build passes. **Effort: medium.**
+
+- **New JSONB-only `segment` field on `OrgSchema`** (`"active" | "prospect"`, null → `"active"`) — every existing org auto-lands in Active with zero migration.
+- **Orgs page (`OrgsView`):** Active | Prospects tab row with live per-bucket counts, list filtered to the active tab, segment-aware "+ Add to {bucket}" button (defaults new orgs to the current tab), segment-aware empty state.
+- **Move controls:** the detail panel got a direct "→ Move to Active" button (toggle, since only 2 buckets); each list row got a one-click "→ Active" / "→ Prospects" promote button before Edit/Del. Both Add and Edit org modals got a Bucket selector.
+- **Import:** imported orgs now force `segment:"prospect"` in `prepareImportItem`, matching the IG-scrape pipeline where contact imports already force prospect.
+- **Data move:** a single `jsonb_set` UPDATE put all 16 existing orgs into Prospects (verified 16/16).
+- **Naming note:** the non-prospect bucket is labeled **Active** — distinct from `relationship_status:"active"` (an org can be Active-bucket but cold-status).
+
+---
+
 ## 2026-07-06 — Outreach page → inline-editable Outreach Workspace
 
 Renamed the "Outreach Log" sidebar item to **Outreach** (📣) and rebuilt the whole view into a workspace that surfaces the Outreach Manager virtual-employee's artifacts and makes every displayed doc editable inline. App code + a new API route + a new markdown lib + one new Supabase table. Build passes. **Effort: medium.**
