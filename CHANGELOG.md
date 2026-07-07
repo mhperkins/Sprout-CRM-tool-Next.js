@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-07-07 — Members bucket reworked into an additive flag (member + base bucket coexist)
+
+App code + schema only (`lib/schemas.js`, `components/CRMManager.jsx`, `app/api/send/route.js`; `npm run build` passes). Effort: medium.
+
+- **The ask:** any contact can be added to the Members bucket while *staying* in their previous bucket (Community/Donor/Prospect). The prior session's design made Members a fourth mutually-exclusive `segment` value, so moving someone to Members removed them from their base bucket — the opposite of what's wanted.
+- **Fix — Members is now a separate boolean, not a segment value:**
+  - **Schema:** `segment` enum back to `["community","donor","prospect"]`; new additive `is_member` boolean (default `false`). Verified 0/3772 contacts were on the old `member` segment, so no migration needed.
+  - **Constants:** `SEGMENT_OPTS` (base-bucket radio) = community/donor/prospect; new `BUCKET_OPTS` (community · member · donor · prospect) drives the tab row + send-list dropdown.
+  - **Filtering/counts:** new `inBucket(c,seg)` helper (member → `is_member`, else base `segment`); `segCounts` counts a member in both their base bucket and Members.
+  - **Detail panel:** base-bucket badge + a `★ Member` badge when flagged; Move-to menu keeps base moves and adds a `★ Add to Members / ✕ Remove from Members` toggle (`is_member` only, base untouched).
+  - **Add/Edit modals:** base-bucket radio + a new `★ Also a Member` checkbox that stacks on top; `+ Add to Members` seeds `is_member:true` in the Community base bucket.
+  - **Newsletter send:** the in-app `segCount` and the server route `fetchRecipients` both resolve the `member` bucket via `data.is_member`, so a Members-only blast pulls everyone flagged regardless of base bucket.
+  - **Import:** a coerced `segment:"member"` is translated to `is_member=true` (base bucket preserved).
+- **Carry-overs:** MCP `create_or_update_contact` still can't set `is_member`; membership stays a manual label. The user also added a `coworking` value to the contact `relationship_types` enum (intentional).
+
+---
+
 ## 2026-07-07 — Fixed google-workspace OAuth for SSH-remote + found Sprout By Day form
 
 Config/infra + memory only, no app code, CRM data, or repo change (delivery slide is the only committed file). Effort: diagnose medium / fix low.

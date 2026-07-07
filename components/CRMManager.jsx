@@ -365,11 +365,14 @@ const STYLES = `
 
 /* ─── Constants ─────────────────────────────────────────────────────────────── */
 const REL_STATUS = { cold:"Cold", cool:"Cool", warm:"Warm", active:"Active" };
-const REL_TYPES  = { music:"Music", art:"Art", event_host:"Event Host", community_builder:"Community Builder", partner:"Partner", attendee:"Attendee", showcase:"Showcase", sprout_society:"Sprout Society", other:"Other" };
+const REL_TYPES  = { music:"Music", art:"Art", event_host:"Event Host", community_builder:"Community Builder", partner:"Partner", attendee:"Attendee", coworking:"Coworking", showcase:"Showcase", sprout_society:"Sprout Society", other:"Other" };
 // High-signal role tags shared by contacts AND orgs (orgs store these in `tags`, since they have no relationship_types). Tokens match REL_TYPES so one filter spans both.
 const ORG_ROLE_TAGS = [["music","Music"],["art","Art"],["event_host","Event Host"],["community_builder","Community Builder"]];
 const SEGMENTS   = { community:"Community", member:"Members", donor:"Donors", prospect:"Prospects" };
-const SEGMENT_OPTS = [{value:"community",label:"Community"},{value:"member",label:"Member"},{value:"donor",label:"Donor"},{value:"prospect",label:"Prospect"}];
+// Base bucket (mutually exclusive) — a contact lives in exactly one of these.
+const SEGMENT_OPTS = [{value:"community",label:"Community"},{value:"donor",label:"Donor"},{value:"prospect",label:"Prospect"}];
+// Tab row / send-list buckets: the three base buckets PLUS the additive Members flag.
+const BUCKET_OPTS = [{value:"community",label:"Community"},{value:"member",label:"Members"},{value:"donor",label:"Donor"},{value:"prospect",label:"Prospect"}];
 const ORG_SEGMENTS   = { active:"Active", prospect:"Prospects" };
 const ORG_SEGMENT_OPTS = [{value:"active",label:"Active"},{value:"prospect",label:"Prospect"}];
 // Givebutter campaigns — synced via the givebutter MCP (list_campaigns). Refresh when campaigns change.
@@ -735,6 +738,12 @@ function ContactDetail({contact,orgs,events,onClose,onUpdate,onEdit,showToast}) 
     onUpdate({...contact, segment:v});
     showToast(`Moved to ${SEGMENTS[v]} ✓`);
   };
+  const toggleMember = () => {
+    setSegMenuOpen(false);
+    const next = !contact.is_member;
+    onUpdate({...contact, is_member:next});
+    showToast(next ? "Added to Members ✓" : "Removed from Members ✓");
+  };
   useEffect(()=>{ const h=(e)=>{ if(e.key==="Escape") onClose(); }; document.addEventListener("keydown",h); return ()=>document.removeEventListener("keydown",h); },[onClose]);
   const affOrgIds = (contact.org_ids&&contact.org_ids.length)?contact.org_ids:(contact.org_id?[contact.org_id]:[]);
   const affOrgs = orgs.filter(o=>affOrgIds.includes(o.id));
@@ -816,16 +825,20 @@ function ContactDetail({contact,orgs,events,onClose,onUpdate,onEdit,showToast}) 
           <div className="dp-row" style={{display:"flex",alignItems:"center",gap:8}}>
             <span style={{fontSize:11,fontWeight:700,color:"var(--g600)"}}>Bucket:</span>
             <span style={{fontSize:12,fontWeight:700,background:"var(--g100)",color:"var(--g800)",padding:"3px 10px",borderRadius:12}}>{SEGMENTS[curSegment]}</span>
+            {contact.is_member&&<span style={{fontSize:12,fontWeight:700,background:"var(--acid)",color:"var(--black)",padding:"3px 10px",borderRadius:12}}>★ Member</span>}
             <div style={{position:"relative"}}>
               <button className="btn btn-ghost btn-xs" onClick={()=>setSegMenuOpen(o=>!o)}>Move to ▾</button>
               {segMenuOpen&&<>
                 <div style={{position:"fixed",inset:0,zIndex:10}} onClick={()=>setSegMenuOpen(false)}/>
-                <div style={{position:"absolute",top:"100%",left:0,marginTop:4,background:"#fff",border:"1px solid var(--g200)",borderRadius:8,boxShadow:"0 6px 20px rgba(0,0,0,0.12)",zIndex:11,minWidth:130,overflow:"hidden"}}>
+                <div style={{position:"absolute",top:"100%",left:0,marginTop:4,background:"#fff",border:"1px solid var(--g200)",borderRadius:8,boxShadow:"0 6px 20px rgba(0,0,0,0.12)",zIndex:11,minWidth:150,overflow:"hidden"}}>
                   {SEGMENT_OPTS.filter(o=>o.value!==curSegment).map(o=>(
                     <button key={o.value} onClick={()=>moveSegment(o.value)} style={{display:"block",width:"100%",textAlign:"left",padding:"8px 12px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--g800)"}}
                       onMouseEnter={e=>e.currentTarget.style.background="var(--g100)"}
                       onMouseLeave={e=>e.currentTarget.style.background="none"}>{SEGMENTS[o.value]}</button>
                   ))}
+                  <button onClick={toggleMember} style={{display:"block",width:"100%",textAlign:"left",padding:"8px 12px",background:"none",border:"none",borderTop:"1px solid var(--g200)",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--g800)"}}
+                    onMouseEnter={e=>e.currentTarget.style.background="var(--g100)"}
+                    onMouseLeave={e=>e.currentTarget.style.background="none"}>{contact.is_member?"✕ Remove from Members":"★ Add to Members"}</button>
                 </div>
               </>}
             </div>
@@ -1291,6 +1304,7 @@ function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,
         </div>
         <div className="fg"><label className="fl">Status</label><RadioGroup options={STATUS_OPTS} value={editing.relationship_status||"cold"} onChange={v=>setEditing({...editing,relationship_status:v})}/></div>
         <div className="fg"><label className="fl">Bucket <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(one at a time)</span></label><RadioGroup options={SEGMENT_OPTS} value={editing.segment||"community"} onChange={onSegmentClick}/></div>
+        <div className="fg"><label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--g800)"}}><input type="checkbox" checked={!!editing.is_member} onChange={e=>setEditing({...editing,is_member:e.target.checked})} style={{accentColor:"var(--cyan)",cursor:"pointer"}}/> <span>★ Also a Member <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(stacks on top of the bucket above)</span></span></label></div>
         {editing.segment==="donor"&&<div className="fg"><label className="fl">Campaign <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(Givebutter)</span></label><SearchSelect options={CAMPAIGN_OPTS} value={editing.campaign||""} onChange={v=>setEditing({...editing,campaign:v,campaign_id:campaignIdFor(v)})} placeholder="Search campaigns…"/></div>}
         <div className="fg"><label className="fl">Type <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(select all that apply)</span></label>
           <div className="type-btn-group">
@@ -1425,7 +1439,7 @@ useEffect(()=>{
     onPendingDetailConsumed();
   }
 },[pendingDetail, onPendingDetailConsumed]);
-const blank={first_name:"",last_name:"",org_id:"",org_ids:[],_pendingEventIds:[],email:"",phone:"",instagram_handle:"",website:"",how_heard:"",relationship_types:[],relationship_status:"cold",segment:"community",notes:"",next_action:"",next_action_date:"",next_actions:[]};
+const blank={first_name:"",last_name:"",org_id:"",org_ids:[],_pendingEventIds:[],email:"",phone:"",instagram_handle:"",website:"",how_heard:"",relationship_types:[],relationship_status:"cold",segment:"community",is_member:false,notes:"",next_action:"",next_action_date:"",next_actions:[]};
   const [nc,setNc]=useState(blank);
 
 // Pre-compute scores once per render, not once per table cell
@@ -1436,13 +1450,16 @@ const blank={first_name:"",last_name:"",org_id:"",org_ids:[],_pendingEventIds:[]
   }, [contacts]);
 
   const segCounts=useMemo(()=>{
-    const m={community:0,donor:0,prospect:0};
-    contacts.forEach(c=>{ const s=c.segment||"community"; m[s]=(m[s]||0)+1; });
+    const m={community:0,member:0,donor:0,prospect:0};
+    contacts.forEach(c=>{ const s=c.segment||"community"; m[s]=(m[s]||0)+1; if(c.is_member) m.member+=1; });
     return m;
   }, [contacts]);
 
+  // Members is an additive flag; the other three are the mutually-exclusive base bucket.
+  const inBucket=(c,seg)=> seg==="member" ? !!c.is_member : (c.segment||"community")===seg;
+
   const filtered=useMemo(()=>contacts.filter(c=>{
-    if ((c.segment||"community")!==segment) return false;
+    if (!inBucket(c,segment)) return false;
     const name=`${c.first_name} ${c.last_name} ${c.title||""}`.toLowerCase();
     if (search&&!name.includes(search.toLowerCase())) return false;
     if (fType!=="all") {
@@ -1509,7 +1526,7 @@ const [editing,setEditing]=useState(null);
   const exportSegmentCSV = () => {
     const seen = new Set();
     const rows = contacts.filter(c => {
-      if ((c.segment||"community")!==segment) return false;
+      if (!inBucket(c,segment)) return false;
       const em=(c.email||"").trim().toLowerCase();
       if(!em||seen.has(em)) return false;
       seen.add(em); return true;
@@ -1526,9 +1543,9 @@ const [editing,setEditing]=useState(null);
 
   return (
     <div className="page">
-      <div className="pg-hd"><div><div className="pg-ttl">Contacts</div><div className="pg-sub">{contacts.length} individuals · {contacts.filter(isOverdue).length} overdue</div></div><button className="btn btn-blk" onClick={()=>{setNc({...blank,segment});setAdding(true);}}>+ Add to {SEGMENTS[segment]}</button></div>
+      <div className="pg-hd"><div><div className="pg-ttl">Contacts</div><div className="pg-sub">{contacts.length} individuals · {contacts.filter(isOverdue).length} overdue</div></div><button className="btn btn-blk" onClick={()=>{setNc(segment==="member"?{...blank,is_member:true}:{...blank,segment});setAdding(true);}}>+ Add to {SEGMENTS[segment]}</button></div>
       <div className="tabs">
-        {SEGMENT_OPTS.map(o=>(
+        {BUCKET_OPTS.map(o=>(
           <button key={o.value} className={`tab ${segment===o.value?"on":""}`} onClick={()=>{setSegment(o.value);setSelected(null);}}>
             {SEGMENTS[o.value]} <span style={{opacity:0.55}}>({segCounts[o.value]||0})</span>
           </button>
@@ -1574,6 +1591,7 @@ const [editing,setEditing]=useState(null);
           <div className="fg"><label className="fl">Bucket</label>
             <RadioGroup options={SEGMENT_OPTS} value={nc.segment||"community"} onChange={v=>setNc({...nc,segment:v})}/>
           </div>
+          <div className="fg"><label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--g800)"}}><input type="checkbox" checked={!!nc.is_member} onChange={e=>setNc({...nc,is_member:e.target.checked})} style={{accentColor:"var(--cyan)",cursor:"pointer"}}/> <span>★ Also a Member <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(stacks on top of the bucket above)</span></span></label></div>
           {nc.segment==="donor"&&<div className="fg"><label className="fl">Campaign <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(Givebutter)</span></label>
             <SearchSelect options={CAMPAIGN_OPTS} value={nc.campaign||""} onChange={v=>setNc({...nc,campaign:v,campaign_id:campaignIdFor(v)})} placeholder="Search campaigns…"/>
           </div>}
@@ -2342,6 +2360,7 @@ const _RELTYPE_MAP = {
   partner:"partner", partners:"partner",
   community_builder:"community_builder", "community builder":"community_builder", "community-builder":"community_builder", builder:"community_builder", "community organizer":"community_builder",
   attendee:"attendee", attendees:"attendee", guest:"attendee",
+  coworking:"coworking", "co-working":"coworking", "co working":"coworking", coworker:"coworking", "coworking member":"coworking",
   sprout_society:"sprout_society", "sprout society":"sprout_society",
   other:"other",
 };
@@ -2372,6 +2391,8 @@ function normalizeImportRecord(raw) {
     else { heals.push(`${label} "${r[key]}" dropped → default`); delete r[key]; }
   };
   coerce("segment", _SEGMENT_MAP, "segment");
+  // "member" is now an additive flag, not a base segment — translate it so the record keeps its base bucket.
+  if (r.segment === "member") { r.is_member = true; delete r.segment; heals.push('segment "member" → is_member flag'); }
   coerce("relationship_status", _STATUS_MAP, "status");
   coerce("category", _CATEGORY_MAP, "category");
   // auto-mirror the high-signal roles into tags so one filter surfaces both contacts AND orgs
@@ -3141,7 +3162,10 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
   const emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const segCount=(seg)=>contacts.filter(c=>{
     const s=(c.segment)||"community"; const em=(c.email||"").trim();
-    return (seg==="all"||s===seg)&&emailRe.test(em);
+    if(!emailRe.test(em)) return false;
+    if(seg==="all") return true;
+    if(seg==="member") return !!c.is_member;   // Members is an additive flag, not a base segment
+    return s===seg;
   }).length;
 
   // Fire a send. mode "test" → typed addresses; mode "list" → server-resolved bucket blast.

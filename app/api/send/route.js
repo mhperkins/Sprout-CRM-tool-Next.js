@@ -78,8 +78,11 @@ async function fetchRecipients(segment) {
   const rows = await r.json();
   const out = new Set();
   for (const row of rows) {
-    const seg = row?.data?.segment || "community";
-    if (segment !== "all" && seg !== segment) continue;
+    const d = row?.data || {};
+    const seg = d.segment || "community";
+    // "member" is an additive flag (data.is_member), not a base segment.
+    const match = segment === "all" ? true : segment === "member" ? !!d.is_member : seg === segment;
+    if (!match) continue;
     const em = (row.email || row?.data?.email || "").trim().toLowerCase();
     if (isEmail(em)) out.add(em);
   }
