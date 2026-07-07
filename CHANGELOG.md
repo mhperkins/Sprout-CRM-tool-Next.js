@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-07-07 — AI rewrite panel on Outreach text blocks
+
+Added an AI rewrite button to the Outreach Workspace: click a text block to edit it, and a ✨ instruction box lets you tell Claude to rewrite the message in plain English (e.g. "rewrite this as an invitation to our next Sprout N Tell"). App code + one new API route. Build passes; `/api/outreach-rewrite` registered. **Effort: medium.**
+
+- **New route `app/api/outreach-rewrite/route.js`** — takes `{text, instruction, context}`, runs Sprout's Communications voice, returns only the rewritten message. Uses the official `@anthropic-ai/sdk` server-side with `ANTHROPIC_API_KEY` (Max's own Anthropic account, same as the newsletter Polish button — first-party Claude, not a third party).
+- **Model: Sonnet 5** (`claude-sonnet-5`), chosen over Haiku/Opus for strong rewrites at reasonable cost/speed. Deliberately stronger than the Polish route's Haiku 4.5. `max_tokens:1200` so outreach messages can run a few short paragraphs.
+- **No-fabrication guard** — the model is told to use a bracketed placeholder (`[date]`, `[RSVP link]`) for any detail it doesn't have rather than inventing one; no em dashes, active voice, no invented facts/numbers, gentle CTAs.
+- **AI panel in `EditableDoc`** — renders under the editing textarea when a block is open: instruction input + Rewrite button + ↶ Undo. Non-destructive (original preserved; Undo restores the pre-rewrite draft). Enter rewrites; Esc discards the edit.
+- **Blur-race fix** — `editWrapRef` + `onEditBlur` guard so clicking into the AI panel doesn't trigger the block's commit-on-blur and close the panel.
+- **Live event context** — `OutreachView` now takes `events` and builds an `aiContext` of the next ≤6 upcoming events with real dates/locations, handed to the API so "invite to our next Sprout N Tell" uses the real date.
+
+---
+
 ## 2026-07-07 — Hide-sidebar toggle
 
 Added a collapsible sidebar so the nav can be hidden to give the main content full width. App code only (`components/CRMManager.jsx`). Build passes. **Effort: low.**

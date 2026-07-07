@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery — Hide-Sidebar Toggle</title>
+<style>
+  :root{
+    --ink:#030000; --white:#F7F7F6; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --g600:#4b4b47; --g300:#c9c9c4;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato','Segoe UI',sans-serif;background:var(--white);color:var(--ink);
+    padding:40px 20px;display:flex;justify-content:center}
+  .slide{width:100%;max-width:920px}
+  .head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .chip{font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;
+    background:var(--ink);color:var(--white);border-radius:999px;padding:6px 14px}
+  .chip.effort{background:var(--acid);color:var(--ink)}
+  .date{font-size:12px;font-weight:700;color:var(--g600);letter-spacing:.1em;text-transform:uppercase}
+  h1{font-size:30px;font-weight:900;letter-spacing:-.02em;margin:14px 0 4px}
+  .sub{font-size:15px;color:var(--g600);margin-bottom:26px;line-height:1.5}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .card{background:#fff;border:1.5px solid var(--g300);border-radius:12px;padding:18px 20px;
+    box-shadow:0 4px 14px rgba(0,0,0,.06)}
+  .card.full{grid-column:1/-1}
+  .card .ic{font-size:20px;margin-bottom:8px}
+  .card h3{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+  .card p{font-size:13.5px;line-height:1.6;color:#2a2a28}
+  .card p .k{background:var(--banana);border-radius:4px;padding:1px 6px;font-weight:700;font-size:12.5px}
+  .accent-fuchsia{border-left:6px solid var(--fuchsia)}
+  .accent-cyan{border-left:6px solid var(--cyan)}
+  .accent-acid{border-left:6px solid var(--acid)}
+  .accent-ink{border-left:6px solid var(--ink)}
+  .mock{display:flex;gap:10px;margin-top:6px}
+  .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+  .foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:24px;
+    font-size:12px;font-weight:700;color:var(--g600)}
+  .hash{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--ink);color:var(--white);
+    border-radius:6px;padding:4px 10px;letter-spacing:.04em}
+  .branch{background:var(--cyan);color:var(--ink);border-radius:6px;padding:4px 10px}
+  .demo{display:flex;gap:16px;align-items:stretch;margin-top:10px;flex-wrap:wrap}
+  .frame{flex:1;min-width:220px;border:1.5px solid var(--g300);border-radius:10px;overflow:hidden;display:flex}
+  .fsb{width:70px;background:var(--ink);color:var(--white);padding:12px 8px;font-size:9px;font-weight:800}
+  .fsb .dot{color:var(--cyan)}
+  .fmain{flex:1;background:#fff;padding:14px 12px;font-size:10px;color:var(--g600)}
+  .fmain .bar{height:8px;background:var(--g300);border-radius:4px;margin-bottom:6px}
+  .fmain .bar.s{width:60%}
+  .collapsed .fsb{display:none}
+  .relabel{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--g600);margin-bottom:6px;text-align:center}
+  .reopen{display:inline-block;background:var(--ink);color:#fff;border-radius:5px;
+    padding:2px 6px;font-weight:900;font-size:11px;margin-right:4px}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="head">
+    <span class="chip">Delivered</span>
+    <span class="chip effort">Effort · Low</span>
+    <span class="date">2026 · 07 · 07</span>
+  </div>
+  <h1>Hide-Sidebar Toggle</h1>
+  <p class="sub">Collapse the nav to give the main content full width. One click hides it, one click brings it back, and the choice sticks across reloads.</p>
+
+  <div class="grid">
+    <div class="card accent-fuchsia">
+      <div class="ic">«</div>
+      <h3>Collapse button</h3>
+      <p>A <b>«</b> button sits in the sidebar header. Click it and the whole nav slides off-screen; the main content expands to fill the space.</p>
+    </div>
+    <div class="card accent-ink">
+      <div class="ic">☰</div>
+      <h3>Reopen button</h3>
+      <p>When hidden, a <span class="reopen">☰</span> button appears fixed at the top-left to bring the sidebar right back.</p>
+    </div>
+    <div class="card accent-cyan">
+      <div class="ic">💾</div>
+      <h3>Remembers your choice</h3>
+      <p>The state saves to <span class="k mono">sprout_sb_collapsed</span> in localStorage, so hidden stays hidden after a refresh.</p>
+    </div>
+    <div class="card accent-acid">
+      <div class="ic">✨</div>
+      <h3>Smooth &amp; on-brand</h3>
+      <p>A soft 0.2s slide, Sprout-palette styling (black button, cyan hover). App code only, build passes.</p>
+    </div>
+
+    <div class="card full">
+      <h3>Before &rarr; After</h3>
+      <div class="demo">
+        <div style="flex:1;min-width:220px">
+          <div class="relabel">Sidebar shown</div>
+          <div class="frame">
+            <div class="fsb">SPROUT<br><span class="dot">CRM v1</span><br><br>📊 Dash<br>👤 Contacts<br>🏢 Orgs<br>🗓 Events</div>
+            <div class="fmain"><div class="bar"></div><div class="bar s"></div><div class="bar"></div><div class="bar s"></div></div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:220px">
+          <div class="relabel">Sidebar hidden &nbsp;(<span class="reopen">☰</span> to reopen)</div>
+          <div class="frame collapsed">
+            <div class="fmain"><div class="bar"></div><div class="bar s"></div><div class="bar"></div><div class="bar"></div><div class="bar s"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span class="hash">cd78638</span>
+    <span class="branch">main</span>
+    <span>components/CRMManager.jsx · CHANGELOG.md</span>
+  </div>
+</div>
+</body>
+</html>

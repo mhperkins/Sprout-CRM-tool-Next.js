@@ -180,6 +180,16 @@ const STYLES = `
   .ws-editable .md-block:hover { background:rgba(115,196,214,0.12); box-shadow:inset 0 0 0 1px rgba(115,196,214,0.55); }
   .ws-editable .md-block:hover a { cursor:pointer; }
   .md-inline-edit { display:block; width:100%; font-family:'Lato',sans-serif; font-size:13px; line-height:1.6; color:var(--black); background:#fff; border:1.5px solid var(--cyan); border-radius:6px; padding:7px 9px; margin:4px 0; outline:none; resize:none; box-shadow:0 0 0 3px rgba(115,196,214,0.16); overflow:hidden; }
+  /* AI rewrite panel under an editing block */
+  .md-edit-wrap { margin:4px 0; }
+  .ai-panel { margin-top:2px; padding:8px 10px; background:rgba(198,201,2,0.10); border:1px solid rgba(198,201,2,0.55); border-radius:6px; }
+  .ai-panel-row { display:flex; align-items:center; gap:8px; }
+  .ai-panel-icon { font-size:15px; line-height:1; }
+  .ai-panel-input { flex:1; min-width:0; font-family:'Lato',sans-serif; font-size:12.5px; color:var(--black); background:#fff; border:1px solid var(--g200); border-radius:6px; padding:6px 9px; outline:none; }
+  .ai-panel-input:focus { border-color:var(--cyan); box-shadow:0 0 0 2px rgba(115,196,214,0.22); }
+  .ai-panel-input:disabled { background:var(--g100); color:var(--g600); }
+  .ai-panel-err { margin-top:6px; font-size:11.5px; color:var(--fuchsia); }
+  .ai-panel-hint { margin-top:6px; font-size:11px; color:var(--g600); }
   /* Excel-style per-cell table editing */
   .ws-tbl .md-cell { cursor:text; transition:background 0.1s,box-shadow 0.1s; }
   .ws-tbl .md-cell:hover { background:rgba(115,196,214,0.16); box-shadow:inset 0 0 0 1px var(--cyan); }
@@ -1895,13 +1905,20 @@ function TableBlock({raw,onSave}) {
 // A collapsible, inline-EDITABLE doc. Stays in the rendered display view: click any
 // text block and it turns into an editable field in place. Changes save automatically
 // (an override in Supabase, via onSave); Reset drops the override back to the disk file.
-function EditableDoc({docId,meta,content,isEdited,onSave,onReset,defaultOpen=false}) {
+function EditableDoc({docId,meta,content,isEdited,onSave,onReset,defaultOpen=false,aiContext=""}) {
   const [open,setOpen]=useState(defaultOpen);
   const [blocks,setBlocks]=useState(()=>blocksOf(content));
   const [editing,setEditing]=useState(null); // block index being edited
   const [draft,setDraft]=useState("");
   const [flash,setFlash]=useState("");
   const cancelRef=useRef(false);
+  const editWrapRef=useRef(null);
+  // AI rewrite panel state (per open block).
+  const [aiInstr,setAiInstr]=useState("");
+  const [aiBusy,setAiBusy]=useState(false);
+  const [aiErr,setAiErr]=useState("");
+  const [aiPrev,setAiPrev]=useState(null); // draft before the last rewrite (for Undo)
+  const resetAi=()=>{ setAiInstr(""); setAiBusy(false); setAiErr(""); setAiPrev(null); };
 
   // Re-sync when the effective content changes from outside (initial load, reset).
   useEffect(()=>{ if(editing===null) setBlocks(blocksOf(content)); },[content]); // eslint-disable-line
@@ -1915,12 +1932,30 @@ function EditableDoc({docId,meta,content,isEdited,onSave,onReset,defaultOpen=fal
     setTimeout(()=>setFlash(f=>f==="Saving…"?f:""),2000);
   };
 
-  const openBlock=(i)=>{ cancelRef.current=false; setEditing(i); setDraft(blocks[i].raw); };
+  const openBlock=(i)=>{ cancelRef.current=false; resetAi(); setEditing(i); setDraft(blocks[i].raw); };
+  // Rewrite the current draft with Claude (Sonnet 5) per the user's instruction.
+  const runRewrite=async()=>{
+    const instr=aiInstr.trim();
+    if(!instr){ setAiErr("Tell the AI what to change."); return; }
+    setAiBusy(true); setAiErr("");
+    try{
+      const res=await fetch("/api/outreach-rewrite",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({text:draft,instruction:instr,context:aiContext})});
+      const data=await res.json();
+      if(!res.ok||data.error) throw new Error(data.error||`HTTP ${res.status}`);
+      setAiPrev(draft); setDraft(data.text);
+      requestAnimationFrame(()=>editWrapRef.current?.querySelector("textarea")?.focus());
+    }catch(e){ setAiErr(e?.message||"Rewrite failed."); }
+    finally{ setAiBusy(false); }
+  };
+  const undoRewrite=()=>{ if(aiPrev!==null){ setDraft(aiPrev); setAiPrev(null); } };
+  // Commit on blur only when focus truly leaves the editing area (not when clicking the AI panel).
+  const onEditBlur=(e)=>{ if(editWrapRef.current&&editWrapRef.current.contains(e.relatedTarget)) return; commit(); };
   const commit=async()=>{
     if(editing===null) return;
     const idx=editing, val=draft;
-    if(cancelRef.current){ cancelRef.current=false; setEditing(null); return; }
-    setEditing(null);
+    if(cancelRef.current){ cancelRef.current=false; setEditing(null); resetAi(); return; }
+    setEditing(null); resetAi();
     const before=blocks.map(b=>b.raw);
     const raws=before.slice();
     if(val.trim()==="") raws.splice(idx,1); else raws[idx]=val;
@@ -1975,8 +2010,22 @@ function EditableDoc({docId,meta,content,isEdited,onSave,onReset,defaultOpen=fal
           {blocks.map((b,i)=>{
             if(b.type==="table") return <TableBlock key={i} raw={b.raw} onSave={(nr)=>saveBlockRaw(i,nr)}/>;
             return editing===i
-              ? <AutoGrow key={i} value={draft} autoFocus
-                  onChange={e=>setDraft(e.target.value)} onBlur={commit} onKeyDown={onKey}/>
+              ? <div key={i} ref={editWrapRef} className="md-edit-wrap">
+                  <AutoGrow value={draft} autoFocus
+                    onChange={e=>setDraft(e.target.value)} onBlur={onEditBlur} onKeyDown={onKey}/>
+                  <div className="ai-panel">
+                    <div className="ai-panel-row">
+                      <span className="ai-panel-icon" title="Rewrite with Claude (Sonnet 5)">✨</span>
+                      <input className="ai-panel-input" value={aiInstr} placeholder="Tell Claude what to do (e.g. rewrite as an invitation to our next Sprout N Tell)"
+                        onChange={e=>setAiInstr(e.target.value)} disabled={aiBusy} onBlur={onEditBlur}
+                        onKeyDown={e=>{ if(e.key==="Enter"){ e.preventDefault(); runRewrite(); } if(e.key==="Escape"){ e.preventDefault(); cancelRef.current=true; commit(); } }}/>
+                      <button type="button" className="btn btn-blk btn-sm" onMouseDown={e=>e.preventDefault()} onClick={runRewrite} disabled={aiBusy}>{aiBusy?"Rewriting…":"Rewrite"}</button>
+                      {aiPrev!==null&&!aiBusy&&<button type="button" className="btn btn-ghost btn-sm" onMouseDown={e=>e.preventDefault()} onClick={undoRewrite}>↶ Undo</button>}
+                    </div>
+                    {aiErr&&<div className="ai-panel-err">{aiErr}</div>}
+                    <div className="ai-panel-hint">Enter to rewrite · edit the result above, then click away to save · Esc discards this edit</div>
+                  </div>
+                </div>
               : <div key={i} className="md-block" title="Click to edit"
                   onClick={e=>blockClick(i,e)} dangerouslySetInnerHTML={{__html:b.html}}/>;
           })}
@@ -1990,7 +2039,7 @@ function EditableDoc({docId,meta,content,isEdited,onSave,onReset,defaultOpen=fal
   );
 }
 
-function OutreachView({contacts,orgs}) {
+function OutreachView({contacts,orgs,events=[]}) {
   const [tab,setTab]=useState("overview");
   const [ws,setWs]=useState(null);
   const [loading,setLoading]=useState(true);
@@ -2041,6 +2090,20 @@ function OutreachView({contacts,orgs}) {
   const briefs=ws?.briefs||[];
   const sprints=ws?.sprints||[];
   const workLog=ws?.workLog||"";
+
+  // Live context handed to the AI rewrite button so invitations reference real events + dates.
+  const aiContext=useMemo(()=>{
+    const today=new Date().toISOString().slice(0,10);
+    const upcoming=(events||[])
+      .filter(e=>e.event_date&&e.event_date>=today&&e.status!=="completed"&&e.status!=="cancelled")
+      .sort((a,b)=>a.event_date.localeCompare(b.event_date))
+      .slice(0,6)
+      .map(e=>{
+        const d=new Date(e.event_date+"T00:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+        return `- ${e.name} — ${d}${e.location?` at ${e.location}`:""}`;
+      });
+    return upcoming.length?`Upcoming Sprout Society events (real dates, use only if relevant):\n${upcoming.join("\n")}`:"";
+  },[events]);
 
   const TABS=[
     ["overview","Overview"],
@@ -2104,21 +2167,21 @@ function OutreachView({contacts,orgs}) {
         loading?<div className="empty"><div className="empty-txt">Loading…</div></div>:
         briefs.length===0
           ?<div className="empty"><div className="empty-ico">📄</div><div className="empty-ttl">No research briefs yet</div><div className="empty-txt">Briefs the Outreach Manager files in <code>virtual-agency/employees/Outreach/briefs/</code> appear here.</div></div>
-          :<div>{briefs.map((d,i)=>{ const id=`briefs/${d.file}`; return <EditableDoc key={id} docId={id} meta={d.file} content={contentOf(id,d.md)} isEdited={isEdited(id)} onSave={saveDoc} onReset={resetDoc} defaultOpen={i===0}/>; })}</div>
+          :<div>{briefs.map((d,i)=>{ const id=`briefs/${d.file}`; return <EditableDoc key={id} docId={id} meta={d.file} content={contentOf(id,d.md)} isEdited={isEdited(id)} onSave={saveDoc} onReset={resetDoc} defaultOpen={i===0} aiContext={aiContext}/>; })}</div>
       )}
 
       {tab==="sprints"&&(
         loading?<div className="empty"><div className="empty-txt">Loading…</div></div>:
         sprints.length===0
           ?<div className="empty"><div className="empty-ico">🎯</div><div className="empty-ttl">No sprints yet</div><div className="empty-txt">Sprint plans in <code>virtual-agency/employees/Outreach/sprints/</code> appear here.</div></div>
-          :<div>{sprints.map((d,i)=>{ const id=`sprints/${d.file}`; return <EditableDoc key={id} docId={id} meta={d.file} content={contentOf(id,d.md)} isEdited={isEdited(id)} onSave={saveDoc} onReset={resetDoc} defaultOpen={i===0}/>; })}</div>
+          :<div>{sprints.map((d,i)=>{ const id=`sprints/${d.file}`; return <EditableDoc key={id} docId={id} meta={d.file} content={contentOf(id,d.md)} isEdited={isEdited(id)} onSave={saveDoc} onReset={resetDoc} defaultOpen={i===0} aiContext={aiContext}/>; })}</div>
       )}
 
       {tab==="deliverables"&&(()=>{
         if(loading) return <div className="empty"><div className="empty-txt">Loading…</div></div>;
         const id="work-log.md"; const content=contentOf(id,workLog);
         if(!content) return <div className="empty"><div className="empty-ico">📦</div><div className="empty-ttl">No deliverables logged</div><div className="empty-txt">The employee's <code>work-log.md</code> ledger appears here.</div></div>;
-        return <EditableDoc docId={id} meta="work-log.md" content={content} isEdited={isEdited(id)} onSave={saveDoc} onReset={resetDoc} defaultOpen/>;
+        return <EditableDoc docId={id} meta="work-log.md" content={content} isEdited={isEdited(id)} onSave={saveDoc} onReset={resetDoc} defaultOpen aiContext={aiContext}/>;
       })()}
 
       {tab==="activity"&&(
@@ -4167,7 +4230,7 @@ if (dbError) return (
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
 {view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))}/>}
         {view==="newsletter"&&<NewsletterView newsletters={newsletters} events={events} contacts={contacts} profile={profile} onUpdate={saveNewsletter} onDelete={deleteNewsletter} showToast={showToast}/>}
-        {view==="outreach"&&<OutreachView contacts={contacts} orgs={orgs}/>}
+        {view==="outreach"&&<OutreachView contacts={contacts} orgs={orgs} events={events}/>}
         {view==="import"&&<ImportView contacts={contacts} orgs={orgs} onImportContact={importContact} onImportOrg={importOrg} showToast={showToast}/>}
         {view==="settings"&&<SettingsView profile={profile} onUpdate={saveProfile} showToast={showToast}/>}
       </main>
