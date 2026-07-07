@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-07-07 — Hide-sidebar toggle
+
+Added a collapsible sidebar so the nav can be hidden to give the main content full width. App code only (`components/CRMManager.jsx`). Build passes. **Effort: low.**
+
+- **New `sbCollapsed` state** in `CRMManager`, persisted to `localStorage` (`sprout_sb_collapsed`) so the choice survives reloads.
+- **« button** in the sidebar header hides the sidebar (slides it off-screen via `transform:translateX(-100%)`); the main content expands to full width.
+- **☰ reopen button** appears fixed top-left when the sidebar is hidden.
+- Smooth 0.2s slide + margin transition; styled in the Sprout palette (cyan hover). `.sb-brand` restructured to flex to seat the collapse button.
+
+---
+
 ## 2026-07-06 — Org buckets: Active | Prospects tabs
 
 Gave organizations a bucket system mirroring contacts, then moved all existing orgs into Prospects and added one-click promote controls. App code (`lib/schemas.js`, `components/CRMManager.jsx`) + one bulk data write via the Supabase MCP. Build passes. **Effort: medium.**

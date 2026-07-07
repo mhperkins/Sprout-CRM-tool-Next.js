@@ -65,8 +65,14 @@ const STYLES = `
   body { font-family:'Lato',sans-serif; background:var(--white); color:var(--black); line-height:1.5; }
   .app { display:flex; min-height:100vh; }
 
-  .sb { width:220px; min-width:220px; background:var(--black); display:flex; flex-direction:column; position:fixed; top:0; left:0; height:100vh; overflow-y:auto; z-index:100; }
-  .sb-brand { padding:20px 18px 16px; border-bottom:1px solid rgba(247,247,246,0.07); }
+  .sb { width:220px; min-width:220px; background:var(--black); display:flex; flex-direction:column; position:fixed; top:0; left:0; height:100vh; overflow-y:auto; z-index:100; transition:transform 0.2s ease; }
+  .sb-brand { padding:20px 18px 16px; border-bottom:1px solid rgba(247,247,246,0.07); display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  .sb-collapse { background:rgba(247,247,246,0.07); border:none; color:rgba(247,247,246,0.5); width:22px; height:22px; border-radius:5px; cursor:pointer; font-size:13px; line-height:1; flex-shrink:0; transition:all 0.12s; }
+  .sb-collapse:hover { background:var(--cyan); color:var(--black); }
+  .app-sb-collapsed .sb { transform:translateX(-100%); }
+  .app-sb-collapsed .main { margin-left:0; }
+  .sb-reopen { position:fixed; top:14px; left:14px; z-index:101; background:var(--black); color:var(--white); border:none; width:34px; height:34px; border-radius:7px; cursor:pointer; font-size:15px; line-height:1; box-shadow:var(--sh); transition:all 0.12s; }
+  .sb-reopen:hover { background:var(--cyan); color:var(--black); }
   .sb-name { font-size:11px; font-weight:900; letter-spacing:0.18em; text-transform:uppercase; color:var(--white); }
   .sb-sub  { font-size:9px; color:var(--cyan); margin-top:3px; text-transform:uppercase; letter-spacing:0.12em; font-weight:700; }
   .sb-nav  { padding:10px; flex:1; }
@@ -79,7 +85,7 @@ const STYLES = `
   .sb-foot { padding:12px 18px 16px; border-top:1px solid rgba(247,247,246,0.06); margin-top:auto; }
   .sb-foot-txt { font-size:8px; color:rgba(247,247,246,0.18); text-transform:uppercase; letter-spacing:0.1em; font-weight:700; line-height:1.7; }
 
-  .main { margin-left:220px; flex:1; }
+  .main { margin-left:220px; flex:1; transition:margin-left 0.2s ease; }
   .page { padding:30px 32px; max-width:1140px; }
   .pg-hd { margin-bottom:24px; display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; }
   .pg-ttl { font-size:23px; font-weight:900; letter-spacing:-0.01em; }
@@ -1037,7 +1043,7 @@ function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
 }
 
 /* ─── Sidebar ────────────────────────────────────────────────────────────────── */
-function Sidebar({view,setView,contacts,events,profile,onQuickLog}) {
+function Sidebar({view,setView,contacts,events,profile,onQuickLog,onCollapse}) {
   const notifCount = (() => {
     const items = [];
     contacts.forEach(c=>{
@@ -1065,7 +1071,7 @@ function Sidebar({view,setView,contacts,events,profile,onQuickLog}) {
   ];
   return (
     <nav className="sb">
-      <div className="sb-brand"><div className="sb-name">Sprout Society</div><div className="sb-sub">CRM Manager v1</div></div>
+      <div className="sb-brand"><div><div className="sb-name">Sprout Society</div><div className="sb-sub">CRM Manager v1</div></div><button className="sb-collapse" onClick={onCollapse} title="Hide sidebar">«</button></div>
       <div className="sb-nav">
         {nav.map((item,i)=>item.section
           ? <div key={i} className="sb-sect">{item.section}</div>
@@ -4006,6 +4012,8 @@ export default function CRMApp() {
   const [dbError,setDbError]=useState(null);
   const [pendingDetail,setPendingDetail]=useState(null);
   const [globalQuickLog,setGlobalQuickLog]=useState(false);
+  const [sbCollapsed,setSbCollapsed]=useState(()=>{ try{ return localStorage.getItem("sprout_sb_collapsed")==="1"; }catch{ return false; } });
+  const toggleSidebar=()=>setSbCollapsed(v=>{ const n=!v; try{ localStorage.setItem("sprout_sb_collapsed",n?"1":"0"); }catch{} return n; });
 
   const loadAll=useCallback(async()=>{
     setLoading(true);
@@ -4150,8 +4158,9 @@ if (dbError) return (
 
   return (
     <><style>{STYLES}</style>
-    <div className="app">
-<Sidebar view={view} setView={(v)=>{setPendingDetail(null);setView(v);}} contacts={contacts} events={events} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)}/>
+    <div className={`app ${sbCollapsed?"app-sb-collapsed":""}`}>
+<Sidebar view={view} setView={(v)=>{setPendingDetail(null);setView(v);}} contacts={contacts} events={events} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)} onCollapse={toggleSidebar}/>
+      {sbCollapsed&&<button className="sb-reopen" onClick={toggleSidebar} title="Show sidebar">☰</button>}
       <main className="main">
         {view==="dashboard"&&<DashboardView contacts={contacts} orgs={orgs} events={events} setView={setView} openContact={openContact} onUpdateContacts={saveContacts} onUpdateEvents={saveEvents} showToast={showToast}/>}
 {view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail} setView={setView}/>}
