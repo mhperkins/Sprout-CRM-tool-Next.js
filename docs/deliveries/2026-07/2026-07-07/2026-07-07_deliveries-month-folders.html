@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery — Deliveries reorganized into month folders</title>
+<style>
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --card:#ffffff;
+    --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6;
+    --muted:#6a6a66; --line:#e6e6e2;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Lato',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:var(--paper); color:var(--ink);
+    padding:40px 16px; line-height:1.5;
+    display:flex; justify-content:center;
+  }
+  .wrap{width:100%; max-width:860px}
+  .masthead{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:16px; flex-wrap:wrap; margin-bottom:6px;
+  }
+  .brand{font-weight:900; font-size:13px; letter-spacing:2px; text-transform:uppercase; color:var(--muted)}
+  .rule{height:3px; background:var(--acid); border-radius:2px; margin:14px 0 26px}
+  h1{font-size:27px; font-weight:900; line-height:1.2; margin-bottom:8px}
+  .sub{font-size:15px; color:var(--muted); margin-bottom:22px}
+  .badges{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:26px}
+  .chip{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:12px; font-weight:700; padding:6px 12px; border-radius:999px;
+    border:1px solid var(--line); background:var(--card);
+  }
+  .chip.k{background:var(--ink); color:#fff; border-color:var(--ink)}
+  .chip.c{background:var(--cyan); color:var(--ink); border-color:var(--cyan)}
+  .chip.b{background:var(--banana); color:var(--ink); border-color:var(--banana)}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:22px 22px; margin-bottom:18px; overflow:hidden;
+    box-shadow:0 4px 14px rgba(0,0,0,.06);
+  }
+  .card.accent{border-left:6px solid var(--fuchsia)}
+  .card.accent2{border-left:6px solid var(--cyan)}
+  .card h2{font-size:15px; font-weight:900; text-transform:uppercase; letter-spacing:1px; margin-bottom:14px}
+  .tree{font-family:ui-monospace,'Cascadia Code',Consolas,monospace; font-size:13px; line-height:1.9; color:var(--ink)}
+  .tree .dir{font-weight:700}
+  .tree .muted{color:var(--muted)}
+  .tree .mo{color:var(--fuchsia); font-weight:800}
+  ul.pts{list-style:none; display:flex; flex-direction:column; gap:11px}
+  ul.pts li{position:relative; padding-left:22px; font-size:14.5px}
+  ul.pts li::before{content:"▸"; position:absolute; left:0; color:var(--fuchsia); font-weight:900}
+  code{background:var(--paper); border:1px solid var(--line); border-radius:4px; padding:1px 6px; font-size:12.5px; font-family:ui-monospace,Consolas,monospace}
+  .foot{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:8px; font-size:12.5px; color:var(--muted)}
+  .foot .git{font-family:ui-monospace,Consolas,monospace; background:var(--ink); color:var(--acid); padding:4px 10px; border-radius:6px; font-size:12px}
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+  @media (max-width:620px){ .cols{grid-template-columns:1fr} }
+  @media (prefers-color-scheme:dark){
+    :root{--paper:#141412; --card:#1e1e1b; --ink:#f3f3ef; --muted:#a4a49e; --line:#33332e}
+    .chip.k{background:#000; color:var(--acid)}
+    code{color:#f3f3ef}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div class="brand">Sprout Society · CRM</div>
+    <div class="brand">Delivery · 2026-07-07</div>
+  </div>
+  <div class="rule"></div>
+
+  <h1>🗂️ Deliveries reorganized into month folders</h1>
+  <p class="sub">Housekeeping only — no app code or data change. Each per-day slide folder now nests under its month.</p>
+
+  <div class="badges">
+    <span class="chip k">Housekeeping</span>
+    <span class="chip c">Effort: low</span>
+    <span class="chip b">18 folders moved</span>
+    <span class="chip">docs only</span>
+  </div>
+
+  <div class="card accent">
+    <h2>New structure</h2>
+    <div class="tree">
+      <div class="dir">docs/deliveries/</div>
+      <div><span class="muted">├─ </span><span class="mo">2026-06/</span><span class="muted">  → 15 date subfolders (06-01 … 06-26)</span></div>
+      <div><span class="muted">│&nbsp;&nbsp;&nbsp;├─ </span>2026-06-01/ …</div>
+      <div><span class="muted">│&nbsp;&nbsp;&nbsp;└─ </span>2026-06-26/</div>
+      <div><span class="muted">└─ </span><span class="mo">2026-07/</span><span class="muted">  → 3 date subfolders</span></div>
+      <div><span class="muted">&nbsp;&nbsp;&nbsp;&nbsp;├─ </span>2026-07-03/</div>
+      <div><span class="muted">&nbsp;&nbsp;&nbsp;&nbsp;├─ </span>2026-07-06/</div>
+      <div><span class="muted">&nbsp;&nbsp;&nbsp;&nbsp;└─ </span>2026-07-07/</div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <div class="card accent2">
+      <h2>What was done</h2>
+      <ul class="pts">
+        <li>Created <code>2026-06/</code> and <code>2026-07/</code> — only the two months already present.</li>
+        <li>Moved every date folder into its month via <code>git mv</code>.</li>
+        <li>Untracked <code>2026-07-07</code> moved with a plain <code>mv</code>.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Convention updated</h2>
+      <ul class="pts">
+        <li>New path: <code>docs/deliveries/&lt;YYYY-MM&gt;/&lt;YYYY-MM-DD&gt;/</code></li>
+        <li>Month folder on the month's first delivery.</li>
+        <li>Date folder on the day's first delivery.</li>
+        <li>Updated in CLAUDE.md step 4 + the standing note.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="foot">
+      <span class="git">branch · main</span>
+      <span>Reorg + CLAUDE.md convention + CHANGELOG entry</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

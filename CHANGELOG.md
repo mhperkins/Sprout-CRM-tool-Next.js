@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-07-07 — Deliveries reorganized into month folders
+
+Housekeeping only, no app code or data change. Reorganized `docs/deliveries/` so each per-day slide folder now nests under its month.
+
+- **New two-level structure:** `docs/deliveries/<YYYY-MM>/<YYYY-MM-DD>/`. Created `2026-06/` (15 date subfolders: 2026-06-01 … 2026-06-26) and `2026-07/` (3 date subfolders: 2026-07-03, 2026-07-06, 2026-07-07). Only the months already present were added.
+- Tracked date folders moved via `git mv`; the untracked `2026-07-07` moved with a plain move.
+- **Convention updated** in CLAUDE.md End-of-Session Protocol step 4 + the standing delivery-slide note: slides now go in `docs/deliveries/<YYYY-MM>/<YYYY-MM-DD>/` (create the month folder on the month's first delivery, the date folder on the day's first delivery).
+
+---
+
 ## 2026-07-07 — Members bucket in Contacts
 
 Added a new **Members** bucket to Contacts (Community · Members · Donors · Prospects), mirroring the existing segment pattern. App code + schema only. Build passes. **Effort: low** (additive, JSONB-only, zero migration).
