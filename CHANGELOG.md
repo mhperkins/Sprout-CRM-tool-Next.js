@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-07-07 — Consolidated the Sprout N Tell lists to one master + synced it into the CRM
+
+Data-only via the `google-workspace` + `sprout-crm`/`supabase` MCPs, all as hello@sproutsociety.org. No app code, repo, or DB-schema change (delivery slide only). Effort: medium.
+
+- **Asks (in sequence):** merge the 6/26 kiosk "Sprout Society — Sign-Ins" sheet into the master; check all Sprout N Tell lists and make it so there's only one; add everyone on the list to the CRM if not already there.
+- **6/26 kiosk merge:** already fully merged — all 17 rows present in both tabs of the master (Jason X excluded as junk). Reported instead of duplicating.
+- **"Only one list":** the master "CHECK INS Sprout n Tell — Email List (Participants & Attendees)" (`1WlbcQHX56WQe1VMgWz8j1HgGn6JhIeH0pAuHCBkPiRs`) IS the single consolidated list. The other 3 SnT sheets are live intake sources (Interest Form responses, 6/26 kiosk Sign-Ins, 5/19 Check-In responses) that keep appending and can't be deleted without breaking their forms/kiosk. Max chose keep-as-is (re-merge on demand).
+- **Brought the master current:** added 3 interest-form responses that landed 7/4–7/7 to both tabs — Beth Graybill (showcasing/music), Natasha Nesari (showcasing/art), Ryan Baladez (attending). Master List → 63 rows, Campaign Monitor Import → 55.
+- **CRM sync (dedupe by email):** SQL lookup of all 63 emails against `sprout_contacts` → 58 already present. Created Ryan Baladez (`ind_ryan_baladez`). Nina's 2nd email already documented on her record; Jason X junk skipped.
+- **Duplicate caught + fixed:** created a second Natasha Nesari (`ind_natasha_nesari`) because the email dedupe missed her existing record (`ind_mr3up0m26qfe`) — Max had added her email after the initial scan. The MCP merge-by-id tool errored "No contact found" on a valid id, so used raw `execute_sql` to fold the note/phone/touchpoint into the original and delete the duplicate.
+- **Net:** Ryan Baladez is the only genuinely-new CRM contact.
+- **Lessons:** email-only dedupe can miss a record whose email was just added; `create_or_update_contact` merge-by-id can reject a valid id → SQL is the reliable fallback for merge+delete.
+
+---
+
 ## 2026-07-07 — Added two Sprout By Day form responses to the CRM, tagged coworking
 
 Data-only via the `sprout-crm` MCP. No app code, repo, or DB-schema change (delivery slide only). Effort: low.
