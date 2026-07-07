@@ -368,8 +368,8 @@ const REL_STATUS = { cold:"Cold", cool:"Cool", warm:"Warm", active:"Active" };
 const REL_TYPES  = { music:"Music", art:"Art", event_host:"Event Host", community_builder:"Community Builder", partner:"Partner", attendee:"Attendee", showcase:"Showcase", sprout_society:"Sprout Society", other:"Other" };
 // High-signal role tags shared by contacts AND orgs (orgs store these in `tags`, since they have no relationship_types). Tokens match REL_TYPES so one filter spans both.
 const ORG_ROLE_TAGS = [["music","Music"],["art","Art"],["event_host","Event Host"],["community_builder","Community Builder"]];
-const SEGMENTS   = { community:"Community", donor:"Donors", prospect:"Prospects" };
-const SEGMENT_OPTS = [{value:"community",label:"Community"},{value:"donor",label:"Donor"},{value:"prospect",label:"Prospect"}];
+const SEGMENTS   = { community:"Community", member:"Members", donor:"Donors", prospect:"Prospects" };
+const SEGMENT_OPTS = [{value:"community",label:"Community"},{value:"member",label:"Member"},{value:"donor",label:"Donor"},{value:"prospect",label:"Prospect"}];
 const ORG_SEGMENTS   = { active:"Active", prospect:"Prospects" };
 const ORG_SEGMENT_OPTS = [{value:"active",label:"Active"},{value:"prospect",label:"Prospect"}];
 // Givebutter campaigns — synced via the givebutter MCP (list_campaigns). Refresh when campaigns change.
@@ -2345,7 +2345,7 @@ const _RELTYPE_MAP = {
   sprout_society:"sprout_society", "sprout society":"sprout_society",
   other:"other",
 };
-const _SEGMENT_MAP = { community:"community", communities:"community", "community member":"community", donor:"donor", donors:"donor", prospect:"prospect", prospects:"prospect", lead:"prospect", leads:"prospect" };
+const _SEGMENT_MAP = { community:"community", communities:"community", "community member":"community", member:"member", members:"member", "paying member":"member", donor:"donor", donors:"donor", prospect:"prospect", prospects:"prospect", lead:"prospect", leads:"prospect" };
 const _STATUS_MAP = { cold:"cold", cool:"cool", warm:"warm", active:"active", hot:"active", lukewarm:"cool", new:"cold" };
 const _CATEGORY_MAP = { funder:"funder", funders:"funder", sponsor:"funder", partner:"partner", partners:"partner", vendor:"vendor", vendors:"vendor", media:"media", press:"media", government:"government", gov:"government", govt:"government" };
 const _norm = s => String(s ?? "").trim().toLowerCase().replace(/\s+/g," ");
@@ -3400,6 +3400,7 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
                   <div className="fg"><select className="fi" value={listSeg} onChange={e=>setListSeg(e.target.value)}>
                     <option value="all">All buckets</option>
                     <option value="community">Community</option>
+                    <option value="member">Members</option>
                     <option value="donor">Donors</option>
                     <option value="prospect">Prospects</option>
                   </select></div>

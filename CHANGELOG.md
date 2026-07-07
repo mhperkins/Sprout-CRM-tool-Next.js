@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-07-07 — Members bucket in Contacts
+
+Added a new **Members** bucket to Contacts (Community · Members · Donors · Prospects), mirroring the existing segment pattern. App code + schema only. Build passes. **Effort: low** (additive, JSONB-only, zero migration).
+
+- **`member` added to the contact `segment` enum** in four sync points: the Zod enum (`lib/schemas.js`), the `SEGMENTS`/`SEGMENT_OPTS` UI constants (`components/CRMManager.jsx`), the import synonym map `_SEGMENT_MAP`, and the newsletter Send-to-list bucket dropdown.
+- Existing contacts default to Community (`nullish→"community"`), so no data migration.
+- The bucket flows automatically into the tab row, Add/Edit Bucket selectors, the detail-panel Move-to control, per-bucket counts, and the CSV export button (all map over `SEGMENT_OPTS`). Members get the ⬇ Export CSV button (emailable bucket, unlike Prospects).
+- The server send route filters generically by segment (no hardcoded allowlist), so `member` sends work with no route change.
+- Notes: the MCP `create_or_update_contact` tool still can't set `segment` (agent-created contacts land in Community); `member` is a manual label, same as the donor bucket.
+
+---
+
 ## 2026-07-07 — AI rewrite panel on Outreach text blocks
 
 Added an AI rewrite button to the Outreach Workspace: click a text block to edit it, and a ✨ instruction box lets you tell Claude to rewrite the message in plain English (e.g. "rewrite this as an invitation to our next Sprout N Tell"). App code + one new API route. Build passes; `/api/outreach-rewrite` registered. **Effort: medium.**
