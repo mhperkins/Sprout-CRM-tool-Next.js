@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-07-07 — Added a "Coworking" contact relationship type/category
+
+App code + schema + MCP + docs (`lib/schemas.js`, `components/CRMManager.jsx`, `mcp/server.js`, `docs/CRM-db-schema.md`; `npm run build` passes). Effort: low.
+
+- **The ask:** "we need to add a coworking category for the community bucket."
+- **Interpretation:** a relationship type (sub-label/category on a contact), not a new bucket tab — for people who come to Sprout Co-Working. Applied on top of a contact's base bucket, filterable like the other types.
+- **Change — `coworking` added (after `attendee`) to the `relationship_types` enum in the four schemas-sync points:**
+  - Zod enum in `lib/schemas.js`.
+  - `REL_TYPES` label map in `CRMManager.jsx` → "Coworking" (auto-flows into the Add/Edit picker, detail panel, list chips, Type filter).
+  - Both MCP `inputSchema` enums in `mcp/server.js` (`search_contacts` filter + `create_or_update_contact` merge).
+  - Enum row in `docs/CRM-db-schema.md`.
+  - Bonus: coworking synonyms added to the import map `_RELTYPE_MAP` (`co-working`/`coworker`/etc. → `coworking`).
+- **Additive, JSONB-only, zero migration.** Not bucket-scoped — types apply to any contact (a Community coworker just gets the tag). A separate Coworking tab/bucket would be a bigger, different change.
+- **⚠️ Reload the VS Code window** so the running MCP server picks up the new enum.
+
+---
+
 ## 2026-07-07 — Members bucket reworked into an additive flag (member + base bucket coexist)
 
 App code + schema only (`lib/schemas.js`, `components/CRMManager.jsx`, `app/api/send/route.js`; `npm run build` passes). Effort: medium.
