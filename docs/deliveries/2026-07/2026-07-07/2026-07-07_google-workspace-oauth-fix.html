@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery — Google Workspace OAuth Fix</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{--ink:#030000;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--paper:#F7F7F6;--muted:#6b6b67;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',Arial,sans-serif;background:var(--paper);color:var(--ink);padding:40px 20px;line-height:1.5}
+  .wrap{max-width:960px;margin:0 auto}
+  .top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+  .pill{display:inline-block;font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:999px}
+  .pill-date{background:var(--ink);color:#fff}
+  .pill-type{background:var(--cyan);color:var(--ink)}
+  .pill-effort{background:var(--banana);color:var(--ink)}
+  h1{font-size:30px;font-weight:900;line-height:1.2;margin:14px 0 6px}
+  .sub{font-size:16px;color:var(--muted);margin-bottom:26px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:680px){.grid{grid-template-columns:1fr}}
+  .card{background:#fff;border-radius:12px;padding:22px 24px;box-shadow:0 4px 14px rgba(0,0,0,.10);overflow:hidden}
+  .card.bar-acid{border-left:6px solid var(--acid)}
+  .card.bar-fuchsia{border-left:6px solid var(--fuchsia)}
+  .card.bar-cyan{border-left:6px solid var(--cyan)}
+  .card.bar-banana{border-left:6px solid var(--banana)}
+  .eyebrow{font-size:11px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .card h2{font-size:19px;font-weight:900;margin-bottom:10px}
+  .card p{font-size:14.5px;margin-bottom:8px}
+  ul{list-style:none}
+  li{font-size:14px;padding-left:22px;position:relative;margin-bottom:7px}
+  li::before{content:'';position:absolute;left:0;top:7px;width:9px;height:9px;border-radius:2px;background:var(--acid)}
+  li.f::before{background:var(--fuchsia)}
+  li.c::before{background:var(--cyan)}
+  li.b::before{background:var(--banana)}
+  code{font-family:'SF Mono',Consolas,monospace;background:var(--paper);border:1px solid #e3e3e0;border-radius:5px;padding:1px 6px;font-size:12.5px}
+  .span2{grid-column:1/-1}
+  .foot{margin-top:26px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+  .hash{font-family:'SF Mono',Consolas,monospace;background:var(--ink);color:var(--acid);padding:4px 10px;border-radius:6px;font-size:12.5px;font-weight:700}
+  .files{font-family:'SF Mono',Consolas,monospace;font-size:12.5px;color:var(--ink)}
+  .warn{background:#fff8e1;border-left:6px solid var(--banana)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="pill pill-date">2026 · 07 · 07</span>
+    <span class="pill pill-type">Config · Infra · Memory</span>
+    <span class="pill pill-effort">Effort: diagnose med / fix low</span>
+  </div>
+  <h1>Found the Sprout By Day form &mdash; after un-breaking Workspace OAuth</h1>
+  <p class="sub">The ask was one lookup. The work was fixing <code>google-workspace</code> sign-in for the Mac&ndash;over&ndash;SSH setup: three stacked failure modes, then two new protocol memories.</p>
+
+  <div class="grid">
+
+    <div class="card bar-acid span2">
+      <div class="eyebrow">The answer</div>
+      <h2>Sprout By Day &mdash; two files, owned by hello@, created Jul 6</h2>
+      <ul>
+        <li><b>Responses:</b> "Sprout By Day Interest (Responses)" &mdash; sheet <code>19hukQBf8S-adVLd-Zlo0rY9x22weEJtq8ZIYGFUYcUc</code></li>
+        <li class="c"><b>The form:</b> "Sprout By Day Co-Working" &mdash; form <code>1hyAj-tEpNQkez_W81xXDDQw8gYnIvSSHqyxVu5SYD58</code></li>
+      </ul>
+    </div>
+
+    <div class="card bar-fuchsia">
+      <div class="eyebrow">Blocker 1 &mdash; port drift</div>
+      <h2>Stale MCP instances stole port 8000</h2>
+      <p>Three <code>workspace-mcp.exe</code> processes competed, so a fresh one drifted <code>8000 &rarr; 8002</code> &rarr; Google <code>redirect_uri_mismatch</code>.</p>
+      <p><b>Fix:</b> kill all three, reload window, one instance rebinds 8000.</p>
+    </div>
+
+    <div class="card bar-fuchsia">
+      <div class="eyebrow">Blocker 2 &mdash; URL truncation</div>
+      <h2>Auto-open cut the URL at the first &amp;</h2>
+      <p>Windows browser hand-off / paste truncated the OAuth URL &rarr; "Missing required parameter: client_id / redirect_uri".</p>
+      <p><b>Fix:</b> deliver the URL as a clickable <code>href</code>, never a paste.</p>
+    </div>
+
+    <div class="card bar-cyan span2">
+      <div class="eyebrow">Blocker 3 &mdash; the real root cause</div>
+      <h2>Mac browsing a remote Windows box over SSH</h2>
+      <p>The callback server listens on the <b>remote Windows</b> <code>localhost:8000</code> &mdash; unreachable from the Mac's Safari/Chrome, so no sign-in could ever land.</p>
+      <ul>
+        <li class="c">Forwarded <b>port 8000</b> in VS Code's PORTS panel (Mac <code>localhost:8000</code> &rarr; Windows <code>:8000</code>)</li>
+        <li class="c">Served a one-button launcher: <code>scratchpad/auth-server.js</code> (Node http, port <b>8010</b>, full OAuth URL as an href)</li>
+        <li class="c">Opened <code>http://localhost:8010</code> in Chrome as hello@ &rarr; consent &rarr; redirect tunneled back &rarr; <b>success</b></li>
+      </ul>
+    </div>
+
+    <div class="card bar-banana">
+      <div class="eyebrow">New memory</div>
+      <h2>Workspace default account</h2>
+      <p>Default <b>hello@sproutsociety.org</b> for every Workspace call; maxperkins@ only as fallback.</p>
+    </div>
+
+    <div class="card bar-banana">
+      <div class="eyebrow">New memory</div>
+      <h2>Single-instance protocol</h2>
+      <p>One dev server / <code>workspace-mcp</code> at a time. Kill strays before starting or re-authing, or the OAuth port drifts off 8000.</p>
+    </div>
+
+    <div class="card warn span2">
+      <div class="eyebrow">Heads-up for next time</div>
+      <ul>
+        <li class="b">Next Workspace re-auth on this remote: if the auth URL shows a port &ne; 8000, kill stray <code>workspace-mcp</code> + reload first.</li>
+        <li class="b">Ensure <b>port 8000 is forwarded</b> in the PORTS panel before signing in.</li>
+        <li class="b">5 pre-existing modified source files (<span class="files">send/route.js, CRMManager.jsx, CRM-db-schema.md, schemas.js, server.js</span>) were <b>left uncommitted</b> &mdash; not this session's work, flagged for Max.</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <span class="hash">main · 1415ffc</span>
+    <span>No app code or CRM data change &mdash; config, auth, and memory only.</span>
+  </div>
+</div>
+</body>
+</html>

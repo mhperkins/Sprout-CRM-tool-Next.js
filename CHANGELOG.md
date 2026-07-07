@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-07-07 — Fixed google-workspace OAuth for SSH-remote + found Sprout By Day form
+
+Config/infra + memory only, no app code, CRM data, or repo change (delivery slide is the only committed file). Effort: diagnose medium / fix low.
+
+- **The ask:** locate the "Sprout By Day" interest-form responses, and default to `hello@sproutsociety.org` for Workspace work (maxperkins@ as fallback).
+- **Answer:** "Sprout By Day Interest (Responses)" sheet (`19hukQBf8S-adVLd-Zlo0rY9x22weEJtq8ZIYGFUYcUc`) + the form "Sprout By Day Co-Working" (`1hyAj-tEpNQkez_W81xXDDQw8gYnIvSSHqyxVu5SYD58`), both owned by hello@, created 2026-07-06.
+- **The blocker (google-workspace re-auth kept failing) took three stacked fixes:**
+  1. **Port drift** — three stale `workspace-mcp.exe` processes competed for the OAuth callback port, so a fresh instance drifted from the registered 8000 to 8002 → `redirect_uri_mismatch`. Killed all three + reloaded the window → one instance rebinds 8000.
+  2. **URL truncation** — Windows browser auto-open / manual paste cut the OAuth URL at the first `&` → "Missing required parameter" (client_id / redirect_uri).
+  3. **Root cause: Mac via VS Code Remote-SSH** — the callback server listens on the remote Windows `localhost:8000`, unreachable from the Mac's browser. Fixed by forwarding port 8000 (PORTS panel) and serving a one-button launcher page (`scratchpad/auth-server.js`, Node http on port 8010, full OAuth URL as a clickable href) so there was no truncation and no wrong-account. Signed in as hello@ → success.
+- **Two new memory files** (outside the repo): `workspace-default-account.md` (default hello@ for all Workspace calls) and `single-instance-process-protocol.md` (one dev server / workspace-mcp instance at a time; kill strays before starting or re-authing). Both indexed in `MEMORY.md`.
+
+---
+
 ## 2026-07-07 — Deliveries reorganized into month folders
 
 Housekeeping only, no app code or data change. Reorganized `docs/deliveries/` so each per-day slide folder now nests under its month.
