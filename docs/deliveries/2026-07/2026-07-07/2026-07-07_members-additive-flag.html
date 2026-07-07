@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery — Members bucket becomes an additive flag</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{--ink:#030000;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--paper:#F7F7F6;--g600:#5a5a56;--g300:#c9c9c4;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',system-ui,sans-serif;background:var(--paper);color:var(--ink);padding:40px 16px;line-height:1.5}
+  .card{max-width:900px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.14)}
+  .hd{background:var(--ink);color:#fff;padding:30px 34px}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .b{font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;padding:5px 11px;border-radius:20px}
+  .b-acid{background:var(--acid);color:var(--ink)}
+  .b-cyan{background:var(--cyan);color:var(--ink)}
+  .b-fuchsia{background:var(--fuchsia);color:#fff}
+  .b-ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.35)}
+  h1{font-size:27px;font-weight:900;line-height:1.2}
+  .sub{color:var(--cyan);font-weight:700;font-size:14px;margin-top:8px}
+  .body{padding:30px 34px}
+  .lead{font-size:16px;color:var(--g600);margin-bottom:26px}
+  .lead b{color:var(--ink)}
+  .row{display:flex;gap:14px;margin-bottom:14px;align-items:flex-start}
+  .ico{flex-shrink:0;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:17px;font-weight:900}
+  .i-acid{background:var(--acid)}.i-banana{background:var(--banana)}.i-cyan{background:var(--cyan)}.i-fuchsia{background:var(--fuchsia);color:#fff}
+  .rt{font-size:14.5px}
+  .rt b{font-weight:900}
+  code{background:var(--paper);border:1px solid var(--g300);border-radius:5px;padding:1px 6px;font-size:13px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .before-after{display:flex;gap:12px;margin:8px 0 26px;flex-wrap:wrap}
+  .ba{flex:1;min-width:230px;border-radius:11px;padding:15px 17px;font-size:13.5px}
+  .ba-old{background:#fdecec;border:1.5px solid #f5b5b5}
+  .ba-new{background:#eef7e6;border:1.5px solid var(--acid)}
+  .ba h4{font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}
+  .ba-old h4{color:#c0392b}.ba-new h4{color:#5a7a1a}
+  .pill{display:inline-block;font-size:11px;font-weight:900;padding:2px 8px;border-radius:12px;margin:2px 3px 2px 0}
+  .p-base{background:#e7e7e4;color:var(--ink)}
+  .p-mem{background:var(--acid);color:var(--ink)}
+  .ft{background:var(--paper);border-top:1px solid var(--g300);padding:18px 34px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:13px;color:var(--g600)}
+  .ft code{background:#fff}
+  .chk{color:#5a7a1a;font-weight:900}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="hd">
+    <div class="badges">
+      <span class="b b-acid">Contacts</span>
+      <span class="b b-cyan">Effort: Medium</span>
+      <span class="b b-fuchsia">Schema + UI</span>
+      <span class="b b-ghost">Build ✓ · Pushed</span>
+    </div>
+    <h1>Members is now an <span style="color:var(--acid)">additive flag</span>, not a separate bucket</h1>
+    <div class="sub">A contact can be a Member AND stay in their Community / Donor / Prospect bucket</div>
+  </div>
+
+  <div class="body">
+    <p class="lead">The ask: <b>“any contact can be added to the member bucket… when someone is moved to the member bucket, they stay in their previous bucket as well.”</b> Membership is now a checkbox that stacks on top of the base bucket, not a fourth exclusive tab.</p>
+
+    <div class="before-after">
+      <div class="ba ba-old">
+        <h4>Before — mutually exclusive</h4>
+        One <code>segment</code> value per contact.<br>
+        <span class="pill p-mem">★ Members</span> replaced
+        <span class="pill p-base">Donor</span> → gift history hidden from that view.
+      </div>
+      <div class="ba ba-new">
+        <h4>After — additive</h4>
+        Base bucket + a separate <code>is_member</code> flag.<br>
+        <span class="pill p-base">Donor</span><span class="pill p-mem">★ Member</span>
+        both true at once.
+      </div>
+    </div>
+
+    <div class="row"><div class="ico i-acid">DB</div><div class="rt"><b>Schema.</b> <code>segment</code> back to <code>community / donor / prospect</code>; new <code>is_member</code> boolean (default false). Verified <b>0 of 3,772</b> contacts used the old value — zero migration.</div></div>
+    <div class="row"><div class="ico i-cyan">☰</div><div class="rt"><b>Tabs &amp; counts.</b> New <code>BUCKET_OPTS</code> keeps the 4 tabs; an <code>inBucket()</code> helper routes Members to the flag. A member is counted in <b>both</b> their base bucket and Members.</div></div>
+    <div class="row"><div class="ico i-fuchsia">★</div><div class="rt"><b>Move &amp; edit.</b> Detail-panel <b>Move to ▾</b> gains an <b>Add / Remove Members</b> toggle (base untouched); a <code>★ Member</code> badge shows the state. Add &amp; Edit modals get an <b>“Also a Member”</b> checkbox.</div></div>
+    <div class="row"><div class="ico i-banana">✉</div><div class="rt"><b>Newsletter send.</b> The recipient count and the server send route both resolve a Members blast via <code>data.is_member</code>, so it reaches every flagged contact regardless of base bucket. Import maps a <code>member</code> value straight to the flag.</div></div>
+  </div>
+
+  <div class="ft">
+    <span><span class="chk">✓</span> 4 files · <code>lib/schemas.js</code> · <code>CRMManager.jsx</code> · <code>app/api/send/route.js</code> · <code>CHANGELOG.md</code></span>
+    <span><code>45f09bf</code> · main</span>
+  </div>
+</div>
+</body>
+</html>
