@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-07-07 — Added two Sprout By Day form responses to the CRM, tagged coworking
+
+Data-only via the `sprout-crm` MCP. No app code, repo, or DB-schema change (delivery slide only). Effort: low.
+
+- **The ask:** "add two new emails from the Sprout by Day response form and tag them with the coworking label."
+- **Source:** read the "Sprout By Day Interest (Responses)" sheet (`19hukQBf8S-adVLd-Zlo0rY9x22weEJtq8ZIYGFUYcUc`) as hello@. 6 rows, but 3 were `maxwellhperkins@gmail.com` test rows with junk data — skipped.
+- **Two real new responses added as contacts:**
+  - **Brooke Lynn Flores** (`ind_brooke_lynn_flores`) — brookelynnflores@gmail.com (7/6; 1-2×/week, by herself, first-time free pass, creative field).
+  - **Kelly Yin** (`ind_kelly_yin`) — yin_kelly@outlook.com (7/7; 1-2×/week, by herself, monthly membership).
+- **Label:** "coworking label" = the `coworking` `relationship_types` value (added the prior session). Both got `relationship_types:["coworking"]`, `relationship_status: warm`, `how_heard: "Sprout By Day interest form"`, form details in notes, and a dated touchpoint.
+- **Dedupe:** `check_existing` on both names + emails returned 0 matches — net-new.
+- **Note:** both defaulted to the Community base segment; renameable if a different bucket is wanted.
+
+---
+
 ## 2026-07-07 — Added a "Coworking" contact relationship type/category
 
 App code + schema + MCP + docs (`lib/schemas.js`, `components/CRMManager.jsx`, `mcp/server.js`, `docs/CRM-db-schema.md`; `npm run build` passes). Effort: low.
