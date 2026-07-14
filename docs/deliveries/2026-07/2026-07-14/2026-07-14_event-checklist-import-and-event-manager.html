@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Delivery · Event Checklist Import + Event Manager</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --card:#FFFFFF;
+    --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6;
+    --g400:#8a8a86; --g600:#4b4b48; --line:#e9e9e6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:Lato,system-ui,sans-serif;
+       -webkit-font-smoothing:antialiased;padding:40px 16px;}
+  .wrap{max-width:860px;margin:0 auto;}
+  .masthead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
+            border-bottom:3px solid var(--acid);padding-bottom:16px;margin-bottom:6px;}
+  h1{font-size:26px;font-weight:900;line-height:1.15;margin:0;}
+  .sub{font-size:13px;color:var(--g600);margin-top:6px;}
+  .meta{text-align:right;font-size:11px;color:var(--g400);white-space:nowrap;line-height:1.7;}
+  .chip{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+        padding:3px 9px;border-radius:20px;}
+  .chip-hash{background:var(--ink);color:#fff;font-family:ui-monospace,monospace;}
+  .chip-branch{background:var(--cyan);color:var(--ink);}
+  .chip-effort{background:var(--banana);color:var(--ink);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;
+        box-shadow:0 4px 14px rgba(0,0,0,0.06);overflow:hidden;}
+  .card.full{grid-column:1 / -1;}
+  .card .bar{height:5px;border-radius:3px;width:44px;margin-bottom:12px;}
+  .b-fuchsia{background:var(--fuchsia)} .b-cyan{background:var(--cyan)}
+  .b-acid{background:var(--acid)} .b-banana{background:var(--banana)}
+  .eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--g400);margin-bottom:4px;}
+  .card h2{font-size:16px;font-weight:900;margin:0 0 8px;}
+  ul{margin:0;padding-left:18px;} li{font-size:13px;line-height:1.55;color:var(--g600);margin-bottom:5px;}
+  li b{color:var(--ink);font-weight:700;}
+  code{font-family:ui-monospace,monospace;font-size:12px;background:var(--paper);border:1px solid var(--line);
+       border-radius:4px;padding:1px 5px;}
+  .flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;}
+  .step{font-size:11px;font-weight:700;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:5px 9px;}
+  .arrow{color:var(--fuchsia);font-weight:900;}
+  .files{font-family:ui-monospace,monospace;font-size:11px;color:var(--g600);line-height:1.8;}
+  .files .new{color:var(--fuchsia);font-weight:700;}
+  .foot{margin-top:22px;font-size:11px;color:var(--g400);text-align:center;}
+  @media(max-width:640px){.grid{grid-template-columns:1fr}.masthead{flex-direction:column;align-items:flex-start}.meta{text-align:left}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div>
+      <h1>Event Checklist Import<br/>+ Event Manager Employee</h1>
+      <div class="sub">A reusable Sprout N Tell checklist, importable onto any event and auto-dated to the calendar — plus the 4th virtual-agency agent that owns it.</div>
+    </div>
+    <div class="meta">
+      <span class="chip chip-hash">458ebcd</span><br/>
+      <span class="chip chip-branch">main</span> &nbsp;<span class="chip chip-effort">effort: medium</span><br/>
+      2026-07-14 · Sprout CRM Next
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="bar b-fuchsia"></div>
+      <div class="eyebrow">App feature</div>
+      <h2>📋 Import checklist template</h2>
+      <ul>
+        <li>New box atop the event <b>Checklist tab</b>: one <b>＋ Import</b> button per template.</li>
+        <li>Set the event date, click Import → all <b>23 items land auto-dated</b> off that date.</li>
+        <li>Re-import <b>skips items already present</b>; button disabled until a date is set.</li>
+        <li>Dated items <b>populate the event calendar</b> automatically.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="bar b-cyan"></div>
+      <div class="eyebrow">Built from real data</div>
+      <h2>The Sprout N Tell template</h2>
+      <ul>
+        <li>Lead times derived from the actual <b>Show n Tell (5/19)</b>, <b>Sprout n Tell (6/26)</b>, and <b>Vol. 3 (7/24)</b> checklists.</li>
+        <li><b>23 items</b>, phase-grouped from lineup (−18d) to GAMEDAY (0) to thank-you follow-up (+7).</li>
+        <li>Excluded per Max: ashtray, garbage cans, send-out-zoom-link.</li>
+      </ul>
+    </div>
+
+    <div class="card full">
+      <div class="bar b-acid"></div>
+      <div class="eyebrow">Under the hood — <code>components/CRMManager.jsx</code></div>
+      <div class="flow">
+        <span class="step">EVENT_CHECKLIST_TEMPLATES <code>{text, offset}</code></span>
+        <span class="arrow">→</span>
+        <span class="step">shiftDate(event_date, offset)</span>
+        <span class="arrow">→</span>
+        <span class="step">importChecklistTemplate()</span>
+        <span class="arrow">→</span>
+        <span class="step">data.checklist (dated)</span>
+        <span class="arrow">→</span>
+        <span class="step">calendar renders by date</span>
+      </div>
+      <ul style="margin-top:12px">
+        <li><code>offset</code> = days relative to the event date (negative = before, 0 = event day, +7 = follow-up); <code>shiftDate</code> is noon-anchored to dodge timezone drift. <b>npm run build passes.</b></li>
+      </ul>
+    </div>
+
+    <div class="card full">
+      <div class="bar b-banana"></div>
+      <div class="eyebrow">Virtual agency — 4th employee</div>
+      <h2>🗓 Event Manager</h2>
+      <ul>
+        <li>Owns event <b>production</b>: dated prep checklists, run of show, lineup tracking, and +7 close-out.</li>
+        <li>At close-out it hands the <b>recap → Communications</b>, <b>attendee touchpoints → CRM Manager</b>, and <b>new attendees → Outreach</b>.</li>
+        <li>The checklist template <b>lives in its deliverables as the source of truth</b>; the app constant mirrors it (cross-referenced both ways).</li>
+      </ul>
+      <div class="files" style="margin-top:10px">
+        virtual-agency/employees/<span class="new">Events/</span><br/>
+        &nbsp;&nbsp;system-prompts/event-manager-system-prompt_v1.md<br/>
+        &nbsp;&nbsp;event-manager-jobDescription.md &nbsp;·&nbsp; work-log.md<br/>
+        &nbsp;&nbsp;<span class="new">deliverables/sprout-n-tell-checklist-template.md</span> &nbsp;←&nbsp; the template
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot">9 files changed · +402 / −11 &nbsp;·&nbsp; next: import onto Sprout N Tell Vol. 4 (8/28, currently empty) and adjust dates.</div>
+
+</div>
+</body>
+</html>
