@@ -444,6 +444,66 @@ const shiftDate = (baseISO, days) => {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 };
 
+// ─── Recurrence ───────────────────────────────────────────────────────────────
+const todayISO = () => new Date().toISOString().slice(0,10);
+// "18:30" → "6:30pm"
+const fmtTime = (t) => {
+  if(!t) return "";
+  const [h,m] = String(t).split(":").map(Number);
+  if(isNaN(h)) return t;
+  const ap = h<12?"am":"pm"; const h12 = ((h+11)%12)+1;
+  return `${h12}:${String(m||0).padStart(2,"0")}${ap}`;
+};
+const WEEKDAY_LONG = ["Sundays","Mondays","Tuesdays","Wednesdays","Thursdays","Fridays","Saturdays"];
+// Next occurrence of a recurring event on/after fromISO (default today). One-time → its event_date.
+// Returns null if the series has ended (past `until`) or there's no anchor date.
+function nextOccurrence(ev, fromISO) {
+  const r = ev.recurrence;
+  if(!r || !r.frequency) return ev.event_date || null;
+  const start = ev.event_date; if(!start) return null;
+  const from = fromISO || todayISO();
+  const fromEff = from < start ? start : from;   // never before the series start
+  const parse = iso => new Date(iso+"T12:00:00");
+  const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  const until = r.until ? parse(r.until) : null;
+  const base = parse(start);
+  let occ;
+  if(r.frequency==="daily") {
+    occ = parse(fromEff);
+  } else if(r.frequency==="weekly" || r.frequency==="biweekly") {
+    const wd = (r.weekday!=null) ? r.weekday : base.getDay();
+    occ = parse(fromEff); occ.setDate(occ.getDate() + ((wd - occ.getDay() + 7) % 7));
+    if(r.frequency==="biweekly") {
+      const first = parse(start); first.setDate(first.getDate() + ((wd - first.getDay() + 7) % 7));
+      const days = Math.round((occ - first)/86400000);
+      const rem = ((days % 14) + 14) % 14;
+      if(rem!==0) occ.setDate(occ.getDate() + (14 - rem));
+    }
+  } else if(r.frequency==="monthly") {
+    const dom = base.getDate(); const f = parse(fromEff);
+    occ = new Date(f.getFullYear(), f.getMonth(), dom, 12);
+    if(occ < f) occ = new Date(f.getFullYear(), f.getMonth()+1, dom, 12);
+  } else { return ev.event_date || null; }
+  if(until && occ > until) return null;
+  return iso(occ);
+}
+// Date used for sorting/showing an event in upcoming lists (recurring → next occurrence).
+const eventDisplayDate = (ev, fromISO) =>
+  (ev.recurrence && ev.recurrence.frequency) ? (nextOccurrence(ev, fromISO) || ev.event_date || null) : (ev.event_date || null);
+// "🔁 Weekly on Fridays · 6:30pm–8:30pm · until …"
+function recurrenceSummary(ev) {
+  const r = ev.recurrence; if(!r || !r.frequency) return "";
+  let base;
+  if(r.frequency==="weekly")        base = `Weekly on ${WEEKDAY_LONG[r.weekday??0]}`;
+  else if(r.frequency==="biweekly") base = `Every 2 weeks on ${WEEKDAY_LONG[r.weekday??0]}`;
+  else if(r.frequency==="monthly")  base = `Monthly`;
+  else if(r.frequency==="daily")    base = `Daily`;
+  else                              base = `Repeats`;
+  const t = ev.start_time ? ` · ${fmtTime(ev.start_time)}${ev.end_time?`–${fmtTime(ev.end_time)}`:""}` : "";
+  const until = r.until ? ` · until ${fmtDate(r.until)}` : "";
+  return `🔁 ${base}${t}${until}`;
+}
+
 // Reusable event checklist templates. offset = days relative to the event date (negative = before, positive = after).
 // Lead times derived from the real Sprout N Tell / Show n Tell events.
 // SOURCE OF TRUTH: virtual-agency/employees/Events/deliverables/sprout-n-tell-checklist-template.md (Event Manager). Keep the two in sync.
@@ -1197,7 +1257,11 @@ function DashboardView({contacts,orgs,setView,openContact,events,onUpdateContact
 
   const dueSoon = allActions.filter(a=>{ const d=daysUntil(a.date); return d!==null&&d>=0&&d<=14; });
   const totalNotifications = allActions.filter(a=>{ const d=daysUntil(a.date); return d!==null&&d<=3; }).length;
-  const upcomingEvents = (events||[]).filter(ev=>ev.status==="upcoming"&&ev.event_date&&ev.event_date>=today).sort((a,b)=>new Date(a.event_date)-new Date(b.event_date));
+  const upcomingEvents = (events||[])
+    .filter(ev=>ev.status==="upcoming")
+    .map(ev=>({...ev,_next:eventDisplayDate(ev,today)}))
+    .filter(ev=>ev._next&&ev._next>=today)
+    .sort((a,b)=>a._next.localeCompare(b._next));
 
   const [dashEditing,setDashEditing]=useState(null);
   const openDashEdit=(c)=>setDashEditing({...c});
@@ -1231,11 +1295,11 @@ function DashboardView({contacts,orgs,setView,openContact,events,onUpdateContact
             {upcomingEvents.length===0
               ? <p style={{fontSize:12,color:"var(--g400)",textAlign:"center",padding:"12px 0"}}>No upcoming events</p>
               : upcomingEvents.slice(0,5).map(ev=>{
-                  const d=daysUntil(ev.event_date);
+                  const d=daysUntil(ev._next);
                   const tag=d===0?"Today":d===1?"Tomorrow":d!==null?`In ${d}d`:null;
                   return (
                     <div key={ev.id} className="overdue-row" onClick={()=>setView("events")}>
-                      <div><div className="overdue-name">{ev.name}</div><div className="overdue-meta">{ev.location||"No location"} · {(ev.contact_ids||[]).length} contacts</div></div>
+                      <div><div className="overdue-name">{ev.name}{ev.recurrence?.frequency?" 🔁":""}</div><div className="overdue-meta">{ev.start_time?`${fmtTime(ev.start_time)} · `:""}{ev.location||"No location"} · {(ev.contact_ids||[]).length} contacts</div></div>
                       {tag&&<span style={{fontSize:11,fontWeight:700,color:d===0?"var(--fuchsia)":d<=3?"var(--acid)":"var(--g600)",whiteSpace:"nowrap"}}>{tag}</span>}
                     </div>
                   );
@@ -3519,7 +3583,8 @@ function EventStatusTag({status}) {
 const BLANK_EVENT = () => ({
   id: `evt_${uid()}`,
   name: "", event_date: "", status: "upcoming",
-  location: "", description: "", recap: "", contact_ids: [], confirmed_ids: [], notes: "",
+  location: "", start_time: "", end_time: "", recurrence: null,
+  description: "", recap: "", contact_ids: [], confirmed_ids: [], notes: "",
   checklist: [], next_actions: [], links: [],
 });
 
@@ -3613,8 +3678,40 @@ function EventEditPage({editing,setEditing,onSave,onCancel,contacts}) {
       {eTab==="overview"&&<>
         <div className="frow">
           <div className="fg"><label className="fl">Event Name</label><input className="fi" value={editing.name||""} onChange={e=>setEditing({...editing,name:e.target.value})} autoFocus/></div>
-          <div className="fg"><label className="fl">Date</label><input type="date" className="fi" value={editing.event_date||""} onChange={e=>setEditing({...editing,event_date:e.target.value})}/></div>
+          <div className="fg"><label className="fl">{editing.recurrence?"Start date":"Date"}</label><input type="date" className="fi" value={editing.event_date||""} onChange={e=>setEditing({...editing,event_date:e.target.value})}/></div>
         </div>
+        <div className="frow">
+          <div className="fg"><label className="fl">Start time</label><input type="time" className="fi" value={editing.start_time||""} onChange={e=>setEditing({...editing,start_time:e.target.value})}/></div>
+          <div className="fg"><label className="fl">End time</label><input type="time" className="fi" value={editing.end_time||""} onChange={e=>setEditing({...editing,end_time:e.target.value})}/></div>
+        </div>
+        <div className="fg">
+          <label className="fl">Repeats</label>
+          <select className="fs" value={editing.recurrence?.frequency||""} onChange={e=>{
+            const f=e.target.value;
+            if(!f){ setEditing({...editing,recurrence:null}); return; }
+            const wd = editing.recurrence?.weekday ?? (editing.event_date ? new Date(editing.event_date+"T12:00:00").getDay() : new Date().getDay());
+            setEditing({...editing,recurrence:{frequency:f,weekday:wd,until:editing.recurrence?.until??null}});
+          }}>
+            <option value="">Doesn't repeat</option>
+            <option value="weekly">Weekly</option>
+            <option value="biweekly">Every 2 weeks</option>
+            <option value="monthly">Monthly</option>
+            <option value="daily">Daily</option>
+          </select>
+        </div>
+        {editing.recurrence&&(editing.recurrence.frequency==="weekly"||editing.recurrence.frequency==="biweekly")&&
+          <div className="fg"><label className="fl">On</label>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d,i)=>(
+                <button key={d} type="button" className={`btn btn-sm ${editing.recurrence.weekday===i?"btn-blk":"btn-ghost"}`}
+                  onClick={()=>setEditing({...editing,recurrence:{...editing.recurrence,weekday:i}})}>{d}</button>
+              ))}
+            </div>
+          </div>}
+        {editing.recurrence&&
+          <div className="fg"><label className="fl">Repeat until <span style={{fontWeight:400,color:"var(--g400)"}}>· optional</span></label>
+            <input type="date" className="fi" value={editing.recurrence.until||""} onChange={e=>setEditing({...editing,recurrence:{...editing.recurrence,until:e.target.value||null}})}/></div>}
+        {editing.recurrence&&<div style={{fontSize:12,color:"var(--cyan)",fontWeight:700,marginBottom:12,marginTop:-4}}>{recurrenceSummary(editing)}</div>}
         <div className="fg"><label className="fl">Status</label><RadioGroup options={EVT_STATUS_OPTS} value={editing.status||"upcoming"} onChange={v=>setEditing({...editing,status:v})}/></div>
         <div className="fg"><label className="fl">Location</label><input className="fi" value={editing.location||""} onChange={e=>setEditing({...editing,location:e.target.value})}/></div>
         <div className="fg"><label className="fl">Description</label><textarea className="fta" rows={3} value={editing.description||""} onChange={e=>setEditing({...editing,description:e.target.value})}/></div>
@@ -3828,7 +3925,8 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
             <span>{event.name||"(Unnamed Event)"}</span>
           </div>
           <div className="pg-ttl">{event.name||"(Unnamed Event)"}</div>
-          <div className="pg-sub">{fmtDate(event.event_date)}{event.location?` · ${event.location}`:""}</div>
+          <div className="pg-sub">{fmtDate(event.event_date)}{event.start_time?` · ${fmtTime(event.start_time)}${event.end_time?`–${fmtTime(event.end_time)}`:""}`:""}{event.location?` · ${event.location}`:""}</div>
+          {event.recurrence?.frequency&&<div style={{fontSize:12,color:"var(--cyan)",fontWeight:700,marginTop:2}}>{recurrenceSummary(event)}</div>}
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
           <button className="btn btn-ghost btn-sm" onClick={onEdit}>Edit Event</button>
@@ -4018,10 +4116,11 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
       const matchS=fStatus==="all"||e.status===fStatus;
       return matchQ&&matchS;
     }).sort((a,b)=>{
-      if(!a.event_date&&!b.event_date) return 0;
-      if(!a.event_date) return 1;
-      if(!b.event_date) return -1;
-      return a.event_date.localeCompare(b.event_date);
+      const da=eventDisplayDate(a)||"", db=eventDisplayDate(b)||"";
+      if(!da&&!db) return 0;
+      if(!da) return 1;
+      if(!db) return -1;
+      return da.localeCompare(db);
     });
   },[events,search,fStatus]);
 
@@ -4128,7 +4227,7 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
               : filtered.map(e=>(
                 <tr key={e.id} onClick={()=>{setSelectedId(e.id);setEvtPage("detail");}}>
                   <td style={{fontWeight:700}}>{e.name||"(Unnamed)"}</td>
-                  <td style={{fontSize:12,color:"var(--g600)"}}>{fmtDate(e.event_date)}</td>
+                  <td style={{fontSize:12,color:"var(--g600)"}}>{fmtDate(eventDisplayDate(e))}{e.start_time?` · ${fmtTime(e.start_time)}`:""}{e.recurrence?.frequency?<span title={recurrenceSummary(e)} style={{marginLeft:6,color:"var(--cyan)"}}>🔁</span>:null}</td>
                   <td><EventStatusTag status={e.status}/></td>
                   <td style={{fontSize:12,color:"var(--g600)"}}>{(e.contact_ids||[]).length}</td>
                   <td style={{fontSize:12,color:"var(--g600)",maxWidth:160,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.location||"—"}</td>

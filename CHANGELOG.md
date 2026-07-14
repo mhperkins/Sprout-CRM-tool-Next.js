@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-07-14 — Trello board rebuild + events calendar + recurring-events feature
+
+Three asks in one session. Trello work is MCP-orchestrated (no app code). Recurring events IS app code (`lib/schemas.js` + `components/CRMManager.jsx`; `npm run build` passes). Effort: medium.
+
+- **Rebuilt the 🎨 Creative Hub Ops Center board** (`6a564ec2e31b2ffa613236df`) from AI-generated template cruft into a useful, employee-organized board. Archived all 6 old lists + 19 template/example cards. New 9 columns: **🎯 This Week** (global to-do) · **📚 Resources & Links** · **📣 Communications · 🌱 Outreach · 🎪 Events · 🎨 Design · 💛 Grants · 🤝 CRM · 📱 Social Media** (one per virtual employee, incl. the 3 not-yet-built). Seeded each employee column with a 📌 role card + real starter tasks; Resources holds all Drive links + the 8 Team Shared Drive folders; This Week holds current priorities. Labels: To Do / Doing / Done / Blocked / 🔴 Priority / 📅 Event / 🔁 Recurring.
+- **⚠️ Trello API quirks (hard-won):** lists insert at the **far LEFT** (pos halves each time) so to get left-to-right order you must **create them in reverse**; there is **no list-reorder tool** and no rename-list tool (only archive + create). Cards **append at the bottom** (opposite of lists). Card names/descriptions are **plain text** — `&amp;` renders literally (use a bare `&`). Deleting = archiving (recoverable).
+- **Built a Trello events calendar** — 34 dated event cards in 🎪 Events (Calendar view is board-wide, renders any card with a due date). Reconciled a pasted May event list against the 12 CRM events: 6 were on the list but NOT in the CRM (flagged ⚠️ on the card), 12 CRM events linked by `evt_` id, plus 11 individual Friday cards for the 12-Step group. Past events marked `dueComplete` so they don't show as overdue-red. **Calendar view must be enabled in the Trello UI** (no API toggle).
+- **Auth hardening (memory):** updated `workspace-default-account.md` to a HARD rule — **always hello@sproutsociety.org, NEVER fall back to maxperkins@** (its OAuth re-auth is broken on the Mac-via-Remote-SSH-into-Windows setup and throws "Access blocked / Missing client_id"). If hello@ gets a 403, the fix is to **share the file with hello@**, not switch accounts.
+- **🆕 Recurring events (app feature).** `EventSchema` gained `start_time`, `end_time`, and a `recurrence` object (`RecurrenceSchema`: frequency daily/weekly/biweekly/monthly + weekday + optional `until`); null = one-time. `CRMManager.jsx` got `nextOccurrence()` / `eventDisplayDate()` / `recurrenceSummary()` / `fmtTime()` helpers, a **Repeats** control (frequency + day-of-week + start/end time + repeat-until) in the event editor Overview tab, and 🔁 badges + next-occurrence dates in the Dashboard "Upcoming", the events list, and the detail header. Upcoming lists compute the next occurrence so recurring events stay current instead of going stale. One record, no duplicate rows.
+- **Added two CRM events** via `execute_sql` (no MCP event-write tool): **`evt_12step_weekly`** — 12-Step Group, recurring weekly Fridays 6:30–8:30pm at Sprout Society (series start 2026-07-17); **`evt_sing_easy_20260714`** — Sing Easy, 2026-07-14 at 7:00pm (also added as a Trello card).
+- **Note:** Trello calendar + CRM are separate stores now — CRM holds the recurrence rule (source of truth), Trello has fixed dated cards. Auto-sync (CRM recurring event → Trello cards generated forward) is deferred.
+
+---
+
 ## 2026-07-14 — Connected Trello (new `trello` MCP server)
 
 Config/infra only — `.mcp.json` + new `mcp/trello-launch.cmd`. No app code, CRM data, or DB change. Effort: diagnose medium / fix low.
