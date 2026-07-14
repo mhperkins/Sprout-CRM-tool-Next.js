@@ -434,6 +434,46 @@ const SEED_CONTACTS = [
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 const fmtDate = (d) => { if (!d) return "—"; try { return new Date(d+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}); } catch { return d; }};
 const fmtMoney = (n) => (!n && n!==0) ? "—" : "$"+Number(n).toLocaleString();
+
+// event_date (YYYY-MM-DD) shifted by N days → YYYY-MM-DD (negative = before the event)
+const shiftDate = (baseISO, days) => {
+  if (!baseISO) return null;
+  const d = new Date(baseISO+"T12:00:00");
+  if (isNaN(d.getTime())) return null;
+  d.setDate(d.getDate()+days);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+};
+
+// Reusable event checklist templates. offset = days relative to the event date (negative = before, positive = after).
+// Lead times derived from the real Sprout N Tell / Show n Tell events.
+// SOURCE OF TRUTH: virtual-agency/employees/Events/deliverables/sprout-n-tell-checklist-template.md (Event Manager). Keep the two in sync.
+const EVENT_CHECKLIST_TEMPLATES = {
+  "Sprout N Tell": [
+    { text:"Confirm Musicians",                   offset:-18 },
+    { text:"Confirm Artists",                     offset:-18 },
+    { text:"Artists/Music Confirmed",             offset:-16 },
+    { text:"Flyers Posted",                       offset:-12 },
+    { text:"Social Plan",                         offset:-9  },
+    { text:"CHECK-IN system ready",               offset:-9  },
+    { text:"Time Survey for Pre-Show Zoom Talk",  offset:-7  },
+    { text:"FINAL Lineup and Artists",            offset:-7  },
+    { text:"Room Layout (Music, Art, Furniture)", offset:-7  },
+    { text:"Equipment List",                      offset:-6  },
+    { text:"Pre-Show Zoom",                       offset:-5  },
+    { text:"QR Codes Made",                       offset:-5  },
+    { text:"QR Codes for Signage made",           offset:-4  },
+    { text:"Refreshments Plan",                   offset:-4  },
+    { text:"Run of Show / Soundcheck",            offset:-4  },
+    { text:"QR codes and screens",                offset:-2  },
+    { text:"All poster/signage printed",          offset:-2  },
+    { text:"QR Codes Printed",                    offset:-1  },
+    { text:"Artist signage/bio",                  offset:-1  },
+    { text:"Space Decorated",                     offset:-1  },
+    { text:"Hanging (art install)",               offset:-1  },
+    { text:"GAMEDAY",                             offset:0   },
+    { text:"THANK YOU FOLLOW UP",                 offset:7   },
+  ],
+};
 const daysSince = (d) => d ? Math.floor((new Date()-new Date(d))/86400000) : null;
 const daysUntil = (d) => d ? Math.ceil((new Date(d)-new Date())/86400000) : null;
 
@@ -3506,6 +3546,16 @@ function EventEditPage({editing,setEditing,onSave,onCancel,contacts}) {
     setEditing({...editing,checklist:updated});
   };
   const deleteChecklistItem = (id) => setEditing({...editing,checklist:(editing.checklist||[]).filter(i=>i.id!==id)});
+  const importChecklistTemplate = (tplName) => {
+    const tpl = EVENT_CHECKLIST_TEMPLATES[tplName];
+    if(!tpl || !editing.event_date) return;
+    const existing = new Set((editing.checklist||[]).map(i=>(i.text||"").toLowerCase().trim()));
+    const newItems = tpl
+      .filter(t=>!existing.has(t.text.toLowerCase().trim()))
+      .map(t=>({id:uid(),text:t.text,date:shiftDate(editing.event_date,t.offset),completed:false}));
+    if(newItems.length===0) return;
+    setEditing({...editing,checklist:[...(editing.checklist||[]),...newItems]});
+  };
 
   // Next Actions helpers
   const [naText,setNaText]=useState(""); const [naDate,setNaDate]=useState("");
@@ -3574,6 +3624,17 @@ function EventEditPage({editing,setEditing,onSave,onCancel,contacts}) {
 
       {eTab==="checklist"&&<>
         <div style={{fontSize:11,color:"var(--g400)",marginBottom:12}}>Event day / prep checklist — mark items done during the event.</div>
+        <div style={{marginBottom:14,padding:"10px 12px",background:"var(--g50)",borderRadius:8,border:"1px solid var(--g100)"}}>
+          <div style={{fontSize:11,fontWeight:700,marginBottom:6}}>📋 Import a checklist template</div>
+          {!editing.event_date
+            ? <div style={{fontSize:11,color:"var(--g400)"}}>Set the event date on the Overview tab first — each item's due date is calculated from it.</div>
+            : <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                {Object.keys(EVENT_CHECKLIST_TEMPLATES).map(name=>(
+                  <button key={name} className="btn btn-ghost btn-sm" onClick={()=>importChecklistTemplate(name)}>＋ Import “{name}” checklist</button>
+                ))}
+                <span style={{fontSize:10,color:"var(--g400)",alignSelf:"center"}}>Dates auto-fill from {fmtDate(editing.event_date)} · already-added items are skipped</span>
+              </div>}
+        </div>
         <div style={{maxHeight:340,overflowY:"auto",marginBottom:12}}>
           {[...active_cl,...done_cl].map(item=>(
             <div key={item.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}>

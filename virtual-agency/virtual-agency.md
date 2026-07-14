@@ -16,13 +16,14 @@ The shared memory is the live Sprout CRM (Supabase project `ixdnmjchvjzytyhmripc
 Sprout Society
   Communications Manager   (drafts newsletters, marketing, email campaigns)
   Outreach Manager         (relationship research, tiering, cultivation paths, first-touch outreach)
+  Event Manager            (event planning, prep checklists, run of show, close-out)
   Web & Graphic Designer    (PRIMARY: HTML newsletter design; also social graphics, flyers, slides, web look-and-feel)
   Grant Manager            (research, write, track deadlines)
   CRM Manager              (pipeline review, follow-ups, data hygiene via the sprout-crm MCP)
   Social Media             (post copy, content calendar, platform execution)
 ```
 
-**Note:** Communications owns outcomes (newsletter sends, email campaigns, audience growth). The Outreach Manager owns the top of the relationship pipeline (discovery → research briefs → tiering → first contact) and hands a warmed relationship to Communications (for a campaign/spotlight) or to the CRM Manager (for ongoing cadence). Outreach lands *clean records at intake*; the CRM Manager keeps the *whole base* healthy. Social Media is a content producer (post copy, calendar, platform-specific execution). The Web & Graphic Designer owns the *visual* layer across surfaces (Communications owns the words, Design owns the picture; they hand off). They are distinct agents. "Full-Stack Developer" is Claude Code itself, not a role.
+**Note:** Communications owns outcomes (newsletter sends, email campaigns, audience growth). The Outreach Manager owns the top of the relationship pipeline (discovery → research briefs → tiering → first contact) and hands a warmed relationship to Communications (for a campaign/spotlight) or to the CRM Manager (for ongoing cadence). Outreach lands *clean records at intake*; the CRM Manager keeps the *whole base* healthy. The Event Manager owns event *production* (planning, dated prep checklists, run of show); at close-out it hands the recap to Communications and the attendee data to the CRM Manager, and surfaces new attendees to Outreach. Social Media is a content producer (post copy, calendar, platform-specific execution). The Web & Graphic Designer owns the *visual* layer across surfaces (Communications owns the words, Design owns the picture; they hand off). They are distinct agents. "Full-Stack Developer" is Claude Code itself, not a role.
 
 ---
 
@@ -91,7 +92,7 @@ Stack in hand:
 Shared artifact templates so agents can hand off to each other and to Max without ambiguity.
 
 ### 3. Remaining agents
-In rough priority: Web & Graphic Designer (built), Outreach Manager (built), Grant Manager, CRM Manager, Social Media.
+In rough priority: Web & Graphic Designer (built), Outreach Manager (built), Event Manager (built), Grant Manager, CRM Manager, Social Media.
 
 ---
 
@@ -109,30 +110,34 @@ In rough priority: Web & Graphic Designer (built), Outreach Manager (built), Gra
 
 *(Rewritten each session — snapshot, not a log.)*
 
-**Last session:** 2026-07-03 — Built the third employee: the **Outreach Manager** (owns discovery → research briefs → tiering → first contact). Mirrors the Communications/Design folder pattern. Its first deliverable already existed: the July 2026 Relationship Research Briefs (3 orgs), which moved into the employee's `briefs/` folder and seeded its work log.
+**Last session:** 2026-07-14 — Built the fourth employee: the **Event Manager** (owns event planning, dated prep checklists, run of show, and close-out). Mirrors the Outreach/Communications folder pattern. Its first deliverable is the **Sprout N Tell checklist template**, built from the real Show n Tell / Sprout n Tell events and wired into the app as an importable, auto-dated checklist that populates the event calendar.
 
 **What was built:**
-- Outreach Manager agent:
-  - `employees/Outreach/system-prompts/outreach-manager-system-prompt_v1.md` — system prompt built on the **Relationship Research Protocol** (`CRM Research Protocol.md`): the golden no-fabrication rule, the Phase A–G method table, tiering, the Instagram pipeline (Stages 1–4, ambient engagement, draft-Max-posts), the merge/dedupe discipline (`check_existing` first, never duplicate, never clobber verified data), the full `sprout-crm` MCP tool stack, and scope boundaries vs Communications / CRM Manager / Social.
-  - `employees/Outreach/outreach-manager-jobDescription.md` — role summary, responsibilities, out-of-scope, working relationships, tools, session protocol.
-  - `employees/Outreach/work-log.md` — seeded with the 2026-07-03 July discovery batch (Buzzkill NYC B, Sober Supper Club B, Dance Support NYC C; Peace Action NYS excluded).
-  - `employees/Outreach/briefs/Relationship_Research_Briefs_July2026.md` — the existing brief, relocated here (was at `virtual-agency/` root).
-  - Empty `sprints/` folder.
-- Updated this org doc: roster (added Outreach Manager), the handoff note (Outreach → Communications / CRM Manager), build-order status.
+- Event Manager agent:
+  - `employees/Events/system-prompts/event-manager-system-prompt_v1.md` — system prompt built on the **event lifecycle** (Scope → Plan → Lineup → Prep → Gameday → Close-out): the golden no-fabrication rule (dates, lineup, headcount), the checklist-template asset + the app-import path, the raw-SQL-is-last-resort discipline (no MCP event-write tool), the `sprout-crm` MCP read stack, and scope boundaries vs Communications (recap copy) / Outreach (attendee research) / CRM Manager (hygiene) / Design (flyers/signage).
+  - `employees/Events/event-manager-jobDescription.md` — role summary, responsibilities, out-of-scope, working relationships, tools, session protocol.
+  - `employees/Events/deliverables/sprout-n-tell-checklist-template.md` — **the first deliverable.** The canonical 23-item prep-and-production checklist with lead-time offsets, source of truth for the app's `EVENT_CHECKLIST_TEMPLATES["Sprout N Tell"]` constant.
+  - `employees/Events/work-log.md` — seeded with the 2026-07-14 template + app-feature delivery.
+  - Empty `briefs/` + `sprints/` folders.
+- App (`components/CRMManager.jsx`): the **Import checklist template** feature in the event Add/Edit → Checklist tab (auto-dates items off the event date; dated items populate the calendar).
+- Updated this org doc: roster (added Event Manager), the handoff note (Event Manager → Communications / CRM Manager / Outreach at close-out), build-order status.
 
 **Build order status:**
 - Communications Manager: built. First live run done (caption proof, 2026-06-03).
 - Web & Graphic Designer: built. No deliverable yet.
-- **Outreach Manager: built.** First brief (July discovery batch) done and filed; records not yet landed in the CRM.
+- Outreach Manager: built. First brief (July discovery batch) done and filed; records not yet landed in the CRM.
+- **Event Manager: built.** First deliverable (Sprout N Tell checklist template) done + wired into the app.
 - Grant Manager, CRM Manager, Social Media: not started.
 
 **Invocation:**
 - Communications: `claude --system-prompt virtual-agency/employees/Communications/system-prompts/communications-manager-system-prompt_v1.md`
 - Design: `claude --system-prompt virtual-agency/employees/Design/system-prompts/design-lead-system-prompt_v1.md`
 - Outreach: `claude --system-prompt virtual-agency/employees/Outreach/system-prompts/outreach-manager-system-prompt_v1.md`
+- Events: `claude --system-prompt virtual-agency/employees/Events/system-prompts/event-manager-system-prompt_v1.md`
 - Or spawn any as a sub-agent via the Agent tool.
 
 **Resume here:**
+- ⬜ Run the Event Manager to **import the Sprout N Tell checklist onto Vol. 4** (8/28, `evt_mr0yd2086np9`, currently empty) and adjust the dates for that show.
 - ⬜ Run the Outreach Manager to **land the July brief's 3 records** in the CRM: merge Buzzkill NYC into the existing `org_mr3ulu05pxlg` (don't duplicate; recategorize vendor → community_builder/partner, cold → warm), create Dance Support NYC + Sober Supper Club. Then chase Rachel's last name/handle to link her to Buzzkill.
 - ⬜ Run the Web & Graphic Designer's first deliverable (HTML newsletter design pass).
 - ⬜ Run the Communications Manager's next newsletter.

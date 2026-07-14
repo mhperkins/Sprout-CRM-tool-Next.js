@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-07-14 — Event checklist template + import feature + Event Manager virtual employee
+
+App code (`components/CRMManager.jsx`; `npm run build` passes) + virtual-agency scaffolding. Effort: medium.
+
+- **Derived a reusable Sprout N Tell checklist template from real data.** Queried `sprout_events` for the Sprout N Tell / Show n Tell events (Show n Tell 5/19 `evt_mordmhe4e6nj`, Sprout n Tell 6/26 `evt_mpn2a3rtn29n`, Vol. 3 7/24 `evt_mr0xmugdqidy`, Vol. 4 8/28 empty), computed each recurring item's lead time from the real due dates, and consolidated into a 23-item template grouped by phase (Lineup → Promo/systems → Production planning → Setup prep → Day-before → GAMEDAY → +7 Thank-you follow-up). Excluded per Max: Outdoor Smoke Ash Tray, Garbage cans, Send out zoom link.
+- **New app feature — Import checklist template.** Added `EVENT_CHECKLIST_TEMPLATES` constant (offset = days relative to event date), a `shiftDate(baseISO, days)` helper (noon-anchored, TZ-safe), and `importChecklistTemplate()` in `EventEditPage`. A 📋 Import box at the top of the event Checklist tab shows an import button per template, disabled until the event date is set (no native `alert`). Import auto-dates every item off the event date and skips items already present (re-import safe). The detail-page calendar renders checklist items by date, so imported items populate the calendar automatically — no calendar change needed.
+- **Created the Event Manager virtual employee** (4th agent) under `virtual-agency/employees/Events/`, mirroring the Outreach pattern: system prompt (event lifecycle Scope → Plan → Lineup → Prep → Gameday → Close-out; no-fabrication rule; raw-SQL-last-resort since there's no MCP event-write tool; scope boundaries), job description, work log, empty briefs/sprints.
+- **The checklist template lives in the employee's deliverables** (`deliverables/sprout-n-tell-checklist-template.md`) as the source of truth; the app's `EVENT_CHECKLIST_TEMPLATES` constant mirrors it (cross-referenced both ways). Updated `virtual-agency.md` roster, handoff note, and build order.
+
+---
+
 ## 2026-07-14 — Intake-sheet sweep for new CRM contacts + Syd duplicate merge
 
 Data-only via the `google-workspace` + `sprout-crm`/`supabase` MCPs, all as hello@sproutsociety.org. No app code, repo, or DB-schema change (delivery slide only). Effort: medium.
