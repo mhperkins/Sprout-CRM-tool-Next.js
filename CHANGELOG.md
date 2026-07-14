@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-07-14 — Connected Trello (new `trello` MCP server)
+
+Config/infra only — `.mcp.json` + new `mcp/trello-launch.cmd`. No app code, CRM data, or DB change. Effort: diagnose medium / fix low.
+
+- **Connected Max's Trello account** as a new `trello` MCP server (`@delorenj/mcp-server-trello`, npx/stdio, 45 tools — boards/lists/cards/checklists/labels/members/comments/create+move+update). Credentials: a Trello Power-Up ("Sprout Society Ops") API Key + Token, stored via `setx` (same mechanism as Discord/Givebutter/Slack).
+- **Blocker — Windows `sshd` environment cache.** Max is on a Mac via VS Code Remote-SSH into the Windows host, so MCP servers run on Windows. After `setx` + full restart + kill-server-on-host, the two new Trello vars still read empty in-process (→ Trello 401), while `[Environment]::GetEnvironmentVariable(…,'User')` confirmed both were correctly in the registry. A process-env dump showed older MCP tokens present but Trello empty — proving Windows OpenSSH `sshd` snapshots the user env at service start and serves that frozen block to every new SSH session. `setx` writes the registry, but sshd won't serve new vars until sshd restarts.
+- **Fix — registry-read launcher.** `mcp/trello-launch.cmd` reads `TRELLO_API_KEY`/`TRELLO_TOKEN` straight from `HKCU\Environment` via `reg query` at spawn, then runs the npx server. `.mcp.json`'s `trello` entry is `cmd /c mcp\trello-launch.cmd` — no `${VAR}` expansion (which pulls the stale sshd env), no secret in the file (safe to commit), no restart/admin needed. A plain window reload brought Trello up; `list_boards` succeeded (🎨 Creative Hub Ops Center + demo board).
+- **CRM integration mapped, not built** (Max chose connect-only): event checklists → dated cards; CRM `next_actions[]`/overdue → follow-up cards; Trello intake list → `sprout_contacts`. All MCP-orchestrated, no app code.
+- **⚠️ Rotate the Power-Up Secret** — it appeared in a screenshot. **Lesson:** after `setx`, a new var reading empty in-process while older MCP tokens resolve = the sshd env cache; restart sshd/reboot, or read the var from the registry in a launcher.
+
+---
+
 ## 2026-07-14 — Event checklist template + import feature + Event Manager virtual employee
 
 App code (`components/CRMManager.jsx`; `npm run build` passes) + virtual-agency scaffolding. Effort: medium.

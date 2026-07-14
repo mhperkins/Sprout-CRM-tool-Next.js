@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trello Connected — Sprout CRM Delivery</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6;
+    --paper:#F7F7F6; --card:#ffffff; --muted:#6a6a66; --line:#e6e6e2;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',system-ui,sans-serif;background:var(--paper);color:var(--ink);padding:40px 16px;line-height:1.5}
+  .wrap{max-width:1000px;margin:0 auto}
+  .masthead{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+  .brand{font-weight:900;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+  .badge{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:#fff;border-radius:999px;padding:7px 16px;font-weight:700;font-size:13px}
+  .badge .dot{width:9px;height:9px;border-radius:50%;background:var(--acid);display:inline-block}
+  h1{font-size:34px;font-weight:900;line-height:1.15;margin:14px 0 4px}
+  h1 .em{background:linear-gradient(transparent 62%, var(--banana) 62%)}
+  .sub{color:var(--muted);font-size:16px;margin-bottom:8px}
+  .rule{height:4px;background:var(--acid);border-radius:2px;margin:16px 0 26px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;box-shadow:0 4px 14px rgba(0,0,0,.06);overflow:hidden;position:relative}
+  .card .bar{position:absolute;left:0;top:0;bottom:0;width:6px}
+  .b-cyan{background:var(--cyan)} .b-fuchsia{background:var(--fuchsia)} .b-banana{background:var(--banana)} .b-acid{background:var(--acid)}
+  .eyebrow{font-weight:900;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--fuchsia);margin-bottom:8px}
+  .card h3{font-size:18px;font-weight:900;margin-bottom:8px}
+  .card p{font-size:14.5px;color:#3a3a38;margin-bottom:8px}
+  .card p:last-child{margin-bottom:0}
+  ul{list-style:none;margin:4px 0 0}
+  li{font-size:14px;color:#3a3a38;padding-left:20px;position:relative;margin-bottom:6px}
+  li::before{content:'';position:absolute;left:2px;top:8px;width:8px;height:8px;border-radius:50%;background:var(--cyan)}
+  .full{grid-column:1/-1}
+  code{background:#f0f0ec;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:13px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .flow{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+  .step{flex:1;min-width:150px;background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:12px 14px}
+  .step .n{font-weight:900;color:var(--fuchsia);font-size:12px}
+  .step .t{font-weight:700;font-size:13.5px;margin-top:2px}
+  .step .d{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .boards{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px}
+  .board{flex:1;min-width:220px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .board .nm{font-weight:900;font-size:15px}
+  .board .id{font-size:12px;color:var(--muted);font-family:ui-monospace,Menlo,Consolas,monospace;margin-top:3px}
+  .warn{background:#fff9e6;border:1px solid var(--banana);border-radius:10px;padding:14px 18px;margin-top:16px;font-size:14px}
+  .warn b{color:var(--ink)}
+  .foot{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:26px;font-size:13px;color:var(--muted)}
+  .chip{display:inline-flex;align-items:center;gap:7px;background:var(--ink);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+  .chip.alt{background:#fff;color:var(--ink);border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div class="brand">Sprout CRM · Delivery</div>
+    <div class="badge"><span class="dot"></span>Committed &amp; pushed to main</div>
+  </div>
+
+  <h1>Trello is <span class="em">connected</span> to Claude Code</h1>
+  <div class="sub">New <code>trello</code> MCP server (45 tools) · config &amp; infra only · no app code or CRM data change</div>
+  <div class="rule"></div>
+
+  <div class="grid">
+    <div class="card">
+      <span class="bar b-cyan"></span>
+      <div class="eyebrow">What shipped</div>
+      <h3>A live Trello connection</h3>
+      <ul>
+        <li>Server: <code>@delorenj/mcp-server-trello</code> (npx, stdio)</li>
+        <li>45 tools — boards, lists, cards, checklists, labels, members, comments, create / move / update</li>
+        <li>Credentials: a Trello Power-Up API key + token, stored via <code>setx</code></li>
+        <li>Registered in <code>.mcp.json</code> under key <code>trello</code></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="bar b-fuchsia"></span>
+      <div class="eyebrow">The blocker</div>
+      <h3>Windows sshd env cache</h3>
+      <p>Mac → Remote-SSH → Windows host. After <code>setx</code> + restarts, the new Trello vars still read <b>empty</b> in-process → Trello <b>401</b>.</p>
+      <p>The registry had them; older MCP tokens resolved fine. Cause: Windows OpenSSH <b>freezes the user env at service start</b> and serves that snapshot to every new session.</p>
+    </div>
+  </div>
+
+  <div class="card full" style="margin-top:16px">
+    <span class="bar b-banana"></span>
+    <div class="eyebrow">The fix — sidestep sshd entirely</div>
+    <h3>A registry-read launcher: <code>mcp/trello-launch.cmd</code></h3>
+    <p>Reads the credentials straight from <code>HKCU\Environment</code> at spawn, then runs the server. No <code>${VAR}</code> expansion (that pulls the stale env), no secret in the file (safe to commit), no restart or admin needed.</p>
+    <div class="flow">
+      <div class="step"><div class="n">1</div><div class="t">reg query</div><div class="d">Pull TRELLO_API_KEY / TOKEN from the registry — the source of truth setx wrote to</div></div>
+      <div class="step"><div class="n">2</div><div class="t">set for child</div><div class="d">Inject them into the npx child's environment</div></div>
+      <div class="step"><div class="n">3</div><div class="t">launch server</div><div class="d">npx @delorenj/mcp-server-trello — authenticates cleanly</div></div>
+      <div class="step"><div class="n">4</div><div class="t">window reload</div><div class="d">list_boards succeeds — restart-proof from here on</div></div>
+    </div>
+  </div>
+
+  <div class="card full" style="margin-top:16px">
+    <span class="bar b-acid"></span>
+    <div class="eyebrow">Verified — boards found</div>
+    <div class="boards">
+      <div class="board"><div class="nm">🎨 Creative Hub Ops Center</div><div class="id">gFvAs1iT · nonprofit-ops hub</div></div>
+      <div class="board"><div class="nm">My Trello board</div><div class="id">X2osz1Mj · demo</div></div>
+    </div>
+    <p style="margin-top:12px"><b>CRM integration mapped (not built — connect-only this session):</b> event checklists → dated cards · CRM next-actions / overdue → follow-up cards · Trello intake list → sprout_contacts. All MCP-orchestrated, no app code.</p>
+  </div>
+
+  <div class="warn">⚠️ <b>Rotate the Power-Up Secret</b> — it appeared in a screenshot. Reset it at trello.com/power-ups/admin → Sprout Society Ops → API Key. The API key is semi-public / low-risk; the token was never fully exposed.</div>
+
+  <div class="foot">
+    <span class="chip">branch: main</span>
+    <span class="chip alt" id="hashchip">commit: pending</span>
+    <span>2026-07-14 · Sprout CRM Next</span>
+  </div>
+</div>
+</body>
+</html>

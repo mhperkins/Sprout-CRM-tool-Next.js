@@ -53,6 +53,10 @@
       "env": {
         "GIVEBUTTER_API_KEY": "${GIVEBUTTER_API_KEY}"
       }
+    },
+    "trello": {
+      "command": "cmd",
+      "args": ["/c", "mcp\\trello-launch.cmd"]
     }
   }
 }
