@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery — Recurring Events + Trello Rebuild · 2026-07-14</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{--ink:#030000;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--paper:#F7F7F6;--g400:#8a8a86;--g600:#4b4b48;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',system-ui,sans-serif;background:var(--paper);color:var(--ink);padding:40px 20px;line-height:1.5}
+  .wrap{max-width:960px;margin:0 auto}
+  .hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:4px solid var(--acid);padding-bottom:16px;margin-bottom:8px;flex-wrap:wrap;gap:12px}
+  h1{font-weight:900;font-size:30px;letter-spacing:-0.5px}
+  .sub{color:var(--g600);font-size:14px;margin-top:4px}
+  .meta{font-size:12px;color:var(--g400);text-align:right}
+  .meta code{background:var(--ink);color:var(--acid);padding:2px 8px;border-radius:5px;font-size:12px}
+  .pill{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:3px 10px;border-radius:20px;margin-top:6px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px}
+  .card{background:#fff;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,0.10);overflow:hidden}
+  .card.full{grid-column:1 / -1}
+  .bar{height:6px}
+  .card-in{padding:18px 20px}
+  .card h2{font-size:16px;font-weight:900;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .card ul{list-style:none;font-size:13.5px;color:var(--g600)}
+  .card li{padding:4px 0 4px 18px;position:relative}
+  .card li::before{content:"›";position:absolute;left:0;color:var(--fuchsia);font-weight:900}
+  .card li b{color:var(--ink)}
+  code.k{background:var(--paper);border:1px solid #e5e5e3;border-radius:4px;padding:1px 5px;font-size:12px}
+  .cols{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .col{font-size:11px;font-weight:700;padding:4px 9px;border-radius:6px;background:var(--paper);border:1px solid #e5e5e3}
+  .foot{margin-top:24px;font-size:12px;color:var(--g400);border-top:1px solid #e5e5e3;padding-top:14px}
+  .warn{background:#fff7d6;border-left:4px solid var(--banana);border-radius:6px;padding:10px 14px;font-size:12.5px;color:var(--g600);margin-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hd">
+    <div>
+      <h1>Recurring Events + Trello Rebuild</h1>
+      <div class="sub">Sprout CRM Next · virtual-agency ops</div>
+      <span class="pill" style="background:var(--acid);color:var(--ink)">Shipped</span>
+    </div>
+    <div class="meta">
+      2026-07-14<br>
+      branch <code>main</code><br>
+      commit <code>21f0916</code>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <div class="card full">
+      <div class="bar" style="background:var(--acid)"></div>
+      <div class="card-in">
+        <h2>🆕 Recurring events <span style="font-size:11px;font-weight:700;color:var(--fuchsia)">APP CODE · build passes</span></h2>
+        <ul>
+          <li><b>One rule, not 50 rows.</b> Events gained <code class="k">start_time</code>, <code class="k">end_time</code>, and a <code class="k">recurrence</code> object (daily / weekly / every&nbsp;2&nbsp;weeks / monthly + day-of-week + optional "until"). <code class="k">null</code> = one-time.</li>
+          <li><b>Repeats control</b> in the event editor: frequency + weekday picker + start/end time + repeat-until, with a live "🔁 Weekly on Fridays · 6:30pm–8:30pm" summary.</li>
+          <li><b>Stays current.</b> A <code class="k">nextOccurrence()</code> helper drives the Dashboard "Upcoming", events list, and detail header, so recurring events show their next date + a 🔁 badge instead of going stale.</li>
+          <li><code class="k">lib/schemas.js</code> + <code class="k">components/CRMManager.jsx</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="bar" style="background:var(--cyan)"></div>
+      <div class="card-in">
+        <h2>🗂 Trello board, rebuilt</h2>
+        <ul>
+          <li>Archived AI template cruft: <b>6 lists + 19 cards</b> gone.</li>
+          <li>Rebuilt into <b>9 employee columns</b> + a global to-do + a Drive resources column.</li>
+          <li>Seeded role cards, real starter tasks, all Drive links + 8 shared-drive folders.</li>
+        </ul>
+        <div class="cols">
+          <span class="col">🎯 This Week</span><span class="col">📚 Resources</span>
+          <span class="col">📣 Comms</span><span class="col">🌱 Outreach</span>
+          <span class="col">🎪 Events</span><span class="col">🎨 Design</span>
+          <span class="col">💛 Grants</span><span class="col">🤝 CRM</span>
+          <span class="col">📱 Social</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="bar" style="background:var(--banana)"></div>
+      <div class="card-in">
+        <h2>📅 Events calendar</h2>
+        <ul>
+          <li><b>34 dated cards</b> in 🎪 Events → render on Trello's Calendar view.</li>
+          <li>Reconciled a May event list vs the 12 CRM events; 6 flagged "not in CRM".</li>
+          <li>Past events marked complete (no overdue-red).</li>
+          <li><b>Enable Calendar view in the UI</b> — no API toggle.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="bar" style="background:var(--fuchsia)"></div>
+      <div class="card-in">
+        <h2>➕ Two events added</h2>
+        <ul>
+          <li><b>12-Step Group</b> — one recurring record, weekly Fridays 6:30–8:30pm <code class="k">evt_12step_weekly</code></li>
+          <li><b>Sing Easy</b> — today, 7:00pm <code class="k">evt_sing_easy_20260714</code></li>
+          <li>Added via SQL (no MCP event-write tool); Sing Easy also on Trello.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="bar" style="background:var(--ink)"></div>
+      <div class="card-in">
+        <h2>🔐 Auth, fixed for good</h2>
+        <ul>
+          <li>Hard rule in memory: <b>always hello@, never maxperkins@</b> (its OAuth is broken on the remote setup).</li>
+          <li>hello@ gets a 403? <b>Share the file with hello@</b> — don't switch accounts.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="warn">
+    <b>API quirks logged:</b> Trello lists insert at the far <b>left</b> (create in reverse for order); no list-reorder or rename tool; cards append at the bottom; names/descriptions are plain text (bare <code class="k">&amp;</code>, not <code class="k">&amp;amp;</code>). &nbsp;·&nbsp; <b>Deferred:</b> CRM recurrence rule ↔ Trello dated cards auto-sync.
+  </div>
+
+  <div class="foot">
+    Sprout CRM Next · delivery slide · 2026-07-14 · commit 21f0916 on main. Recurring events is live after this push; hard-refresh the app to see the Repeats control.
+  </div>
+</div>
+</body>
+</html>
