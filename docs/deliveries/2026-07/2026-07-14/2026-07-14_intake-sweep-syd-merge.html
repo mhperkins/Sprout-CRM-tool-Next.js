@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sprout CRM — Intake Sweep + Syd Merge (2026-07-14)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --cyan-deep:#2a8ca0;
+    --paper:#F7F7F6; --card:#ffffff; --muted:#6a6a66; --line:#e6e6e2;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',system-ui,sans-serif;background:var(--paper);color:var(--ink);
+    padding:40px 16px;line-height:1.5}
+  .wrap{max-width:960px;margin:0 auto}
+  .masthead{display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:4px solid var(--acid);padding-bottom:16px;margin-bottom:8px;flex-wrap:wrap;gap:12px}
+  .masthead h1{font-size:30px;font-weight:900;letter-spacing:-.5px}
+  .masthead .tag{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--muted)}
+  .sub{color:var(--muted);font-size:15px;margin:14px 0 26px}
+  .sub b{color:var(--ink)}
+  .pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+  .pill{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;text-transform:uppercase;letter-spacing:1px}
+  .pill.data{background:var(--cyan);color:var(--ink)}
+  .pill.effort{background:var(--banana);color:var(--ink)}
+  .pill.branch{background:var(--ink);color:#fff}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:640px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border-radius:10px;padding:20px 22px;
+    box-shadow:0 4px 14px rgba(0,0,0,.10);overflow:hidden;position:relative}
+  .card.accent-fuchsia{border-left:6px solid var(--fuchsia)}
+  .card.accent-cyan{border-left:6px solid var(--cyan-deep)}
+  .card.accent-acid{border-left:6px solid var(--acid)}
+  .card.accent-banana{border-left:6px solid var(--banana)}
+  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:12px}
+  .big{font-size:34px;font-weight:900;line-height:1}
+  .big small{font-size:15px;font-weight:700;color:var(--muted);display:block;margin-top:6px}
+  .row{display:flex;align-items:baseline;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+  .row:first-of-type{border-top:0}
+  .row .k{font-weight:900;color:var(--fuchsia);min-width:96px}
+  .row .v{font-size:14px}
+  .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;
+    background:#f0f0ec;padding:1px 6px;border-radius:4px}
+  .full{grid-column:1/-1}
+  ul.clean{list-style:none;margin-top:4px}
+  ul.clean li{padding:7px 0 7px 26px;position:relative;font-size:14px;border-top:1px solid var(--line)}
+  ul.clean li:first-child{border-top:0}
+  ul.clean li::before{content:"✓";position:absolute;left:0;color:var(--cyan-deep);font-weight:900}
+  ul.clean li.skip::before{content:"–";color:var(--muted)}
+  .foot{margin-top:26px;color:var(--muted);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <h1>Intake Sweep + Syd Merge</h1>
+    <div class="tag">Sprout CRM · 2026-07-14</div>
+  </div>
+  <p class="sub">Swept all four live intake sheets for new emails, added the one that was missing, and consolidated a duplicate contact. <b>Data-only</b> via the google-workspace + sprout-crm/supabase MCPs (as hello@sproutsociety.org). No app code, repo, or DB-schema change.</p>
+
+  <div class="pills">
+    <span class="pill data">Data-only</span>
+    <span class="pill effort">Effort: medium</span>
+    <span class="pill branch">branch: main</span>
+  </div>
+
+  <div class="grid">
+    <div class="card accent-fuchsia">
+      <h2>New contact added</h2>
+      <div class="big">1<small>net-new across all four sheets</small></div>
+      <div class="row" style="margin-top:14px"><span class="k">tarn</span><span class="v"><span class="mono">tarinis224@gmail.com</span></span></div>
+      <div class="row"><span class="k">id</span><span class="v"><span class="mono">ind_tarn</span></span></div>
+      <div class="row"><span class="k">source</span><span class="v">Interest Form · 7/10 · Attending</span></div>
+      <div class="row"><span class="k">tagged</span><span class="v">warm · attendee</span></div>
+    </div>
+
+    <div class="card accent-cyan">
+      <h2>Sheets checked</h2>
+      <ul class="clean">
+        <li>Interest Form — 1 new (tarn)</li>
+        <li>Sprout By Day — none new (3 test rows)</li>
+        <li class="skip">6/26 kiosk — nothing after last sync</li>
+        <li class="skip">5/19 Check-In — nothing after last sync</li>
+      </ul>
+      <p style="font-size:13px;color:var(--muted);margin-top:10px">~66 emails matched in one SQL pass, alt login/typed variants included.</p>
+    </div>
+
+    <div class="card accent-acid full">
+      <h2>Duplicate merged — Syd</h2>
+      <div class="row"><span class="k">kept</span><span class="v"><span class="mono">ind_mpvhkubvpq7c</span> — older record, kept phone 7819416368 + zip</span></div>
+      <div class="row"><span class="k">deleted</span><span class="v"><span class="mono">ind_syd</span> — newer duplicate</span></div>
+      <div class="row"><span class="k">primary</span><span class="v"><span class="mono">sydneyfox55@gmail.com</span> (corrected) · status → warm · 5/19 touchpoint + tag folded in</span></div>
+      <div class="row"><span class="k">+1 email</span><span class="v"><span class="mono">sydbeyfox55@gmail.com</span> kept as alternate in new <span class="mono">data.alt_emails</span></span></div>
+      <p style="font-size:13px;color:var(--muted);margin-top:10px">Merged via raw <span class="mono">execute_sql</span> — the MCP merge-by-id tool is unreliable per the prior-session lesson.</p>
+    </div>
+
+    <div class="card accent-banana full">
+      <h2>Net result</h2>
+      <ul class="clean">
+        <li><b>1 new contact</b> (tarn) added to the CRM</li>
+        <li><b>Syd deduped</b> to a single record carrying both emails</li>
+        <li>Reaffirmed: SnT-list dedupe must match alternate email variants, not just the promoted <span class="mono">email</span> column</li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="foot">Sprout CRM Next · delivery slide · docs/deliveries/2026-07/2026-07-14/</p>
+</div>
+</body>
+</html>

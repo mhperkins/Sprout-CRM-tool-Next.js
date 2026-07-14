@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-07-14 — Intake-sheet sweep for new CRM contacts + Syd duplicate merge
+
+Data-only via the `google-workspace` + `sprout-crm`/`supabase` MCPs, all as hello@sproutsociety.org. No app code, repo, or DB-schema change (delivery slide only). Effort: medium.
+
+- **Ask 1:** "are there any new emails from any sheet to add to the CRM." Read all four live intake sheets (Interest Form, Sprout By Day, 6/26 kiosk Sign-Ins, 5/19 Check-In) and matched all ~66 emails — including alternate login/typed variants — against `sprout_contacts` in one `execute_sql`.
+- **Result:** exactly one genuinely-new email — **tarn** (`tarinis224@gmail.com`), Interest Form 7/10, Attending. Created `ind_tarn` (warm/`attendee`). Everything else already present; Nina's/Mac's/Kingsley's alt emails resolve to existing records. Sprout By Day post-7/7 rows are `maxwellhperkins@` test junk; kiosk + 5/19 Check-In had nothing new.
+- **Ask 2:** "yes merge [the duplicate Syd], and add 1 email." Two Syd records (`ind_mpvhkubvpq7c` older w/ phone+zip + typo'd `sydbeyfox55@`; `ind_syd` newer w/ correct `sydneyfox55@` + 5/19 touchpoint). Folded into the older record via `execute_sql`: correct `sydneyfox55@` as primary, warm status, 5/19 touchpoint + `sprout_n_tell` tag, and the typo'd `sydbeyfox55@` kept in a new `data.alt_emails` array (the "add 1 email"). Deleted `ind_syd`.
+- **Net CRM change:** 1 new contact (tarn) + Syd deduped to one record carrying both emails.
+- **Reaffirmed:** the "sync the SnT list" dedupe must match alternate email variants, not just the promoted `email` column.
+
+---
+
 ## 2026-07-07 — Consolidated the Sprout N Tell lists to one master + synced it into the CRM
 
 Data-only via the `google-workspace` + `sprout-crm`/`supabase` MCPs, all as hello@sproutsociety.org. No app code, repo, or DB-schema change (delivery slide only). Effort: medium.
