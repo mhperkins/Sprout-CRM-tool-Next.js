@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Delivery — Org Next Actions Dashboard Fix (2026-07-16)</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --paper:#F7F7F6;
+    --g600:#6a6a66; --g400:#9a9a96; --line:#E4E4E1;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Lato',-apple-system,Segoe UI,sans-serif;
+    background:var(--paper); color:var(--ink);
+    padding:40px 20px; line-height:1.5;
+  }
+  .deck{max-width:1080px; margin:0 auto;}
+
+  /* Masthead */
+  .mast{
+    background:#fff; border-radius:10px; overflow:hidden;
+    box-shadow:0 4px 14px rgba(0,0,0,0.16); margin-bottom:18px;
+  }
+  .mast-in{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    padding:26px 30px 20px; gap:20px; flex-wrap:wrap;
+  }
+  .eyebrow{
+    font-size:11px; font-weight:900; letter-spacing:2px;
+    text-transform:uppercase; color:var(--fuchsia); margin-bottom:6px;
+  }
+  h1{font-size:30px; font-weight:900; line-height:1.15; letter-spacing:-0.5px;}
+  .sub{font-size:14px; color:var(--g600); margin-top:7px; max-width:640px;}
+  .meta{text-align:right; font-size:11px; color:var(--g600); white-space:nowrap;}
+  .meta b{display:block; font-size:13px; color:var(--ink); font-weight:900;}
+  .hash{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    background:var(--ink); color:var(--acid);
+    padding:3px 9px; border-radius:4px; font-size:12px;
+    font-weight:700; display:inline-block; margin-top:5px;
+  }
+  .rule{height:5px; background:var(--acid); flex-shrink:0;}
+
+  /* Badges */
+  .badges{display:flex; gap:7px; flex-wrap:wrap; margin-top:13px;}
+  .badge{
+    font-size:10px; font-weight:900; letter-spacing:0.6px;
+    text-transform:uppercase; padding:4px 10px; border-radius:999px;
+    background:var(--paper); color:var(--g600); border:1px solid var(--line);
+  }
+  .badge.ok{background:var(--acid); color:var(--ink); border-color:var(--acid);}
+  .badge.cy{background:var(--cyan); color:var(--ink); border-color:var(--cyan);}
+  .badge.fu{background:var(--fuchsia); color:#fff; border-color:var(--fuchsia);}
+
+  /* Cards */
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;}
+  .card{
+    background:#fff; border-radius:10px; overflow:hidden;
+    box-shadow:0 4px 14px rgba(0,0,0,0.16);
+    border-left:6px solid var(--line); padding:20px 22px;
+  }
+  .card.full{grid-column:1/-1;}
+  .card.bug{border-left-color:var(--fuchsia);}
+  .card.cause{border-left-color:var(--banana);}
+  .card.trap{border-left-color:var(--ink); background:var(--ink); color:#fff;}
+  .card.fix{border-left-color:var(--acid);}
+  .card.verify{border-left-color:var(--cyan);}
+  .card-ttl{
+    font-size:12px; font-weight:900; letter-spacing:1.2px;
+    text-transform:uppercase; margin-bottom:11px; color:var(--g600);
+  }
+  .card.trap .card-ttl{color:var(--banana);}
+  .card p{font-size:14px; margin-bottom:9px;}
+  .card p:last-child{margin-bottom:0;}
+  .card.trap p{color:#e8e8e6;}
+  code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:12.5px; background:var(--paper); color:var(--ink);
+    padding:1px 5px; border-radius:3px; border:1px solid var(--line);
+  }
+  .card.trap code{background:#1e1e1c; color:var(--acid); border-color:#333;}
+  strong{font-weight:900;}
+  .fu-t{color:var(--fuchsia);}
+
+  /* Stat strip */
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:14px;}
+  .stat{
+    background:#fff; border-radius:10px; padding:16px 18px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.16); text-align:center;
+  }
+  .stat-val{font-size:32px; font-weight:900; line-height:1;}
+  .stat-lbl{
+    font-size:10px; font-weight:900; letter-spacing:0.8px;
+    text-transform:uppercase; color:var(--g600); margin-top:7px;
+  }
+
+  /* Before/after */
+  .ba{display:grid; grid-template-columns:1fr 1fr; gap:0; margin-top:12px;
+      border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .ba-col{padding:14px 16px;}
+  .ba-col:first-child{background:#FDF0F7; border-right:1px solid var(--line);}
+  .ba-col:last-child{background:#F7FBF2;}
+  .ba-h{
+    font-size:10px; font-weight:900; letter-spacing:1px;
+    text-transform:uppercase; margin-bottom:8px;
+  }
+  .ba-col:first-child .ba-h{color:var(--fuchsia);}
+  .ba-col:last-child .ba-h{color:#5a7a00;}
+  .ba-col code{font-size:12px; background:#fff; display:block; padding:8px 10px; line-height:1.6;}
+
+  /* Org list */
+  .orgs{display:flex; flex-wrap:wrap; gap:6px; margin-top:11px;}
+  .org{
+    font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:5px;
+    background:var(--paper); border:1px solid var(--line);
+  }
+  .org.od{background:#FDECEC; border-color:#F3C0C0; color:#B91C1C;}
+  .org.ds{background:#FBF9DC; border-color:#E8E6A0; color:#6a6a10;}
+  .org.fu2{background:#EEF7FA; border-color:#C5E3EC; color:#2a6a7a;}
+
+  .files{
+    background:#fff; border-radius:10px; padding:18px 22px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.16); border-left:6px solid var(--cyan);
+  }
+  .file{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:8px 0; border-bottom:1px solid var(--line); font-size:13px; gap:12px;
+  }
+  .file:last-child{border-bottom:0;}
+  .file-p{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px;}
+  .file-d{color:var(--g600); font-size:12px; text-align:right;}
+
+  .note{
+    margin-top:14px; background:var(--banana); border-radius:8px;
+    padding:14px 18px; font-size:13.5px; font-weight:700;
+  }
+  .foot{
+    margin-top:22px; text-align:center; font-size:11px; color:var(--g400);
+    letter-spacing:0.5px;
+  }
+  @media (max-width:820px){
+    .grid,.stats,.ba{grid-template-columns:1fr;}
+    .ba-col:first-child{border-right:0; border-bottom:1px solid var(--line);}
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <div class="mast">
+    <div class="mast-in">
+      <div>
+        <div class="eyebrow">Delivery · Bug Fix</div>
+        <h1>Organization next actions now<br>reach the dashboard</h1>
+        <div class="sub">Orgs wrote to one place and the dashboard read from another. 11 orgs had a real next action; every one of them was invisible.</div>
+        <div class="badges">
+          <span class="badge ok">build passes</span>
+          <span class="badge cy">no schema change</span>
+          <span class="badge cy">no migration</span>
+          <span class="badge fu">effort: diagnose med / fix low</span>
+          <span class="badge">app code only</span>
+        </div>
+      </div>
+      <div class="meta">
+        <b>2026-07-16</b>
+        branch <b>main</b>
+        <span class="hash">44e414b</span>
+      </div>
+    </div>
+    <div class="rule"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-val fu-t">11</div><div class="stat-lbl">Org actions hidden</div></div>
+    <div class="stat"><div class="stat-val">0</div><div class="stat-lbl">Arrays populated (of 16)</div></div>
+    <div class="stat"><div class="stat-val">2</div><div class="stat-lbl">Bugs, one hiding the other</div></div>
+    <div class="stat"><div class="stat-val" style="color:#5a7a00">11</div><div class="stat-lbl">Now surfacing</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card bug">
+      <div class="card-ttl">🐛 The bug</div>
+      <p>Org next actions never appeared on the dashboard.</p>
+      <p><strong>Proved against live data before touching code:</strong> 11 orgs have a real next action, and all 16 have <code>next_actions</code> array length <strong>0</strong>. The array was always empty, so the dashboard's org loop always produced nothing.</p>
+      <p>The render path <em>already</em> supported org actions (🏢 badge, click-through to Orgs). That is what proved this was a broken collection step, not an unbuilt feature.</p>
+    </div>
+    <div class="card cause">
+      <div class="card-ttl">🔍 Root cause</div>
+      <p>Orgs store <strong>one current action in the flat fields</strong> <code>next_action</code> / <code>next_action_date</code>, archiving completed ones to <code>next_actions_log</code>. That is the deliberate design, and <strong>every other surface follows it</strong>.</p>
+      <p>The dashboard's org loop read <strong>only</strong> <code>o.next_actions</code>, with none of the flat-field fallback its <em>contact</em> loop has one line earlier.</p>
+      <p><strong>A second bug hid the first:</strong> <code>OrgSchema</code> has no <code>next_actions</code> field, so the two places <code>OrgDetail</code> <em>did</em> write an array were <strong>silently stripped by Zod on every save</strong>. The schemas-sync trap.</p>
+    </div>
+  </div>
+
+  <div class="card full trap">
+    <div class="card-ttl">🔴 The trap — why the obvious fix was the wrong one</div>
+    <p>The tempting fix is <strong>adding <code>next_actions</code> to <code>OrgSchema</code></strong>. It would have been actively harmful.</p>
+    <p>Those writes use <code>mergedNas</code>, which <strong>appends but never completes</strong>, and <strong>no org code path ever marks an array entry completed</strong> (<code>completeAction</code> clears only the flat fields). Unblocking the schema would make every touchpoint-with-an-action append an entry that <strong>could never be cleared</strong>, piling onto the dashboard permanently.</p>
+    <p style="margin-top:12px; border-top:1px solid #333; padding-top:12px;"><strong>The lesson:</strong> when two surfaces disagree, fix the one that <em>departs from the design the other surfaces already share</em>, not the one that merely looks a field short.</p>
+  </div>
+
+  <div class="card full fix" style="margin-top:14px;">
+    <div class="card-ttl">✅ The fix — make the dashboard read what orgs actually write</div>
+    <p>The org loop now reads the flat fields, <strong>matching the MCP's predicate exactly</strong>, with a comment explaining why there is no array. Removed the two vestigial <code>next_actions</code> writes (already inert) so a future schema change cannot silently reintroduce the accumulation bug.</p>
+    <div class="ba">
+      <div class="ba-col">
+        <div class="ba-h">Before — always empty</div>
+        <code>(orgs||[]).forEach(o=&gt;{<br>&nbsp;&nbsp;(o.next_actions||[])<br>&nbsp;&nbsp;&nbsp;&nbsp;.filter(a=&gt;!a.completed&amp;&amp;a.date)<br>&nbsp;&nbsp;&nbsp;&nbsp;.forEach(a=&gt;{ ...push... });<br>});</code>
+      </div>
+      <div class="ba-col">
+        <div class="ba-h">After — matches how orgs save</div>
+        <code>(orgs||[]).forEach(o=&gt;{<br>&nbsp;&nbsp;if(o.next_action &amp;&amp; o.next_action_date){<br>&nbsp;&nbsp;&nbsp;&nbsp;allActions.push({type:"org", ...});<br>&nbsp;&nbsp;}<br>});</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:14px;">
+    <div class="card verify">
+      <div class="card-ttl">🔬 Verification</div>
+      <p><strong>✓</strong> <code>npm run build</code> passes.</p>
+      <p><strong>✓</strong> Read path confirmed: <code>mergeOrg</code> spreads <code>row.data</code> for <code>next_action</code> and sets <code>next_action_date</code> from the SQL column, so both fields reach the component.</p>
+      <p><strong>✓</strong> The MCP's <code>list_upcoming_actions</code> — an <strong>independent working surface using the identical predicate</strong> — returned all 10 in-window org actions live.</p>
+      <p><strong>✗</strong> The UI was <strong>not</strong> driven: the dashboard sits behind the login wall. Hard-refresh to confirm visually.</p>
+    </div>
+    <div class="card">
+      <div class="card-ttl">📅 What surfaces now</div>
+      <p style="font-size:12px; color:var(--g600); margin-bottom:4px;"><strong>7 overdue</strong></p>
+      <div class="orgs">
+        <span class="org od">the field we tend</span><span class="org od">Bar Nun</span><span class="org od">Mama Recess</span><span class="org od">The Recess Lab</span><span class="org od">Comadre Crafts</span><span class="org od">Regulate2Elevate</span><span class="org od">TOLK</span>
+      </div>
+      <p style="font-size:12px; color:var(--g600); margin:11px 0 4px;"><strong>3 in the 14-day card</strong></p>
+      <div class="orgs">
+        <span class="org ds">Buzzkill NYC · 7/17</span><span class="org ds">Floorwork Arts · 7/20</span><span class="org ds">Sober Supper Club · 7/24</span>
+      </div>
+      <p style="font-size:12px; color:var(--g600); margin:11px 0 4px;"><strong>1 future</strong></p>
+      <div class="orgs">
+        <span class="org fu2">Dance Support NYC · 10/01</span>
+      </div>
+      <p style="margin-top:11px; font-size:12.5px; color:var(--g600);">The 5 orgs with no action stay correctly excluded.</p>
+    </div>
+  </div>
+
+  <div class="files" style="margin-top:14px;">
+    <div class="card-ttl">📦 Committed</div>
+    <div class="file">
+      <span class="file-p">components/CRMManager.jsx</span>
+      <span class="file-d">org loop reads flat fields · 2 vestigial array writes removed</span>
+    </div>
+    <div class="file">
+      <span class="file-p">CHANGELOG.md</span>
+      <span class="file-d">session entry</span>
+    </div>
+    <div class="file">
+      <span class="file-p" style="color:var(--g400)">lib/schemas.js</span>
+      <span class="file-d">deliberately untouched — see the trap above</span>
+    </div>
+  </div>
+
+  <div class="note">
+    ⚠️ Junk data flagged: <code>org_field_we_tend</code> has the action <code>"sdf"</code> dated 2026-05-05 and will now show as ~72 days overdue. Test data worth clearing — delete it through the app, not raw SQL while the tab is open.
+  </div>
+
+  <div class="foot">SPROUT SOCIETY · CRM NEXT · DELIVERY 2026-07-16 · COMMIT 44e414b · BRANCH MAIN</div>
+
+</div>
+</body>
+</html>
