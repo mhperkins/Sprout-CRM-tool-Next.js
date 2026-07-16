@@ -2,6 +2,24 @@
 
 ---
 
+## 2026-07-16 — Sprout Society TV slideshow (six standalone slides + preview page)
+
+Design deliverable only, in `virtual-agency/employees/Design/deliverables/tv-slides/`. **No app code, CRM data, or DB change**; `public/` is byte-for-byte untouched. Effort: medium.
+
+- **The ask:** update the HTML shown on the TV at Sprout N Tell, add slides for the other facets of Sprout Society, and make it a looping slideshow.
+- **The original was not recoverable.** Searched the repo, git history, other project folders, Downloads, and published artifacts. `sign-in-kiosk/welcome-flyer.html` is the printable QR flyer, not a TV slide. Rebuilt from scratch per Max.
+- **Built as one looping deck, then split into 6 standalone files** at Max's request so each can be iterated on in isolation: `01-welcome` · `02-story` · `03-sprout-n-tell` · `04-sprout-by-day` · `05-membership` · `06-hosting`. **The combined deck was deleted rather than kept alongside**, to avoid the mirrored-copy drift this project keeps hitting. The 6 files are the source of truth; the recombine spec (12s/slide, 0.9s cross-fade, infinite wrap, progress bar + dots, space/arrows/F, click-advances) lives in a new `tv-slides/README.md`.
+- **A QR code on every slide**, since nobody can click a TV: donate, sign-in + program, membership (×2), hosting form. Each QR was **decoded and confirmed to match the URL its caption promises**, and all 4 destinations return 200.
+- **Self-contained:** logo and QRs inlined as base64. Only external dependency is the Lato webfont, which falls back to a system sans offline. Designed 16:9, sized in `vw` so it scales to any TV (verified at 1920×1080).
+- **No invented facts:** copy from `Communications/foundational-language.md`, pricing from the live `public/sprout-sign-in.html` CONFIG, next Sprout N Tell date from the CRM (`list_events`). Only the whitelisted stats (5,000+ served / 50+ programs / $120K to 32 artists).
+- **Filed under the Design employee**, not Communications and not a new employee: Design's job description already owns "every surface ... event flyers ... delivery slides", names self-contained brand-palette HTML as its primary tool, and lists "slide 16:9" as an output standard. Comms owns the words, Design owns the HTML. Created `Design/deliverables/` (its first) and logged the work in Design's `work-log.md`.
+- **🔴 `public/` is a reserved Next.js folder and its name is not configurable.** Renaming it to `sprout-marketing` 404'd `/sprout-sign-in.html`, `/sprout-tv.html`, and `/sprout-logo.png` (confirmed live against the dev server), which would have broken the kiosk page that the **printed event QR flyers** point at. Reverted. To group marketing files under a URL, use a **subfolder** (`public/marketing/`), never rename `public/`.
+- **Four bugs, all caught by screenshotting rather than trusting the code:** (a) the logo stretched to 1690px wide against its true 2.12 aspect, and (b) the acid rule silently collapsed to `height:0` — both because the slide is a `flex-direction:column` container where children stretch and shrink on the cross axis; fixed with `align-self:flex-start` and `flex-shrink:0`. (c) The split regex matched a literal `<section class="slide">` inside the deck's **own head comment**, so slide 1 shipped with comment prose in its body and rendered invisible, while hitting exactly 6 matches by coincidence so the count assertion passed. **A passing count is not a passing parse.** (d) Preview tiles didn't fill their frames (fixed scale vs fluid tile), visible only on the light slides.
+- **Preview:** `_preview.html` is a contact sheet with all 6 slides live in iframes at a true 1920×1080, scaled down. Because Max works from a **Mac terminal over SSH** (no VS Code PORTS panel), the files can't be opened by path. Serve with `python -m http.server 4000 --bind 0.0.0.0` from the folder, then open `http://192.168.50.65:4000/_preview.html` on the Mac. Windows Firewall already has an inbound Allow rule for Python on the Public profile (the active network), so no firewall change is needed. Fallback: `ssh -N -L 4000:localhost:4000`.
+- **Open items:** the Sprout N Tell date is hardcoded (Vol. 4 = 2026-08-28); `04-sprout-by-day`'s QR points at membership pending a verified form URL; the accent rotation deviates from the brand rule (02 and 03 are both fuchsia); each file carries its own copy of the shared `<style>` block.
+
+---
+
 ## 2026-07-14 — Trello board rebuild + events calendar + recurring-events feature
 
 Three asks in one session. Trello work is MCP-orchestrated (no app code). Recurring events IS app code (`lib/schemas.js` + `components/CRMManager.jsx`; `npm run build` passes). Effort: medium.

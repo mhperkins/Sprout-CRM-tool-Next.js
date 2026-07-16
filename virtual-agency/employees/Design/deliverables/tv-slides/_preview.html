@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sprout TV Slides: Preview</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>" />
+
+<!-- Contact sheet for the TV slides. Not a slide itself, and not part of
+     the deck. Each tile is the real slide file in an iframe rendered at a
+     true 1920x1080 and scaled down, so what you see is what the TV shows.
+     Serve this folder over HTTP and open this page. -->
+
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --cyan-deep:#2a8ca0;
+    --paper:#F7F7F6; --muted:#8a8a86;
+    /* Tile scale. 1920 * .28 = 538px wide. */
+    --s:.28;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Lato',-apple-system,Segoe UI,Roboto,sans-serif; background:var(--paper); color:var(--ink); padding:32px 28px 60px;}
+
+  header{max-width:1200px; margin:0 auto 28px;}
+  h1{font-size:30px; font-weight:900; letter-spacing:-.01em;}
+  .acid{height:6px; width:90px; background:var(--acid); border-radius:3px; margin:12px 0 14px;}
+  .note{font-size:15px; color:#3a3a38; line-height:1.55; max-width:760px;}
+  .note b{font-weight:900;}
+  kbd{background:var(--ink); color:#fff; border-radius:4px; padding:1px 7px; font-size:12px; font-weight:700; font-family:inherit;}
+
+  /* Tiles are a fixed width derived from --s, NOT fluid 1fr. The iframe is
+     scaled by a fixed factor, so a fluid tile leaves the frame's background
+     showing along the right/bottom edges (visible on the light slides). */
+  .grid{
+    max-width:1200px; margin:0 auto;
+    display:grid; grid-template-columns:repeat(auto-fit, calc(1920px * var(--s)));
+    justify-content:center; gap:30px;
+  }
+  .card{
+    width:calc(1920px * var(--s));
+    background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,.14);
+  }
+
+  /* The iframe renders at full TV size, then scales down. Keeps vw-based
+     type honest instead of reflowing to a tiny viewport. */
+  .frame{
+    position:relative; overflow:hidden; background:var(--ink);
+    width:calc(1920px * var(--s));
+    height:calc(1080px * var(--s));
+  }
+  .frame iframe{
+    position:absolute; top:0; left:0;
+    width:1920px; height:1080px; border:0;
+    transform:scale(var(--s)); transform-origin:top left;
+  }
+  /* Sits over the iframe so clicks hit the link, not the slide. */
+  .hit{position:absolute; inset:0; z-index:2;}
+
+  .bar{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px;}
+  .name{font-size:15px; font-weight:900;}
+  .file{font-size:12px; color:var(--muted); font-weight:700;}
+  .open{
+    font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:.06em;
+    background:var(--ink); color:#fff; text-decoration:none;
+    padding:7px 12px; border-radius:5px; white-space:nowrap;
+  }
+  .open:hover{background:var(--cyan-deep);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Sprout TV Slides</h1>
+  <div class="acid"></div>
+  <p class="note">
+    Every tile below is the <b>real slide file</b>, live in an iframe at a true 1920&times;1080 and scaled down, so this is what the TV shows.
+    Click a tile (or <b>Open</b>) to view it full size, then press <kbd>F11</kbd> for fullscreen.
+    Edit any slide file and refresh this page to see the change.
+  </p>
+</header>
+
+<div class="grid">
+
+  <div class="card">
+    <div class="frame"><a class="hit" href="01-welcome.html" target="_blank" rel="noopener"></a><iframe src="01-welcome.html" title="Welcome" scrolling="no" loading="lazy"></iframe></div>
+    <div class="bar"><div><div class="name">1 &middot; Welcome</div><div class="file">01-welcome.html</div></div><a class="open" href="01-welcome.html" target="_blank" rel="noopener">Open &nearr;</a></div>
+  </div>
+
+  <div class="card">
+    <div class="frame"><a class="hit" href="02-story.html" target="_blank" rel="noopener"></a><iframe src="02-story.html" title="Our story" scrolling="no" loading="lazy"></iframe></div>
+    <div class="bar"><div><div class="name">2 &middot; Our story</div><div class="file">02-story.html</div></div><a class="open" href="02-story.html" target="_blank" rel="noopener">Open &nearr;</a></div>
+  </div>
+
+  <div class="card">
+    <div class="frame"><a class="hit" href="03-sprout-n-tell.html" target="_blank" rel="noopener"></a><iframe src="03-sprout-n-tell.html" title="Sprout N Tell" scrolling="no" loading="lazy"></iframe></div>
+    <div class="bar"><div><div class="name">3 &middot; Sprout N Tell</div><div class="file">03-sprout-n-tell.html</div></div><a class="open" href="03-sprout-n-tell.html" target="_blank" rel="noopener">Open &nearr;</a></div>
+  </div>
+
+  <div class="card">
+    <div class="frame"><a class="hit" href="04-sprout-by-day.html" target="_blank" rel="noopener"></a><iframe src="04-sprout-by-day.html" title="Sprout By Day" scrolling="no" loading="lazy"></iframe></div>
+    <div class="bar"><div><div class="name">4 &middot; Sprout By Day</div><div class="file">04-sprout-by-day.html</div></div><a class="open" href="04-sprout-by-day.html" target="_blank" rel="noopener">Open &nearr;</a></div>
+  </div>
+
+  <div class="card">
+    <div class="frame"><a class="hit" href="05-membership.html" target="_blank" rel="noopener"></a><iframe src="05-membership.html" title="Membership" scrolling="no" loading="lazy"></iframe></div>
+    <div class="bar"><div><div class="name">5 &middot; Membership</div><div class="file">05-membership.html</div></div><a class="open" href="05-membership.html" target="_blank" rel="noopener">Open &nearr;</a></div>
+  </div>
+
+  <div class="card">
+    <div class="frame"><a class="hit" href="06-hosting.html" target="_blank" rel="noopener"></a><iframe src="06-hosting.html" title="Hosting" scrolling="no" loading="lazy"></iframe></div>
+    <div class="bar"><div><div class="name">6 &middot; Hosting</div><div class="file">06-hosting.html</div></div><a class="open" href="06-hosting.html" target="_blank" rel="noopener">Open &nearr;</a></div>
+  </div>
+
+</div>
+</body>
+</html>

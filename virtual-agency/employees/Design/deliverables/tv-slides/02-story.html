@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sprout Society: Our Story</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>" />
+
+<!-- ============================================================
+     SPROUT SOCIETY TV SLIDE 02: OUR STORY
+
+     One standalone slide, for iterating on in isolation.
+     Open it and press F11 to see it as it will look on the TV.
+
+     Designed at 16:9. Everything is sized in vw units, so it scales
+     to any screen width. The logo and QR code are inlined as base64,
+     so this file needs no network except the Lato webfont (it falls
+     back to a system sans offline).
+
+     ⚠️ These six slides get recombined into one looping deck once the
+     content is final. Keep the markup structure below intact so the
+     recombine stays mechanical: the style block is shared across all six,
+     and the slide section in the body is what gets lifted out.
+     Edit the copy freely; avoid renaming classes.
+     ============================================================ -->
+
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --cyan-deep:#2a8ca0;
+    --paper:#F7F7F6; --muted:#8a8a86;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%; overflow:hidden;}
+  body{
+    font-family:'Lato',-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--ink); color:var(--ink);
+  }
+
+  /* ---- slide plumbing ---------------------------------------- */
+  .deck{position:relative; width:100vw; height:100vh; overflow:hidden;}
+  .slide{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; justify-content:center;
+    padding:5.5vw 6vw 7vw;
+    opacity:0; transition:opacity .9s ease;
+    pointer-events:none;
+  }
+  .slide.on{opacity:1;}
+  .slide.dark{background:var(--ink); color:#fff;}
+  .slide.light{background:var(--paper); color:var(--ink);}
+
+  /* ---- shared type ------------------------------------------- */
+  .eyebrow{
+    font-size:1.5vw; font-weight:900; letter-spacing:.35em;
+    text-transform:uppercase; margin-bottom:1.6vw;
+  }
+  h1{font-size:6.6vw; font-weight:900; line-height:1.02; letter-spacing:-.02em;}
+  h2{font-size:4.6vw; font-weight:900; line-height:1.08; letter-spacing:-.015em;}
+  .lead{font-size:2.5vw; font-weight:700; line-height:1.4; max-width:60vw;}
+  .body{font-size:1.85vw; font-weight:400; line-height:1.55; max-width:52vw;}
+  .dark .body{color:#d8d8d4;}
+  .light .body{color:#3a3a38;}
+  /* flex-shrink:0 is load-bearing. The slide is a column flex container,
+     so a childless bar like this collapses to height 0 without it. */
+  .rule{height:.65vw; width:11vw; border-radius:.4vw; margin:2.4vw 0; flex-shrink:0;}
+
+  /* ---- accents ----------------------------------------------- */
+  .a-acid    .eyebrow, .a-acid    .hl{color:var(--acid);}
+  .a-fuchsia .eyebrow, .a-fuchsia .hl{color:var(--fuchsia);}
+  .a-cyan    .eyebrow, .a-cyan    .hl{color:var(--cyan);}
+  .a-banana  .eyebrow, .a-banana  .hl{color:var(--banana);}
+  .light.a-cyan .eyebrow, .light.a-cyan .hl{color:var(--cyan-deep);}
+  .a-acid    .rule{background:var(--acid);}
+  .a-fuchsia .rule{background:var(--fuchsia);}
+  .a-cyan    .rule{background:var(--cyan);}
+  .light.a-cyan .rule{background:var(--cyan-deep);}
+  .a-banana  .rule{background:var(--banana);}
+
+  /* ---- layout helpers ---------------------------------------- */
+  .row{display:flex; align-items:center; justify-content:space-between; gap:5vw; flex-shrink:0;}
+  .col{flex:1; min-width:0;}
+  /* align-self keeps width:auto honest. In a column flex container the
+     cross axis is horizontal, so without it the logo stretches full-width
+     and the aspect ratio blows out. */
+  .logo{height:9vw; width:auto; display:block; margin-bottom:3vw; align-self:flex-start; flex-shrink:0;}
+  .logo-sm{height:4.4vw; width:auto; display:block; align-self:flex-start; flex-shrink:0;}
+
+  /* ---- QR block ---------------------------------------------- */
+  /* Fixed block width so the code lands in the same spot on every
+     slide. Sizing to content lets a longer caption shift it sideways,
+     which reads as a jump during the cross-fade. */
+  .qr{flex:0 0 19vw; text-align:center;}
+  .qr img{
+    width:16vw; height:16vw; display:block; margin:0 auto;
+    background:#fff; padding:1vw; border-radius:1.2vw;
+  }
+  .qr-cap{
+    font-size:1.25vw; font-weight:900; line-height:1.35;
+    margin-top:1.1vw; max-width:100%; text-transform:uppercase; letter-spacing:.06em;
+  }
+  .dark .qr-cap{color:#fff;}
+
+  /* ---- stat row (story slide) -------------------------------- */
+  .stats{display:flex; gap:4.5vw; margin-top:2.6vw;}
+  .stat b{display:block; font-size:3.4vw; font-weight:900; line-height:1;}
+  .stat span{display:block; font-size:1.15vw; font-weight:700; color:var(--muted); margin-top:.5vw; text-transform:uppercase; letter-spacing:.08em;}
+
+  /* ---- price rows (membership slide) ------------------------- */
+  .prices{margin:2.4vw 0 0; max-width:34vw;}
+  .price{
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:1.3vw 0; border-bottom:1px solid rgba(255,255,255,.16);
+  }
+  .price:last-child{border-bottom:0;}
+  .price span{font-size:2vw; font-weight:700;}
+  .price b{font-size:3vw; font-weight:900;}
+
+  /* ---- date pill (SnT slide) --------------------------------- */
+  .pill{
+    display:inline-block; background:var(--fuchsia); color:#fff;
+    font-size:2vw; font-weight:900; padding:1vw 2.2vw; border-radius:99vw;
+    margin-top:2.4vw;
+  }
+
+  /* ---- footer + progress ------------------------------------- */
+  .foot{
+    position:absolute; left:6vw; right:6vw; bottom:3vw;
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:1.1vw; font-weight:700; letter-spacing:.04em;
+  }
+  .dark .foot{color:#7a7a76;}
+  .light .foot{color:var(--muted);}
+  .dots{display:flex; gap:.8vw;}
+  .dot{width:.75vw; height:.75vw; border-radius:50%; background:currentColor; opacity:.28; transition:opacity .3s, transform .3s;}
+  .dot.on{opacity:1; transform:scale(1.35);}
+  .bar{
+    position:absolute; left:0; bottom:0; height:.45vw; width:0%;
+    background:var(--acid); transition:width .25s linear;
+  }
+  .paused .bar{background:var(--muted);}
+</style>
+</head>
+<body>
+
+<div class="deck">
+<section class="slide on light a-fuchsia">
+    <div class="eyebrow">Our story</div>
+    <h2>It started with Russell<br />&ldquo;Sprouts&rdquo; Efros</h2>
+    <div class="rule"></div>
+    <div class="row">
+      <div class="col">
+        <p class="body">Russell was a Brooklyn musician, artist, and filmmaker with a gift for making everyone around him feel they belonged. He also struggled with loneliness. In 2018, at 25, he died of fentanyl poisoning, in the middle of building the very thing Sprout is today. His family started the Russell J. Efros Foundation to carry his vision forward, and that foundation grew into Sprout Society.</p>
+        <div class="stats">
+          <div class="stat"><b class="hl">5,000+</b><span>People served</span></div>
+          <div class="stat"><b class="hl">50+</b><span>Programs built</span></div>
+          <div class="stat"><b class="hl">$120K</b><span>To 32 artists' projects</span></div>
+        </div>
+      </div>
+      <div class="qr">
+        <img src="data:image/png;base64,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" alt="Donate to Sprout Society" />
+        <div class="qr-cap">Scan to<br />support the work</div>
+      </div>
+    </div>
+    <div class="foot">
+      <div>A registered 501(c)(3) nonprofit &nbsp;·&nbsp; EIN 83-1298420</div>
+    </div>
+  </section>
+</div>
+
+</body>
+</html>
