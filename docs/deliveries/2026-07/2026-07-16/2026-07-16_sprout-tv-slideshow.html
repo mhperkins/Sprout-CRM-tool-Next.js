@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Delivery: Sprout Society TV Slideshow (2026-07-16)</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📺</text></svg>" />
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --cyan-deep:#2a8ca0;
+    --paper:#F7F7F6; --muted:#8a8a86;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Lato',-apple-system,Segoe UI,Roboto,sans-serif; background:var(--paper); color:var(--ink); padding:44px 24px 70px; line-height:1.5;}
+  .wrap{max-width:1080px; margin:0 auto;}
+
+  /* header */
+  .eyebrow{font-size:12px; font-weight:900; letter-spacing:.3em; text-transform:uppercase; color:var(--fuchsia); margin-bottom:10px;}
+  h1{font-size:40px; font-weight:900; line-height:1.1; letter-spacing:-.02em;}
+  .rule{height:7px; width:110px; background:var(--acid); border-radius:4px; margin:16px 0 18px;}
+  .sub{font-size:17px; color:#3a3a38; max-width:760px;}
+  .meta{display:flex; flex-wrap:wrap; gap:8px; margin-top:20px;}
+  .chip{font-size:12px; font-weight:900; padding:6px 12px; border-radius:99px; letter-spacing:.04em;}
+  .c-ink{background:var(--ink); color:#fff;}
+  .c-acid{background:var(--acid); color:var(--ink);}
+  .c-cyan{background:var(--cyan-deep); color:#fff;}
+  .c-ban{background:var(--banana); color:var(--ink);}
+  .c-fuch{background:var(--fuchsia); color:#fff;}
+
+  h2{font-size:13px; font-weight:900; letter-spacing:.22em; text-transform:uppercase; color:var(--muted); margin:44px 0 16px;}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px;}
+  .card{background:#fff; border-radius:10px; padding:20px 20px 20px 24px; box-shadow:0 4px 14px rgba(0,0,0,.10); position:relative; overflow:hidden;}
+  .card::before{content:""; position:absolute; left:0; top:0; bottom:0; width:6px;}
+  .b-cyan::before{background:var(--cyan);} .b-fuch::before{background:var(--fuchsia);}
+  .b-acid::before{background:var(--acid);} .b-ban::before{background:var(--banana);}
+  .card h3{font-size:16px; font-weight:900; margin-bottom:7px;}
+  .card p{font-size:14.5px; color:#3a3a38;}
+  code{background:#ECECEA; border-radius:4px; padding:1px 6px; font-size:13px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;}
+
+  /* slide strip */
+  .strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px;}
+  .slidebox{border-radius:8px; padding:16px 14px; min-height:104px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 3px 10px rgba(0,0,0,.13);}
+  .slidebox .n{font-size:11px; font-weight:900; letter-spacing:.16em; opacity:.72;}
+  .slidebox .t{font-size:15px; font-weight:900; line-height:1.2; margin-top:8px;}
+  .slidebox .q{font-size:11px; font-weight:700; margin-top:8px; opacity:.8;}
+  .dark{background:var(--ink); color:#fff;}
+  .light{background:#fff; color:var(--ink); border:1px solid #e4e4e0;}
+
+  /* verified list */
+  .checks{background:#fff; border-radius:10px; padding:8px 4px; box-shadow:0 4px 14px rgba(0,0,0,.10);}
+  .chk{display:flex; gap:12px; align-items:flex-start; padding:11px 18px; border-bottom:1px solid #efefec; font-size:14.5px;}
+  .chk:last-child{border-bottom:0;}
+  .tick{color:var(--cyan-deep); font-weight:900; flex:0 0 auto;}
+
+  /* bugs */
+  .bug{background:#fff; border-radius:10px; padding:18px 20px; box-shadow:0 4px 14px rgba(0,0,0,.10); border-left:6px solid var(--fuchsia);}
+  .bug h3{font-size:15px; font-weight:900; margin-bottom:6px;}
+  .bug p{font-size:14px; color:#3a3a38;}
+  .bug .fix{margin-top:8px; font-size:13.5px; color:var(--cyan-deep); font-weight:700;}
+
+  /* warning */
+  .warn{background:var(--ink); color:#fff; border-radius:10px; padding:22px 24px; border-left:8px solid var(--fuchsia);}
+  .warn h3{font-size:18px; font-weight:900; color:var(--banana); margin-bottom:8px;}
+  .warn p{font-size:14.5px; color:#d8d8d4; margin-bottom:8px;}
+  .warn code{background:#232320; color:var(--acid);}
+  .four04{display:flex; gap:8px; flex-wrap:wrap; margin:12px 0;}
+  .f4{background:#2a1119; color:#ff7ab8; font-size:12px; font-weight:900; padding:5px 10px; border-radius:5px; font-family:ui-monospace,monospace;}
+
+  /* how to */
+  .howto{background:#fff; border-radius:10px; padding:20px 24px; box-shadow:0 4px 14px rgba(0,0,0,.10); border-left:6px solid var(--cyan);}
+  .howto p{font-size:14.5px; color:#3a3a38; margin-bottom:10px;}
+  .cmd{background:var(--ink); color:var(--acid); border-radius:6px; padding:11px 14px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13px; margin-bottom:10px; overflow-x:auto;}
+  .url{display:inline-block; background:var(--cyan-deep); color:#fff; font-weight:900; font-size:14px; padding:9px 14px; border-radius:6px; text-decoration:none;}
+
+  /* open items */
+  .open li{font-size:14.5px; color:#3a3a38; margin:0 0 9px 20px;}
+  .open b{color:var(--ink);}
+
+  footer{margin-top:50px; padding-top:20px; border-top:2px solid #e4e4e0; font-size:13px; color:var(--muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+  .hash{font-family:ui-monospace,monospace; font-weight:900; color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Delivery &middot; 2026-07-16</div>
+  <h1>Sprout Society TV Slideshow</h1>
+  <div class="rule"></div>
+  <p class="sub">Six standalone brand slides for the screen at events, each carrying a QR code, plus a contact-sheet preview page. A Design deliverable: no app code, no CRM data, no DB change.</p>
+
+  <div class="meta">
+    <span class="chip c-ink">main &middot; d2885b1</span>
+    <span class="chip c-acid">Effort: medium</span>
+    <span class="chip c-cyan">10 files &middot; +1,273</span>
+    <span class="chip c-ban">public/ untouched</span>
+    <span class="chip c-fuch">4 bugs caught</span>
+  </div>
+
+  <h2>The six slides</h2>
+  <div class="strip">
+    <div class="slidebox dark"><div class="n">01</div><div class="t">Welcome</div><div class="q">acid</div></div>
+    <div class="slidebox light"><div class="n">02</div><div class="t">Our story</div><div class="q">QR &rarr; donate</div></div>
+    <div class="slidebox dark"><div class="n">03</div><div class="t">Sprout N Tell</div><div class="q">QR &rarr; sign-in</div></div>
+    <div class="slidebox light"><div class="n">04</div><div class="t">Sprout By Day</div><div class="q">QR &rarr; membership</div></div>
+    <div class="slidebox dark"><div class="n">05</div><div class="t">Membership</div><div class="q">QR &rarr; membership</div></div>
+    <div class="slidebox light"><div class="n">06</div><div class="t">Hosting</div><div class="q">QR &rarr; host form</div></div>
+  </div>
+
+  <h2>What shipped</h2>
+  <div class="grid">
+    <div class="card b-fuch">
+      <h3>A QR on every slide</h3>
+      <p>Nobody can click a TV. Each slide carries a scannable code to the thing it advertises. Every code was decoded and confirmed to match the URL its caption promises.</p>
+    </div>
+    <div class="card b-cyan">
+      <h3>Self-contained files</h3>
+      <p>Logo and QRs inlined as base64. The only external dependency is the Lato webfont, which falls back to a system sans offline. Designed 16:9 in <code>vw</code> units, so it scales to any TV.</p>
+    </div>
+    <div class="card b-acid">
+      <h3>Built as a loop, then split</h3>
+      <p>Shipped first as one looping deck (12s a slide, cross-fade, infinite wrap), then split into six at Max's request so each can be iterated on alone. Recombine spec is in the README.</p>
+    </div>
+    <div class="card b-ban">
+      <h3>One source of truth</h3>
+      <p>The combined deck was <b>deleted</b>, not kept beside the six, to avoid the mirrored-copy drift this project keeps hitting. The six files are authoritative.</p>
+    </div>
+    <div class="card b-cyan">
+      <h3>Filed under Design</h3>
+      <p>Not Comms, not a new employee. Design already owns every visual surface and self-contained brand HTML; its output standard literally names "slide 16:9". Comms owns the words.</p>
+    </div>
+    <div class="card b-fuch">
+      <h3>No invented facts</h3>
+      <p>Copy from the Comms foundational-language doc, pricing from the live sign-in page, next event date from the CRM. Only the whitelisted stats: 5,000+ served, 50+ programs, $120K to 32 artists.</p>
+    </div>
+  </div>
+
+  <h2>Verified, not assumed</h2>
+  <div class="checks">
+    <div class="chk"><span class="tick">&#10003;</span><div>All 6 slides screenshotted at <b>1920&times;1080</b>. Zero overflow, nothing spilling off-screen.</div></div>
+    <div class="chk"><span class="tick">&#10003;</span><div>Every QR <b>decoded and matched</b> against its caption's URL, byte-exact. Catches a mis-mapped code before it sends a room to a 404.</div></div>
+    <div class="chk"><span class="tick">&#10003;</span><div>All <b>4 destination URLs return 200</b> (Givebutter donate + membership, the hosting form, the sign-in page).</div></div>
+    <div class="chk"><span class="tick">&#10003;</span><div>In deck form: the loop <b>wraps past the last slide back to 0</b>, and exactly one slide is visible at rest.</div></div>
+    <div class="chk"><span class="tick">&#10003;</span><div>After the split: all 6 re-verified standalone. Visible, no broken images, no JS errors, no leftover loop chrome.</div></div>
+    <div class="chk"><span class="tick">&#10003;</span><div>Preview tiles measured at a <b>gap of 0</b> on all six, rather than eyeballed.</div></div>
+  </div>
+
+  <h2>The <code>public/</code> trap</h2>
+  <div class="warn">
+    <h3>&#9888; Never rename <code>public/</code></h3>
+    <p><code>public/</code> is a <b>reserved Next.js folder and its name is not configurable</b> (unlike Vite's <code>publicDir</code>). Renaming it to <code>sprout-marketing</code> to group the marketing files silently stopped every static asset from being served. Proved against the running dev server rather than asserted:</p>
+    <div class="four04">
+      <span class="f4">404 /sprout-sign-in.html</span>
+      <span class="f4">404 /sprout-tv.html</span>
+      <span class="f4">404 /sprout-logo.png</span>
+    </div>
+    <p>That breaks the <b>live kiosk sign-in page that the printed event QR flyers point at</b>, which would have surfaced at the next event rather than at the keyboard. Reverted; <code>public/</code> is verified back to its original 7 files. To group marketing files under a URL, use a <b>subfolder</b> (<code>public/marketing/</code>).</p>
+  </div>
+
+  <h2>Four bugs, all caught by looking</h2>
+  <div class="grid">
+    <div class="bug">
+      <h3>Logo blew out to 1690px wide</h3>
+      <p>Rendered at a 9.77 aspect against its true 2.12. The slide is a <code>flex-direction:column</code> container, so children stretch on the cross axis, which is horizontal.</p>
+      <div class="fix">Fix: align-self:flex-start</div>
+    </div>
+    <div class="bug">
+      <h3>The acid rule collapsed to height 0</h3>
+      <p>A childless flex item shrinks to nothing, so the bar under each headline was silently invisible while still measuring 211px wide.</p>
+      <div class="fix">Fix: flex-shrink:0</div>
+    </div>
+    <div class="bug">
+      <h3>The split regex ate its own comment</h3>
+      <p>It matched a literal slide tag inside the deck's <b>own head comment</b>, so slide 1 shipped with comment prose in its body and rendered blank. It hit exactly 6 matches by coincidence, so the count assertion passed.</p>
+      <div class="fix">Fix: strip comments first. A passing count is not a passing parse.</div>
+    </div>
+    <div class="bug">
+      <h3>Preview tiles didn't fill their frames</h3>
+      <p>A fixed 0.28 scale inside a fluid tile left the frame's background bleeding through the right and bottom edges. Visible only on the light slides, because the dark ones matched the background.</p>
+      <div class="fix">Fix: derive tile width from the scale factor</div>
+    </div>
+  </div>
+
+  <h2>How to preview</h2>
+  <div class="howto">
+    <p>The files live on the <b>Windows box</b> and the browser is on the <b>Mac</b>, over a plain terminal SSH session with no VS Code PORTS panel. Opening a file path does not work. Serve the folder instead:</p>
+    <div class="cmd">cd virtual-agency/employees/Design/deliverables/tv-slides<br />python -m http.server 4000 --bind 0.0.0.0</div>
+    <p>Then open the contact sheet on the Mac. All six slides live in iframes at a true 1920&times;1080, scaled down. Click a tile to open it full size, F11 for fullscreen.</p>
+    <a class="url" href="http://192.168.50.65:4000/_preview.html">http://192.168.50.65:4000/_preview.html &nearr;</a>
+    <p style="margin-top:12px;">Windows Firewall already has an inbound Allow rule for Python on the <b>Public</b> profile, which is the active network, so no firewall change and no admin is needed. Fallback from anywhere: <code>ssh -N -L 4000:localhost:4000 maxwe@192.168.50.65</code>.</p>
+  </div>
+
+  <h2>Open items</h2>
+  <ul class="open">
+    <li><b>The Sprout N Tell date is hardcoded</b> (Vol. 3, Fri July 24). One-line edit per volume, marked with a comment. Vol. 4 is 2026-08-28.</li>
+    <li><b>Sprout By Day's QR points at membership</b>, since co-working runs through a day pass. No verified interest-form URL was on hand, and none was invented.</li>
+    <li><b>The accent rotation deviates from the brand rule</b> (cyan &rarr; fuchsia &rarr; acid &rarr; banana). Colors were picked semantically, so 02 and 03 are both fuchsia. Flagged, unreconciled.</li>
+    <li><b>Each file carries its own copy of the shared style block</b>, so a set-wide CSS change has to be applied to all six.</li>
+    <li><b>No Vercel URL by design.</b> If a smart TV makes a URL easier, <b>move</b> them to <code>public/marketing/</code> rather than copy.</li>
+  </ul>
+
+  <footer>
+    <div>Sprout Society &middot; Design deliverable &middot; virtual-agency/employees/Design/deliverables/tv-slides/</div>
+    <div>branch <span class="hash">main</span> &middot; commit <span class="hash">d2885b1</span></div>
+  </footer>
+
+</div>
+</body>
+</html>
