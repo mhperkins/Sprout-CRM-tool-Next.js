@@ -1061,9 +1061,7 @@ function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
     if (tp.next_action) {
       const prevLog = org.next_actions_log||[];
       const prevEntry = org.next_action ? [{text:org.next_action,date:org.next_action_date||null,loggedAt:new Date().toISOString()},...prevLog] : prevLog;
-      const newNa = tp.next_action_date ? [{id:uid(),text:tp.next_action,date:tp.next_action_date,completed:false}] : [];
-      const mergedNas = [...(org.next_actions||[]),...newNa];
-      onUpdate({...base, next_action:tp.next_action, next_action_date:tp.next_action_date||"", next_actions_log:prevEntry, next_actions:mergedNas});
+      onUpdate({...base, next_action:tp.next_action, next_action_date:tp.next_action_date||"", next_actions_log:prevEntry});
     } else {
       onUpdate(base);
     }
@@ -1075,9 +1073,7 @@ function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
     if (updatedTp.next_action) {
       const prevLog = org.next_actions_log||[];
       const prevEntry = org.next_action ? [{text:org.next_action,date:org.next_action_date||null,loggedAt:new Date().toISOString()},...prevLog] : prevLog;
-      const newNa = updatedTp.next_action_date ? [{id:uid(),text:updatedTp.next_action,date:updatedTp.next_action_date,completed:false}] : [];
-      const mergedNas = [...(org.next_actions||[]),...newNa];
-      onUpdate({...base, next_action:updatedTp.next_action, next_action_date:updatedTp.next_action_date||"", next_actions_log:prevEntry, next_actions:mergedNas});
+      onUpdate({...base, next_action:updatedTp.next_action, next_action_date:updatedTp.next_action_date||"", next_actions_log:prevEntry});
     } else {
       onUpdate(base);
     }
@@ -1234,10 +1230,13 @@ function DashboardView({contacts,orgs,setView,openContact,events,onUpdateContact
       allActions.push({type:"contact",contact:c,text:c.next_action,date:c.next_action_date,id:c.id+"-na"});
     }
   });
+  // Orgs track a single current action in the flat next_action/next_action_date fields
+  // (completed actions move to next_actions_log). They have no next_actions[] array —
+  // OrgSchema omits it, so reading one here would always come back empty.
   (orgs||[]).forEach(o=>{
-    (o.next_actions||[]).filter(a=>!a.completed&&a.date).forEach(a=>{
-      allActions.push({type:"org",org:o,text:a.text,date:a.date,id:a.id});
-    });
+    if(o.next_action && o.next_action_date){
+      allActions.push({type:"org",org:o,text:o.next_action,date:o.next_action_date,id:o.id+"-na"});
+    }
   });
   (events||[]).forEach(ev=>{
     (ev.checklist||[]).filter(item=>!item.completed&&item.date).forEach(item=>{

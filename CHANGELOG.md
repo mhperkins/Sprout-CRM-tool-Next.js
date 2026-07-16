@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-07-16 — Fix: organization next actions never reached the dashboard
+
+App code only (`components/CRMManager.jsx`; `npm run build` passes). No schema change, no migration. Effort: diagnose medium / fix low.
+
+- **The bug:** org next actions never appeared on the dashboard. Orgs write to one place and the dashboard read from another. Confirmed against live data: **11 orgs have a real next action, and all 16 have `next_actions` array length 0.**
+- **Root cause.** Orgs store a single current action in the flat `next_action` / `next_action_date` fields, archiving completed ones to `next_actions_log`. That is the deliberate design, and every other surface follows it: the MCP's `set_next_action` documents "for orgs it sets the flat fields only", its `list_upcoming_actions` reads `if (!o.next_action || !o.next_action_date) continue`, and `OrgDetail` never renders an array. The dashboard's org loop read **only** `o.next_actions`, with none of the flat-field fallback its contact loop has one line earlier. The array is always empty, so the loop always produced nothing.
+- **A second bug hid the first.** `OrgSchema` has no `next_actions` field, so the two places `OrgDetail` did try to write an array were being **silently stripped by Zod on every save** — the schemas-sync trap.
+- **🔴 Why "just add `next_actions` to `OrgSchema`" would have been the wrong fix.** Those writes use `mergedNas`, which appends but never completes, and **no org code path marks an array entry completed** (`completeAction` clears only the flat fields). Unblocking the schema would make every touchpoint-with-an-action append an entry that could never be cleared, piling onto the dashboard permanently. The lesson: when two surfaces disagree, fix the one that departs from the design the other surfaces already share, rather than the one that looks one field short.
+- **The fix — make the dashboard read what orgs actually write.** The org loop (`CRMManager.jsx` ~line 1237) now reads the flat fields, matching the MCP's predicate exactly, with a comment explaining why there is no array. Removed the two vestigial `next_actions` writes (already inert) so a future schema change cannot silently reintroduce the accumulation bug.
+- **Result:** all 11 existing orgs light up on reload. 7 overdue (the field we tend, Bar Nun, Mama Recess, The Recess Lab, Comadre Crafts, Regulate2Elevate, TOLK), 3 in the 14-day card (Buzzkill NYC 7/17, Floorwork Arts Collective 7/20, Sober Supper Club 7/24), 1 future (Dance Support NYC 10/01). The 5 orgs with no action stay correctly excluded. The render path already supported org actions (🏢 badge, click-through to Orgs), so only the collection step was broken.
+- **Verification:** `npm run build` passes; the read path (`mergeOrg`) confirmed to supply both fields; the MCP's `list_upcoming_actions` — an independent working surface using the identical predicate — returns all 10 in-window org actions live. The UI was **not** driven, since the dashboard sits behind the login wall.
+- **⚠️ Junk data flagged:** `org_field_we_tend` has the action `"sdf"` dated 2026-05-05 and will now show as 72 days overdue. Looks like test data worth clearing.
+
+---
+
 ## 2026-07-16 — Sprout Society TV slideshow (six standalone slides + preview page)
 
 Design deliverable only, in `virtual-agency/employees/Design/deliverables/tv-slides/`. **No app code, CRM data, or DB change**; `public/` is byte-for-byte untouched. Effort: medium.
