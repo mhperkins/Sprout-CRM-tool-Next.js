@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-07-20 — Events page: calendar view (month grid) with click-popover and drag-to-move
+
+App code only (`components/CRMManager.jsx`; `npm run build` passes). No schema change, no data change. Effort: medium.
+
+- **The ask:** the Events page should be a calendar, not a list — events placed on a month grid.
+- **What shipped:** a **🗓 Calendar / ☰ List toggle** in the Events toolbar, defaulting to Calendar (choice persists in `localStorage` `sprout_evt_view`). The List view is unchanged and still available.
+- **Month grid** reuses the existing `.cal-*` styles from the checklist calendar: ← → month nav + a **Today** button, today's cell highlighted, search + status filters apply.
+- **Recurring events expand to every occurrence in the visible month** (not just the next one) via a new module-level `occurrencesInRange(ev,startISO,endISO)` helper that walks `nextOccurrence` and respects `weekday`/`until`. Chips are color-coded by status (cyan upcoming / grey completed / fuchsia cancelled), show `start_time` + a 🔁 marker for recurring series.
+- **Click-popover (mirrors the checklist calendar):** clicking a chip opens a popover with the event name, a **Date picker** to change a one-time event's date (persists), **View event page →**, and **Edit**. Recurring events show their recurrence summary instead of a date field, with a note to edit the series. Click off to close.
+- **Click-and-drag** a one-time event to another day to move its date; cells show a dashed-cyan outline while dragging. Recurring events are not draggable (a drag would shift the whole series).
+- **Cross-browser drag:** `onDragStart` sets `dataTransfer.setData("text/plain", id)` + `effectAllowed`, and the day cell reads it on drop — required for Safari to start/complete a native drag (Chrome worked without it). Harmless in Chrome; the drop handler ignores anything that isn't one of our events.
+- **Verification:** `npm run build` passes. Not driven in the UI beyond a live dev server (login wall); Max confirmed the popover + drag work in the VS Code browser.
+
+---
+
 ## 2026-07-16 — Fix: organization next actions never reached the dashboard
 
 App code only (`components/CRMManager.jsx`; `npm run build` passes). No schema change, no migration. Effort: diagnose medium / fix low.

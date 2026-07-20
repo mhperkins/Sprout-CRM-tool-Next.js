@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Delivery — Events Calendar View</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --cyan:#73C4D6; --cyan-d:#2a8ca0;
+    --fuchsia:#E10098; --acid:#C6C902; --banana:#FAD100;
+    --g600:#4b4b47; --g400:#8a8a86; --g200:#dcdcd8; --g100:#ececea;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',system-ui,sans-serif;background:var(--paper);color:var(--ink);
+    display:flex;justify-content:center;padding:32px 16px;-webkit-font-smoothing:antialiased}
+  .slide{width:100%;max-width:960px;background:#fff;border-radius:16px;overflow:hidden;
+    box-shadow:0 12px 40px rgba(0,0,0,0.14)}
+  .top{background:var(--ink);color:#fff;padding:26px 34px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .top .eyebrow{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan)}
+  .top h1{font-size:27px;font-weight:900;line-height:1.15;margin-top:5px}
+  .badge{flex-shrink:0;font-size:12px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;
+    background:var(--acid);color:var(--ink);padding:8px 14px;border-radius:999px}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;padding:18px 34px;border-bottom:1px solid var(--g100)}
+  .chip{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;border:1.5px solid var(--g200);color:var(--g600)}
+  .chip b{color:var(--ink)}
+  .chip.ok{border-color:var(--cyan);color:var(--cyan-d)}
+  .body{padding:26px 34px 30px}
+  .sec-lbl{font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--g400);margin:6px 0 12px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .card{border:1.5px solid var(--g200);border-left-width:6px;border-radius:11px;padding:15px 17px;background:#fff}
+  .card.c1{border-left-color:var(--cyan)}
+  .card.c2{border-left-color:var(--fuchsia)}
+  .card.c3{border-left-color:var(--acid)}
+  .card.c4{border-left-color:var(--banana)}
+  .card h3{font-size:15px;font-weight:900;display:flex;align-items:center;gap:8px}
+  .card p{font-size:13px;line-height:1.55;color:var(--g600);margin-top:6px}
+  .card p code{background:var(--g100);padding:1px 5px;border-radius:4px;font-size:12px}
+  .foot{margin-top:22px;padding-top:16px;border-top:1px solid var(--g100);
+    display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:12px;color:var(--g400)}
+  .git{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:700;
+    background:var(--ink);color:var(--acid);padding:5px 11px;border-radius:7px}
+  .pill{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--g100);color:var(--g600)}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}.top h1{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Sprout CRM · Delivery · 2026-07-20</div>
+      <h1>🗓 Events page → Calendar view</h1>
+    </div>
+    <div class="badge">Shipped</div>
+  </div>
+
+  <div class="meta">
+    <span class="chip">Effort <b>medium</b></span>
+    <span class="chip">App code only · <b>CRMManager.jsx</b></span>
+    <span class="chip">No schema · no data change</span>
+    <span class="chip ok">✓ npm run build passes</span>
+  </div>
+
+  <div class="body">
+    <div class="sec-lbl">What changed</div>
+    <div class="cards">
+      <div class="card c1">
+        <h3>🗓 Month-grid calendar</h3>
+        <p>Events now sit on a month grid instead of a list. <b>🗓 Calendar / ☰ List</b> toggle in the toolbar, defaults to Calendar and remembers your choice. ← → month nav + <b>Today</b>; search &amp; status filters still apply.</p>
+      </div>
+      <div class="card c2">
+        <h3>🔁 Recurring events expand</h3>
+        <p>New <code>occurrencesInRange()</code> helper places <b>every occurrence in the visible month</b>, not just the next one — respects weekday &amp; until. Chips show start time, a 🔁 marker, and are color-coded by status.</p>
+      </div>
+      <div class="card c3">
+        <h3>💬 Click-popover</h3>
+        <p>Clicking a chip opens a popover (like the checklist calendar): <b>change the date</b> of a one-time event, <b>View event page →</b>, or <b>Edit</b>. Recurring events show their series summary instead.</p>
+      </div>
+      <div class="card c4">
+        <h3>✋ Drag to move</h3>
+        <p>Drag a one-time event to another day to change its date; it persists. Recurring events aren't draggable (would shift the series). Drag payload set in <code>onDragStart</code> so it works in Safari too.</p>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span class="git">branch: main</span>
+      <span class="pill">components/CRMManager.jsx</span>
+      <span class="pill">EventsView · calendar mode</span>
+      <span style="flex:1"></span>
+      <span>Max confirmed popover + drag work in the VS Code browser</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

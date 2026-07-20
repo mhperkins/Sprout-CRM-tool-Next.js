@@ -503,6 +503,25 @@ function recurrenceSummary(ev) {
   const until = r.until ? ` · until ${fmtDate(r.until)}` : "";
   return `🔁 ${base}${t}${until}`;
 }
+// Every date (YYYY-MM-DD) an event lands on within [startISO,endISO] inclusive.
+// One-time events return their date if it falls in range; recurring events expand every occurrence.
+function occurrencesInRange(ev, startISO, endISO) {
+  const r = ev.recurrence;
+  if(!r || !r.frequency) {
+    const d = ev.event_date;
+    return (d && d>=startISO && d<=endISO) ? [d] : [];
+  }
+  const out = [];
+  let cursor = startISO;
+  for(let i=0; i<400 && cursor<=endISO; i++) {
+    const occ = nextOccurrence(ev, cursor);
+    if(!occ || occ>endISO) break;
+    if(occ>=startISO) out.push(occ);
+    const d = new Date(occ+"T12:00:00"); d.setDate(d.getDate()+1);
+    cursor = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }
+  return out;
+}
 
 // Reusable event checklist templates. offset = days relative to the event date (negative = before, positive = after).
 // Lead times derived from the real Sprout N Tell / Show n Tell events.
@@ -4102,6 +4121,11 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
 function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateContacts}) {
   const [search,setSearch]=useState("");
   const [fStatus,setFStatus]=useState("all");
+  const [viewMode,setViewMode]=useState(()=>{ try{ return localStorage.getItem("sprout_evt_view")||"calendar"; }catch{ return "calendar"; } });
+  const setView=(m)=>{ setViewMode(m); try{ localStorage.setItem("sprout_evt_view",m); }catch{} };
+  const [calMonth,setCalMonth]=useState(()=>new Date().toISOString().slice(0,7)); // YYYY-MM
+  const [calPopover,setCalPopover]=useState(null); // {id,date}
+  const [calDrag,setCalDrag]=useState(null); // event id being dragged
   const [evtPage,setEvtPage]=useState("list");
   const [selectedId,setSelectedId]=useState(null);
   const [editDraft,setEditDraft]=useState(null);
@@ -4214,7 +4238,13 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
           <option value="all">All Statuses</option>
           {EVT_STATUS_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
+        <div style={{marginLeft:"auto",display:"flex",gap:4}}>
+          <button className={`btn btn-xs ${viewMode==="calendar"?"btn-blk":"btn-ghost"}`} onClick={()=>setView("calendar")}>🗓 Calendar</button>
+          <button className={`btn btn-xs ${viewMode==="list"?"btn-blk":"btn-ghost"}`} onClick={()=>setView("list")}>☰ List</button>
+        </div>
       </div>
+
+      {viewMode==="list" ? (
       <div className="tbl-wrap">
         <table className="tbl">
           <thead><tr>
@@ -4240,6 +4270,87 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
           </tbody>
         </table>
       </div>
+      ) : (()=>{
+        const today=new Date().toISOString().slice(0,10);
+        const [yr,mo]=calMonth.split("-").map(Number);
+        const firstDow=new Date(yr,mo-1,1).getDay();
+        const daysInMonth=new Date(yr,mo,0).getDate();
+        const monthStart=`${calMonth}-01`;
+        const monthEnd=`${calMonth}-${String(daysInMonth).padStart(2,"0")}`;
+        const monthLabel=new Date(yr,mo-1,1).toLocaleDateString(undefined,{month:"long",year:"numeric"});
+        // Expand each filtered event into { ...event, _date } chips for every occurrence this month.
+        const byDay={};
+        filtered.forEach(ev=>{
+          occurrencesInRange(ev,monthStart,monthEnd).forEach(d=>{
+            const day=Number(d.slice(8,10));
+            (byDay[day]=byDay[day]||[]).push(ev);
+          });
+        });
+        Object.values(byDay).forEach(list=>list.sort((a,b)=>(a.start_time||"99").localeCompare(b.start_time||"99")));
+        const shiftMonth=(delta)=>{ const d=new Date(yr,mo-1+delta,1); setCalMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`); };
+        const chipColor=(st)=>st==="completed"?{bg:"var(--g100)",fg:"var(--g500)"}:st==="cancelled"?{bg:"var(--fuchsia-lt)",fg:"#8b0057"}:{bg:"var(--cyan-lt)",fg:"#155e6e"};
+        const moveEvent=(ev,dateStr)=>{ if(ev.event_date===dateStr) return; handleUpdateEvent({...ev,event_date:dateStr}); showToast("Event moved ✓"); };
+        return (
+        <div onClick={()=>setCalPopover(null)}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <button className="btn btn-ghost btn-sm" onClick={()=>shiftMonth(-1)}>←</button>
+              <span style={{fontSize:14,fontWeight:800,minWidth:150,textAlign:"center"}}>{monthLabel}</span>
+              <button className="btn btn-ghost btn-sm" onClick={()=>shiftMonth(1)}>→</button>
+              <button className="btn btn-ghost btn-xs" onClick={()=>setCalMonth(new Date().toISOString().slice(0,7))}>Today</button>
+            </div>
+          </div>
+          <div className="cal-grid">
+            {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d=><div key={d} className="cal-day-hd">{d}</div>)}
+            {Array.from({length:firstDow}).map((_,i)=><div key={`e${i}`} className="cal-day other-month"/>)}
+            {Array.from({length:daysInMonth}).map((_,i)=>{
+              const day=i+1;
+              const dayStr=`${calMonth}-${String(day).padStart(2,"0")}`;
+              const isToday=dayStr===today;
+              const items=byDay[day]||[];
+              return (
+                <div key={day} className={`cal-day${isToday?" today":""}`}
+                  style={{cursor:"default",minHeight:88,outline:calDrag?"1.5px dashed var(--cyan)":"none"}}
+                  onDragOver={e=>{e.preventDefault();e.dataTransfer.dropEffect="move";}}
+                  onDrop={e=>{e.preventDefault();const id=calDrag||e.dataTransfer.getData("text/plain");if(id){const tgt=events.find(x=>x.id===id);if(tgt)moveEvent(tgt,dayStr);setCalDrag(null);}}}>
+                  <div className="cal-date">{day}</div>
+                  {items.map((ev,k)=>{
+                    const col=chipColor(ev.status);
+                    const recurring=!!ev.recurrence?.frequency;
+                    const open=calPopover&&calPopover.id===ev.id&&calPopover.date===dayStr;
+                    return (
+                      <div key={ev.id+"-"+k} style={{position:"relative"}}>
+                        <div className="cal-dot" title={`${ev.name||"(Unnamed)"}${ev.start_time?" · "+fmtTime(ev.start_time):""}${recurring?" · "+recurrenceSummary(ev):""}${recurring?"":" · drag to move"}`}
+                          draggable={!recurring}
+                          onDragStart={e=>{if(recurring){e.preventDefault();return;}e.stopPropagation();e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",ev.id);setCalPopover(null);setCalDrag(ev.id);}}
+                          onDragEnd={()=>setCalDrag(null)}
+                          onClick={e=>{e.stopPropagation();setCalPopover(open?null:{id:ev.id,date:dayStr});}}
+                          style={{background:col.bg,color:col.fg,cursor:recurring?"pointer":"grab"}}>
+                          {ev.start_time?fmtTime(ev.start_time)+" ":""}{recurring?"🔁 ":""}{ev.name||"(Unnamed)"}
+                        </div>
+                        {open&&(
+                          <div onClick={e=>e.stopPropagation()} style={{position:"absolute",top:"100%",left:0,zIndex:300,background:"#fff",border:"1.5px solid var(--g200)",borderRadius:8,padding:"10px 12px",boxShadow:"var(--sh-lg)",minWidth:210,marginTop:4}}>
+                            <div style={{fontWeight:700,fontSize:13,marginBottom:8}}>{ev.name||"(Unnamed)"}</div>
+                            {recurring
+                              ? <div style={{fontSize:11,color:"var(--cyan)",fontWeight:700,marginBottom:10}}>{recurrenceSummary(ev)}<div style={{color:"var(--g400)",fontWeight:400,marginTop:4}}>Recurring — edit the series to change its dates.</div></div>
+                              : <><label className="fl">Date</label>
+                                  <input type="date" className="fi" style={{fontSize:11,marginBottom:10}} value={ev.event_date||""}
+                                    onChange={e=>{if(e.target.value){moveEvent(ev,e.target.value);setCalPopover(null);}}}/></>}
+                            <button className="btn btn-blk btn-sm" style={{width:"100%",marginBottom:6}} onClick={()=>{setSelectedId(ev.id);setEvtPage("detail");setCalPopover(null);}}>View event page →</button>
+                            <button className="btn btn-ghost btn-sm" style={{width:"100%"}} onClick={()=>{setEditDraft({...ev});setEvtPage("edit");setCalPopover(null);}}>Edit</button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+          <div style={{fontSize:10,color:"var(--g400)",marginTop:8}}>Click an event for options · drag a one-time event to move its date · 🔁 = recurring · use ← → to change month</div>
+        </div>
+        );
+      })()}
       {confirmDel&&<ConfirmModal message={`Delete "${events.find(e=>e.id===confirmDel)?.name||"this event"}"? This cannot be undone.`} onConfirm={()=>handleDelete(confirmDel)} onCancel={()=>setConfirmDel(null)}/>}
       {inlineContact&&<ContactEditModal editing={inlineContact} setEditing={setInlineContact} onSave={handleSaveInlineContact} orgs={orgs||[]} events={events} onUpdateEvents={onUpdate} onNavigate={()=>{}}/>}
     </div>
