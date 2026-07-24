@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Delivery — TV Slideshow Finalized (2026-07-24)</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --cyan-deep:#2a8ca0;
+    --paper:#F7F7F6; --muted:#8a8a86;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Lato',-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--ink); color:var(--paper);
+    min-height:100vh; padding:44px 40px 60px;
+  }
+  .wrap{max-width:1080px; margin:0 auto;}
+  .top{display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-bottom:8px;}
+  .eyebrow{font-size:12px; font-weight:900; letter-spacing:.34em; text-transform:uppercase; color:var(--acid);}
+  h1{font-size:40px; font-weight:900; line-height:1.05; letter-spacing:-.02em; margin:10px 0 6px;}
+  h1 .pink{color:var(--fuchsia);}
+  .sub{font-size:16px; color:#c9c9c5; font-weight:700;}
+  .rule{height:6px; width:120px; background:var(--acid); border-radius:4px; margin:18px 0 30px;}
+  .badges{display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{font-size:12px; font-weight:900; letter-spacing:.05em; text-transform:uppercase;
+    padding:7px 13px; border-radius:99px; background:#1a1a18; border:1px solid #33332f;}
+  .badge.acid{color:var(--acid);} .badge.cyan{color:var(--cyan);} .badge.banana{color:var(--banana);}
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; margin-bottom:22px;}
+  .card{background:#141412; border:1px solid #2a2a26; border-radius:14px; padding:22px 22px 20px;
+    box-shadow:0 6px 18px rgba(0,0,0,.28);}
+  .card h3{font-size:14px; font-weight:900; letter-spacing:.06em; text-transform:uppercase; margin-bottom:12px;
+    display:flex; align-items:center; gap:9px;}
+  .dot{width:11px; height:11px; border-radius:50%; flex-shrink:0;}
+  .card ul{list-style:none; display:flex; flex-direction:column; gap:9px;}
+  .card li{font-size:14.5px; line-height:1.5; color:#dcdcd7; padding-left:18px; position:relative;}
+  .card li::before{content:"›"; position:absolute; left:0; color:var(--fuchsia); font-weight:900;}
+  .card li b{color:#fff; font-weight:900;}
+  .slides{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:22px;}
+  .slide{background:#141412; border:1px solid #2a2a26; border-radius:12px; padding:16px 14px; text-align:center;}
+  .slide .n{font-size:11px; font-weight:900; color:var(--muted); letter-spacing:.1em;}
+  .slide .t{font-size:14px; font-weight:900; margin:6px 0 8px; line-height:1.15;}
+  .swatch{height:8px; border-radius:99px; margin-top:4px;}
+  .foot{display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap;
+    border-top:1px solid #2a2a26; padding-top:18px; margin-top:6px;}
+  .hash{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13px; color:var(--acid);}
+  .foot .meta{font-size:13px; color:var(--muted); font-weight:700;}
+  .warn{background:#241016; border:1px solid #5a1436; border-radius:14px; padding:18px 22px; margin-bottom:22px;}
+  .warn h3{color:var(--fuchsia); font-size:13px; font-weight:900; letter-spacing:.06em; text-transform:uppercase; margin-bottom:8px;}
+  .warn p{font-size:14.5px; line-height:1.55; color:#f0c9dc;}
+  @media (max-width:720px){ .slides{grid-template-columns:repeat(2,1fr);} h1{font-size:30px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Sprout Society · Design Delivery</div>
+      <h1>TV Slideshow <span class="pink">Finalized</span></h1>
+      <div class="sub">Cut to 4 slides · all copy rewritten · Host slide redesigned</div>
+    </div>
+    <div class="badges">
+      <span class="badge acid">2026-07-24</span>
+      <span class="badge cyan">Design deliverable</span>
+      <span class="badge banana">No app / DB change</span>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="grid">
+    <div class="card">
+      <h3><span class="dot" style="background:var(--fuchsia)"></span>Structure</h3>
+      <ul>
+        <li>Cut the deck from <b>6 slides to 4</b></li>
+        <li>Deleted the standalone <b>Sprout N Tell</b> slide (its welcome moved to slide 01)</li>
+        <li>Deleted the standalone <b>Hosting</b> slide</li>
+        <li>Repurposed <b>Membership → Host</b> (pricing removed)</li>
+        <li>Renumbered files, rebuilt the preview grid + README</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><span class="dot" style="background:var(--cyan)"></span>Copy &amp; Art</h3>
+      <ul>
+        <li>Rewrote copy across every slide with Max</li>
+        <li>Story slide → <b>"In honor of Russell Efros"</b>, thank-you body, stats + QR removed</li>
+        <li>Embedded the new <b>flower SVG</b> top-right (isolated data-URI)</li>
+        <li>Bumped body text to 2.3–2.7vw for legibility</li>
+        <li>Fixed supplied typos (gift, coffee, Wednesdays, dream)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="slides">
+    <div class="slide"><div class="n">01</div><div class="t">Welcome to Sprout N Tell!</div><div class="swatch" style="background:var(--acid)"></div></div>
+    <div class="slide"><div class="n">02</div><div class="t">In honor of Russell Efros</div><div class="swatch" style="background:var(--fuchsia)"></div></div>
+    <div class="slide"><div class="n">03</div><div class="t">Host at Sprout Society</div><div class="swatch" style="background:var(--acid)"></div></div>
+    <div class="slide"><div class="n">04</div><div class="t">Sprout By Day</div><div class="swatch" style="background:var(--cyan)"></div></div>
+  </div>
+
+  <div class="warn">
+    <h3>⚠ Still open before ship</h3>
+    <p>All three QR codes are placeholders / still encode the membership URL. Real targets needed:
+    <b>slide 01</b> → lineup/program page · <b>slide 03 (Host)</b> → hosting-inquiry form · <b>slide 04</b> → Sprout By Day form.
+    Regenerate scannable codes once Max supplies the URLs.</p>
+  </div>
+
+  <div class="foot">
+    <div>
+      <div class="hash">commit 755170b · main</div>
+      <div class="meta">10 files changed · +136 / −409 · preview live on port 4100</div>
+    </div>
+    <div class="meta">virtual-agency/employees/Design/deliverables/tv-slides/</div>
+  </div>
+</div>
+</body>
+</html>
