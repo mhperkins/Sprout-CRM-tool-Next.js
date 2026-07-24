@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-07-24 — TV slides: real QR codes, sizing polish, + hosted looping deck
+
+Design deliverable only (`virtual-agency/employees/Design/deliverables/tv-slides/` + hosted copy in `public/`). No CRM app code, schema, or DB change. Effort: low. Commit `75e95af`.
+
+- **Real QR codes** on slides 01/03/04 (were placeholder/wrong): slide 01 = sign-in/program-notes QR, slide 03 = interest-form QR, slide 04 = co-working interest-form QR. Encoded each source PNG to a base64 data URI so slides stay self-contained. Source PNGs committed in `sign-in-kiosk/`.
+- **Bigger QRs:** `.qr` block 19→25vw, `.qr img` 16→23vw on 01/03/04.
+- **Slide 01 sizing/spacing** to match slide 03: headline restored 5.2→6.6vw; accent rule back to the default 2.4vw margins; `.row` changed to `align-items:flex-start` (the big gap under the rule was the short text column centering against the tall 23vw QR); showcase line bumped 1.85→2.3vw.
+- **Hosted looping deck** `public/sprout-tv.html`: a self-contained deck of all 4 slides as stacked `srcdoc` iframes (exact per-slide fidelity, dodges the comment-split trap), with 12s/slide, 0.9s cross-fade, infinite wrap, progress bar + dots, and Space/arrows/F/click controls. Served publicly by the deployed CRM at `/sprout-tv.html` (bypasses the login wall). The hosted deck is a build-time snapshot; rerun the build to refresh after editing slides.
+
+---
+
 ## 2026-07-24 — Sign-in program notes: new Sprout N Tell lineup + removed the landing tab bar
 
 App-adjacent file only (`public/sprout-sign-in.html`). No CRM app code, schema, or DB change. Effort: low.

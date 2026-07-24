@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Delivery — TV Slides: Real QRs + Hosted Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#030000; --paper:#ffffff; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --cyan-deep:#2a8ca0;
+    --muted:#8a8a86; --line:rgba(255,255,255,.14);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{background:var(--ink); color:#fff; font-family:Lato,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; min-height:100%;}
+  .wrap{max-width:1100px; margin:0 auto; padding:6vw 5vw 7vw;}
+  @media(min-width:800px){ .wrap{padding:56px 48px 72px;} }
+  .eyebrow{font-size:13px; font-weight:900; letter-spacing:.34em; text-transform:uppercase;
+    color:var(--acid); margin-bottom:18px;}
+  h1{font-size:clamp(30px,5vw,52px); font-weight:900; line-height:1.04; letter-spacing:-.02em;}
+  .rule{height:6px; width:96px; background:var(--acid); border-radius:4px; margin:22px 0 30px;}
+  .lead{font-size:clamp(16px,2.1vw,20px); font-weight:700; line-height:1.5; max-width:70ch; color:#e6e6e2;}
+  .meta{display:flex; flex-wrap:wrap; gap:10px; margin:26px 0 8px;}
+  .badge{font-size:12px; font-weight:900; letter-spacing:.04em; text-transform:uppercase;
+    padding:8px 14px; border-radius:99px; border:1px solid var(--line);}
+  .b-acid{background:var(--acid); color:var(--ink); border-color:var(--acid);}
+  .b-fuchsia{background:var(--fuchsia); color:#fff; border-color:var(--fuchsia);}
+  .b-cyan{background:var(--cyan-deep); color:#fff; border-color:var(--cyan-deep);}
+  .b-ghost{background:transparent; color:#cfcfca;}
+  .grid{display:grid; grid-template-columns:1fr; gap:16px; margin-top:34px;}
+  @media(min-width:720px){ .grid{grid-template-columns:1fr 1fr;} }
+  .card{border:1px solid var(--line); border-radius:16px; padding:24px 22px; background:#0c0c0b;
+    position:relative; overflow:hidden;}
+  .card::before{content:""; position:absolute; left:0; top:0; bottom:0; width:6px; background:var(--acid);}
+  .card.f::before{background:var(--fuchsia);} .card.c::before{background:var(--cyan-deep);}
+  .card.b::before{background:var(--banana);}
+  .card h3{font-size:18px; font-weight:900; margin-bottom:6px; display:flex; align-items:center; gap:10px;}
+  .card .ico{font-size:22px;}
+  .card p{font-size:14.5px; line-height:1.55; color:#cbcbc6;}
+  .card p b{color:#fff;}
+  .card code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px;
+    background:rgba(198,201,2,.12); color:var(--acid); padding:1px 6px; border-radius:5px;}
+  .link-card{margin-top:30px; border:1px solid var(--acid); border-radius:16px; padding:22px 24px;
+    background:linear-gradient(180deg, rgba(198,201,2,.08), transparent);}
+  .link-card .lbl{font-size:12px; font-weight:900; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--acid); margin-bottom:8px;}
+  .link-card .url{font-size:clamp(15px,2.4vw,22px); font-weight:900; word-break:break-all; color:#fff;}
+  .link-card .sub{font-size:13px; color:var(--muted); margin-top:8px;}
+  .foot{margin-top:40px; padding-top:22px; border-top:1px solid var(--line);
+    display:flex; flex-wrap:wrap; gap:12px 26px; align-items:center; font-size:13px; color:var(--muted);}
+  .foot .hash{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--acid); font-weight:700;}
+  .foot .dot{width:8px; height:8px; border-radius:50%; background:var(--fuchsia); display:inline-block;}
+  .flags{margin-top:24px; font-size:13.5px; color:#d8b8cf; line-height:1.6;}
+  .flags b{color:var(--fuchsia);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Sprout Society · Delivery · 2026-07-24</div>
+  <h1>TV Slides: real QR codes + a hosted looping deck</h1>
+  <div class="rule"></div>
+  <p class="lead">Swapped the three placeholder/wrong QR codes for the real ones, tuned slide-01 sizing to match slide 03, then built a self-contained looping slideshow of all four slides and hosted it so it opens on any browser.</p>
+
+  <div class="meta">
+    <span class="badge b-acid">Effort: low</span>
+    <span class="badge b-ghost">Design deliverable only</span>
+    <span class="badge b-ghost">No app code / schema / DB change</span>
+    <span class="badge b-ghost">Committed + pushed to main</span>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3><span class="ico">🔳</span> Real QR codes</h3>
+      <p>Slide <b>01</b> → sign-in / program-notes QR · slide <b>03</b> → interest-form QR · slide <b>04</b> → co-working interest-form QR. Each PNG encoded to a base64 data URI so slides stay self-contained.</p>
+    </div>
+    <div class="card b">
+      <h3><span class="ico">🔍</span> Bigger QRs</h3>
+      <p>Bumped the shared block <code>19→25vw</code> and image <code>16→23vw</code> on slides 01/03/04 to fill the open space.</p>
+    </div>
+    <div class="card">
+      <h3><span class="ico">📐</span> Slide 01 polish</h3>
+      <p>Headline restored <b>6.6vw</b>, accent rule back to default spacing, and the body row set to <code>align-items:flex-start</code> — the gap under the rule was the short text column centering against the tall 23vw QR. Showcase line up to <b>2.3vw</b> to match slide 03.</p>
+    </div>
+    <div class="card c">
+      <h3><span class="ico">🎬</span> Hosted looping deck</h3>
+      <p>All 4 slides as stacked <code>srcdoc</code> iframes — <b>pixel-exact fidelity</b>, dodges the comment-split trap. 12s/slide · 0.9s cross-fade · progress bar + dots · Space / ← → / F / click.</p>
+    </div>
+  </div>
+
+  <div class="link-card">
+    <div class="lbl">Hosted — any browser, no login</div>
+    <div class="url">https://sprout-crm-tool-next-js.vercel.app/sprout-tv.html</div>
+    <div class="sub">Served as a static file from <code style="color:var(--acid)">public/</code>, so it bypasses the auth wall. Open on the TV and press F for fullscreen. Live after Vercel finishes the deploy.</div>
+  </div>
+
+  <div class="flags">
+    <b>⚠ Open:</b> the hosted deck is a build-time <b>snapshot</b> — say "rebuild the deck" after editing a slide to refresh it. Slide 03/04 captions weren't re-verified against their new QR destinations. The tv-slides README table still lists the old placeholder/membership targets.
+  </div>
+
+  <div class="foot">
+    <span><span class="dot"></span> main</span>
+    <span class="hash">75e95af</span>
+    <span>8 files · +1520 / −14</span>
+    <span>public/sprout-tv.html · 01/03/04 slides · 3 QR PNGs</span>
+  </div>
+</div>
+</body>
+</html>
