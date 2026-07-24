@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-07-24 — TV slideshow finalized: cut to 4 slides, all copy rewritten, Host slide redesigned
+
+Design deliverable only (`virtual-agency/employees/Design/deliverables/tv-slides/`). No app code, CRM data, or DB change. Effort: low.
+
+- **The ask:** a link to view all slides at once, then a long series of live copy/layout edits to finalize the deck.
+- **Cut from 6 slides to 4.** Deleted the standalone Sprout N Tell slide (its welcome moved onto slide 01), deleted the standalone Hosting slide, and repurposed the Membership slide into the Host slide (pricing removed). Final order: **1 Welcome · 2 Our story · 3 Host at Sprout Society · 4 Sprout By Day** (`01-welcome`, `02-story`, `03-host`, `04-sprout-by-day`).
+- **Slide 01 (Welcome):** headline "Welcome to Sprout N Tell!" (one line), showcase copy, QR **placeholder** on the right, footer → "Instagram: sproutsocietyorg".
+- **Slide 02 (Our story):** header → "In honor of Russell Efros"; removed the impact stats and the QR; new thank-you body (bigger, 2.7vw); embedded the new `SproutSociety-icons_Flower.svg` in the upper-right as an isolated base64 data-URI.
+- **Slide 03 (Host):** "Host at Sprout Society", eyebrow "Build your community here", grow/host-your-thing copy, QR caption "Let us know!"; tried several color schemes, landed on black bg + acid-green accent.
+- **Slide 04 (Sprout By Day):** header "Your space to work, create, and hang!", new amenities + Tue/Thu-open / Mon-Wed-Fri-by-appointment copy, QR caption "Fill out the form".
+- **Body text on slides 3 + 4 bumped to 2.3vw.** Fixed several typos in supplied copy (gift, coffee, Wednesdays, dream).
+- **Hygiene:** every rename updated its in-file `TV SLIDE NN:` comment, the `_preview.html` grid (4 tiles), and `README.md` (4 files, port 4100, history log).
+- **Preview** served on **port 4100** (`http://192.168.50.65:4100/_preview.html`) — an orphaned prior server is stuck on 4000.
+- **⚠️ Open:** all three QR codes are placeholders / point at the wrong URL (membership) — need the real lineup, hosting-inquiry, and Sprout By Day form URLs before the deck ships.
+
+---
+
 ## 2026-07-20 — Events page: calendar view (month grid) with click-popover and drag-to-move
 
 App code only (`components/CRMManager.jsx`; `npm run build` passes). No schema change, no data change. Effort: medium.

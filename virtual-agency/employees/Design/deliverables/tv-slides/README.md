@@ -2,21 +2,19 @@
 
 In-space screen collateral: the slides that loop on the TV at events.
 
-**These six files are the source of truth.** Iterate on them individually. They get
+**These four files are the source of truth.** Iterate on them individually. They get
 recombined into one looping deck once the content is final.
 
 | File | Slide | Accent | QR points at |
 |------|-------|--------|--------------|
-| `01-welcome.html` | Welcome | acid | (none, logo slide) |
+| `01-welcome.html` | Welcome to Sprout N Tell | acid | tonight's lineup (PLACEHOLDER — needs real URL) |
 | `02-story.html` | Founding story + impact stats | fuchsia | givebutter.com/sproutspacedonors |
-| `03-sprout-n-tell.html` | Sprout N Tell | fuchsia | the sign-in / program page |
-| `04-sprout-by-day.html` | Co-working | cyan | givebutter.com/sproutmembership |
-| `05-membership.html` | Membership + pricing | banana | givebutter.com/sproutmembership |
-| `06-hosting.html` | Hosting the space | cyan | the hosting inquiry form |
+| `03-host.html` | Host at Sprout Society | acid accent (dark) | still membership URL — needs a hosting-inquiry target |
+| `04-sprout-by-day.html` | Co-working | cyan (light) | givebutter.com/sproutmembership — needs the real form URL |
 
 ## Previewing
 
-`_preview.html` is a contact sheet: all six slides live in iframes at a true 1920x1080,
+`_preview.html` is a contact sheet: all four slides live in iframes at a true 1920x1080,
 scaled down, so what you see is what the TV shows. Click a tile to open that slide full
 size, then press F11 for fullscreen. Edit a slide and refresh to see the change.
 
@@ -26,20 +24,21 @@ network instead:
 
 ```bash
 # on the Windows box, from this folder
-python -m http.server 4000 --bind 0.0.0.0
+python -m http.server 4100 --bind 0.0.0.0
 ```
 
 Then from the Mac, either:
 
-- **Same wifi (simplest):** open `http://192.168.50.65:4000/_preview.html`.
+- **Same wifi (simplest):** open `http://192.168.50.65:4100/_preview.html`.
   Windows Firewall already has an inbound Allow rule for Python on the Public profile,
   which is the active profile, so this works without touching firewall settings.
 - **SSH tunnel (works from anywhere):** in a second Mac terminal, run
-  `ssh -N -L 4000:localhost:4000 maxwe@192.168.50.65`, then open
-  `http://localhost:4000/_preview.html` on the Mac.
+  `ssh -N -L 4100:localhost:4100 maxwe@192.168.50.65`, then open
+  `http://localhost:4100/_preview.html` on the Mac.
 
 The Windows LAN IP can change on reconnect. Re-check with `ipconfig` if it stops resolving.
-Keep to one server instance at a time (see the single-instance protocol in memory).
+Keep to one server instance at a time (see the single-instance protocol in memory). Port
+4100 is in use because a stale server from a prior SSH session is stuck on 4000.
 
 Each slide is designed at 16:9 and sized in `vw` units, so it scales to any screen width
 (verified at 1920x1080).
@@ -49,7 +48,10 @@ Each slide is designed at 16:9 and sized in `vw` units, so it scales to any scre
 Each file is fully self-contained: the logo and its QR code are inlined as base64. The
 only network dependency is the Lato webfont, which falls back to a system sans offline.
 Each file carries a copy of the same `<style>` block, so a CSS change made for the whole
-set has to be applied to all six (or just tell Claude Code to do it).
+set has to be applied to all four (or just tell Claude Code to do it).
+
+Note: `04-host.html` was formerly the membership/pricing slide, repurposed into the Host
+slide; its QR still encodes the membership URL until a hosting-inquiry target is confirmed.
 
 ## Recombining them
 
@@ -72,12 +74,22 @@ dates come from the CRM (`sprout-crm` MCP `list_events`).
 
 ## Open items
 
-- **The Sprout N Tell date is hardcoded** in `03-sprout-n-tell.html` (currently Vol. 3,
-  Friday July 24). One-line edit per volume, marked with a comment. Vol. 4 is 2026-08-28.
-- **`04-sprout-by-day.html`'s QR points at membership**, since co-working runs through a
+- **Slide 01's QR is a PLACEHOLDER.** Swap the inline SVG src for a real scannable QR once
+  the target URL (tonight's lineup / program page) is confirmed.
+- **`03-sprout-by-day.html`'s QR points at membership**, since co-working runs through a
   day pass. Swap it if a Sprout By Day interest-form URL turns up.
 - **Accent rotation deviates from the brand rule** (cyan -> fuchsia -> acid -> banana).
-  Colors were picked semantically instead, so 02 and 03 are both fuchsia. Unreconciled.
-- **Not served over HTTP.** Open from disk. Do NOT rename `public/` to organize marketing
-  files: it is a reserved Next.js folder whose name is not configurable, and renaming it
-  404s the live kiosk page that the printed event QR flyers point at.
+  Colors were picked semantically instead. Unreconciled.
+- **Not served over HTTP in production.** Open from disk on the TV. Do NOT rename `public/`
+  to organize marketing files: it is a reserved Next.js folder whose name is not
+  configurable, and renaming it 404s the live kiosk page the printed event QR flyers point at.
+
+## History
+
+- **2026-07-24:** Removed the standalone Sprout N Tell slide (old `03-sprout-n-tell.html`).
+  Slide 01 now leads with "Welcome to Sprout N Tell!" and carries the showcase copy, so the
+  dedicated slide was redundant. Remaining slides renumbered 03/04/05.
+- **2026-07-24:** Removed the standalone Hosting slide (old `05-hosting.html`) and repurposed
+  the membership slide into `04-host.html` ("Host at Sprout Society" — grow/nurture your
+  community, host events/performances/markets/workshops). Pricing rows dropped. Deck is now
+  four slides.
