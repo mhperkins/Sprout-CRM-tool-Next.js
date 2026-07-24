@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-07-24 — Sign-in program notes: new Sprout N Tell lineup + removed the landing tab bar
+
+App-adjacent file only (`public/sprout-sign-in.html`). No CRM app code, schema, or DB change. Effort: low.
+
+- **Artist swap** in the Welcome-tab program: Michael NeJame → **Rachel Long**, Tim Smith → **Natasha Nesari**, Alexandra Galvis → **Alex Lo Grasso**. Removed the old artists' Venmo/IG pills (would misroute tips). PictureManBob + Jaclyn unchanged.
+- **New links/handles:** Rachel → linktr.ee/buzzkillnyc; Natasha → IG @natashanesss; Alex Lo Grasso → lograsso.weebly.com + IG @Alex.lo.Grasso.
+- **Music:** removed Proactive Panic, kept ClassV, added **Jared Luís** (jaredluis.com + IG @jaredluismusic), **Rune Puzzles** (solo.to/runepuzzles), **Drifting Petals** (IG @bethsoulden).
+- **Scroll fix attempt:** the four landing tabs wrap to two rows on mobile, so the program page could open scrolled down to the Host/Donate row. Made `show()` blur the active field + re-apply scroll-to-top across the keyboard-dismissal reflow. It didn't hold for Max.
+- **Tab bar removed:** deleted the Welcome/Membership/Host/Donate `.tabs` div from `#step3` so after sign-in the page shows only the program. The other panels still exist (hidden), so nothing is lost.
+- Commits: `37ddba8`, `e43e6fc`, `7d96f15`, `e0808eb`.
+
+---
+
 ## 2026-07-24 — TV slideshow finalized: cut to 4 slides, all copy rewritten, Host slide redesigned
 
 Design deliverable only (`virtual-agency/employees/Design/deliverables/tv-slides/`). No app code, CRM data, or DB change. Effort: low.

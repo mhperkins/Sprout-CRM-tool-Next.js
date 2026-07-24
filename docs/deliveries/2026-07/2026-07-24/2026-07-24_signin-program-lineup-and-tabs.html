@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery — Sign-in program notes + tab bar</title>
+<style>
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --cyan:#73C4D6; --fuchsia:#E10098;
+    --acid:#C6C902; --banana:#FAD100; --line:#e3e3df; --muted:#6a6a66;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Lato','Segoe UI',system-ui,sans-serif;
+    padding:40px 16px; display:flex; justify-content:center;
+  }
+  .wrap{width:100%; max-width:940px;}
+  .top{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:6px;}
+  .dot{width:16px; height:16px; border-radius:50%; background:var(--acid); flex:0 0 auto;}
+  h1{font-size:26px; font-weight:900; margin:0; letter-spacing:-0.3px;}
+  .sub{color:var(--muted); font-size:15px; margin:4px 0 24px;}
+  .badges{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:26px;}
+  .badge{font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.6px;
+    padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:#fff;}
+  .badge.file{color:#0a6f86; border-color:#bfe4ee;}
+  .badge.effort{color:#8a6d00; border-color:#f0e2a8;}
+  .badge.push{color:#0a7a3f; border-color:#bfe8d0;}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media(max-width:680px){.grid{grid-template-columns:1fr;}}
+  .card{background:#fff; border:1px solid var(--line); border-radius:12px; padding:20px 22px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.06); overflow:hidden;}
+  .card.full{grid-column:1 / -1;}
+  .card h2{font-size:13px; font-weight:900; text-transform:uppercase; letter-spacing:.8px;
+    margin:0 0 14px; display:flex; align-items:center; gap:8px;}
+  .bar{width:6px; height:16px; border-radius:3px; display:inline-block;}
+  .b-cy{background:var(--cyan);} .b-fu{background:var(--fuchsia);}
+  .b-ac{background:var(--acid);} .b-ba{background:var(--banana);}
+  ul{margin:0; padding-left:2px; list-style:none;}
+  li{font-size:14.5px; line-height:1.5; margin-bottom:10px; padding-left:22px; position:relative;}
+  li:before{content:"›"; position:absolute; left:4px; top:-1px; color:var(--fuchsia); font-weight:900;}
+  li:last-child{margin-bottom:0;}
+  b{font-weight:800;}
+  .old{text-decoration:line-through; color:var(--muted);}
+  .arrow{color:var(--fuchsia); font-weight:900;}
+  .commits{display:flex; flex-direction:column; gap:10px;}
+  .commit{display:flex; align-items:center; gap:12px; font-size:14px;}
+  .hash{font-family:'SFMono-Regular',Consolas,monospace; font-size:12.5px; font-weight:800;
+    background:var(--ink); color:var(--acid); padding:4px 9px; border-radius:6px; flex:0 0 auto;}
+  .foot{margin-top:26px; display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:10px; color:var(--muted); font-size:13px;}
+  .foot .br{font-family:'SFMono-Regular',Consolas,monospace; font-weight:800; color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="dot"></span>
+    <h1>Sign-in program notes — new lineup &amp; simplified landing</h1>
+  </div>
+  <div class="sub">Sprout Society event sign-in page · 2026-07-24</div>
+
+  <div class="badges">
+    <span class="badge file">public/sprout-sign-in.html</span>
+    <span class="badge effort">Effort: low</span>
+    <span class="badge push">4 commits · pushed to main</span>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2><span class="bar b-cy"></span>Artists</h2>
+      <ul>
+        <li><span class="old">Michael NeJame</span> <span class="arrow">→</span> <b>Rachel Long</b> · Links</li>
+        <li><span class="old">Tim Smith</span> <span class="arrow">→</span> <b>Natasha Nesari</b> · IG</li>
+        <li><span class="old">Alexandra Galvis</span> <span class="arrow">→</span> <b>Alex Lo Grasso</b> · Website + IG</li>
+        <li>PictureManBob &amp; Jaclyn — unchanged</li>
+        <li>Old artists' Venmo/IG pills removed (would misroute tips)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2><span class="bar b-fu"></span>Music</h2>
+      <ul>
+        <li><b>ClassV</b> — kept</li>
+        <li><b>Jared Luís</b> — jaredluis.com + IG (accented the í)</li>
+        <li><b>Rune Puzzles</b> — solo.to/runepuzzles</li>
+        <li><b>Drifting Petals</b> — IG @bethsoulden</li>
+        <li><span class="old">Proactive Panic</span> — removed</li>
+      </ul>
+    </div>
+
+    <div class="card full">
+      <h2><span class="bar b-ac"></span>Landing page — top cut off on mobile</h2>
+      <ul>
+        <li>The four landing tabs (Welcome / Membership / Host / Donate) <b>wrap to two rows on a phone</b>, so the page could open scrolled to the Host/Donate row with the program heading above the fold.</li>
+        <li>Root cause: <b>scroll-to-top fired before the mobile keyboard finished dismissing</b> and the viewport reflowed back down.</li>
+        <li>First fix (blur field + re-apply scroll across the reflow) <b>didn't hold</b> for Max.</li>
+        <li><b>Final fix — removed the tab bar entirely:</b> after sign-in the page shows only the program panel. Membership/Host/Donate panels still exist (hidden), so nothing is lost.</li>
+      </ul>
+    </div>
+
+    <div class="card full">
+      <h2><span class="bar b-ba"></span>Commits</h2>
+      <div class="commits">
+        <div class="commit"><span class="hash">37ddba8</span> New Sprout N Tell lineup (artist swap)</div>
+        <div class="commit"><span class="hash">e43e6fc</span> Jared Luís website + accent</div>
+        <div class="commit"><span class="hash">7d96f15</span> Scroll-to-top attempt (superseded)</div>
+        <div class="commit"><span class="hash">e0808eb</span> Removed the landing tab bar</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Live at <b>/sprout-sign-in.html</b> after Vercel redeploys</span>
+    <span class="br">branch: main</span>
+  </div>
+</div>
+</body>
+</html>
