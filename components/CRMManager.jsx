@@ -30,7 +30,7 @@ import {
   saveOutreachDoc,
   resetOutreachDoc,
 } from "../lib/services";
-import { buildNewsletter, TEMPLATES, defaultMonthYear, COMPACT_SECTIONS, QUICK_HIT_SECTIONS, blankCompactItem } from "../lib/newsletter";
+import { buildNewsletter, TEMPLATES, defaultMonthYear, COMPACT_SECTIONS, QUICK_HIT_SECTIONS, blankCompactItem, COMPACT_BLOCKS, QUICK_HIT_BLOCKS, COMPACT_FIXED_TOP, COMPACT_FIXED_BOTTOM, QH_FIXED_TOP, QH_FIXED_BOTTOM, orderedBlockIds } from "../lib/newsletter";
 import { validateContact, validateOrg } from "../lib/schemas";
 import { blocksOf, firstHeading, parseTableBlock, serializeTable, renderInline } from "../lib/md";
 
@@ -2978,6 +2978,12 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
   const SECTIONS  = isCompact ? COMPACT_SECTIONS : (isQuick ? QUICK_HIT_SECTIONS : null);
   const isStructured = !!SECTIONS;
   const secByKey  = (k)=>(SECTIONS||[]).find(s=>s.key===k);
+  // Reorderable content blocks (drag to rearrange section order).
+  const BLOCKS       = isCompact ? COMPACT_BLOCKS : (isQuick ? QUICK_HIT_BLOCKS : []);
+  const FIXED_TOP    = isCompact ? COMPACT_FIXED_TOP : (isQuick ? QH_FIXED_TOP : []);
+  const FIXED_BOTTOM = isCompact ? COMPACT_FIXED_BOTTOM : (isQuick ? QH_FIXED_BOTTOM : []);
+  const blockOrder   = orderedBlockIds(draft.field_values?.section_order, BLOCKS);
+  const setBlockOrder= (ids)=>setDraft(p=>({...p,field_values:{...p.field_values,section_order:ids}}));
 
   // Structured-section field helpers.
   const fv = draft.field_values||{};
@@ -2987,6 +2993,16 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
 
   // Per-field busy state: fieldId -> "polish" | "upload".
   const [busy,setBusy]=useState({});
+  // Section drag-to-reorder state: id being dragged + id currently hovered.
+  const [dragBlock,setDragBlock]=useState(null);
+  const [overBlock,setOverBlock]=useState(null);
+  const moveBlock=(src,target)=>{
+    if(!src||src===target) return;
+    const ids=[...blockOrder]; const from=ids.indexOf(src); const to=ids.indexOf(target);
+    if(from<0||to<0) return;
+    ids.splice(from,1); ids.splice(to,0,src); setBlockOrder(ids);
+  };
+  const onBlockDrop=(e,target)=>{ e.preventDefault(); moveBlock(dragBlock||e.dataTransfer.getData("text/plain"),target); setDragBlock(null); setOverBlock(null); };
   // Per-field Polish results: fieldId -> { apply, versions:[string] }. Non-destructive — the
   // original field is untouched until the user clicks "Use this" on a version.
   const [polishOut,setPolishOut]=useState({});
@@ -3396,8 +3412,9 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
 
           <div className="card"><div className="card-hd"><span className="card-ttl">{isStructured?"Sections":"Fill in the blanks"}</span><span style={{fontSize:11,color:"var(--g500)"}}>{isStructured?`${SECTIONS.length} sections`:`${built.placeholders.length} left`}</span></div><div className="card-bd">
             {isStructured
-              ? <div style={{display:"flex",flexDirection:"column",gap:16}}>
-                  {SECTIONS.map(sec=>{
+              ? (()=>{
+                  const renderField=(sec)=>{
+                    if(!sec) return null;
                     const LBL={textTransform:"none",letterSpacing:0,color:"var(--g600)",fontWeight:600};
                     const PB={padding:"2px 8px",fontSize:11};
                     if(sec.kind==="image"){
@@ -3496,8 +3513,36 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
                         <button className="btn btn-ghost btn-sm" onClick={()=>addItem(sec)}>+ Add another {sec.itemLabel}</button>
                       </div>
                     );
-                  })}
-                </div>
+                  };
+                  const renderKeys=(keys)=>keys.map(k=>secByKey(k)).map(s=>s?renderField(s):null);
+                  return (
+                    <div style={{display:"flex",flexDirection:"column",gap:16}}>
+                      {renderKeys(FIXED_TOP)}
+                      {BLOCKS.length>0&&<div style={{fontSize:11,fontWeight:800,color:"var(--g500)",textTransform:"uppercase",letterSpacing:1,borderTop:"1px solid var(--g100)",paddingTop:14}}>↕ Sections — drag ⠿ to reorder</div>}
+                      {blockOrder.map(id=>{
+                        const blk=BLOCKS.find(b=>b.id===id); if(!blk) return null;
+                        const dragging=dragBlock===id; const over=overBlock===id&&dragBlock&&dragBlock!==id;
+                        return (
+                          <div key={id}
+                            onDragOver={e=>{e.preventDefault();e.dataTransfer.dropEffect="move";if(overBlock!==id)setOverBlock(id);}}
+                            onDragLeave={()=>{if(overBlock===id)setOverBlock(null);}}
+                            onDrop={e=>onBlockDrop(e,id)}
+                            style={{border:over?"2px dashed #2a8ca0":"1px solid var(--g200)",borderRadius:10,padding:12,background:dragging?"var(--g50)":"#fff",opacity:dragging?0.4:1,transition:"opacity .12s"}}>
+                            <div draggable
+                              onDragStart={e=>{setDragBlock(id);e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",id);}}
+                              onDragEnd={()=>{setDragBlock(null);setOverBlock(null);}}
+                              style={{display:"flex",alignItems:"center",gap:8,cursor:"grab",marginBottom:12,userSelect:"none"}}>
+                              <span style={{fontSize:16,color:"var(--g400)",lineHeight:1}}>⠿</span>
+                              <span style={{fontSize:12,fontWeight:800,color:"var(--g600)",textTransform:"uppercase",letterSpacing:1}}>{blk.label}</span>
+                            </div>
+                            <div style={{display:"flex",flexDirection:"column",gap:16}}>{renderKeys(blk.keys)}</div>
+                          </div>
+                        );
+                      })}
+                      {renderKeys(FIXED_BOTTOM)}
+                    </div>
+                  );
+                })()
               : built.placeholders.length===0
                 ? <div style={{fontSize:12,color:"var(--g500)"}}>Nothing left to fill — every placeholder is resolved. 🎉</div>
                 : <div style={{display:"flex",flexDirection:"column",gap:12}}>
