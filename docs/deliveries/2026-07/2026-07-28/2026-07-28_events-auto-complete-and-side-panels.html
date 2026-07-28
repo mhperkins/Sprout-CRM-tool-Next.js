@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery — Events auto-complete + side panels (cb6aabf)</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --cyan-dp:#2a8ca0;
+    --g100:#ECECEA; --g200:#D9D9D6; --g400:#8a8a86; --g600:#5c5c58; --g800:#2e2e2c;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Lato',system-ui,sans-serif; background:var(--paper); color:var(--ink); padding:40px 20px; line-height:1.55;}
+  .deck{max-width:1080px; margin:0 auto;}
+
+  header{background:var(--ink); color:#fff; border-radius:12px; padding:30px 34px; margin-bottom:20px; position:relative; overflow:hidden;}
+  header::after{content:""; position:absolute; left:0; right:0; bottom:0; height:5px; background:var(--acid);}
+  .eyebrow{font-size:11px; font-weight:900; letter-spacing:.16em; text-transform:uppercase; color:var(--acid); margin-bottom:10px;}
+  h1{font-size:29px; font-weight:900; line-height:1.2; letter-spacing:-.01em;}
+  .sub{font-size:14px; color:#c9c9c5; margin-top:10px; max-width:74ch;}
+  .meta{display:flex; flex-wrap:wrap; gap:8px; margin-top:18px;}
+  .chip{font-size:11px; font-weight:700; padding:5px 11px; border-radius:20px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.18);}
+  .chip.hash{background:var(--acid); color:var(--ink); border-color:var(--acid);}
+  .chip.eff{background:var(--cyan); color:var(--ink); border-color:var(--cyan);}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); gap:16px; margin-bottom:20px;}
+  .card{background:#fff; border-radius:12px; padding:22px 24px; box-shadow:0 4px 14px rgba(0,0,0,.09); border-left:6px solid var(--g200); overflow:hidden;}
+  .card.c-acid{border-left-color:var(--acid);}
+  .card.c-cyan{border-left-color:var(--cyan);}
+  .card.c-fuch{border-left-color:var(--fuchsia);}
+  .card.c-ban{border-left-color:var(--banana);}
+  .card h2{font-size:15px; font-weight:900; margin-bottom:4px; display:flex; align-items:center; gap:9px;}
+  .card .tagline{font-size:11px; font-weight:700; color:var(--g400); text-transform:uppercase; letter-spacing:.07em; margin-bottom:13px;}
+  .card p{font-size:13px; color:var(--g800); margin-bottom:9px;}
+  .card p:last-child{margin-bottom:0;}
+  ul{list-style:none; font-size:13px;}
+  li{padding-left:17px; position:relative; margin-bottom:7px; color:var(--g800);}
+  li::before{content:"▸"; position:absolute; left:0; color:var(--cyan-dp); font-weight:900;}
+  code{font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:12px; background:var(--g100); padding:1px 5px; border-radius:4px;}
+  strong{font-weight:900;}
+
+  .wide{grid-column:1/-1;}
+  .banner{background:#fff; border-radius:12px; padding:22px 24px; box-shadow:0 4px 14px rgba(0,0,0,.09); margin-bottom:20px; border-left:6px solid var(--fuchsia);}
+
+  table{width:100%; border-collapse:collapse; font-size:12.5px; margin-top:6px;}
+  th{text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:.07em; color:var(--g400); padding:6px 10px 6px 0; border-bottom:2px solid var(--g200);}
+  td{padding:7px 10px 7px 0; border-bottom:1px solid var(--g100); vertical-align:top;}
+  .pill{display:inline-block; font-size:10px; font-weight:900; padding:2px 8px; border-radius:20px; text-transform:uppercase; letter-spacing:.05em; white-space:nowrap;}
+  .p-done{background:var(--g100); color:var(--g600);}
+  .p-up{background:#e4f4f9; color:#155e6e;}
+  .p-skip{background:#fdf3d0; color:#7a5c00;}
+
+  .flow{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:12px;}
+  .step{background:var(--g100); border-radius:8px; padding:8px 13px; font-size:12px; font-weight:700;}
+  .step.on{background:var(--ink); color:#fff;}
+  .arrow{color:var(--g400); font-weight:900;}
+
+  footer{background:var(--ink); color:#9a9a96; border-radius:12px; padding:20px 26px; font-size:12px; display:flex; flex-wrap:wrap; gap:14px; justify-content:space-between; align-items:center;}
+  footer strong{color:#fff;}
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <header>
+    <div class="eyebrow">Sprout CRM · Delivery · 28 July 2026</div>
+    <h1>Events complete themselves, and the dashboard opens them in place</h1>
+    <p class="sub">Past events now flip to Completed on their own, recurring series mark off each occurrence individually, and clicking an event or org action on the dashboard opens a side panel instead of throwing you onto another page.</p>
+    <div class="meta">
+      <span class="chip hash">cb6aabf</span>
+      <span class="chip">branch: main</span>
+      <span class="chip eff">Effort: medium</span>
+      <span class="chip">components/CRMManager.jsx</span>
+      <span class="chip">+262 / −20</span>
+      <span class="chip">build ✓</span>
+      <span class="chip">no schema change</span>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <div class="card c-acid">
+      <h2><span>⏱</span> Past events auto-complete</h2>
+      <div class="tagline">Runs once on load · persists only what changed</div>
+      <ul>
+        <li>One-time events flip <code>upcoming → completed</code> the day <strong>after</strong> their date. An event happening today stays Upcoming all day.</li>
+        <li>Recurring series stay Upcoming while they still have an occurrence today or later, and only complete once they run past their <code>until</code> date.</li>
+        <li>Cancelled events and events with no date are never touched.</li>
+        <li>A toast reports the count on load.</li>
+      </ul>
+    </div>
+
+    <div class="card c-cyan">
+      <h2><span>🔁</span> Per-occurrence completion</h2>
+      <div class="tagline">Derived, not stored</div>
+      <p>Occurrences aren't records. A recurring event is one row plus a rule, expanded at render time, so per-occurrence status is derived exactly the way the dates already are.</p>
+      <p>Past Fridays of a weekly series read <strong>completed</strong> while the series record stays <code>upcoming</code> and keeps recurring forever. Nothing accumulates in the database.</p>
+    </div>
+
+    <div class="card c-fuch">
+      <h2><span>🗓</span> New event side panel</h2>
+      <div class="tagline">Same drawer idiom as contacts &amp; orgs</div>
+      <ul>
+        <li><strong>People</strong> — first 3, then a show-more toggle; rows click through to that contact's panel</li>
+        <li><strong>Next Actions</strong> — the checklist items, with overdue badges, one-click complete, and + Add Action</li>
+        <li><strong>Event Details</strong> — date, time, location, repeat rule</li>
+        <li>Notes and Recap when present</li>
+      </ul>
+    </div>
+
+    <div class="card c-ban">
+      <h2><span>🎯</span> Every action row opens in place</h2>
+      <div class="tagline">One handler for all three types</div>
+      <p>Contact, org, and event actions now behave identically. Org actions render the existing org panel rather than navigating to the Orgs page, and the Upcoming Events card opens the event panel too.</p>
+      <p><strong>Open in Events →</strong> deep-links to that specific event's page, reusing the handoff pattern contacts already had.</p>
+    </div>
+
+    <div class="card wide c-cyan">
+      <h2><span>🌍</span> The timezone trap this had to dodge</h2>
+      <div class="tagline">Why a new local-date helper exists</div>
+      <p>The app computes "today" as <code>new Date().toISOString().slice(0,10)</code>, which is <strong>UTC</strong> and rolls over around 8pm Eastern. A naive comparison would have marked an evening event Completed while it was still running, and this one writes to the database rather than just affecting display.</p>
+      <p>The auto-complete uses a new <code>localTodayISO()</code> instead. The rest of the app keeps its existing UTC date on purpose, since changing seven call sites is a wider blast radius than the ask. The local boundary is always <em>later</em> than the UTC one, so the auto-complete is strictly more conservative and the two can never disagree in a way that produces a wrong write.</p>
+    </div>
+
+  </div>
+
+  <div class="banner">
+    <h2 style="font-size:15px;font-weight:900;margin-bottom:4px;display:flex;align-items:center;gap:9px;"><span>🐛</span> Latent crash found and fixed</h2>
+    <div class="tagline" style="font-size:11px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.07em;margin-bottom:13px;">OrgDetail.moveSegment</div>
+    <p style="font-size:13px;">The org panel's "Move to" button called <code>setSegMenuOpen</code>, a state setter that only exists in the contact panel. It would have thrown a <code>ReferenceError</code> on any click. Leftover from when the org panel was copied from the contact one, and surfacing that panel on the dashboard made it easy to reach. Removed the stray call.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card wide">
+      <h2><span>✅</span> Verified against the live event data</h2>
+      <div class="tagline">7 events flip on first load · 2 active series untouched</div>
+      <table>
+        <thead><tr><th>Event</th><th>Date</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Show n Tell</td><td>2026-05-19</td><td><span class="pill p-done">completed</span></td></tr>
+          <tr><td>Community Game Night</td><td>2026-05-26</td><td><span class="pill p-done">completed</span></td></tr>
+          <tr><td>Sprout Happy Hour</td><td>2026-05-28</td><td><span class="pill p-done">completed</span></td></tr>
+          <tr><td>Sprout n Tell</td><td>2026-06-26</td><td><span class="pill p-done">completed</span></td></tr>
+          <tr><td>Bar Nun Happy Hour</td><td>2026-06-30</td><td><span class="pill p-done">completed</span></td></tr>
+          <tr><td>Sprout N Tell Vol. 3</td><td>2026-07-24</td><td><span class="pill p-done">completed</span></td></tr>
+          <tr><td>Society Sobriety</td><td>2026-07-25</td><td><span class="pill p-done">completed</span></td></tr>
+          <tr><td>12-Step Group <span style="color:var(--cyan-dp)">🔁 weekly</span></td><td>ongoing</td><td><span class="pill p-skip">series untouched</span></td></tr>
+          <tr><td>Bar Nun Networking <span style="color:var(--cyan-dp)">🔁 monthly</span></td><td>ongoing</td><td><span class="pill p-skip">series untouched</span></td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:14px;font-size:13px;"><strong>The weekly series on the July calendar</strong>, with today at 28 July:</p>
+      <div class="flow">
+        <span class="step">17 Jul <span class="pill p-done">completed</span></span>
+        <span class="arrow">·</span>
+        <span class="step">24 Jul <span class="pill p-done">completed</span></span>
+        <span class="arrow">·</span>
+        <span class="step on">31 Jul <span class="pill p-up">upcoming</span></span>
+      </div>
+      <p style="margin-top:12px;font-size:12.5px;color:var(--g600);">Date logic checked against nine cases in a node harness that evaluates the real helpers: past one-time, today, future, past-but-cancelled, already-completed, no-date, weekly-ongoing, weekly-ended, monthly-ongoing.</p>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card wide c-ban">
+      <h2><span>📌</span> Worth knowing</h2>
+      <ul>
+        <li><strong>This unblocks newsletter recaps.</strong> <code>assemble_newsletter</code> pulls from events that are completed <em>and</em> have recap text. Zero events had ever been marked completed, which is why roundups came back empty. Those seven now qualify but still need blurbs written.</li>
+        <li><strong>Manual overrides don't stick.</strong> Setting a past event back to Upcoming will re-complete on the next reload. Inherent to the request; a pin flag is available if it's ever needed.</li>
+        <li><strong>Not driven live</strong> — the app sits behind the login wall, so confirm on <code>localhost:4000</code> with a hard refresh.</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <div><strong>Sprout Society CRM</strong> · commit <strong>cb6aabf</strong> on <strong>main</strong></div>
+    <div>1 file changed · CHANGELOG updated · npm run build ✓</div>
+  </footer>
+
+</div>
+</body>
+</html>
