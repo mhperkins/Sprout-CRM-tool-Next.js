@@ -2,6 +2,28 @@
 
 ---
 
+## 2026-07-28 — Events auto-complete + event/org side panels on the dashboard
+
+App code only (`components/CRMManager.jsx`). `npm run build` passes. No schema, migration, or data change. Effort: medium.
+
+**1. Past events auto-complete.** New `autoCompletePastEvents()` runs once on app load, right after events are fetched; it flips state and persists only the changed records.
+
+- One-time events flip `upcoming → completed` the day **after** their date, so an event happening today stays Upcoming all day.
+- Recurring series stay Upcoming while they still have an occurrence today or later; they only complete once they run past their `until` date.
+- Cancelled events and events with no date are never touched. A toast reports the count.
+- Uses a new `localTodayISO()` rather than the app's UTC-based `todayISO()`, which rolls over around 8pm ET and would have completed an evening event mid-run. The auto-complete is strictly more conservative than the rest of the app, so the two can't disagree in a way that causes a wrong write.
+- Verified against 9 date cases + live data: 7 events flip on first load (Show n Tell 5/19, Community Game Night 5/26, Sprout Happy Hour 5/28, Sprout n Tell 6/26, Bar Nun Happy Hour 6/30, Sprout N Tell Vol. 3 7/24, Society Sobriety 7/25). The two active recurring series are untouched.
+
+**2. Per-occurrence completion for recurring events.** New `occurrenceStatus(ev, date)` colours each calendar chip by its own date. Past occurrences of a live series read completed (grey) while the series record stays `upcoming` and keeps recurring. **Derived, not stored** — occurrences aren't records (one row + a rule, expanded at render), so nothing accumulates in the DB. The chip popover shows the occurrence's status with a "this occurrence" note.
+
+**3. New `EventDetail` side panel.** Same drawer idiom as `ContactDetail`/`OrgDetail` (overlay, click-outside, Esc). Sections in order: **People** (first 3, then a `▾ Show N more` toggle; rows click through to that contact's panel; ✓ confirmed badge) → **Next Actions** (the event's checklist items, sorted by date with overdue/due-today badges, one-click complete, completed collapsed, `+ Add Action`) → **Event Details** (date/next date, time, location, repeat rule) → Notes / Recap.
+
+**4. Dashboard action rows all open a side panel.** Contact, org, and event actions now behave identically via a single `openAction()`. Org actions render `OrgDetail` instead of navigating to the Orgs page; event actions render the new `EventDetail`. The 🗓 Upcoming Events card rows open the event panel too. **Open in Events →** deep-links to that event's page via a new `pendingEvent` handoff, mirroring the existing `pendingDetail` pattern for contacts.
+
+**Bug fixed along the way:** `OrgDetail.moveSegment` called `setSegMenuOpen`, a setter that only exists in `ContactDetail` — it would have thrown a `ReferenceError` on any "Move to" click. Latent until this session surfaced the panel on the dashboard.
+
+---
+
 ## 2026-07-28 — Thank-you notes: two deliverables, zips re-synced to CRM drafts
 
 Deliverable files only (`virtual-agency/employees/Communications/deliverables/`). No app code, DB, or schema change. Effort: low.

@@ -523,6 +523,46 @@ function occurrencesInRange(ev, startISO, endISO) {
   return out;
 }
 
+// Local calendar date. Deliberately NOT the app's `todayISO()` (which is UTC-based and rolls over
+// around 8pm ET) — auto-completing must never fire while an evening event is still running.
+const localTodayISO = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+};
+// Auto-complete: any event still marked "upcoming" whose date has passed becomes "completed".
+// - One-time events flip the day AFTER their date (an event today stays upcoming all day).
+// - Recurring series stay upcoming until they run out of occurrences (i.e. past their `until`).
+// - Cancelled events and events with no date are never touched.
+// Returns { next: full list, changed: only the flipped records } so the caller can persist just the diff.
+function autoCompletePastEvents(events, fromISO) {
+  const today = fromISO || localTodayISO();
+  const changed = [];
+  const next = (events||[]).map(ev => {
+    if((ev.status||"upcoming") !== "upcoming") return ev;
+    if(!ev.event_date) return ev;
+    const r = ev.recurrence;
+    if(r && r.frequency) {
+      if(nextOccurrence(ev, today)) return ev;   // series still has an occurrence today or later
+    } else if(ev.event_date >= today) {
+      return ev;                                  // one-time event is today or in the future
+    }
+    const done = {...ev, status:"completed"};
+    changed.push(done);
+    return done;
+  });
+  return { next, changed };
+}
+
+// Status of ONE dated occurrence. Occurrences aren't stored records (a recurring event is a single
+// row + a rule, expanded at render time), so per-occurrence completion is DERIVED, not persisted:
+// a past occurrence reads as completed while the series itself stays upcoming and keeps recurring.
+function occurrenceStatus(ev, dateISO, fromISO) {
+  const st = ev.status || "upcoming";
+  if(st === "cancelled") return "cancelled";
+  if(st === "completed") return "completed";
+  return dateISO < (fromISO || localTodayISO()) ? "completed" : "upcoming";
+}
+
 // Reusable event checklist templates. offset = days relative to the event date (negative = before, positive = after).
 // Lead times derived from the real Sprout N Tell / Show n Tell events.
 // SOURCE OF TRUTH: virtual-agency/employees/Events/deliverables/sprout-n-tell-checklist-template.md (Event Manager). Keep the two in sync.
@@ -1041,7 +1081,6 @@ function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
   const [addingAction, setAddingAction] = useState(false);
   const curSegment = org.segment || "active";
   const moveSegment = (v) => {
-    setSegMenuOpen(false);
     if (v === curSegment) return;
     onUpdate({...org, segment:v});
     showToast(`Moved to ${ORG_SEGMENTS[v]} ✓`);
@@ -1180,6 +1219,143 @@ function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
   );
 }
 
+/* ─── Event Detail (side panel) ──────────────────────────────────────────────── */
+// Same drawer idiom as ContactDetail / OrgDetail, so clicking an event action on the dashboard
+// opens the event in place instead of throwing you onto the Events page.
+// Event "next actions" ARE the checklist items — that's what feeds the dashboard action queue.
+function EventDetail({event,contacts,onClose,onUpdate,onOpenFull,onContactClick,showToast}) {
+  const mouseDownTarget = useRef(null);
+  const PEOPLE_PREVIEW = 3;   // keep the People list short so Next Actions stays above the fold
+  const [showAllPeople,setShowAllPeople] = useState(false);
+  const [showDone,setShowDone] = useState(false);
+  const [addingAction,setAddingAction] = useState(false);
+  const [notesExpanded,setNotesExpanded] = useState(false);
+  useEffect(()=>{ const h=(e)=>{ if(e.key==="Escape") onClose(); }; document.addEventListener("keydown",h); return ()=>document.removeEventListener("keydown",h); },[onClose]);
+
+  const recurring = !!event.recurrence?.frequency;
+  const nextDate  = eventDisplayDate(event);
+  const people    = (contacts||[]).filter(c=>(event.contact_ids||[]).includes(c.id));
+  const confirmed = new Set(event.confirmed_ids||[]);
+  const list      = event.checklist||[];
+  const openItems = list.filter(i=>!i.completed).sort((a,b)=>(a.date||"9999-99-99").localeCompare(b.date||"9999-99-99"));
+  const doneItems = list.filter(i=>i.completed);
+  const body      = event.notes || event.description || "";
+  const bodyLong  = body.split("\n").length > 6 || body.length > 420;
+  const bodyClamp = !notesExpanded ? {overflow:"hidden",display:"-webkit-box",WebkitLineClamp:6,WebkitBoxOrient:"vertical"} : {};
+
+  const toggleItem = (id) => {
+    const item = list.find(i=>i.id===id);
+    onUpdate({...event, checklist:list.map(i=>i.id===id?{...i,completed:!i.completed}:i)});
+    showToast(item?.completed?"Item reopened":"Item marked complete ✓");
+  };
+  // A new event action is a checklist item — same shape the event page and calendar read.
+  const addItem = (text,date) => {
+    onUpdate({...event, checklist:[...list,{id:uid(),text,date:date||"",completed:false}]});
+    showToast("Action added ✓");
+  };
+  const sub = [nextDate?fmtDate(nextDate):"No date", event.start_time?fmtTime(event.start_time)+(event.end_time?`–${fmtTime(event.end_time)}`:""):"", event.location||""].filter(Boolean).join(" · ");
+
+  return (
+    <div className="detail-overlay"
+      onMouseDown={e=>{ mouseDownTarget.current = e.target; }}
+      onClick={e=>{ if (e.target===e.currentTarget && mouseDownTarget.current===e.currentTarget) onClose(); }}>
+      <div className="detail-panel">
+        <div className="dp-hd">
+          <div><div className="dp-name">{event.name||"(Unnamed event)"}</div><div className="dp-sub">{sub}</div></div>
+          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+            {onOpenFull&&<button className="btn btn-ghost btn-sm" onClick={onOpenFull}>Open in Events →</button>}
+            <button className="dp-close" onClick={onClose}>×</button>
+          </div>
+        </div>
+        <div className="dp-body">
+          <div className="dp-row" style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+            <EventStatusTag status={event.status}/>
+            {recurring&&<span style={{fontSize:11,fontWeight:700,color:"var(--cyan)"}}>{recurrenceSummary(event)}</span>}
+          </div>
+
+          <div className="dp-section">
+            <div className="dp-sect-lbl">People ({people.length})</div>
+            {people.length===0
+              ? <p style={{fontSize:12,color:"var(--g400)",fontStyle:"italic"}}>No contacts linked to this event.</p>
+              : <>
+                  {(showAllPeople?people:people.slice(0,PEOPLE_PREVIEW)).map(c=>(
+                    <div key={c.id} onClick={()=>onContactClick&&onContactClick(c)}
+                      style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)",cursor:onContactClick?"pointer":"default"}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:13,fontWeight:700}}>{`${c.first_name||""} ${c.last_name||""}`.trim()||c.email||c.id}</div>
+                        {c.email&&<div style={{fontSize:11,color:"var(--g600)"}}>{c.email}</div>}
+                      </div>
+                      {confirmed.has(c.id)&&<span style={{fontSize:10,fontWeight:700,color:"#155e6e",background:"var(--cyan-lt)",borderRadius:4,padding:"1px 5px",whiteSpace:"nowrap"}}>✓ confirmed</span>}
+                      <RelTag status={c.relationship_status}/>
+                    </div>
+                  ))}
+                  {people.length>PEOPLE_PREVIEW&&<button onClick={()=>setShowAllPeople(x=>!x)} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,color:"var(--cyan)",fontWeight:700,padding:"6px 0 0",display:"block"}}>{showAllPeople?"▴ Show less":`▾ Show ${people.length-PEOPLE_PREVIEW} more`}</button>}
+                </>
+            }
+          </div>
+
+          <div className="dp-section">
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+              <div className="dp-sect-lbl" style={{marginBottom:0,paddingBottom:0,borderBottom:"none"}}>Next Actions ({openItems.length})</div>
+              <button className="btn btn-ghost btn-xs" onClick={()=>setAddingAction(true)}>+ Add Action</button>
+            </div>
+            <div style={{borderBottom:"1px solid var(--g100)",marginBottom:8}}/>
+            {openItems.length===0
+              ? <p style={{fontSize:12,color:"var(--g400)",fontStyle:"italic",marginBottom:6}}>Nothing outstanding.</p>
+              : openItems.map(item=>{
+                  const tag = item.date ? (()=>{ const d=daysUntil(item.date); if(d===null) return null; if(d<0) return {label:`${Math.abs(d)}d overdue`,color:"#B91C1C"}; if(d===0) return {label:"Due today",color:"var(--fuchsia)"}; if(d<=3) return {label:"Due soon",color:"var(--acid)"}; return null; })() : null;
+                  return (
+                    <div key={item.id} style={{background:"var(--banana-lt)",borderRadius:8,padding:"10px 12px",marginBottom:6,display:"flex",alignItems:"flex-start",gap:10}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:13,fontWeight:700}}>{item.text}</div>
+                        {item.date&&<div style={{fontSize:11,color:"var(--g600)",marginTop:3,display:"flex",alignItems:"center",gap:6}}>By {fmtDate(item.date)}{tag&&<span style={{fontSize:10,fontWeight:700,color:tag.color,background:tag.color+"18",borderRadius:4,padding:"1px 5px"}}>{tag.label}</span>}</div>}
+                      </div>
+                      <button onClick={()=>toggleItem(item.id)} title="Mark complete" style={{background:"none",border:"2px solid var(--g300)",borderRadius:"50%",width:26,height:26,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,color:"var(--g400)",flexShrink:0,transition:"all 0.12s"}}
+                        onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--acid)";e.currentTarget.style.color="var(--acid)";}}
+                        onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--g300)";e.currentTarget.style.color="var(--g400)";}}>✓</button>
+                    </div>
+                  );
+                })
+            }
+            {doneItems.length>0&&<>
+              {(showDone?doneItems:[]).map(item=>(
+                <div key={item.id} className="na-hist">
+                  <div className="na-hist-body">
+                    <div className="na-hist-txt" style={{textDecoration:"line-through",color:"var(--g400)"}}>{item.text}</div>
+                    {item.date&&<div className="na-hist-date">By {fmtDate(item.date)}</div>}
+                  </div>
+                  <button onClick={()=>toggleItem(item.id)} title="Reopen" className="na-hist-check" style={{cursor:"pointer",border:"2px solid #4ade80",background:"#f0fdf4"}}>✓</button>
+                </div>
+              ))}
+              <button onClick={()=>setShowDone(x=>!x)} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,color:"var(--cyan)",fontWeight:700,padding:"2px 0 0",display:"block"}}>{showDone?"▴ Hide completed":`▾ Show ${doneItems.length} completed`}</button>
+            </>}
+          </div>
+
+          <div className="dp-section">
+            <div className="dp-sect-lbl">Event Details</div>
+            <div className="dp-field"><strong>{recurring?"Next date:":"Date:"}</strong> {nextDate?fmtDate(nextDate):"Not set"}</div>
+            {event.start_time&&<div className="dp-field"><strong>Time:</strong> {fmtTime(event.start_time)}{event.end_time?`–${fmtTime(event.end_time)}`:""}</div>}
+            {event.location&&<div className="dp-field"><strong>Location:</strong> {event.location}</div>}
+            {recurring&&<div className="dp-field"><strong>Repeats:</strong> {recurrenceSummary(event).replace(/^🔁\s*/,"")}</div>}
+          </div>
+
+          {body&&<div className="dp-section">
+            <div className="dp-sect-lbl">Notes</div>
+            <p style={{fontSize:12,lineHeight:1.7,...bodyClamp}}>{body}</p>
+            {bodyLong&&<button onClick={()=>setNotesExpanded(x=>!x)} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,color:"var(--cyan)",fontWeight:700,padding:"4px 0 0",display:"block"}}>{notesExpanded?"▴ Show less":"▾ Show more"}</button>}
+          </div>}
+
+          {event.recap&&<div className="dp-section">
+            <div className="dp-sect-lbl">Recap</div>
+            <p style={{fontSize:12,lineHeight:1.7}}>{event.recap}</p>
+          </div>}
+        </div>
+      </div>
+      {addingAction&&<AddActionModal onSave={addItem} onClose={()=>setAddingAction(false)}/>}
+    </div>
+  );
+}
+
 /* ─── Sidebar ────────────────────────────────────────────────────────────────── */
 function Sidebar({view,setView,contacts,events,profile,onQuickLog,onCollapse}) {
   const notifCount = (() => {
@@ -1233,7 +1409,7 @@ function Sidebar({view,setView,contacts,events,profile,onQuickLog,onCollapse}) {
 }
 
 /* ─── Dashboard ──────────────────────────────────────────────────────────────── */
-function DashboardView({contacts,orgs,setView,openContact,events,onUpdateContacts,onUpdateEvents,showToast}) {
+function DashboardView({contacts,orgs,setView,openContact,openEvent,events,onUpdateContacts,onUpdateOrgs,onUpdateEvents,showToast}) {
   const today = new Date().toISOString().slice(0,10);
   const overdue = contacts.filter(isOverdue);
   const active = contacts.filter(c=>c.relationship_status==="active").length;
@@ -1289,6 +1465,14 @@ function DashboardView({contacts,orgs,setView,openContact,events,onUpdateContact
     showToast("Contact saved ✓");
   };
   const [dashContact,setDashContact]=useState(null);
+  const [dashOrg,setDashOrg]=useState(null);
+  const [dashEvent,setDashEvent]=useState(null);
+  // Every action row opens its record in a side panel — contact, org, or event.
+  const openAction=(a)=>{
+    if(a.type==="contact") setDashContact(a.contact);
+    else if(a.type==="org") setDashOrg(a.org);
+    else setDashEvent(a.event);
+  };
   return (
     <div className="page">
       <div className="pg-hd">
@@ -1316,7 +1500,7 @@ function DashboardView({contacts,orgs,setView,openContact,events,onUpdateContact
                   const d=daysUntil(ev._next);
                   const tag=d===0?"Today":d===1?"Tomorrow":d!==null?`In ${d}d`:null;
                   return (
-                    <div key={ev.id} className="overdue-row" onClick={()=>setView("events")}>
+                    <div key={ev.id} className="overdue-row" onClick={()=>setDashEvent(ev)}>
                       <div><div className="overdue-name">{ev.name}{ev.recurrence?.frequency?" 🔁":""}</div><div className="overdue-meta">{ev.start_time?`${fmtTime(ev.start_time)} · `:""}{ev.location||"No location"} · {(ev.contact_ids||[]).length} contacts</div></div>
                       {tag&&<span style={{fontSize:11,fontWeight:700,color:d===0?"var(--fuchsia)":d<=3?"var(--acid)":"var(--g600)",whiteSpace:"nowrap"}}>{tag}</span>}
                     </div>
@@ -1334,7 +1518,7 @@ function DashboardView({contacts,orgs,setView,openContact,events,onUpdateContact
               : dueSoon.map(a=>{
                   const tag=getNotiTag(a.date);
                   return (
-                    <div key={a.id} className="overdue-row" onClick={()=>a.type==="contact"?setDashContact(a.contact):a.type==="org"?setView("orgs"):setView("events")}>
+                    <div key={a.id} className="overdue-row" onClick={()=>openAction(a)}>
                       <div style={{flex:1,minWidth:0}}>
                         <div className="overdue-name">
                           {a.type==="contact"?`${a.contact.first_name} ${a.contact.last_name}`:a.type==="org"?a.org?.name||"Org":a.event?.name||"Event"}
@@ -1363,7 +1547,7 @@ function DashboardView({contacts,orgs,setView,openContact,events,onUpdateContact
                   const name=a.type==="contact"?`${a.contact.first_name} ${a.contact.last_name}`:a.type==="org"?a.org?.name||"Org":a.event?.name||"Event";
                   const daysAgo=Math.abs(Math.ceil((new Date(a.date)-new Date())/86400000));
                   return (
-                    <div key={a.id} className="overdue-row" onClick={()=>a.type==="contact"?setDashContact(a.contact):a.type==="org"?setView("orgs"):setView("events")}>
+                    <div key={a.id} className="overdue-row" onClick={()=>openAction(a)}>
                       <div><div className="overdue-name">{name}{a.type==="org"&&<span style={{fontSize:10,marginLeft:6,color:"var(--g400)"}}>🏢 org</span>}{a.type==="event"&&<span style={{fontSize:10,marginLeft:6,color:"var(--g400)"}}>📅 event</span>}</div><div className="overdue-meta">{a.text}</div></div>
                       <span style={{fontSize:11,fontWeight:700,color:"#B91C1C",whiteSpace:"nowrap"}}>{daysAgo}d ago</span>
                     </div>
@@ -1376,6 +1560,15 @@ function DashboardView({contacts,orgs,setView,openContact,events,onUpdateContact
       </div>
       {dashEditing&&<ContactEditModal editing={dashEditing} setEditing={setDashEditing} onSave={saveDashEdit} orgs={orgs} events={events||[]} onUpdateEvents={onUpdateEvents} onNavigate={setView}/>}
       {dashContact&&<ContactDetail contact={contacts.find(c=>c.id===dashContact.id)||dashContact} orgs={orgs} events={events||[]} onClose={()=>setDashContact(null)} onUpdate={(updated)=>{onUpdateContacts(contacts.map(c=>c.id===updated.id?updated:c));setDashContact(updated);showToast("Contact saved ✓");}} onEdit={()=>{setDashEditing({...dashContact});setDashContact(null);}} showToast={showToast}/>}
+      {dashOrg&&<OrgDetail org={orgs.find(o=>o.id===dashOrg.id)||dashOrg} contacts={contacts}
+        onClose={()=>setDashOrg(null)}
+        onUpdate={(updated)=>{onUpdateOrgs((orgs||[]).map(o=>o.id===updated.id?updated:o));setDashOrg(updated);}}
+        onEdit={()=>{setDashOrg(null);setView("orgs");}} showToast={showToast}/>}
+      {dashEvent&&<EventDetail event={(events||[]).find(e=>e.id===dashEvent.id)||dashEvent} contacts={contacts}
+        onClose={()=>setDashEvent(null)}
+        onUpdate={(updated)=>{onUpdateEvents((events||[]).map(e=>e.id===updated.id?updated:e));setDashEvent(updated);}}
+        onOpenFull={()=>{const id=dashEvent.id;setDashEvent(null);openEvent?openEvent({id}):setView("events");}}
+        onContactClick={(c)=>{setDashEvent(null);setDashContact(c);}} showToast={showToast}/>}
     </div>
   );
 }
@@ -4163,7 +4356,7 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
   );
 }
 
-function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateContacts}) {
+function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateContacts,pendingEvent,onPendingEventConsumed}) {
   const [search,setSearch]=useState("");
   const [fStatus,setFStatus]=useState("all");
   const [viewMode,setViewMode]=useState(()=>{ try{ return localStorage.getItem("sprout_evt_view")||"calendar"; }catch{ return "calendar"; } });
@@ -4176,6 +4369,15 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
   const [editDraft,setEditDraft]=useState(null);
   const [confirmDel,setConfirmDel]=useState(null);
   const [inlineContact,setInlineContact]=useState(null);
+
+  // Handoff from the dashboard's event side panel — land straight on that event's page.
+  useEffect(()=>{
+    if (pendingEvent?.id) {
+      setSelectedId(pendingEvent.id);
+      setEvtPage("detail");
+      onPendingEventConsumed?.();
+    }
+  },[pendingEvent, onPendingEventConsumed]);
 
   const filtered = useMemo(()=>{
     return events.filter(e=>{
@@ -4360,7 +4562,10 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
                   onDrop={e=>{e.preventDefault();const id=calDrag||e.dataTransfer.getData("text/plain");if(id){const tgt=events.find(x=>x.id===id);if(tgt)moveEvent(tgt,dayStr);setCalDrag(null);}}}>
                   <div className="cal-date">{day}</div>
                   {items.map((ev,k)=>{
-                    const col=chipColor(ev.status);
+                    // Colour by THIS occurrence, not the series — past Fridays of a weekly event
+                    // read completed while the series keeps running.
+                    const occSt=occurrenceStatus(ev,dayStr);
+                    const col=chipColor(occSt);
                     const recurring=!!ev.recurrence?.frequency;
                     const open=calPopover&&calPopover.id===ev.id&&calPopover.date===dayStr;
                     return (
@@ -4375,7 +4580,8 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
                         </div>
                         {open&&(
                           <div onClick={e=>e.stopPropagation()} style={{position:"absolute",top:"100%",left:0,zIndex:300,background:"#fff",border:"1.5px solid var(--g200)",borderRadius:8,padding:"10px 12px",boxShadow:"var(--sh-lg)",minWidth:210,marginTop:4}}>
-                            <div style={{fontWeight:700,fontSize:13,marginBottom:8}}>{ev.name||"(Unnamed)"}</div>
+                            <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>{ev.name||"(Unnamed)"}</div>
+                            <div style={{marginBottom:8}}><EventStatusTag status={occSt}/>{recurring&&occSt==="completed"&&<span style={{fontSize:10,color:"var(--g400)",marginLeft:6}}>this occurrence</span>}</div>
                             {recurring
                               ? <div style={{fontSize:11,color:"var(--cyan)",fontWeight:700,marginBottom:10}}>{recurrenceSummary(ev)}<div style={{color:"var(--g400)",fontWeight:400,marginTop:4}}>Recurring — edit the series to change its dates.</div></div>
                               : <><label className="fl">Date</label>
@@ -4414,9 +4620,17 @@ export default function CRMApp() {
   const [loading,setLoading]=useState(true);
   const [dbError,setDbError]=useState(null);
   const [pendingDetail,setPendingDetail]=useState(null);
+  const [pendingEvent,setPendingEvent]=useState(null);
   const [globalQuickLog,setGlobalQuickLog]=useState(false);
   const [sbCollapsed,setSbCollapsed]=useState(()=>{ try{ return localStorage.getItem("sprout_sb_collapsed")==="1"; }catch{ return false; } });
   const toggleSidebar=()=>setSbCollapsed(v=>{ const n=!v; try{ localStorage.setItem("sprout_sb_collapsed",n?"1":"0"); }catch{} return n; });
+
+  const toastTimer=useRef(null);
+  const showToast=useCallback((msg,type="ok")=>{
+    if(toastTimer.current) clearTimeout(toastTimer.current);
+    setToast({msg,type});
+    toastTimer.current=setTimeout(()=>setToast(null),3200);
+  },[]);
 
   const loadAll=useCallback(async()=>{
     setLoading(true);
@@ -4442,27 +4656,30 @@ const [
       if (prErr) console.warn("fetchProfile warning:", prErr);
       if (nlErr) console.warn("fetchNewsletters warning:", nlErr);
 
+      // Events whose date has passed flip upcoming → completed, then persist just the flipped ones.
+      const { next: eventsNext, changed: eventsDone } = autoCompletePastEvents(eventRows);
+
       setContacts(contactRows);
       setOrgs(orgRows);
-      setEvents(eventRows);
+      setEvents(eventsNext);
       setProfile(profileData);
       setNewsletters(nlRows);
+
+      if (eventsDone.length) {
+        svcSaveEvents(eventsDone).then(({ error }) => {
+          if (error) console.warn("auto-complete past events:", error);
+          else showToast(`${eventsDone.length} past event${eventsDone.length>1?"s":""} marked completed`);
+        });
+      }
     } catch (err) {
       console.error("CRM load error:", err);
       setDbError(err.message || "Failed to load data from Supabase.");
     } finally {
       setLoading(false);
     }
-  },[]);
+  },[showToast]);
 
   useEffect(()=>{ loadAll(); },[loadAll]);
-
-const toastTimer=useRef(null);
-  const showToast=useCallback((msg,type="ok")=>{
-    if(toastTimer.current) clearTimeout(toastTimer.current);
-    setToast({msg,type});
-    toastTimer.current=setTimeout(()=>setToast(null),3200);
-  },[]);
 
   useEffect(()=>()=>{if(toastTimer.current)clearTimeout(toastTimer.current);},[]);
 const saveContacts = useCallback((u) => {
@@ -4539,6 +4756,9 @@ const saveProfile = useCallback((u) => {
   },[events, showToast]);
   const openContact=useCallback((c)=>{ setPendingDetail(c); setView("contacts"); },[]);
   const clearPendingDetail=useCallback(()=>setPendingDetail(null),[]);
+  // Jump straight to one event's page in the Events view (same handoff pattern as pendingDetail).
+  const openEvent=useCallback((e)=>{ setPendingEvent(e); setView("events"); },[]);
+  const clearPendingEvent=useCallback(()=>setPendingEvent(null),[]);
 
 if (loading) return (
     <><style>{STYLES}</style>
@@ -4562,13 +4782,13 @@ if (dbError) return (
   return (
     <><style>{STYLES}</style>
     <div className={`app ${sbCollapsed?"app-sb-collapsed":""}`}>
-<Sidebar view={view} setView={(v)=>{setPendingDetail(null);setView(v);}} contacts={contacts} events={events} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)} onCollapse={toggleSidebar}/>
+<Sidebar view={view} setView={(v)=>{setPendingDetail(null);setPendingEvent(null);setView(v);}} contacts={contacts} events={events} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)} onCollapse={toggleSidebar}/>
       {sbCollapsed&&<button className="sb-reopen" onClick={toggleSidebar} title="Show sidebar">☰</button>}
       <main className="main">
-        {view==="dashboard"&&<DashboardView contacts={contacts} orgs={orgs} events={events} setView={setView} openContact={openContact} onUpdateContacts={saveContacts} onUpdateEvents={saveEvents} showToast={showToast}/>}
+        {view==="dashboard"&&<DashboardView contacts={contacts} orgs={orgs} events={events} setView={setView} openContact={openContact} openEvent={openEvent} onUpdateContacts={saveContacts} onUpdateOrgs={saveOrgs} onUpdateEvents={saveEvents} showToast={showToast}/>}
 {view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail} setView={setView}/>}
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
-{view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))}/>}
+{view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))} pendingEvent={pendingEvent} onPendingEventConsumed={clearPendingEvent}/>}
         {view==="newsletter"&&<NewsletterView newsletters={newsletters} events={events} contacts={contacts} profile={profile} onUpdate={saveNewsletter} onDelete={deleteNewsletter} showToast={showToast}/>}
         {view==="outreach"&&<OutreachView contacts={contacts} orgs={orgs} events={events}/>}
         {view==="import"&&<ImportView contacts={contacts} orgs={orgs} onImportContact={importContact} onImportOrg={importOrg} showToast={showToast}/>}
