@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Thank-you notes: two deliverables + CM zips</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Lato','Helvetica Neue',Arial,sans-serif; background:#F7F7F6; color:#030000; padding:40px 16px; }
+  .wrap { max-width:960px; margin:0 auto; }
+  .head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; border-bottom:4px solid #C6C902; padding-bottom:18px; margin-bottom:26px; }
+  .title { font-size:27px; font-weight:900; line-height:1.2; }
+  .title .em { color:#E10098; }
+  .badges { display:flex; gap:8px; flex-wrap:wrap; }
+  .badge { font-size:11px; font-weight:900; letter-spacing:1px; text-transform:uppercase; padding:6px 11px; border-radius:20px; }
+  .b-low { background:#C6C902; color:#030000; }
+  .b-comms { background:#73C4D6; color:#0d3d49; }
+  .b-nocode { background:#ECECEA; color:#3a3a38; }
+  .meta { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:26px; }
+  .chip { font-family:'Lato',monospace; font-size:12px; font-weight:700; background:#030000; color:#FAD100; padding:7px 13px; border-radius:6px; }
+  .chip .k { color:#8a8a86; font-weight:400; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-bottom:22px; }
+  .card { background:#fff; border-radius:10px; padding:20px 22px; box-shadow:0 4px 14px rgba(0,0,0,0.10); border-left:6px solid #73C4D6; }
+  .card.fu { border-left-color:#E10098; }
+  .card.ac { border-left-color:#C6C902; }
+  .card h3 { font-size:13px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; color:#2a8ca0; margin-bottom:12px; }
+  .card.fu h3 { color:#E10098; }
+  .card.ac h3 { color:#727500; }
+  .card p { font-size:15px; line-height:1.55; color:#3a3a38; margin-bottom:8px; }
+  .card p:last-child { margin-bottom:0; }
+  .card b { color:#030000; font-weight:900; }
+  code { font-family:'Lato',monospace; background:#F7F7F6; padding:1px 6px; border-radius:4px; font-size:13px; color:#030000; }
+  .files { background:#fff; border-radius:10px; padding:20px 22px; box-shadow:0 4px 14px rgba(0,0,0,0.10); margin-bottom:22px; }
+  .files h3 { font-size:13px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; color:#727500; margin-bottom:14px; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:9px 8px; font-size:14px; border-bottom:1px solid #ECECEA; }
+  th { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#8a8a86; }
+  td code { font-size:12px; }
+  .tag-new { background:#C6C902; color:#030000; font-size:10px; font-weight:900; padding:2px 7px; border-radius:10px; }
+  .tag-del { background:#f3d4e8; color:#a01068; font-size:10px; font-weight:900; padding:2px 7px; border-radius:10px; }
+  .flag { background:#FFF9DB; border-left:6px solid #FAD100; border-radius:8px; padding:16px 20px; }
+  .flag h3 { font-size:13px; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:#8a6d00; margin-bottom:8px; }
+  .flag p { font-size:14px; line-height:1.55; color:#4a4526; }
+  .foot { text-align:center; margin-top:28px; font-size:12px; color:#8a8a86; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <div class="title">Thank-you notes: <span class="em">two deliverables</span> + Campaign Monitor zips</div>
+    <div class="badges">
+      <span class="badge b-low">Effort: Low</span>
+      <span class="badge b-comms">Communications</span>
+      <span class="badge b-nocode">No app / DB change</span>
+    </div>
+  </div>
+
+  <div class="meta">
+    <span class="chip"><span class="k">commit</span> d14c8f3</span>
+    <span class="chip"><span class="k">branch</span> main</span>
+    <span class="chip"><span class="k">date</span> 2026-07-28</span>
+    <span class="chip"><span class="k">files</span> +5 · 269 ins</span>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>The ask</h3>
+      <p>Proofread the new Vol. 3 thank-you note, make it a Communications deliverable, and produce an HTML <b>zip</b> to upload into Campaign Monitor.</p>
+      <p>Then: keep <b>separate</b> notes for the first thank-you and the Vol. 3 one, and guarantee the uploaded HTML is <b>the current, correct version from the CRM</b>.</p>
+    </div>
+    <div class="card ac">
+      <h3>The key discovery</h3>
+      <p>These notes are <b>CRM newsletter drafts</b> in <code>sprout_newsletters</code>, edited in the in-app editor. <b>Save draft re-bakes</b> the current HTML into <code>data.html</code>.</p>
+      <p>The standalone deliverable files are <b>separate copies</b> that drift from the saved draft — the mirrored-copy trap.</p>
+    </div>
+    <div class="card fu">
+      <h3>The fix</h3>
+      <p><b>Re-exported the baked HTML straight from the CRM</b> into the two deliverable files, then rebuilt both zips.</p>
+      <p>Each zip now equals exactly its saved CRM draft (throwaway service-role script from <code>mcp/</code>, deleted after). No drift on upload.</p>
+    </div>
+  </div>
+
+  <div class="files">
+    <h3>Deliverables — Communications/deliverables/</h3>
+    <table>
+      <tr><th>File</th><th></th><th>Source CRM draft (subject)</th></tr>
+      <tr><td><code>sprout-thank-you-note-vol1-2.html / .zip</code></td><td><span class="tag-new">first note</span></td><td><code>nl_june_2026_quick_2</code> — "A Sprout Thank You Note"</td></tr>
+      <tr><td><code>sprout-thank-you-note-vol3.html / .zip</code></td><td><span class="tag-new">new note</span></td><td><code>nl_aug_2026_quick</code> — "A Sprout Thank You Note Vol. 3"</td></tr>
+      <tr><td><code>sprout-thank-you-note.zip</code></td><td><span class="tag-del">removed</span></td><td>old combined zip</td></tr>
+    </table>
+  </div>
+
+  <div class="flag">
+    <h3>⚠ Workflow + open item</h3>
+    <p><b>Upload path:</b> the editor's <b>Copy HTML</b> button is always current (no drift). A zip goes stale the moment the draft is edited + saved again — say "re-export the thank-you notes" to re-sync. The email <b>subject lives only in Campaign Monitor</b>, not the HTML.</p>
+    <p style="margin-top:8px;"><b>Deferred:</b> the saved Vol. 3 draft still has a few copy issues (signup→sign up, missing commas in the date, "huge success"). Offered to fix in the editor fields + re-export — awaiting the go.</p>
+  </div>
+
+  <div class="foot">Sprout Society CRM · delivery slide · 2026-07-28</div>
+
+</div>
+</body>
+</html>
