@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-07-28 — Intake-sheet sweep: +29 new contacts, 5 alt-emails merged
+
+Data-only. No app code, repo, or DB-schema change. Effort: medium.
+
+- Swept all four SnT / Sprout By Day intake sheets (Interest Form, Sprout By Day, 6/26 Kiosk incl. 7/24 Vol. 3 rows, 5/19 Check-In) using the cached hello@ OAuth token (google-workspace MCP fallback).
+- Collected 104 unique emails → matched against `sprout_contacts` (email + `data.email` + `data.alt_emails`) → 37 not present.
+- **29 new contacts created** via a throwaway service-role script mirroring `saveContacts` (real Zod validation, 29/29 valid): segment `community`, type `attendee`, status `warm`, `how_heard` filled, source note + dated touchpoint (event = Sprout N Tell Vol. 3, 2026-07-24). Sources: 27 kiosk sign-ins + Maia Miller & Morgan Kaenzig de Denus (interest-form + kiosk) + Shradha Sardana (interest form).
+- **5 alt-emails folded into existing records** (not duplicated, via `jsonb_set` on `data.alt_emails`): Camilla Starling, Remy Litvin, Kingsley Udoyi, Mac, Nina Bonetti.
+- **3 skipped:** `jshgdgsh@` (Jason X junk), `maxperkins@`/`maxwellhperkins@` (Max/test rows).
+- Two name flags left blank rather than guessed: Delina (`drosebart@`) and Ri (`rilotzmusic@`) signed in first-name-only.
+- All throwaway scripts deleted after the run.
+
+---
+
 ## 2026-07-24 — TV slides: real QR codes, sizing polish, + hosted looping deck
 
 Design deliverable only (`virtual-agency/employees/Design/deliverables/tv-slides/` + hosted copy in `public/`). No CRM app code, schema, or DB change. Effort: low. Commit `75e95af`.

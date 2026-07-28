@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery — Intake-Sheet Contact Sweep (2026-07-28)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --grey:#6b6b68;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',system-ui,sans-serif;background:var(--paper);color:var(--ink);
+    display:flex;justify-content:center;padding:32px 16px;min-height:100vh}
+  .slide{width:100%;max-width:960px;background:#fff;border-radius:16px;overflow:hidden;
+    box-shadow:0 18px 50px rgba(0,0,0,.18)}
+  .top{background:var(--ink);color:#fff;padding:34px 40px;position:relative;overflow:hidden}
+  .top::after{content:"";position:absolute;right:-40px;top:-40px;width:220px;height:220px;
+    background:radial-gradient(circle,var(--fuchsia) 0%,transparent 70%);opacity:.35}
+  .eyebrow{font-size:12px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--acid)}
+  h1{font-size:31px;font-weight:900;line-height:1.15;margin-top:10px;max-width:760px}
+  .sub{margin-top:12px;font-size:15px;color:#d6d6d3;max-width:720px;line-height:1.5}
+  .rule{height:5px;background:var(--acid)}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .chip{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.12);color:#fff}
+  .chip.data{background:var(--cyan);color:var(--ink)}
+  .chip.effort{background:var(--banana);color:var(--ink)}
+  .body{padding:34px 40px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+  .stat{border:2px solid var(--ink);border-radius:12px;padding:16px 14px;text-align:center}
+  .stat .n{font-size:34px;font-weight:900;line-height:1}
+  .stat .l{font-size:12px;font-weight:700;color:var(--grey);margin-top:6px;text-transform:uppercase;letter-spacing:.5px}
+  .stat.acid{background:var(--acid)}
+  .stat.cyan{background:var(--cyan)}
+  .stat.banana{background:var(--banana)}
+  h2{font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;margin:22px 0 12px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .card{border-radius:12px;padding:16px 18px;border-left:6px solid var(--ink);background:var(--paper)}
+  .card.new{border-left-color:var(--fuchsia)}
+  .card.merge{border-left-color:var(--cyan)}
+  .card.skip{border-left-color:var(--grey)}
+  .card.flag{border-left-color:var(--banana)}
+  .card h3{font-size:15px;font-weight:900;margin-bottom:7px}
+  .card p{font-size:13.5px;line-height:1.55;color:#333}
+  .card .em{font-weight:700;color:var(--ink)}
+  .foot{padding:20px 40px 30px;border-top:1px solid #e6e6e3;display:flex;flex-wrap:wrap;
+    justify-content:space-between;gap:12px;align-items:center}
+  .foot .path{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--grey)}
+  .foot .git{font-size:12px;font-weight:700}
+  .foot .git .b{color:var(--fuchsia)}
+  @media(max-width:640px){.stats{grid-template-columns:1fr 1fr}.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div class="eyebrow">🌱 Sprout CRM · Delivery</div>
+    <h1>Intake-sheet contact sweep — every new person added to the CRM</h1>
+    <p class="sub">Swept all four SnT / Sprout By Day intake sheets, deduped 104 emails against the CRM, and landed everyone new — creating fresh records and folding second emails into people already on file.</p>
+    <div class="meta">
+      <span class="chip data">Data-only · no code change</span>
+      <span class="chip effort">Effort: medium</span>
+      <span class="chip">2026-07-28</span>
+      <span class="chip">via hello@ OAuth + Supabase MCP</span>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <div class="stats">
+      <div class="stat"><div class="n">104</div><div class="l">Emails swept</div></div>
+      <div class="stat cyan"><div class="n">37</div><div class="l">Not in CRM</div></div>
+      <div class="stat acid"><div class="n">+29</div><div class="l">New contacts</div></div>
+      <div class="stat banana"><div class="n">5</div><div class="l">Alt-emails merged</div></div>
+    </div>
+
+    <h2>What happened</h2>
+    <div class="cards">
+      <div class="card new">
+        <h3>29 new contacts created</h3>
+        <p><span class="em">Community · attendee · warm.</span> 27 from the 7/24 kiosk sign-ins + Maia Miller &amp; Morgan Kaenzig de Denus (interest-form + kiosk) + Shradha Sardana. Each got <span class="em">how_heard</span>, a source note, and a dated touchpoint for Sprout N Tell Vol. 3. Validated 29/29 through the real Zod gate.</p>
+      </div>
+      <div class="card merge">
+        <h3>5 alt-emails folded in (not duplicated)</h3>
+        <p>Second addresses merged into existing records: <span class="em">Camilla Starling, Remy Litvin, Kingsley Udoyi, Mac, Nina Bonetti</span> — the long-flagged Nina second email finally attached.</p>
+      </div>
+      <div class="card skip">
+        <h3>3 skipped</h3>
+        <p><span class="em">jshgdgsh@</span> (Jason X junk), <span class="em">maxperkins@</span> &amp; <span class="em">maxwellhperkins@</span> (Max / test rows, incl. the sdf/fdsg junk rows).</p>
+      </div>
+      <div class="card flag">
+        <h3>2 name flags (left blank, not guessed)</h3>
+        <p><span class="em">Delina</span> (drosebart@ → maybe Rosebart) and <span class="em">Ri</span> (rilotzmusic@ → maybe Ri Lotz) signed in first-name-only. Noted in their records for later confirmation.</p>
+      </div>
+    </div>
+
+    <h2>Sheets swept</h2>
+    <div class="cards">
+      <div class="card"><h3>Interest Form · Sprout By Day</h3><p>Showcasing / attending intake + co-working interest.</p></div>
+      <div class="card"><h3>6/26 Kiosk · 5/19 Check-In</h3><p>Event sign-ins — kiosk now carrying the 7/24 Vol. 3 rows.</p></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span class="path">docs/deliveries/2026-07/2026-07-28/2026-07-28_intake-sheet-contact-sweep.html</span>
+    <span class="git">branch <span class="b">main</span> · data write via service-role script (deleted after)</span>
+  </div>
+</div>
+</body>
+</html>
