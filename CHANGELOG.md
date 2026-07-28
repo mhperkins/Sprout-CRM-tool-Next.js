@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-07-28 — Thank-you notes: two deliverables, zips re-synced to CRM drafts
+
+Deliverable files only (`virtual-agency/employees/Communications/deliverables/`). No app code, DB, or schema change. Effort: low.
+
+- **Split into two clearly-named deliverables:** `sprout-thank-you-note-vol1-2` (the first note — thanks Vol. 1 & 2, invites Vol. 3) and `sprout-thank-you-note-vol3` (the new post-Vol.-3 note — thanks Vol. 3, invites Vol. 4). Removed the old combined `sprout-thank-you-note.zip`.
+- **Discovered these notes are CRM newsletter drafts** in `sprout_newsletters`: `nl_june_2026_quick_2` (subject "A Sprout Thank You Note") and `nl_aug_2026_quick` (subject "A Sprout Thank You Note Vol. 3"). Save draft re-bakes the current HTML into `data.html`.
+- **Re-exported the live baked HTML straight from the CRM** into the two deliverable `.html` files and rebuilt both `.zip`s (throwaway service-role Node script from `mcp/`, deleted after) — so each zip = exactly its saved CRM draft, not a drifted standalone copy.
+- Proofread pass on the first note (signup→sign up, comma/date fixes, parallelism in the membership list). The Vol. 3 draft still has open copy issues (Max's own copy) — flagged, fix deferred to his go.
+- **Workflow note:** the `.html`/`.zip` deliverables are export snapshots and drift the moment the CRM draft changes. The CRM `data.html` is the source of truth; "Copy HTML" in the editor is the always-current upload path; "re-export the thank-you notes" re-syncs the files.
+
+---
+
 ## 2026-07-28 — Newsletter: drag-to-reorder sections
 
 App code only (`lib/newsletter.js` + `components/CRMManager.jsx`). `npm run build` passes. Effort: medium.
