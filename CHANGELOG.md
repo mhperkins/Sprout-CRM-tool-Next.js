@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-07-28 — Newsletter: drag-to-reorder sections
+
+App code only (`lib/newsletter.js` + `components/CRMManager.jsx`). `npm run build` passes. Effort: medium.
+
+- **New feature:** newsletter content sections are now click-and-drag rearrangeable in the editor. Each block renders as a card with a **⠿** drag handle; drop above/below another to reorder, and the live preview + saved draft reflect the new order.
+- **Order persists** in `field_values.section_order` (an array of block ids) — rides the existing save path, no schema/DB migration (`field_values` is `z.record(z.any())`).
+- **Reorderable blocks — Monthly Roundup:** Featured event · Announcement · Membership · Marketing · Scholarship · Community spotlight · Events. **Quick Hit:** Announcements · Upcoming. Masthead/intro (top) and footer (bottom) stay pinned.
+- **Renderer refactor:** `buildCompact()`/`buildQuickHit()` now assemble content from a `blocks` map joined in `orderedBlockIds(v.section_order, ...)` order. New exports in `lib/newsletter.js`: `COMPACT_BLOCKS`, `QUICK_HIT_BLOCKS`, `COMPACT_FIXED_TOP/BOTTOM`, `QH_FIXED_TOP/BOTTOM`, `orderedBlockIds` (keeps saved ids that still exist, appends any missing block, ignores stale/foreign ids — so existing drafts render unchanged until dragged).
+- **Editor refactor:** the per-field render became a `renderField(sec)` helper; the Sections card now renders fixed-top fields → draggable block cards (native HTML5 drag, same pattern as the events calendar; only the handle is `draggable` so textareas stay usable) → fixed-bottom fields.
+- Verified: node render tests for default order, full reorder, partial/foreign orders, and Quick Hit; footer + `#events` anchor each appear exactly once. Build passes.
+
+---
+
 ## 2026-07-28 — Intake-sheet sweep: +29 new contacts, 5 alt-emails merged
 
 Data-only. No app code, repo, or DB-schema change. Effort: medium.

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery — Newsletter drag-to-reorder sections</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --cyandeep:#2a8ca0; --g500:#6a6a66; --g200:#e2e2df;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Lato',Helvetica,Arial,sans-serif; background:var(--paper); color:var(--ink); padding:40px 16px; line-height:1.5;}
+  .slide{max-width:960px; margin:0 auto; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.14);}
+  .top{background:var(--ink); color:#fff; padding:34px 40px 30px;}
+  .eyebrow{font-size:12px; font-weight:900; letter-spacing:3px; text-transform:uppercase; color:var(--acid);}
+  h1{font-size:32px; font-weight:900; line-height:1.15; margin:10px 0 6px;}
+  .sub{font-size:15px; color:#cfcfca;}
+  .rule{height:4px; background:var(--acid);}
+  .meta{display:flex; flex-wrap:wrap; gap:10px; padding:20px 40px 4px;}
+  .chip{font-size:12px; font-weight:700; padding:6px 12px; border-radius:999px; border:1px solid var(--g200);}
+  .chip.hash{background:var(--ink); color:var(--banana); border-color:var(--ink); font-family:monospace; letter-spacing:0.5px;}
+  .chip.branch{background:var(--cyan); color:#0d3d49; border-color:var(--cyan);}
+  .chip.effort{background:var(--banana); color:#3a3000; border-color:var(--banana);}
+  .chip.build{background:var(--acid); color:#3a3a00; border-color:var(--acid);}
+  .body{padding:16px 40px 40px;}
+  .lead{font-size:16px; margin:8px 0 22px; color:#2a2a28;}
+  .lead b{color:var(--fuchsia);}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media(max-width:680px){.grid{grid-template-columns:1fr;} h1{font-size:26px;}}
+  .card{border:1px solid var(--g200); border-radius:12px; padding:18px 20px; background:var(--paper);}
+  .card .bar{width:34px; height:6px; border-radius:3px; margin-bottom:10px;}
+  .card h3{font-size:15px; font-weight:900; margin-bottom:8px;}
+  .card ul{list-style:none; font-size:13.5px; color:#333;}
+  .card li{padding:3px 0 3px 18px; position:relative;}
+  .card li::before{content:"›"; position:absolute; left:2px; color:var(--fuchsia); font-weight:900;}
+  .card code{font-family:monospace; font-size:12px; background:#fff; border:1px solid var(--g200); border-radius:4px; padding:1px 5px;}
+  .flow{margin-top:20px; padding:20px; background:var(--ink); border-radius:12px; color:#fff;}
+  .flow h3{font-size:12px; font-weight:900; letter-spacing:2px; text-transform:uppercase; color:var(--cyan); margin-bottom:14px;}
+  .blocks{display:flex; flex-wrap:wrap; gap:8px; align-items:center;}
+  .blk{display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; padding:8px 12px; border-radius:8px; background:#141414; border:1px solid #2a2a2a;}
+  .blk .h{color:#6a6a66; font-size:14px;}
+  .blk.pin{background:#241f00; border-color:#4a4200; color:var(--banana);}
+  .files{display:flex; gap:10px; flex-wrap:wrap; margin-top:20px;}
+  .file{flex:1; min-width:220px; border:1px solid var(--g200); border-radius:10px; padding:12px 14px; background:#fff;}
+  .file .fn{font-family:monospace; font-size:12.5px; font-weight:700;}
+  .file .fd{font-size:12px; color:var(--g500); margin-top:3px;}
+  .foot{padding:16px 40px; border-top:1px solid var(--g200); font-size:12px; color:var(--g500); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="top">
+      <div class="eyebrow">Sprout CRM · Delivery</div>
+      <h1>Newsletter sections are now drag-to-reorder</h1>
+      <div class="sub">Grab a ⠿ handle and drag a section above or below another. The live preview and saved draft follow.</div>
+    </div>
+    <div class="rule"></div>
+
+    <div class="meta">
+      <span class="chip hash">175e38b</span>
+      <span class="chip branch">main · pushed</span>
+      <span class="chip effort">Effort: medium</span>
+      <span class="chip build">npm run build ✓</span>
+      <span class="chip">No schema / DB change</span>
+    </div>
+
+    <div class="body">
+      <p class="lead">Content blocks reorder by drag. Order saves in <b>field_values.section_order</b> — no migration, and existing drafts render exactly as before until you move something.</p>
+
+      <div class="grid">
+        <div class="card">
+          <div class="bar" style="background:var(--fuchsia)"></div>
+          <h3>Renderer (lib/newsletter.js)</h3>
+          <ul>
+            <li><code>buildCompact</code> / <code>buildQuickHit</code> assemble the body from a <code>blocks</code> map</li>
+            <li>Joined in <code>orderedBlockIds(section_order, …)</code> order</li>
+            <li>Resolver dedupes saved ids, appends any missing block, ignores stale/foreign ids</li>
+            <li><code>data-sec</code> markers move with blocks → focus↔preview scroll still syncs</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="bar" style="background:var(--cyandeep)"></div>
+          <h3>Editor (CRMManager.jsx)</h3>
+          <ul>
+            <li>Per-field render lifted to a <code>renderField(sec)</code> helper</li>
+            <li>Sections card: fixed-top → draggable block cards → fixed-bottom</li>
+            <li>Native HTML5 drag — only the ⠿ handle is draggable, textareas stay usable</li>
+            <li>Cyan dashed highlight marks the drop target</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="flow">
+        <h3>Reorderable blocks — Monthly Roundup</h3>
+        <div class="blocks">
+          <span class="blk pin">📌 Masthead / Intro</span>
+          <span class="blk"><span class="h">⠿</span>Featured</span>
+          <span class="blk"><span class="h">⠿</span>Announcement</span>
+          <span class="blk"><span class="h">⠿</span>Membership</span>
+          <span class="blk"><span class="h">⠿</span>Marketing</span>
+          <span class="blk"><span class="h">⠿</span>Scholarship</span>
+          <span class="blk"><span class="h">⠿</span>Spotlight</span>
+          <span class="blk"><span class="h">⠿</span>Events</span>
+          <span class="blk pin">📌 Footer</span>
+        </div>
+        <div style="margin-top:12px; font-size:12.5px; color:#bdbdb8;">Quick Hit reorders <b style="color:#fff;">Announcements</b> · <b style="color:#fff;">Upcoming</b>. Masthead/intro (top) and footer (bottom) stay pinned in both.</div>
+      </div>
+
+      <div class="files">
+        <div class="file"><div class="fn">lib/newsletter.js</div><div class="fd">block metadata + <code>orderedBlockIds</code> + block-map renderers</div></div>
+        <div class="file"><div class="fn">components/CRMManager.jsx</div><div class="fd">renderField helper + draggable Sections card</div></div>
+      </div>
+
+      <p style="margin-top:20px; font-size:13px; color:var(--g500);">Verified: node render tests for default order, full reorder, partial/foreign orders, and Quick Hit; footer + <code style="font-family:monospace;">#events</code> anchor each render exactly once. Preview live at <b>localhost:4000</b> (forwarded port).</p>
+    </div>
+
+    <div class="foot">
+      <span>Sprout CRM Next · 2026-07-28</span>
+      <span>Commit 175e38b · branch main</span>
+    </div>
+  </div>
+</body>
+</html>
