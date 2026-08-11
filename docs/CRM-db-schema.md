@@ -281,7 +281,7 @@ extracted into their SQL columns in the same upsert row.
 | `id` | text PK | Prefix: `evt_` — e.g. `evt_brooklyn_gala_2026` |
 | `name` | text | Promoted for sort/search |
 | `event_date` | date | ISO string. Queryable for sorting. |
-| `status` | text | Enum: `upcoming` `completed` `cancelled` |
+| `status` | text | Enum: `pending` `upcoming` `completed` `cancelled`. `pending` = an unapproved booking request from the public events portal. |
 | `created_at` | timestamptz | Set on insert |
 | `updated_at` | timestamptz | Set on every upsert |
 | `data` | jsonb | Full event blob |
@@ -310,3 +310,48 @@ extracted into their SQL columns in the same upsert row.
 ### Join Strategy
 
 Contact ↔ Event is stored as `contact_ids: string[]` inside the event `data` JSONB. Client-side resolution. No FK constraint. No junction table. Bidirectional sync maintained via contact edit modal events tab.
+---
+
+## `sprout_event_portals`
+
+The client-facing **events portal**: one intake record per event, filled in by the
+organizer through a secret link. Field definitions live in [`lib/eventPortal.js`](../lib/eventPortal.js)
+(`PORTAL_SECTIONS`) and drive the client form, the CRM viewer, and the API's
+input sanitizing from one place.
+
+### SQL Columns
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | text PK | Prefix: `epl_` |
+| `event_id` | text UNIQUE | `evt_` id. Client-side join, no FK. One portal per event. |
+| `token` | text UNIQUE | The secret in the URL (`/portal/<token>`), 128 bits. Rotatable from the CRM. |
+| `status` | text | `draft` \| `submitted` |
+| `submitted_at` | timestamptz | Set when the organizer marks it ready |
+| `data` | jsonb | All answers, keyed by the field keys in `lib/eventPortal.js` |
+| `created_at` | timestamptz | Set on insert |
+| `updated_at` | timestamptz | Set on every write |
+
+### `data` JSONB Keys
+
+Deliberately **not** enumerated in Zod (`z.record(z.any())`, same pattern as the
+newsletter's `field_values`) so adding a field to `PORTAL_SECTIONS` never needs a
+schema change or a migration. The API only accepts keys the spec knows about
+(`sanitizePortalData`), so the blob cannot be stuffed with arbitrary data.
+
+### Access model
+
+- **RLS**: `authenticated_all` only. There is **no anon policy** — a logged-out
+  browser reads nothing, same as the other five CRM tables.
+- **Clients** never touch the table directly. Every portal read/write goes through
+  `/api/portal/[token]`, which uses the service-role key and scopes the operation
+  to the one row matching that token.
+- **Staff** read it directly through `fetchEventPortals()` like any other table.
+
+### Storage
+
+Client uploads (flyers, tech riders, COIs, W9s) go to the public
+`event-portal-files` bucket, straight from the browser with the anon key. This
+mirrors `newsletter-images` and sidesteps Vercel's 4.5 MB serverless body cap.
+Anon can **insert and read** but not delete. Files sit at public URLs, so nothing
+genuinely sensitive should be uploaded there.

@@ -2,6 +2,37 @@
 
 ---
 
+## 2026-08-11 — Events Portal: client-facing booking + intake, linked to the CRM event
+
+New public surface (`/book`, `/portal/[token]`), two API routes, one new table, one storage bucket, plus the CRM-side viewer. `npm run build` passes. Effort: high (a public, unauthenticated write surface on a login-walled app).
+
+**What it is.** A client-facing home for everything about one event. Anyone can request a date at `/book`; that creates a **pending** event in the CRM plus a portal, and hands the organizer a private link. They fill in lineup, setup, sound, ticketing, food, promo, and paperwork over time at their own pace, and it all shows up on the CRM event page.
+
+**1. One field spec, three consumers.** `lib/eventPortal.js` defines 9 sections / 64 fields (`PORTAL_SECTIONS`). The client form, the CRM read-only viewer, and the API's input sanitizing all render from it, so they cannot drift. Adding a field is a one-line change that appears in all three. 11 fields are marked `required` — the "we cannot put this on the calendar without it" set; everything else is planning detail that never blocks a booking.
+
+**2. Access model — secret link per event.** The token in the URL is the only credential and scopes every operation to one portal row. The CRM's tables stay locked to `authenticated`, so all portal traffic goes through `/api/portal/[token]` using the service-role key. An unknown token always returns the same 404, so the endpoint cannot be used to probe for valid links. Staff can rotate a link (killing the old one) or remove a portal from the event page.
+
+**3. New `sprout_event_portals` table.** RLS with an `authenticated_all` policy only — **no anon policy**, matching the other five CRM tables. `data` is `z.record(z.any())` (same pattern as the newsletter's `field_values`), so new fields never need a migration.
+
+**4. New `pending` event status.** A booking request is not a calendar entry. `pending` events never auto-complete, are excluded from the newsletter's upcoming list, render banana on the calendar, and get an "Approve onto the calendar" button on the event page. Fanned out to all the usual sync points: `EventSchema`, `EVT_STATUS_OPTS`/`COLOR`/`TEXT`, `chipColor`, `occurrenceStatus`, the MCP `list_events` enum, and the schema doc.
+
+**5. File uploads.** New public `event-portal-files` bucket for flyers, tech riders, COIs, W9s. Uploads go **straight from the browser** with the anon key rather than through the API, because Vercel caps a serverless request body at 4.5 MB and artwork routinely exceeds that. Files render as links on the CRM event page.
+
+**6. CRM side.** `EventPortalPanel` on the event detail page: completion bar, what is still missing, the private link with copy/open/rotate/remove, "Copy all answers" as plain text, and every answer grouped by section. The events list gets a `▤ %` badge per event with a portal and a **Requests** stat card.
+
+**Verified end to end against the live database**, then all test records removed:
+
+- Request guards: missing required fields, honeypot, malformed email, and a per-email rate limit all reject correctly.
+- Input sanitizing: unknown keys, an out-of-enum `select` value, a `DROP TABLE` string in a multi-select, a `javascript:` file URL, and junk keys inside a repeat row were all stripped; `"4"` coerced to `4`.
+- Event sync: portal answers push name/date/times/description onto the CRM event, and never clear an event field the portal left blank.
+- RLS: with `role anon`, both `sprout_event_portals` and `sprout_events` return **0 rows**.
+- Storage: anon upload succeeds, public read returns 200, anon delete is silently blocked by RLS (supabase-js returns no error but deletes zero rows — worth knowing, it looks like success).
+- Layout: screenshotted both pages at 1000px and 390px. No horizontal overflow at either width.
+
+**⚠️ Note:** uploaded files sit at public URLs (same as `newsletter-images`), so nothing genuinely sensitive should go through the upload fields. A COI is fine; a passport scan is not.
+
+---
+
 ## 2026-07-28 — Events auto-complete + event/org side panels on the dashboard
 
 App code only (`components/CRMManager.jsx`). `npm run build` passes. No schema, migration, or data change. Effort: medium.

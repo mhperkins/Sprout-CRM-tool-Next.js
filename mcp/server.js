@@ -494,8 +494,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         properties: {
           status: {
             type: "string",
-            enum: ["upcoming", "completed", "cancelled"],
-            description: "Filter by status (default: upcoming)",
+            enum: ["pending", "upcoming", "completed", "cancelled"],
+            description:
+              "Filter by status (default: upcoming). 'pending' = a booking request from the public events portal that has not been approved onto the calendar yet.",
           },
         },
       },

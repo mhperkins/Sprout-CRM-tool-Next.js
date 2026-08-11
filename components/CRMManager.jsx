@@ -29,7 +29,12 @@ import {
   fetchOutreachDocs,
   saveOutreachDoc,
   resetOutreachDoc,
+  fetchEventPortals,
+  createEventPortal,
+  regeneratePortalToken,
+  deleteEventPortal,
 } from "../lib/services";
+import { PORTAL_SECTIONS, FIELD_BY_KEY, displayValue, portalProgress, portalToText, isBlank as pIsBlank } from "../lib/eventPortal";
 import { buildNewsletter, TEMPLATES, defaultMonthYear, COMPACT_SECTIONS, QUICK_HIT_SECTIONS, blankCompactItem, COMPACT_BLOCKS, QUICK_HIT_BLOCKS, COMPACT_FIXED_TOP, COMPACT_FIXED_BOTTOM, QH_FIXED_TOP, QH_FIXED_BOTTOM, orderedBlockIds } from "../lib/newsletter";
 import { validateContact, validateOrg } from "../lib/schemas";
 import { blocksOf, firstHeading, parseTableBlock, serializeTable, renderInline } from "../lib/md";
@@ -532,7 +537,7 @@ const localTodayISO = () => {
 // Auto-complete: any event still marked "upcoming" whose date has passed becomes "completed".
 // - One-time events flip the day AFTER their date (an event today stays upcoming all day).
 // - Recurring series stay upcoming until they run out of occurrences (i.e. past their `until`).
-// - Cancelled events and events with no date are never touched.
+// - Cancelled, pending (unapproved portal requests), and undated events are never touched.
 // Returns { next: full list, changed: only the flipped records } so the caller can persist just the diff.
 function autoCompletePastEvents(events, fromISO) {
   const today = fromISO || localTodayISO();
@@ -560,6 +565,7 @@ function occurrenceStatus(ev, dateISO, fromISO) {
   const st = ev.status || "upcoming";
   if(st === "cancelled") return "cancelled";
   if(st === "completed") return "completed";
+  if(st === "pending")   return "pending";   // an unapproved request is not a real occurrence yet
   return dateISO < (fromISO || localTodayISO()) ? "completed" : "upcoming";
 }
 
@@ -3824,13 +3830,16 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
 }
 
 /* ─── Events View ────────────────────────────────────────────────────────────── */
+// "pending" = a booking request that came in through the public events portal and
+// has not been approved onto the calendar yet. It never auto-completes.
 const EVT_STATUS_OPTS = [
+  {value:"pending",label:"Pending request"},
   {value:"upcoming",label:"Upcoming"},
   {value:"completed",label:"Completed"},
   {value:"cancelled",label:"Cancelled"},
 ];
-const EVT_STATUS_COLOR = {upcoming:"var(--acid-lt)",completed:"var(--cyan-lt)",cancelled:"var(--g200)"};
-const EVT_STATUS_TEXT  = {upcoming:"#3a3d00",completed:"#155e6e",cancelled:"var(--g600)"};
+const EVT_STATUS_COLOR = {pending:"var(--banana)",upcoming:"var(--acid-lt)",completed:"var(--cyan-lt)",cancelled:"var(--g200)"};
+const EVT_STATUS_TEXT  = {pending:"#5c4a00",upcoming:"#3a3d00",completed:"#155e6e",cancelled:"var(--g600)"};
 
 function EventStatusTag({status}) {
   return <span style={{background:EVT_STATUS_COLOR[status]||"var(--g100)",color:EVT_STATUS_TEXT[status]||"var(--g600)",fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:20,textTransform:"uppercase",letterSpacing:"0.05em",whiteSpace:"nowrap"}}>{status||"upcoming"}</span>;
@@ -4075,7 +4084,184 @@ function EventEditPage({editing,setEditing,onSave,onCancel,contacts}) {
   );
 }
 
-function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,onContactClick}) {
+/* ─── Events Portal panel (CRM side) ─────────────────────────────────────────── */
+// Read-only view of what the client filled in through their portal link, rendered
+// from the SAME spec (lib/eventPortal.js) the client-facing form uses — so a field
+// added there shows up here automatically. The CRM never edits their answers.
+
+function PortalAnswer({field,value}) {
+  if(pIsBlank(value)) return null;
+
+  if(field.type==="files") {
+    return (
+      <div style={{marginBottom:12}}>
+        <div className="dp-sect-lbl" style={{marginBottom:5}}>{field.label}</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+          {(value||[]).map((f,i)=>(
+            <a key={i} href={f.url} target="_blank" rel="noopener noreferrer"
+               style={{fontSize:11,fontWeight:700,padding:"5px 10px",borderRadius:6,background:"var(--g100)",color:"var(--cyan)",textDecoration:"none",border:"1px solid var(--g200)"}}>
+              📎 {f.name||"file"}
+            </a>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if(field.type==="repeat") {
+    const rows=(value||[]).filter(r=>Object.values(r||{}).some(v=>!pIsBlank(v)));
+    if(!rows.length) return null;
+    return (
+      <div style={{marginBottom:12}}>
+        <div className="dp-sect-lbl" style={{marginBottom:5}}>{field.label}</div>
+        {rows.map((r,i)=>(
+          <div key={i} style={{border:"1px solid var(--g200)",borderRadius:7,padding:"9px 11px",marginBottom:6,background:"var(--g50,#fafafa)"}}>
+            {(field.itemFields||[]).map(sub=>pIsBlank(r[sub.key])?null:(
+              <div key={sub.key} style={{fontSize:12,lineHeight:1.6}}>
+                <span style={{color:"var(--g500)",fontWeight:700}}>{sub.label}: </span>{r[sub.key]}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  const text=displayValue(field,value);
+  if(!text) return null;
+  const long=field.type==="textarea"||text.length>90;
+  return (
+    <div style={{marginBottom:10,display:long?"block":"flex",gap:8,alignItems:"baseline"}}>
+      <div className="dp-sect-lbl" style={{marginBottom:long?4:0,flexShrink:0}}>{field.label}</div>
+      <div style={{fontSize:12.5,lineHeight:1.65,whiteSpace:"pre-wrap"}}>{text}</div>
+    </div>
+  );
+}
+
+function EventPortalPanel({event,portal,onCreate,onRotate,onRemove,onRefresh,onApprove,showToast}) {
+  const [confirmRotate,setConfirmRotate]=useState(false);
+  const [confirmRemove,setConfirmRemove]=useState(false);
+  const [busy,setBusy]=useState(false);
+
+  const link = portal ? `${typeof window!=="undefined"?window.location.origin:""}/portal/${portal.token}` : "";
+  const copy = (text,msg) => { try{ navigator.clipboard.writeText(text); showToast?.(msg); }catch{ showToast?.("Copy failed","err"); } };
+
+  if(!portal) {
+    return (
+      <div className="dp-section">
+        <div className="dp-sect-lbl">Events portal</div>
+        <p style={{fontSize:12,lineHeight:1.7,color:"var(--g600)",margin:"6px 0 12px"}}>
+          No portal yet. Create one to get a private link you can send the organizer — they fill in
+          lineup, sound, setup, promo, and paperwork there, and it all lands back here.
+        </p>
+        <button className="btn btn-blk btn-sm" disabled={busy}
+          onClick={async()=>{ setBusy(true); await onCreate(event); setBusy(false); }}>
+          {busy?"Creating…":"+ Create portal link"}
+        </button>
+      </div>
+    );
+  }
+
+  const prog = portalProgress(portal.data);
+  const submitted = portal.status==="submitted";
+
+  return (
+    <div className="dp-section">
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10,flexWrap:"wrap"}}>
+        <div className="dp-sect-lbl" style={{margin:0}}>Events portal</div>
+        <span style={{fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:20,textTransform:"uppercase",letterSpacing:"0.05em",
+          background:submitted?"var(--acid-lt)":"var(--g100)",color:submitted?"#3a3d00":"var(--g600)"}}>
+          {submitted?"Submitted":"In progress"}
+        </span>
+        <button className="btn btn-ghost btn-sm" style={{marginLeft:"auto"}} onClick={onRefresh}>↻ Refresh</button>
+      </div>
+
+      {/* progress */}
+      <div style={{marginBottom:14}}>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:11,fontWeight:700,color:"var(--g600)",marginBottom:5}}>
+          <span>{prog.readyToSchedule?"All essentials answered":`${prog.requiredDone} of ${prog.requiredTotal} essentials`}</span>
+          <span>{prog.answered}/{prog.total} fields · {prog.pct}%</span>
+        </div>
+        <div style={{height:7,borderRadius:20,background:"var(--g100)",overflow:"hidden"}}>
+          <div style={{height:"100%",width:`${Math.max(3,prog.pct)}%`,background:prog.readyToSchedule?"var(--acid)":"var(--cyan-lt)",borderRadius:20}}/>
+        </div>
+        {!prog.readyToSchedule&&(
+          <div style={{fontSize:11.5,color:"var(--g500)",marginTop:6,lineHeight:1.6}}>
+            Still needed: {prog.missingRequired.map(k=>FIELD_BY_KEY[k]?.label||k).join(" · ")}
+          </div>
+        )}
+        {submitted&&portal.submitted_at&&(
+          <div style={{fontSize:11.5,color:"var(--g500)",marginTop:6}}>
+            Marked ready {new Date(portal.submitted_at).toLocaleDateString()}
+          </div>
+        )}
+      </div>
+
+      {/* link */}
+      <div style={{border:"1px solid var(--g200)",borderRadius:8,padding:"10px 12px",marginBottom:14,background:"var(--g50,#fafafa)"}}>
+        <div style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.05em",textTransform:"uppercase",color:"var(--g500)",marginBottom:5}}>
+          Private link for the organizer
+        </div>
+        <div style={{fontSize:11.5,wordBreak:"break-all",color:"var(--cyan)",fontWeight:700,marginBottom:9}}>{link}</div>
+        <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
+          <button className="btn btn-blk btn-sm" onClick={()=>copy(link,"Link copied ✓")}>Copy link</button>
+          <a className="btn btn-ghost btn-sm" href={link} target="_blank" rel="noopener noreferrer">Open ↗</a>
+          <button className="btn btn-ghost btn-sm" onClick={()=>setConfirmRotate(true)}>New link</button>
+          <button className="btn btn-ghost btn-sm" onClick={()=>setConfirmRemove(true)}>Remove</button>
+        </div>
+        <div style={{fontSize:11,color:"var(--g500)",marginTop:8,lineHeight:1.55}}>
+          Anyone with this link can edit this event&apos;s portal. Rotate it if it gets forwarded somewhere it should not be.
+        </div>
+      </div>
+
+      {/* approve */}
+      {event.status==="pending"&&(
+        <div style={{borderLeft:"5px solid var(--banana)",background:"#fff",borderRadius:"0 8px 8px 0",padding:"12px 14px",marginBottom:14,boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>
+          <div style={{fontSize:12.5,fontWeight:700,marginBottom:4}}>This is an unapproved booking request.</div>
+          <div style={{fontSize:11.5,color:"var(--g600)",lineHeight:1.6,marginBottom:10}}>
+            It is not on the calendar and will not appear in the newsletter until you approve it.
+            {!prog.readyToSchedule&&" The essentials are not all in yet."}
+          </div>
+          <button className="btn btn-blk btn-sm" onClick={onApprove}>Approve onto the calendar →</button>
+        </div>
+      )}
+
+      {/* answers */}
+      {prog.answered===0
+        ? <p style={{fontSize:12,color:"var(--g500)",lineHeight:1.7}}>Nothing filled in yet. Send them the link above.</p>
+        : <>
+            <div style={{display:"flex",justifyContent:"flex-end",marginBottom:8}}>
+              <button className="btn btn-ghost btn-sm" onClick={()=>copy(portalToText(portal.data),"All answers copied ✓")}>Copy all answers</button>
+            </div>
+            {PORTAL_SECTIONS.map(sec=>{
+              const answered=sec.fields.filter(f=>!pIsBlank(portal.data?.[f.key]));
+              if(!answered.length) return null;
+              return (
+                <div key={sec.key} style={{marginBottom:16,paddingBottom:14,borderBottom:"1px solid var(--g100)"}}>
+                  <div style={{fontSize:12.5,fontWeight:900,marginBottom:9}}>{sec.title}</div>
+                  {answered.map(f=><PortalAnswer key={f.key} field={f} value={portal.data[f.key]}/>)}
+                </div>
+              );
+            })}
+          </>}
+
+      {confirmRotate&&<ConfirmModal
+        title="Create a new link?"
+        confirmLabel="Create new link"
+        message="The current link will stop working immediately. Anyone still using it, including the organizer, will need the new one."
+        onConfirm={()=>{ setConfirmRotate(false); onRotate(portal); }}
+        onCancel={()=>setConfirmRotate(false)}/>}
+      {confirmRemove&&<ConfirmModal
+        title="Remove this portal?"
+        confirmLabel="Remove portal"
+        message="This deletes the portal and everything the organizer filled in. The event itself stays. This cannot be undone."
+        onConfirm={()=>{ setConfirmRemove(false); onRemove(portal); }}
+        onCancel={()=>setConfirmRemove(false)}/>}
+    </div>
+  );
+}
+
+function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,onContactClick,portal,onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals,showToast}) {
   const linked = contacts.filter(c=>(event.contact_ids||[]).includes(c.id));
   const today=new Date().toISOString().slice(0,10);
 
@@ -4216,6 +4402,18 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
               );
             })}
           </div>}
+
+          {/* EVENTS PORTAL — what the organizer filled in through their private link */}
+          <EventPortalPanel
+            event={event}
+            portal={portal}
+            onCreate={onCreatePortal}
+            onRotate={onRotatePortal}
+            onRemove={onRemovePortal}
+            onRefresh={onRefreshPortals}
+            onApprove={()=>onUpdateEvent({...event,status:"upcoming"})}
+            showToast={showToast}
+          />
         </div>
 
         {/* CONTACTS STRIP */}
@@ -4356,7 +4554,7 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
   );
 }
 
-function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateContacts,pendingEvent,onPendingEventConsumed}) {
+function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateContacts,pendingEvent,onPendingEventConsumed,portals={},onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals}) {
   const [search,setSearch]=useState("");
   const [fStatus,setFStatus]=useState("all");
   const [viewMode,setViewMode]=useState(()=>{ try{ return localStorage.getItem("sprout_evt_view")||"calendar"; }catch{ return "calendar"; } });
@@ -4450,6 +4648,12 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
       onDelete={()=>setConfirmDel(selectedEvent.id)}
       onUpdateEvent={handleUpdateEvent}
       onContactClick={handleContactClick}
+      portal={portals[selectedEvent.id]}
+      onCreatePortal={onCreatePortal}
+      onRotatePortal={onRotatePortal}
+      onRemovePortal={onRemovePortal}
+      onRefreshPortals={onRefreshPortals}
+      showToast={showToast}
     />
     {confirmDel&&<ConfirmModal message={`Delete "${selectedEvent.name||"this event"}"? This cannot be undone.`} onConfirm={()=>handleDelete(confirmDel)} onCancel={()=>setConfirmDel(null)}/>}
     {inlineContact&&<ContactEditModal editing={inlineContact} setEditing={setInlineContact} onSave={handleSaveInlineContact} orgs={orgs||[]} events={events} onUpdateEvents={onUpdate} onNavigate={()=>{}}/>}
@@ -4465,6 +4669,7 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
         const today=new Date().toISOString().slice(0,10);
         const upcoming=events.filter(e=>e.status==="upcoming").length;
         const completed=events.filter(e=>e.status==="completed").length;
+        const pendingReq=events.filter(e=>e.status==="pending").length;   // unapproved portal bookings
         const overdue=events.reduce((acc,e)=>acc+(e.checklist||[]).filter(i=>!i.completed&&i.date&&i.date<=today).length,0);
         const statCard=(label,val,valColor)=>(
           <div className="stat" style={{flex:1,minWidth:90}}>
@@ -4474,6 +4679,7 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
         );
         return <div className="stats" style={{marginBottom:18}}>
           {statCard("Total",events.length)}
+          {statCard("Requests",pendingReq,pendingReq>0?"#5c4a00":undefined)}
           {statCard("Upcoming",upcoming,"var(--cyan)")}
           {statCard("Completed",completed)}
           {statCard("Checklist overdue",overdue,overdue>0?"var(--orange)":undefined)}
@@ -4502,7 +4708,17 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
               ? <tr><td colSpan={6} style={{textAlign:"center",color:"var(--g400)",padding:"28px 0",fontSize:13}}>No events found</td></tr>
               : filtered.map(e=>(
                 <tr key={e.id} onClick={()=>{setSelectedId(e.id);setEvtPage("detail");}}>
-                  <td style={{fontWeight:700}}>{e.name||"(Unnamed)"}</td>
+                  <td style={{fontWeight:700}}>
+                    {e.name||"(Unnamed)"}
+                    {portals[e.id]&&(()=>{
+                      const p=portalProgress(portals[e.id].data);
+                      return <span title={`Events portal · ${p.pct}% filled${p.readyToSchedule?" · essentials in":""}`}
+                        style={{marginLeft:6,fontSize:9,fontWeight:700,padding:"2px 6px",borderRadius:20,whiteSpace:"nowrap",
+                          background:p.readyToSchedule?"var(--acid-lt)":"var(--g100)",color:p.readyToSchedule?"#3a3d00":"var(--g600)"}}>
+                        ▤ {p.pct}%
+                      </span>;
+                    })()}
+                  </td>
                   <td style={{fontSize:12,color:"var(--g600)"}}>{fmtDate(eventDisplayDate(e))}{e.start_time?` · ${fmtTime(e.start_time)}`:""}{e.recurrence?.frequency?<span title={recurrenceSummary(e)} style={{marginLeft:6,color:"var(--cyan)"}}>🔁</span>:null}</td>
                   <td><EventStatusTag status={e.status}/></td>
                   <td style={{fontSize:12,color:"var(--g600)"}}>{(e.contact_ids||[]).length}</td>
@@ -4535,7 +4751,7 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
         });
         Object.values(byDay).forEach(list=>list.sort((a,b)=>(a.start_time||"99").localeCompare(b.start_time||"99")));
         const shiftMonth=(delta)=>{ const d=new Date(yr,mo-1+delta,1); setCalMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`); };
-        const chipColor=(st)=>st==="completed"?{bg:"var(--g100)",fg:"var(--g500)"}:st==="cancelled"?{bg:"var(--fuchsia-lt)",fg:"#8b0057"}:{bg:"var(--cyan-lt)",fg:"#155e6e"};
+        const chipColor=(st)=>st==="completed"?{bg:"var(--g100)",fg:"var(--g500)"}:st==="cancelled"?{bg:"var(--fuchsia-lt)",fg:"#8b0057"}:st==="pending"?{bg:"var(--banana)",fg:"#5c4a00"}:{bg:"var(--cyan-lt)",fg:"#155e6e"};
         const moveEvent=(ev,dateStr)=>{ if(ev.event_date===dateStr) return; handleUpdateEvent({...ev,event_date:dateStr}); showToast("Event moved ✓"); };
         return (
         <div onClick={()=>setCalPopover(null)}>
@@ -4615,6 +4831,7 @@ export default function CRMApp() {
   const [orgs,setOrgs]=useState([]);
   const [events,setEvents]=useState([]);
   const [newsletters,setNewsletters]=useState([]);
+  const [portals,setPortals]=useState({});   // event_id → portal record (events portal)
   const [profile,setProfile]=useState(DEFAULT_PROFILE);
   const [toast,setToast]=useState(null);
   const [loading,setLoading]=useState(true);
@@ -4642,12 +4859,14 @@ const [
         { data: eventRows,   error: evErr },
         { data: profileData, error: prErr },
         { data: nlRows,      error: nlErr },
+        { data: portalMap,   error: ptErr },
       ] = await Promise.all([
         fetchContacts(),
         fetchOrgs(),
         fetchEvents(),
         fetchProfile(),
         fetchNewsletters(),
+        fetchEventPortals(),
       ]);
 
       if (cErr) throw new Error(cErr);
@@ -4655,6 +4874,7 @@ const [
       if (evErr) console.warn("fetchEvents warning:", evErr);
       if (prErr) console.warn("fetchProfile warning:", prErr);
       if (nlErr) console.warn("fetchNewsletters warning:", nlErr);
+      if (ptErr) console.warn("fetchEventPortals warning:", ptErr);
 
       // Events whose date has passed flip upcoming → completed, then persist just the flipped ones.
       const { next: eventsNext, changed: eventsDone } = autoCompletePastEvents(eventRows);
@@ -4664,6 +4884,7 @@ const [
       setEvents(eventsNext);
       setProfile(profileData);
       setNewsletters(nlRows);
+      setPortals(portalMap || {});
 
       if (eventsDone.length) {
         svcSaveEvents(eventsDone).then(({ error }) => {
@@ -4719,6 +4940,39 @@ const saveProfile = useCallback((u) => {
     svcSaveNewsletter(rec).then(({ error }) => {
       if (error) { console.error("saveNewsletter:", error); showToast(`Save failed: ${error}`, "err"); }
     });
+  }, [showToast]);
+
+  /* ── Events portal ── */
+  // Portal answers are written by the client through the token-gated API, so the
+  // CRM only ever creates, rotates, or removes the link itself. It never edits a
+  // client's answers behind their back.
+  const makePortal = useCallback(async (event) => {
+    const { data, error } = await createEventPortal(event);
+    if (error) { console.error("createEventPortal:", error); showToast("Could not create the portal link","err"); return null; }
+    setPortals(p => ({ ...p, [event.id]: data }));
+    showToast("Portal link created ✓");
+    return data;
+  }, [showToast]);
+
+  const rotatePortal = useCallback(async (portal) => {
+    const { data, error } = await regeneratePortalToken(portal.id);
+    if (error) { console.error("regeneratePortalToken:", error); showToast("Could not rotate the link","err"); return; }
+    setPortals(p => ({ ...p, [portal.event_id]: data }));
+    showToast("New link created — the old one no longer works");
+  }, [showToast]);
+
+  const removePortal = useCallback(async (portal) => {
+    const { error } = await deleteEventPortal(portal.id);
+    if (error) { console.error("deleteEventPortal:", error); showToast("Could not remove the portal","err"); return; }
+    setPortals(p => { const n = { ...p }; delete n[portal.event_id]; return n; });
+    showToast("Portal removed");
+  }, [showToast]);
+
+  const refreshPortals = useCallback(async () => {
+    const { data, error } = await fetchEventPortals();
+    if (error) { console.warn("refreshPortals:", error); showToast("Could not refresh","err"); return; }
+    setPortals(data || {});
+    showToast("Portal answers refreshed ✓");
   }, [showToast]);
 
   const deleteNewsletter = useCallback(async (id) => {
@@ -4788,7 +5042,7 @@ if (dbError) return (
         {view==="dashboard"&&<DashboardView contacts={contacts} orgs={orgs} events={events} setView={setView} openContact={openContact} openEvent={openEvent} onUpdateContacts={saveContacts} onUpdateOrgs={saveOrgs} onUpdateEvents={saveEvents} showToast={showToast}/>}
 {view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail} setView={setView}/>}
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
-{view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))} pendingEvent={pendingEvent} onPendingEventConsumed={clearPendingEvent}/>}
+{view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))} pendingEvent={pendingEvent} onPendingEventConsumed={clearPendingEvent} portals={portals} onCreatePortal={makePortal} onRotatePortal={rotatePortal} onRemovePortal={removePortal} onRefreshPortals={refreshPortals}/>}
         {view==="newsletter"&&<NewsletterView newsletters={newsletters} events={events} contacts={contacts} profile={profile} onUpdate={saveNewsletter} onDelete={deleteNewsletter} showToast={showToast}/>}
         {view==="outreach"&&<OutreachView contacts={contacts} orgs={orgs} events={events}/>}
         {view==="import"&&<ImportView contacts={contacts} orgs={orgs} onImportContact={importContact} onImportOrg={importOrg} showToast={showToast}/>}
