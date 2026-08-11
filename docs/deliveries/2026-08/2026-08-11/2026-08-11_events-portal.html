@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Delivery — Events Portal (2026-08-11)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --cyan:#73C4D6; --cyan-d:#2a8ca0;
+    --fuchsia:#E10098; --acid:#C6C902; --banana:#FAD100;
+    --g100:#ECECEA; --g200:#DCDCD9; --g500:#8a8a86; --g600:#5f5f5c;
+  }
+  body{font-family:'Lato',-apple-system,sans-serif;background:var(--paper);color:var(--ink);
+       -webkit-font-smoothing:antialiased;line-height:1.5}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px 72px}
+
+  header{background:var(--ink);padding:34px 24px 30px}
+  .hd{max-width:1120px;margin:0 auto}
+  .eyebrow{color:var(--acid);font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}
+  h1{color:#fff;font-size:38px;font-weight:900;letter-spacing:-.02em;margin-top:10px;line-height:1.12}
+  .sub{color:var(--g200);font-size:16px;margin-top:10px;max-width:760px;line-height:1.6}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+  .pill{font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;
+        padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.1);color:#fff}
+  .pill.hash{background:var(--acid);color:var(--ink);font-family:ui-monospace,Menlo,monospace;letter-spacing:.02em}
+  .pill.eff{background:var(--fuchsia);color:#fff}
+  .rule{height:5px;background:var(--acid)}
+
+  h2{font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--g500);
+     margin:40px 0 16px;padding-bottom:9px;border-bottom:2px solid var(--g200)}
+
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .step{background:#fff;border:1px solid var(--g200);border-radius:10px;padding:18px 16px;
+        box-shadow:0 2px 10px rgba(0,0,0,.05);position:relative}
+  .step .n{width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;
+           font-weight:900;display:flex;align-items:center;justify-content:center;margin-bottom:11px}
+  .step h3{font-size:14.5px;font-weight:900;margin-bottom:6px}
+  .step p{font-size:12.5px;color:var(--g600);line-height:1.6}
+  .step .who{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;
+             margin-top:10px;display:inline-block;padding:3px 8px;border-radius:999px}
+  .who.client{background:var(--cyan);color:#0d4553}
+  .who.staff{background:var(--banana);color:#5c4a00}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .card{background:#fff;border:1px solid var(--g200);border-radius:10px;padding:20px;
+        box-shadow:0 2px 10px rgba(0,0,0,.05);border-left:6px solid var(--cyan)}
+  .card.f{border-left-color:var(--fuchsia)} .card.a{border-left-color:var(--acid)}
+  .card.b{border-left-color:var(--banana)}
+  .card h3{font-size:15px;font-weight:900;margin-bottom:8px}
+  .card p{font-size:13px;color:var(--g600);line-height:1.65}
+  .card code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--g100);
+             padding:1px 5px;border-radius:4px;color:var(--ink)}
+
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:4px}
+  .stat{background:#fff;border:1px solid var(--g200);border-radius:10px;padding:16px;text-align:center}
+  .stat .v{font-size:28px;font-weight:900;letter-spacing:-.02em}
+  .stat .l{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--g500);margin-top:4px}
+
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--g200);
+        border-radius:10px;overflow:hidden}
+  th{background:var(--ink);color:#fff;font-size:10.5px;font-weight:900;letter-spacing:.08em;
+     text-transform:uppercase;text-align:left;padding:11px 14px}
+  td{padding:11px 14px;font-size:13px;border-top:1px solid var(--g100);vertical-align:top}
+  td.k{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;white-space:nowrap;color:var(--cyan-d);font-weight:700}
+  .ok{color:#3a6b00;font-weight:900}
+
+  .checks{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .chk{background:#fff;border:1px solid var(--g200);border-radius:8px;padding:13px 15px;
+       display:flex;gap:11px;align-items:flex-start}
+  .chk .tick{width:20px;height:20px;border-radius:50%;background:var(--acid);color:var(--ink);
+             font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .chk div{font-size:12.5px;line-height:1.6;color:var(--g600)}
+  .chk strong{color:var(--ink);font-weight:900}
+
+  .note{border-left:6px solid var(--banana);background:#fff;border-radius:0 10px 10px 0;
+        padding:18px 20px;box-shadow:0 2px 10px rgba(0,0,0,.05);margin-top:14px}
+  .note h3{font-size:14.5px;font-weight:900;margin-bottom:7px}
+  .note p{font-size:13px;color:var(--g600);line-height:1.7}
+
+  footer{text-align:center;font-size:12px;color:var(--g500);padding:36px 24px;line-height:1.8}
+
+  @media(max-width:900px){
+    .flow,.grid,.checks{grid-template-columns:1fr}
+    .stats{grid-template-columns:repeat(2,1fr)}
+    h1{font-size:28px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd">
+    <div class="eyebrow">Delivery · 11 August 2026</div>
+    <h1>Events Portal</h1>
+    <p class="sub">A client-facing home for everything about one event. Organizers request a date, get a private
+      link, and fill in lineup, setup, sound, promo, and paperwork over time. It all lands on the CRM event page.</p>
+    <div class="meta">
+      <span class="pill hash">620452c</span>
+      <span class="pill">branch: main</span>
+      <span class="pill eff">Effort: high</span>
+      <span class="pill">build passes</span>
+      <span class="pill">verified live</span>
+    </div>
+  </div>
+</header>
+<div class="rule"></div>
+
+<div class="wrap">
+
+  <h2>How it flows</h2>
+  <div class="flow">
+    <div class="step">
+      <div class="n">1</div>
+      <h3>Request a date</h3>
+      <p>A short public form at <strong>/book</strong>. About two minutes. Sending it does not book anything.</p>
+      <span class="who client">Organizer</span>
+    </div>
+    <div class="step">
+      <div class="n">2</div>
+      <h3>Pending event appears</h3>
+      <p>The CRM gets a <strong>pending</strong> event plus a portal. Not on the calendar, not in the newsletter.</p>
+      <span class="who staff">Automatic</span>
+    </div>
+    <div class="step">
+      <div class="n">3</div>
+      <h3>Fill in the details</h3>
+      <p>Their private link. Nine sections, saves as they type, works on a phone, come back anytime.</p>
+      <span class="who client">Organizer</span>
+    </div>
+    <div class="step">
+      <div class="n">4</div>
+      <h3>Approve onto the calendar</h3>
+      <p>You see everything on the event page, then one button moves it from request to confirmed.</p>
+      <span class="who staff">You</span>
+    </div>
+  </div>
+
+  <h2>What was built</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>One spec, three consumers</h3>
+      <p><code>lib/eventPortal.js</code> defines 9 sections and 64 fields. The client form, the CRM viewer, and the
+         API's input filtering all render from it, so they cannot drift apart. Adding a field is one line.</p>
+    </div>
+    <div class="card f">
+      <h3>Secret link per event</h3>
+      <p>The token is the only credential and scopes every request to one booking. Rotatable from the CRM if a link
+         gets forwarded somewhere it should not be.</p>
+    </div>
+    <div class="card a">
+      <h3>Required vs. helpful</h3>
+      <p>11 fields are the "cannot schedule without it" set and are called out at the top of the portal. The other 53
+         are planning detail and never block a booking.</p>
+    </div>
+    <div class="card b">
+      <h3>New pending status</h3>
+      <p>A request is not a calendar entry. Pending events never auto-complete, stay out of the newsletter, and show
+         banana on the calendar until approved.</p>
+    </div>
+    <div class="card">
+      <h3>File uploads</h3>
+      <p>Flyers, tech riders, insurance certificates, W9s. Uploads go straight from the browser, so a 20&nbsp;MB
+         artwork file does not hit Vercel's 4.5&nbsp;MB request cap.</p>
+    </div>
+    <div class="card f">
+      <h3>On the event page</h3>
+      <p>Completion bar, what is still missing, the link with copy / open / rotate / remove, "Copy all answers" as
+         plain text, and every answer grouped by section.</p>
+    </div>
+  </div>
+
+  <h2>The portal, section by section</h2>
+  <div class="stats">
+    <div class="stat"><div class="v">9</div><div class="l">Sections</div></div>
+    <div class="stat"><div class="v">64</div><div class="l">Fields</div></div>
+    <div class="stat"><div class="v">11</div><div class="l">Required</div></div>
+    <div class="stat"><div class="v">6</div><div class="l">Upload slots</div></div>
+    <div class="stat"><div class="v">2</div><div class="l">Public pages</div></div>
+  </div>
+  <table style="margin-top:14px">
+    <tr><th style="width:190px">Section</th><th>What it collects</th></tr>
+    <tr><td><strong>Who you are</strong></td><td>Contact, pronouns, organization, socials, member status, day-of contact</td></tr>
+    <tr><td><strong>The event</strong></td><td>Name, type, preferred and backup date, times, load-in and out, attendance, public or private, description</td></tr>
+    <tr><td><strong>Lineup</strong></td><td>Host, then a repeatable row per performer or facilitator with set times and what they need, plus a run of show</td></tr>
+    <tr><td><strong>Space and setup</strong></td><td>Setup style, stage, chairs, tables, notes, and a layout sketch</td></tr>
+    <tr><td><strong>Sound, lights, AV</strong></td><td>PA, mic count, projector, lighting, own engineer or gear, soundcheck, tech rider</td></tr>
+    <tr><td><strong>Tickets and money</strong></td><td>How people get in, price, ticket link, what is sold on site, revenue notes</td></tr>
+    <tr><td><strong>Food and drink</strong></td><td>Catering and alcohol, asked of everyone given how much sober programming runs here</td></tr>
+    <tr><td><strong>Promotion</strong></td><td>Whether they want help, which channels, promo copy, handles to tag, flyer and photos</td></tr>
+    <tr><td><strong>Logistics</strong></td><td>Crew, accessibility needs, insurance certificate, W9, house rules, anything else</td></tr>
+  </table>
+
+  <h2>Verified against the live database, then cleaned up</h2>
+  <div class="checks">
+    <div class="chk"><div class="tick">✓</div><div><strong>Request guards.</strong> Missing fields, honeypot, malformed email, and a per-email rate limit all reject correctly.</div></div>
+    <div class="chk"><div class="tick">✓</div><div><strong>Input filtering.</strong> Unknown keys, an out-of-enum value, a <code>DROP TABLE</code> string, a <code>javascript:</code> file URL, and junk inside a repeat row were all stripped.</div></div>
+    <div class="chk"><div class="tick">✓</div><div><strong>Event sync.</strong> Portal answers push name, date, times, and description onto the event, and never clear a field the portal left blank.</div></div>
+    <div class="chk"><div class="tick">✓</div><div><strong>Row-level security.</strong> As <code>anon</code>, both the portals table and the events table return <strong>0 rows</strong>.</div></div>
+    <div class="chk"><div class="tick">✓</div><div><strong>Storage.</strong> Anon upload works, public read returns 200, anon delete is blocked.</div></div>
+    <div class="chk"><div class="tick">✓</div><div><strong>Layout.</strong> Screenshotted at 1000px and 390px. No horizontal overflow at either width.</div></div>
+  </div>
+
+  <div class="note">
+    <h3>One thing to know</h3>
+    <p>Uploaded files sit at public URLs, the same as the newsletter images. A flyer or an insurance certificate is
+       fine. Anything genuinely sensitive should not go through the upload fields. If that becomes a problem, the
+       bucket can be switched to signed URLs later.</p>
+  </div>
+
+  <div class="note" style="border-left-color:var(--cyan)">
+    <h3>Where to point people</h3>
+    <p><strong>sprout-crm-tool-next-js.vercel.app/book</strong> is the public booking form. Put it on the website,
+       in the link tree, and on the hosting QR code. For an event you already added by hand, open it in the CRM and
+       hit <strong>Create portal link</strong>, then send that link to the organizer.</p>
+  </div>
+
+</div>
+
+<footer>
+  Sprout Society CRM · commit <strong>620452c</strong> on <strong>main</strong><br>
+  15 files changed · 1,966 insertions · new table <code>sprout_event_portals</code> · new bucket <code>event-portal-files</code>
+</footer>
+
+</body>
+</html>
