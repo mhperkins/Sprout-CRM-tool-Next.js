@@ -25,6 +25,8 @@ import {
   deleteNewsletterById,
   DEFAULT_PROFILE,
   uploadNewsletterImage,
+  uploadEventMedia,
+  deleteEventMedia,
   signOut,
   fetchOutreachDocs,
   saveOutreachDoc,
@@ -4261,9 +4263,340 @@ function EventPortalPanel({event,portal,onCreate,onRotate,onRemove,onRefresh,onA
   );
 }
 
-function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,onContactClick,portal,onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals,showToast}) {
+/* ─── Event workspace: media ──────────────────────────────────────────────────
+   Uploads live in the public event-media bucket; links point anywhere (Drive,
+   YouTube). Both share one list so the gallery reads as a single shelf of assets.
+   Large video is deliberately pushed to a link rather than an upload.            */
+function EventMediaPanel({event,onUpdateEvent,showToast}) {
+  const media=event.media||[];
+  const [busy,setBusy]=useState(false);
+  const [dragOver,setDragOver]=useState(false);
+  const [linkOpen,setLinkOpen]=useState(false);
+  const [linkLabel,setLinkLabel]=useState("");
+  const [linkUrl,setLinkUrl]=useState("");
+  const fileRef=useRef(null);
+
+  const isImg=(m)=>(m.mime||"").startsWith("image/")||/\.(png|jpe?g|gif|webp|avif)$/i.test(m.url);
+  const isVid=(m)=>(m.mime||"").startsWith("video/")||/\.(mp4|mov|webm)$/i.test(m.url);
+
+  const addFiles=async(list)=>{
+    const files=Array.from(list||[]);
+    if(!files.length) return;
+    setBusy(true);
+    const added=[]; const failed=[];
+    for(const f of files){
+      try{
+        const meta=await uploadEventMedia(event.id,f);
+        added.push({id:uid(),kind:"file",note:"",addedAt:localTodayISO(),...meta});
+      }catch(e){ failed.push(e?.message||f.name); }
+    }
+    if(added.length) onUpdateEvent({...event,media:[...media,...added]});
+    setBusy(false);
+    if(added.length) showToast(added.length+" file"+(added.length>1?"s":"")+" added ✓");
+    // Surface every rejection: a silently dropped upload reads as a working save.
+    failed.forEach(m=>showToast(m));
+  };
+
+  const addLink=()=>{
+    const url=linkUrl.trim();
+    if(!url) return;
+    onUpdateEvent({...event,media:[...media,{
+      id:uid(),kind:"link",url,name:linkLabel.trim()||url,mime:"",size:null,note:"",
+      addedAt:localTodayISO(),
+    }]});
+    setLinkLabel(""); setLinkUrl(""); setLinkOpen(false);
+    showToast("Link added ✓");
+  };
+
+  const removeItem=(m)=>{
+    onUpdateEvent({...event,media:media.filter(x=>x.id!==m.id)});
+    if(m.kind==="file") deleteEventMedia(m.url);
+  };
+
+  const setNote=(id,note)=>onUpdateEvent({...event,media:media.map(x=>x.id===id?{...x,note}:x)});
+
+  const fileCount=media.filter(m=>m.kind==="file").length;
+  const linkCount=media.length-fileCount;
+
+  return (
+    <div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12,flexWrap:"wrap",gap:8}}>
+        <div style={{fontSize:11,color:"var(--g500)"}}>
+          {media.length===0?"No assets yet":fileCount+" uploaded · "+linkCount+" linked"}
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <button className="btn btn-ghost btn-sm" onClick={()=>setLinkOpen(v=>!v)}>+ Add link</button>
+          <button className="btn btn-blk btn-sm" disabled={busy} onClick={()=>fileRef.current?.click()}>
+            {busy?"Uploading…":"+ Upload"}
+          </button>
+        </div>
+      </div>
+
+      <input ref={fileRef} type="file" multiple accept="image/*,video/*,application/pdf" style={{display:"none"}}
+        onChange={e=>{addFiles(e.target.files); e.target.value="";}}/>
+
+      {linkOpen&&(
+        <div style={{border:"1.5px solid var(--g200)",borderRadius:8,padding:12,marginBottom:12,background:"#fff"}}>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            <div style={{flex:"1 1 160px"}}>
+              <label className="fl">Label</label>
+              <input className="fi" style={{fontSize:12}} placeholder="Vol. 4 flyer" value={linkLabel}
+                onChange={e=>setLinkLabel(e.target.value)}/>
+            </div>
+            <div style={{flex:"2 1 260px"}}>
+              <label className="fl">URL</label>
+              <input className="fi" style={{fontSize:12}} placeholder="https://drive.google.com/…" value={linkUrl}
+                onChange={e=>setLinkUrl(e.target.value)}
+                onKeyDown={e=>{if(e.key==="Enter")addLink();}}/>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:8,marginTop:10}}>
+            <button className="btn btn-blk btn-sm" onClick={addLink}>Add</button>
+            <button className="btn btn-ghost btn-sm" onClick={()=>setLinkOpen(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {/* Drop zone doubles as the empty state so the panel is never a dead box. */}
+      <div
+        onDragOver={e=>{e.preventDefault();setDragOver(true);}}
+        onDragLeave={()=>setDragOver(false)}
+        onDrop={e=>{e.preventDefault();setDragOver(false);addFiles(e.dataTransfer.files);}}
+        style={{
+          border:"1.5px dashed "+(dragOver?"var(--cyan)":"var(--g200)"),borderRadius:10,
+          background:dragOver?"var(--cyan-lt)":"transparent",padding:media.length?12:26,marginBottom:14,
+          transition:"all 0.12s",
+        }}>
+        {media.length===0?(
+          <div style={{textAlign:"center",color:"var(--g400)",fontSize:12}}>
+            Drag flyers, photos or video here, or use <strong>+ Upload</strong>.<br/>
+            <span style={{fontSize:11}}>Files over 25MB should be added with <strong>+ Add link</strong> instead.</span>
+          </div>
+        ):(
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(168px,1fr))",gap:12}}>
+            {media.map(m=>(
+              <div key={m.id} style={{border:"1.5px solid var(--g200)",borderRadius:9,overflow:"hidden",background:"#fff",boxShadow:"var(--sh-sm)",display:"flex",flexDirection:"column"}}>
+                <div onClick={()=>window.open(m.url,"_blank","noreferrer")}
+                  style={{height:110,background:"var(--g100)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+                  {isImg(m)
+                    ? <img src={m.url} alt={m.name} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                    : <div style={{textAlign:"center",color:"var(--g500)"}}>
+                        <div style={{fontSize:24,lineHeight:1}}>{isVid(m)?"🎬":m.kind==="link"?"🔗":"📄"}</div>
+                        <div style={{fontSize:9,marginTop:4,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:700}}>
+                          {m.kind==="link"?"Link":isVid(m)?"Video":"File"}
+                        </div>
+                      </div>}
+                </div>
+                <div style={{padding:"8px 9px",flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div title={m.name} style={{fontSize:11,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{m.name}</div>
+                  <input className="fi" style={{fontSize:10,padding:"3px 6px",height:"auto"}} placeholder="Add a note…"
+                    defaultValue={m.note||""} onBlur={e=>{const v=e.target.value;if(v!==(m.note||""))setNote(m.id,v);}}/>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:"auto"}}>
+                    <span style={{fontSize:9,color:"var(--g400)"}}>
+                      {m.kind==="file"&&m.size?(m.size/1048576).toFixed(1)+"MB":m.kind==="link"?"linked":""}
+                    </span>
+                    <button onClick={()=>removeItem(m)} title="Remove"
+                      style={{background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:14,lineHeight:1,padding:"0 2px"}}>×</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Event workspace: communications ─────────────────────────────────────────
+   An event-scoped log of who was contacted, how, and where it stands. When an
+   entry names a CRM contact it also writes a touchpoint onto that contact, so
+   the event log and the relationship history never drift apart.                 */
+const COMM_CHANNELS={email:"✉ Email",dm:"📷 DM",text:"💬 Text",call:"📞 Call",in_person:"🤝 In person",other:"• Other"};
+const COMM_STATUS={
+  sent:     {label:"Sent",      bg:"var(--g100)",       fg:"var(--g600)"},
+  awaiting: {label:"Awaiting",  bg:"var(--acid-lt)",    fg:"#3a3d00"},
+  replied:  {label:"Replied",   bg:"var(--cyan-lt)",    fg:"#155e6e"},
+  confirmed:{label:"Confirmed", bg:"var(--cyan)",       fg:"#fff"},
+  declined: {label:"Declined",  bg:"var(--fuchsia-lt)", fg:"#8b0057"},
+};
+
+function EventCommsPanel({event,contacts,linked,onUpdateEvent,onUpdateContacts,onContactClick,showToast}) {
+  const comms=event.comms||[];
+  const today=localTodayISO();
+  const [open,setOpen]=useState(false);
+  const [filter,setFilter]=useState("all");
+  const blank={date:today,channel:"email",contact_id:"",to:"",summary:"",status:"sent"};
+  const [form,setForm]=useState(blank);
+
+  // Anyone attached to the event first, then the rest of the CRM, so the common
+  // case (chasing your own lineup) sits at the top of the picker.
+  const pickList=[...linked,...contacts.filter(c=>!linked.some(l=>l.id===c.id))];
+  const nameOf=(id)=>{
+    const c=contacts.find(x=>x.id===id);
+    if(!c) return id;
+    return ((c.first_name||"")+" "+(c.last_name||"")).trim()||c.email||id;
+  };
+
+  const save=()=>{
+    const summary=form.summary.trim();
+    if(!summary){ showToast("Add a short summary first"); return; }
+    const entry={
+      id:uid(),date:form.date||today,channel:form.channel,
+      contact_id:form.contact_id||null,to:form.to.trim(),
+      summary,status:form.status,
+    };
+    onUpdateEvent({...event,comms:[...comms,entry]});
+
+    // Mirror onto the contact's own history. The event log is saved above
+    // regardless, so a contact write failing here cannot lose the entry.
+    if(entry.contact_id&&onUpdateContacts){
+      const c=contacts.find(x=>x.id===entry.contact_id);
+      if(c){
+        const tag="["+(event.name||"Event")+"] "+(COMM_CHANNELS[entry.channel]||entry.channel)+": "+summary;
+        onUpdateContacts({...c,touchpoints:[...(c.touchpoints||[]),{
+          date:entry.date,summary:tag,next_action:"",next_action_date:null,
+        }]});
+      }
+    }
+    setForm({...blank,date:form.date,channel:form.channel});
+    setOpen(false);
+    showToast("Logged ✓");
+  };
+
+  const setStatus=(id,status)=>onUpdateEvent({...event,comms:comms.map(c=>c.id===id?{...c,status}:c)});
+  const remove=(id)=>onUpdateEvent({...event,comms:comms.filter(c=>c.id!==id)});
+
+  const awaiting=comms.filter(c=>c.status==="awaiting").length;
+  const shown=[...comms]
+    .filter(c=>filter==="all"?true:c.status===filter)
+    .sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+
+  return (
+    <div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12,flexWrap:"wrap",gap:8}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+          <div style={{fontSize:11,color:"var(--g500)"}}>
+            {comms.length===0?"Nothing logged yet":comms.length+" logged"}
+          </div>
+          {awaiting>0&&<span style={{fontSize:10,fontWeight:800,padding:"2px 8px",borderRadius:20,background:"var(--acid-lt)",color:"#3a3d00"}}>
+            {awaiting} awaiting reply
+          </span>}
+        </div>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <select className="fi" style={{fontSize:11,width:"auto",padding:"4px 8px",height:"auto"}}
+            value={filter} onChange={e=>setFilter(e.target.value)}>
+            <option value="all">All</option>
+            {Object.entries(COMM_STATUS).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
+          </select>
+          <button className="btn btn-blk btn-sm" onClick={()=>setOpen(v=>!v)}>{open?"Cancel":"+ Log a message"}</button>
+        </div>
+      </div>
+
+      {open&&(
+        <div style={{border:"1.5px solid var(--g200)",borderRadius:8,padding:12,marginBottom:14,background:"#fff"}}>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
+            <div style={{flex:"0 0 130px"}}>
+              <label className="fl">Date</label>
+              <input type="date" className="fi" style={{fontSize:12}} value={form.date}
+                onChange={e=>setForm({...form,date:e.target.value})}/>
+            </div>
+            <div style={{flex:"0 0 130px"}}>
+              <label className="fl">Channel</label>
+              <select className="fi" style={{fontSize:12}} value={form.channel}
+                onChange={e=>setForm({...form,channel:e.target.value})}>
+                {Object.entries(COMM_CHANNELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}
+              </select>
+            </div>
+            <div style={{flex:"1 1 180px"}}>
+              <label className="fl">Contact</label>
+              <select className="fi" style={{fontSize:12}} value={form.contact_id}
+                onChange={e=>setForm({...form,contact_id:e.target.value})}>
+                <option value="">— someone else / a group —</option>
+                {pickList.map(c=>(
+                  <option key={c.id} value={c.id}>
+                    {(((c.first_name||"")+" "+(c.last_name||"")).trim()||c.email||c.id)+(linked.some(l=>l.id===c.id)?" ·":"")}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div style={{flex:"0 0 140px"}}>
+              <label className="fl">Status</label>
+              <select className="fi" style={{fontSize:12}} value={form.status}
+                onChange={e=>setForm({...form,status:e.target.value})}>
+                {Object.entries(COMM_STATUS).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
+              </select>
+            </div>
+          </div>
+          {!form.contact_id&&(
+            <div style={{marginBottom:8}}>
+              <label className="fl">Who (free text)</label>
+              <input className="fi" style={{fontSize:12}} placeholder="e.g. all 7/24 attendees, the venue"
+                value={form.to} onChange={e=>setForm({...form,to:e.target.value})}/>
+            </div>
+          )}
+          <label className="fl">What was said</label>
+          <textarea className="fi" style={{fontSize:12,minHeight:60,resize:"vertical"}}
+            placeholder="Sent set time and load-in details…"
+            value={form.summary} onChange={e=>setForm({...form,summary:e.target.value})}/>
+          <div style={{display:"flex",gap:8,marginTop:10,alignItems:"center"}}>
+            <button className="btn btn-blk btn-sm" onClick={save}>Log it</button>
+            <button className="btn btn-ghost btn-sm" onClick={()=>{setOpen(false);setForm(blank);}}>Cancel</button>
+            {form.contact_id&&<span style={{fontSize:10,color:"var(--g400)"}}>Also saved to {nameOf(form.contact_id)}&rsquo;s history</span>}
+          </div>
+        </div>
+      )}
+
+      {shown.length===0?(
+        <div style={{border:"1.5px dashed var(--g200)",borderRadius:10,padding:24,textAlign:"center",color:"var(--g400)",fontSize:12}}>
+          {comms.length===0
+            ? <>No communications logged for this event yet.<br/><span style={{fontSize:11}}>Log who you contacted so nothing gets chased twice or forgotten.</span></>
+            : "Nothing matches this filter."}
+        </div>
+      ):(
+        <div>
+          {shown.map(c=>{
+            const st=COMM_STATUS[c.status]||COMM_STATUS.sent;
+            const who=c.contact_id?nameOf(c.contact_id):(c.to||"—");
+            const clickable=!!c.contact_id&&!!onContactClick;
+            return (
+              <div key={c.id} style={{display:"flex",gap:10,padding:"10px 0",borderBottom:"1px solid var(--g100)",alignItems:"flex-start"}}>
+                <div style={{width:52,flexShrink:0,fontSize:10,color:"var(--g400)",fontWeight:700,paddingTop:2}}>
+                  {(c.date||"").slice(5).replace("-","/")}
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap",marginBottom:3}}>
+                    <span style={{fontSize:11,color:"var(--g500)"}}>{COMM_CHANNELS[c.channel]||c.channel}</span>
+                    <span onClick={()=>{if(clickable)onContactClick(contacts.find(x=>x.id===c.contact_id));}}
+                      style={{fontSize:12,fontWeight:800,cursor:clickable?"pointer":"default",color:clickable?"var(--cyan)":"var(--black)"}}>
+                      {who}
+                    </span>
+                    <select value={c.status} onChange={e=>setStatus(c.id,e.target.value)}
+                      style={{fontSize:9,fontWeight:800,padding:"2px 6px",borderRadius:20,border:"none",cursor:"pointer",background:st.bg,color:st.fg,fontFamily:"'Lato',sans-serif"}}>
+                      {Object.entries(COMM_STATUS).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
+                    </select>
+                  </div>
+                  <div style={{fontSize:12,lineHeight:1.6,color:"var(--g600)",whiteSpace:"pre-wrap"}}>{c.summary}</div>
+                </div>
+                <button onClick={()=>remove(c.id)} title="Delete entry"
+                  style={{background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:14,lineHeight:1,padding:"0 2px",flexShrink:0}}>×</button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,onUpdateContacts,onContactClick,portal,onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals,showToast}) {
   const linked = contacts.filter(c=>(event.contact_ids||[]).includes(c.id));
   const today=new Date().toISOString().slice(0,10);
+
+  // Workspace tab. Planning is the daily driver so it opens first, and the choice
+  // is remembered for the session so moving between events keeps your place.
+  const [tab,setTab]=useState(()=>{ try{ return sessionStorage.getItem("sprout_evt_tab")||"plan"; }catch{ return "plan"; } });
+  const goTab=(t)=>{ setTab(t); try{ sessionStorage.setItem("sprout_evt_tab",t); }catch{} };
 
   // contacts modal
   const [showContactsModal,setShowContactsModal]=useState(false);
@@ -4377,11 +4710,46 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
       </div>
       <div style={{marginBottom:16}}><EventStatusTag status={event.status}/></div>
 
-      {/* TOP TWO-COLUMN: info left, contacts right */}
-      <div style={{display:"flex",gap:24,alignItems:"flex-start",marginBottom:24}}>
-        <div style={{flex:"1 1 0",minWidth:0}}>
+      {/* WORKSPACE TABS — planning, people, comms, media, reference details.
+          Counts render inline so you can see what an event still needs without
+          opening every tab. */}
+      <div className="tabs">
+        {[
+          ["plan",   "Plan",    clTotal?clDone+"/"+clTotal:""],
+          ["people", "People",  linked.length||""],
+          ["comms",  "Comms",   (event.comms||[]).length||""],
+          ["media",  "Media",   (event.media||[]).length||""],
+          ["details","Details", ""],
+        ].map(([key,label,badge])=>(
+          <button key={key} className={"tab"+(tab===key?" on":"")} onClick={()=>goTab(key)}>
+            {label}
+            {badge!==""&&badge!=null&&<span style={{marginLeft:6,fontSize:9,fontWeight:800,color:tab===key?"var(--cyan)":"var(--g400)"}}>{badge}</span>}
+          </button>
+        ))}
+      </div>
+
+      {/* ── DETAILS TAB ── */}
+      {tab==="details"&&(
+      <div style={{marginBottom:24}}>
+        <div>
           {event.description&&<div className="dp-section"><div className="dp-sect-lbl">Description</div><p style={{fontSize:12,lineHeight:1.7,margin:0}}>{event.description}</p></div>}
           {event.notes&&<div className="dp-section"><div className="dp-sect-lbl">Notes</div><p style={{fontSize:12,lineHeight:1.7,margin:0}}>{event.notes}</p></div>}
+          {/* RECAP — editable here because this is the only screen you are on after
+              an event runs. assemble_newsletter pulls recaps from completed events
+              that have this filled, so an empty box is why an event never shows up
+              in the monthly roundup. */}
+          <div className="dp-section">
+            <div className="dp-sect-lbl">Recap <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--g400)"}}>· feeds the newsletter</span></div>
+            <textarea className="fi" style={{fontSize:12,minHeight:70,resize:"vertical",lineHeight:1.6}}
+              placeholder="A short paste-ready blurb about how it went…"
+              defaultValue={event.recap||""}
+              onBlur={e=>{const v=e.target.value;if(v!==(event.recap||"")){onUpdateEvent({...event,recap:v});showToast("Recap saved ✓");}}}/>
+            {event.status!=="completed"&&(event.recap||"").trim()&&(
+              <div style={{fontSize:10,color:"var(--g400)",marginTop:5}}>
+                This event is not marked completed yet, so the recap will not appear in the roundup.
+              </div>
+            )}
+          </div>
           {(event.links||[]).length>0&&<div className="dp-section">
             <div className="dp-sect-lbl">Links</div>
             {(event.links||[]).map(l=>{
@@ -4416,22 +4784,44 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
           />
         </div>
 
-        {/* CONTACTS STRIP */}
-        {linked.length>0&&<div style={{width:260,flexShrink:0}}>
-          <div className="dp-section" style={{paddingTop:0}}>
-            <div className="dp-sect-lbl">Contacts ({linked.length}) — RSVP</div>
-            {linked.slice(0,3).map(c=><ContactRow key={c.id} c={c}/>)}
-            {linked.length>3&&<div style={{paddingTop:8}}>
-              <button className="btn btn-ghost btn-sm" style={{width:"100%"}} onClick={()=>setShowContactsModal(true)}>
-                Show all {linked.length} contacts
-              </button>
-            </div>}
-          </div>
-        </div>}
       </div>
+      )}
 
-      {/* FULL-WIDTH CHECKLIST CALENDAR */}
-      <div style={{borderTop:"1.5px solid var(--g200)",paddingTop:20}}>
+      {/* ── PEOPLE TAB — the full roster, not the old 3-row preview ── */}
+      {tab==="people"&&(
+      <div style={{marginBottom:24}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+          <div style={{fontSize:11,color:"var(--g500)"}}>
+            {linked.length===0?"Nobody attached yet":linked.length+" attached · "+(event.confirmed_ids||[]).length+" confirmed"}
+          </div>
+        </div>
+        {linked.length===0
+          ? <div style={{border:"1.5px dashed var(--g200)",borderRadius:10,padding:24,textAlign:"center",color:"var(--g400)",fontSize:12}}>
+              Attach contacts to this event from a contact&rsquo;s Affiliations, or from the Edit Event screen.
+            </div>
+          : <div style={{maxWidth:520}}>{linked.map(c=><ContactRow key={c.id} c={c}/>)}</div>}
+      </div>
+      )}
+
+      {/* ── COMMS TAB ── */}
+      {tab==="comms"&&(
+      <div style={{marginBottom:24}}>
+        <EventCommsPanel event={event} contacts={contacts} linked={linked}
+          onUpdateEvent={onUpdateEvent} onUpdateContacts={onUpdateContacts}
+          onContactClick={onContactClick} showToast={showToast}/>
+      </div>
+      )}
+
+      {/* ── MEDIA TAB ── */}
+      {tab==="media"&&(
+      <div style={{marginBottom:24}}>
+        <EventMediaPanel event={event} onUpdateEvent={onUpdateEvent} showToast={showToast}/>
+      </div>
+      )}
+
+      {/* ── PLAN TAB ── */}
+      {tab==="plan"&&(
+      <div>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <div className="dp-sect-lbl" style={{margin:0}}>Checklist</div>
@@ -4535,6 +4925,7 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
           ))}
         </div>}
       </div>
+      )}
 
       {/* CONTACTS MODAL */}
       {showContactsModal&&(
@@ -4641,6 +5032,7 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
 
   if(evtPage==="detail"&&selectedEvent) return <>
     <EventDetailPage
+      onUpdateContacts={onUpdateContacts}
       event={selectedEvent}
       contacts={contacts}
       onBack={()=>{setEvtPage("list");setSelectedId(null);}}
