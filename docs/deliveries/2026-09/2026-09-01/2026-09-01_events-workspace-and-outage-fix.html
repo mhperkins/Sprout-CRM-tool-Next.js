@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Delivery — Events Workspace + Outage Fix</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#030000;--paper:#F7F7F6;--cyan:#73C4D6;--fuchsia:#E10098;--acid:#C6C902;--banana:#FAD100;
+        --g200:#E5E7EB;--g400:#9CA3AF;--g600:#4B5563;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Lato,-apple-system,Segoe UI,sans-serif;background:var(--paper);color:var(--ink);
+       padding:36px 24px;line-height:1.55;}
+  .wrap{max-width:1080px;margin:0 auto}
+  .eyebrow{font-size:10px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:var(--g400)}
+  h1{font-size:38px;font-weight:900;line-height:1.1;margin:8px 0 6px}
+  .sub{font-size:15px;color:var(--g600);max-width:760px}
+  .rule{height:4px;background:var(--acid);border-radius:2px;margin:20px 0 26px}
+  .commits{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:26px}
+  .commit{background:var(--ink);color:var(--paper);border-radius:10px;padding:12px 16px;display:flex;
+          align-items:center;gap:12px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+  .hash{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;font-weight:700;color:var(--acid)}
+  .commit .t{font-size:12px}
+  .branch{font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;background:var(--cyan);
+          color:var(--ink);padding:3px 8px;border-radius:20px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:26px}
+  .card{background:#fff;border:1.5px solid var(--g200);border-radius:12px;padding:18px 20px;
+        box-shadow:0 4px 14px rgba(0,0,0,.08);border-left:6px solid var(--cyan);overflow:hidden}
+  .card.f{border-left-color:var(--fuchsia)} .card.a{border-left-color:var(--acid)}
+  .card.b{border-left-color:var(--banana)}
+  .card h3{font-size:15px;font-weight:900;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .card .tag{font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--g400)}
+  .card ul{list-style:none;margin-top:10px}
+  .card li{font-size:12.5px;color:var(--g600);padding-left:16px;position:relative;margin-bottom:6px}
+  .card li:before{content:"|";position:absolute;left:0;color:var(--cyan);font-weight:900}
+  .card.f li:before{color:var(--fuchsia)} .card.a li:before{color:#9a9c00} .card.b li:before{color:#b89600}
+  .callout{background:var(--ink);color:var(--paper);border-radius:12px;padding:22px 24px;margin-bottom:22px;
+           box-shadow:0 6px 20px rgba(0,0,0,.2)}
+  .callout h2{font-size:17px;font-weight:900;color:var(--acid);margin-bottom:8px}
+  .callout p{font-size:13.5px;color:#d8d8d4;margin-bottom:10px}
+  .callout code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background:#1c1c1c;
+                color:var(--cyan);padding:2px 6px;border-radius:4px}
+  .steps{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .step{background:#1c1c1c;border-radius:8px;padding:9px 13px;font-size:12px;color:#d8d8d4;
+        border-left:3px solid var(--fuchsia)}
+  .step b{color:var(--paper)}
+  .files{background:#fff;border:1.5px solid var(--g200);border-radius:12px;padding:16px 20px;margin-bottom:22px}
+  .files h3{font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--g400);margin-bottom:10px}
+  .frow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f0f0ee;font-size:12.5px}
+  .frow:last-child{border-bottom:none}
+  .frow code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:var(--ink);font-weight:700}
+  .frow span{color:var(--g600);font-size:12px}
+  .pill{font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;
+        border-radius:20px;background:var(--acid);color:var(--ink);flex-shrink:0}
+  .pill.new{background:var(--cyan)} .pill.mod{background:var(--banana)}
+  .verify{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .v{background:#fff;border:1.5px solid var(--g200);border-radius:20px;padding:7px 14px;font-size:12px;
+     font-weight:700;color:var(--g600);display:flex;align-items:center;gap:7px}
+  .v b{color:var(--ink)}
+  .ok{color:#0a7d3c;font-weight:900}
+  footer{margin-top:26px;font-size:11px;color:var(--g400)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Sprout CRM &middot; Delivery &middot; 1 September 2026</div>
+  <h1>Events becomes a workspace<br>and the app stops hanging</h1>
+  <p class="sub">Two pieces of work: the reason the CRM would not load past its splash screen, and the
+     rebuild of the event page from a calendar-plus-checklist into somewhere you can actually run an event.</p>
+  <div class="rule"></div>
+
+  <div class="commits">
+    <div class="commit"><span class="hash">00729f4</span><span class="t">AuthGate: surface unreachable database</span><span class="branch">main</span></div>
+    <div class="commit"><span class="hash">c8346a0</span><span class="t">Events: planning workspace</span><span class="branch">main</span></div>
+  </div>
+
+  <div class="callout">
+    <h2>Why the CRM would not load</h2>
+    <p>The Supabase project hostname <code>ixdnmjchvjzytyhmripc.supabase.co</code> returns
+       <strong>Non-existent domain</strong>. Supabase removes the subdomain when a project is paused, and free
+       projects pause after about a week of inactivity. Every request the app makes resolves to nothing, so this
+       is not a code or deploy problem, and clicking through from Vercel could never help.</p>
+    <p>A real bug made it look like a hang: <code>getSession()</code> had no <code>.catch()</code>, so a failed
+       auth call left the gate stuck on LOADING forever with no message. That is fixed, and the same outage now
+       explains itself on screen.</p>
+    <div class="steps">
+      <div class="step"><b>1.</b> Open the Supabase dashboard</div>
+      <div class="step"><b>2.</b> Click <b>Restore project</b>, wait for it to come up</div>
+      <div class="step"><b>3.</b> Reload the CRM &mdash; data is retained while paused</div>
+      <div class="step"><b>4.</b> Apply <b>event_media_storage_bucket.sql</b> to switch on uploads</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Five-tab workspace</h3>
+      <div class="tag">Event detail page</div>
+      <ul>
+        <li>Plan &middot; People &middot; Comms &middot; Media &middot; Details</li>
+        <li>Counts render on the tabs, so you can see what an event still needs without opening each one</li>
+        <li>Tab choice persists for the session</li>
+        <li>The checklist calendar is unchanged and lives under Plan</li>
+      </ul>
+    </div>
+    <div class="card f">
+      <h3>Communications log</h3>
+      <div class="tag">New</div>
+      <ul>
+        <li>Who was contacted, on what channel, and where it stands</li>
+        <li>Sent &middot; Awaiting &middot; Replied &middot; Confirmed &middot; Declined, with an awaiting-reply count and filter</li>
+        <li>Naming a CRM contact also writes a touchpoint onto that contact, so the two histories cannot drift</li>
+        <li>Free-text recipients keep group blasts and outside vendors loggable</li>
+      </ul>
+    </div>
+    <div class="card a">
+      <h3>Media shelf</h3>
+      <div class="tag">New</div>
+      <ul>
+        <li>Drag-and-drop uploads with real thumbnails, into a per-event bucket</li>
+        <li>Links for Drive folders and long video, side by side with uploads</li>
+        <li>25MB cap, with anything larger steered to a link</li>
+        <li>Per-asset notes; deleting an asset also clears the stored object</li>
+      </ul>
+    </div>
+    <div class="card b">
+      <h3>People and Recap</h3>
+      <div class="tag">Rebuilt</div>
+      <ul>
+        <li>Full roster with RSVP toggles, replacing the three-row preview strip</li>
+        <li>The recap field is now editable on this page for the first time</li>
+        <li>An empty recap is exactly why a finished event never reaches the monthly roundup</li>
+        <li>Warns when a recap exists but the event is not marked completed</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="files">
+    <h3>Files</h3>
+    <div class="frow"><span class="pill mod">mod</span><code>components/AuthGate.jsx</code><span>catch + 12s timeout; unreachable-database screen</span></div>
+    <div class="frow"><span class="pill mod">mod</span><code>components/CRMManager.jsx</code><span>tabbed workspace, media panel, comms panel, recap editor</span></div>
+    <div class="frow"><span class="pill mod">mod</span><code>lib/schemas.js</code><span>MediaSchema + EventCommSchema, both JSONB-only</span></div>
+    <div class="frow"><span class="pill mod">mod</span><code>lib/services.js</code><span>uploadEventMedia / deleteEventMedia</span></div>
+    <div class="frow"><span class="pill new">new</span><code>supabase/migrations/event_media_storage_bucket.sql</code><span>public read, authenticated writes &mdash; unapplied, project paused</span></div>
+  </div>
+
+  <div class="verify">
+    <div class="v"><span class="ok">&#10003;</span><b>npm run build</b> passes</div>
+    <div class="v"><span class="ok">&#10003;</span>media and comms survive <b>validateEvent</b></div>
+    <div class="v"><span class="ok">&#10003;</span>legacy events default to <b>[]</b>, no migration</div>
+    <div class="v"><span class="ok">&#10003;</span>malformed dates <b>rejected</b>, not coerced</div>
+    <div class="v"><span class="ok">&#10003;</span>UI enums match Zod per the <b>schemas-sync rule</b></div>
+  </div>
+
+  <footer>Not exercised against live data: the Supabase project is paused, so nothing could be read or written this session.</footer>
+</div>
+</body>
+</html>
