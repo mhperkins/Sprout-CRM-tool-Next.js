@@ -69,6 +69,9 @@ export default function AuthGate({ children }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const [ok, setOk] = useState("");
+  // Set when we cannot reach Supabase at all (project paused/deleted, DNS gone, offline).
+  // Without this the gate sits on "Loading..." forever with no explanation.
+  const [reachErr, setReachErr] = useState("");
 
   useEffect(() => {
     // Invite + password-reset emails land here with a token in the URL hash.
@@ -77,12 +80,26 @@ export default function AuthGate({ children }) {
     const hash = typeof window !== "undefined" ? window.location.hash : "";
     if (hash.includes("type=invite") || hash.includes("type=recovery")) setScreen("setpw");
 
-    sb.auth.getSession().then(({ data }) => {
-      setSession(data.session || null);
+    // getSession() can reject (DNS/network failure) or hang. Either way we must still
+    // flip `ready`, otherwise the gate renders its loading screen indefinitely.
+    let settled = false;
+    const finish = (err) => {
+      if (settled) return;
+      settled = true;
+      if (err) setReachErr(typeof err === "string" ? err : (err?.message || "Could not reach the server."));
       setReady(true);
-    });
+    };
+    const timer = setTimeout(
+      () => finish("The server did not respond. The database may be paused or offline."),
+      12000
+    );
+    sb.auth
+      .getSession()
+      .then(({ data }) => { setSession(data.session || null); finish(); })
+      .catch((e) => finish(e))
+      .finally(() => clearTimeout(timer));
     const { data: sub } = sb.auth.onAuthStateChange((_evt, sess) => setSession(sess || null));
-    return () => sub.subscription.unsubscribe();
+    return () => { clearTimeout(timer); sub.subscription.unsubscribe(); };
   }, [sb]);
 
   async function doLogin(e) {
@@ -126,6 +143,30 @@ export default function AuthGate({ children }) {
       <div style={wrap}>
         <div style={{ color: C.g400, fontSize: 13, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
           Loading…
+        </div>
+      </div>
+    );
+  }
+
+  // Could not reach Supabase at all. Show what is wrong instead of a dead loading screen:
+  // the usual cause is the Supabase project being paused, which takes the whole
+  // hostname offline, so no login attempt can possibly succeed.
+  if (reachErr && !session) {
+    return (
+      <div style={wrap}>
+        <div style={card}>
+          <div style={{ fontSize: 15, fontWeight: 900, color: C.black, marginBottom: 8 }}>
+            Can&rsquo;t reach the database
+          </div>
+          <div style={{ fontSize: 13, lineHeight: 1.55, color: C.g600, marginBottom: 14 }}>
+            {reachErr}
+          </div>
+          <div style={{ fontSize: 12, lineHeight: 1.55, color: C.g600, marginBottom: 18 }}>
+            This is almost always a <strong>paused Supabase project</strong>. Open the Supabase
+            dashboard and click <strong>Restore project</strong>, wait for it to come back up,
+            then reload this page. Your data is not lost while a project is paused.
+          </div>
+          <button style={btnS} onClick={() => window.location.reload()}>Retry</button>
         </div>
       </div>
     );
