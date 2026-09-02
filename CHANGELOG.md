@@ -2,6 +2,37 @@
 
 ---
 
+## 2026-09-02 — Events workspace, and the outage that was a paused database
+
+Two threads. `components/AuthGate.jsx`, `components/CRMManager.jsx`, `lib/schemas.js`, `lib/services.js`, one new migration (applied). `npm run build` passes. Effort: diagnose high / fix medium.
+
+### The app would not load, and it was not the app
+
+The CRM sat on its uppercase "LOADING…" splash, including straight from the Vercel link. That screen is `AuthGate`'s `!ready` state, so `getSession()` was never resolving.
+
+`ixdnmjchvjzytyhmripc.supabase.co` returned **Non-existent domain** while `supabase.com` resolved normally, and the Management API timed out too. Supabase tears down the project subdomain when a project is paused, and free projects pause after about a week of inactivity; the last work here was 2026-07-28. Every request the app made resolved to nothing, which is why clicking through from Vercel could not help either. Max hit **Resume** in the dashboard and the project came back `ACTIVE_HEALTHY` with all data intact (3,812 contacts, 15 events).
+
+**The real bug this exposed:** `AuthGate` called `getSession().then(...)` with no `.catch()`, so any auth failure left `ready` false forever and rendered the loading screen indefinitely with no diagnostic. Now it catches rejections, adds a 12s timeout guard so `ready` always flips, clears the timer on unmount, and renders a "cannot reach the database" screen that names the paused-project cause and offers a retry. A future outage explains itself instead of looking like a hang.
+
+### Events became a workspace
+
+The event page had drifted into a calendar plus a checklist, so the only thing it reliably did was attach contacts. It is now five tabs on the event detail page — **Plan · People · Comms · Media · Details** — with counts rendered inline so you can see what an event still needs without opening each one. The tab choice persists for the session.
+
+- **Comms (new).** An event-scoped log of who was contacted, on what channel, and where it stands: sent / awaiting / replied / confirmed / declined, with an awaiting-reply count and a status filter. When an entry names a CRM contact it also writes a touchpoint onto that contact, so the event log and the relationship history cannot drift apart. Free-text recipients keep group blasts and outside vendors loggable.
+- **Media (new).** Drag-and-drop uploads into a per-event `event-media` bucket with real thumbnails, plus link-outs for Drive folders and long video. Uploads cap at 25MB and anything larger is steered to a link, since large video does not belong in object storage here. Per-asset notes; removing an uploaded asset also removes the underlying object (best effort, the record stays the truth).
+- **People.** The full roster with RSVP toggles, replacing the three-row preview strip.
+- **Details.** Description, notes, links, the booking portal, and the **recap** field, which was not editable anywhere on this page before. It warns when a recap exists but the event is not marked completed.
+
+**Data model.** `media[]` and `comms[]` are JSONB-only additions to `EventSchema`, defaulting to `[]`, so existing events validate unchanged and no table migration was needed. The storage bucket did need creating: `supabase/migrations/event_media_storage_bucket.sql` grants public read and restricts writes to `authenticated` — not `anon`, as the older newsletter bucket still does, since the CRM has had a login wall since June. Applied once the project was restored; bucket and all four policies verified.
+
+**A bug caught before it shipped.** The round-trip test found the comms date regex had been written double-escaped (`/^\d{4}.../`), which matches a literal backslash. Every comms entry would have failed Zod and been silently dropped on save — this project's recurring failure mode. Fixed, and both date regexes verified against `HEAD`.
+
+**Verified:** `npm run build` passes; all **15 live events** revalidate against the updated schema with no data loss and both new fields defaulting to `[]`; a malformed date is rejected rather than coerced; the UI channel/status maps were checked against the Zod enums per the schemas-sync rule. The workspace was not driven through the UI (login wall).
+
+**Flagged, not acted on:** four `workspace-mcp` instances were listening on ports 8000–8003, which is what makes the OAuth port drift off 8000 and break Google auth. The other two Supabase projects ("Maxwell Project", "Composer Compass") are still `INACTIVE`.
+
+---
+
 ## 2026-08-11 — Events Portal: client-facing booking + intake, linked to the CRM event
 
 New public surface (`/book`, `/portal/[token]`), two API routes, one new table, one storage bucket, plus the CRM-side viewer. `npm run build` passes. Effort: high (a public, unauthenticated write surface on a login-walled app).

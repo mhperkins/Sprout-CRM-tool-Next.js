@@ -44,6 +44,8 @@
   .step{background:#1c1c1c;border-radius:8px;padding:9px 13px;font-size:12px;color:#d8d8d4;
         border-left:3px solid var(--fuchsia)}
   .step b{color:var(--paper)}
+  .step.done{border-left-color:var(--acid)}
+  .step.done b{color:var(--acid)}
   .files{background:#fff;border:1.5px solid var(--g200);border-radius:12px;padding:16px 20px;margin-bottom:22px}
   .files h3{font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--g400);margin-bottom:10px}
   .frow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f0f0ee;font-size:12.5px}
@@ -87,7 +89,7 @@
       <div class="step"><b>1.</b> Open the Supabase dashboard</div>
       <div class="step"><b>2.</b> Click <b>Restore project</b>, wait for it to come up</div>
       <div class="step"><b>3.</b> Reload the CRM &mdash; data is retained while paused</div>
-      <div class="step"><b>4.</b> Apply <b>event_media_storage_bucket.sql</b> to switch on uploads</div>
+      <div class="step done"><b>&#10003;</b> Restored, and the media bucket migration is applied</div>
     </div>
   </div>
 
@@ -140,7 +142,7 @@
     <div class="frow"><span class="pill mod">mod</span><code>components/CRMManager.jsx</code><span>tabbed workspace, media panel, comms panel, recap editor</span></div>
     <div class="frow"><span class="pill mod">mod</span><code>lib/schemas.js</code><span>MediaSchema + EventCommSchema, both JSONB-only</span></div>
     <div class="frow"><span class="pill mod">mod</span><code>lib/services.js</code><span>uploadEventMedia / deleteEventMedia</span></div>
-    <div class="frow"><span class="pill new">new</span><code>supabase/migrations/event_media_storage_bucket.sql</code><span>public read, authenticated writes &mdash; unapplied, project paused</span></div>
+    <div class="frow"><span class="pill new">new</span><code>supabase/migrations/event_media_storage_bucket.sql</code><span>public read, authenticated writes &mdash; applied, bucket + 4 policies verified</span></div>
   </div>
 
   <div class="verify">
@@ -151,7 +153,7 @@
     <div class="v"><span class="ok">&#10003;</span>UI enums match Zod per the <b>schemas-sync rule</b></div>
   </div>
 
-  <footer>Not exercised against live data: the Supabase project is paused, so nothing could be read or written this session.</footer>
+  <footer>Verified against the restored database: all 15 live events revalidate against the updated schema with nothing dropped. The workspace itself was not driven through the UI (login wall), so Max confirms Comms and Media in the app.</footer>
 </div>
 </body>
 </html>
