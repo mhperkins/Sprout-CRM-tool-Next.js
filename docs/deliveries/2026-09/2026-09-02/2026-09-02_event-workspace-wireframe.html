@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Delivery — Event workspace wireframe</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap">
+<style>
+:root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;
+--fuchsia:#E10098;--cyan:#73C4D6;--dim:#6E6E66;--line:#E2E2DC}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Lato,sans-serif;
+font-size:15px;line-height:1.5;padding:34px 22px 70px}
+.pg{max-width:1060px;margin:0 auto}
+.top{border-bottom:4px solid var(--ink);padding-bottom:18px;margin-bottom:26px}
+.eyebrow{font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+h1{margin:8px 0 0;font-size:clamp(28px,5vw,44px);font-weight:900;letter-spacing:-.02em;line-height:1.05}
+.sub{margin:10px 0 0;font-size:17px;color:var(--dim);max-width:66ch}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.tag{font-size:12px;font-weight:700;padding:4px 11px;border-radius:999px;background:var(--ink);color:#fff}
+.tag.a{background:var(--acid);color:var(--ink)}
+.tag.b{background:var(--banana);color:var(--ink)}
+.tag.f{background:var(--fuchsia);color:#fff}
+.tag.c{background:var(--cyan);color:var(--ink)}
+h2{font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;
+margin:34px 0 14px;padding-bottom:7px;border-bottom:2px solid var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:9px;padding:16px 17px;
+box-shadow:0 4px 14px rgba(0,0,0,.06);border-left:6px solid var(--cyan)}
+.card.acid{border-left-color:var(--acid)}
+.card.ban{border-left-color:var(--banana)}
+.card.fux{border-left-color:var(--fuchsia)}
+.card h3{margin:0 0 7px;font-size:15px;font-weight:900}
+.card p{margin:0;font-size:13.5px;color:var(--dim)}
+.card code{font-size:12.5px;background:#F0F0EA;padding:1px 5px;border-radius:4px;color:var(--ink)}
+.big{background:var(--ink);color:var(--paper);border-radius:9px;padding:22px 24px;border:0}
+.big h3{color:var(--banana);font-size:12px;letter-spacing:.13em;text-transform:uppercase;margin:0 0 9px}
+.big p{color:#DCDCD4;font-size:15px;margin:0}
+.big b{color:#fff}
+ul{margin:0;padding-left:19px}
+li{font-size:13.5px;color:var(--dim);margin-bottom:6px}
+li b{color:var(--ink)}
+.ft{margin-top:36px;padding-top:16px;border-top:2px solid var(--line);
+display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--dim)}
+.ft b{color:var(--ink);font-family:ui-monospace,monospace}
+</style></head><body><div class="pg">
+
+<div class="top">
+  <div class="eyebrow">Delivery &middot; 2 September 2026 &middot; Design session</div>
+  <h1>The event workspace, reimagined</h1>
+  <p class="sub">One screen instead of five tabs. A wireframe, a comms architecture, and the discovery that half of it was already built.</p>
+  <div class="meta">
+    <span class="tag">Effort: high</span>
+    <span class="tag a">No app code</span>
+    <span class="tag b">No schema change</span>
+    <span class="tag c">1 new file</span>
+    <span class="tag f">Wireframe only</span>
+  </div>
+</div>
+
+<div class="big">
+  <h3>The finding that reframed everything</h3>
+  <p><b>The events portal was already built.</b> <code style="color:var(--banana);background:none">lib/eventPortal.js</code> is 391 lines: nine sections, twelve required fields, a live public form, and progress functions already computing completion. It sat behind a link in the Details tab and drove nothing. The protocol every event should follow was written and invisible.</p>
+</div>
+
+<h2>What the session decided</h2>
+<div class="grid">
+  <div class="card acid">
+    <h3>All comms move to Discord</h3>
+    <p>One channel, forum posts per event. The server populates as a side effect of using it.</p>
+  </div>
+  <div class="card acid">
+    <h3>Hosts are pointed, not required</h3>
+    <p>The portal stays the intake and front door. Outside hosts get sent to their thread but never have to make an account.</p>
+  </div>
+  <div class="card fux">
+    <h3>Build the extractor, not the integrations</h3>
+    <p>Reading a conversation and reporting what changed is one step, whatever the source. Discord feeds it automatically, paste feeds it permanently.</p>
+  </div>
+</div>
+
+<h2>Why not iMessage and Instagram</h2>
+<div class="grid">
+  <div class="card"><h3>Discord</h3><p>Works today. Bot, MCP, and read access already in place. Six members, zero forum channels so far.</p></div>
+  <div class="card ban"><h3>Instagram DMs</h3><p>Needs a Meta app review, realistically weeks and rejectable, and only ever sees the org inbox. Never personal DMs.</p></div>
+  <div class="card fux"><h3>iMessage</h3><p>Impossible from a deployed app. Apple ships no API; the only path is a local agent on the Mac that dies whenever the laptop sleeps.</p></div>
+</div>
+
+<h2>What the wireframe argues</h2>
+<div class="grid">
+  <div class="card acid">
+    <h3>The protocol becomes the spine</h3>
+    <p>Nine sections down the left, red where a required answer is missing. First thing you see is what is blocking.</p>
+  </div>
+  <div class="card fux">
+    <h3>Lineup carries a per-role rubric</h3>
+    <p>Music gets confirmed, set time, tech needs, payout. Visual art gets confirmed, hang time, wall space, price list. So <b style="color:var(--ink)">2 of 3 musicians confirmed</b> is computed, never typed. This is the piece that does not exist yet.</p>
+  </div>
+  <div class="card">
+    <h3>Conversations is a review queue</h3>
+    <p>Each proposal shows the change, the quote it came from, and who said it. Apply or dismiss. Nothing writes itself.</p>
+  </div>
+  <div class="card ban">
+    <h3>Everything else demotes</h3>
+    <p>The checklist calendar moves into a modal, media becomes an assets tile, and the run of show assembles from the lineup instead of being entered twice.</p>
+  </div>
+</div>
+
+<h2>Next session</h2>
+<ul>
+  <li><b>Lean it out.</b> More on screen than necessary. Lineup and Conversations stay full size; the rest compresses.</li>
+  <li><b>Reconcile with the hosting form,</b> so portal answers fill the spine and its confirmation step hands the host their thread.</li>
+  <li><b>Confirm the role rubrics with Max</b> before building them. Wrong steps make the percentages decoration.</li>
+  <li><b>Open questions:</b> does the readiness ring belong, and what covers headcount, budget, and whether the event made money.</li>
+</ul>
+
+<div class="ft">
+  <span>Branch <b>main</b></span>
+  <span>Commit <b>48b95d8</b></span>
+  <span>Files <b>CHANGELOG.md &middot; docs/wireframes/2026-09-02_event-dashboard-wireframe.html</b></span>
+</div>
+
+</div></body></html>
