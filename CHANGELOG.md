@@ -2,6 +2,49 @@
 
 ---
 
+## 2026-09-02 (later) — Rethinking the event workspace: wireframe, not code
+
+Design session. No app code, schema, or data change. One new file: `docs/wireframes/2026-09-02_event-dashboard-wireframe.html`. Effort: high (the decisions here set up a real build).
+
+Max opened with "we need to completely reimagine the new event workspace" — the five-tab version shipped earlier the same day is already the wrong shape. He wants one screen, tiles that open modals, no subtabs. He also said the comms log "can't be a log": retyping conversations is a waste of time, and asked whether iMessage and Instagram DMs could feed it. He stopped the first attempt at building with "do not build anything, we need to brainstorm and probably wireframe first."
+
+### What the reconnaissance turned up
+
+**The events portal he asked for already exists.** `lib/eventPortal.js` is a 391-line field spec: nine sections, twelve required fields, a public form at `/portal/[token]`, a token request API, and `portalProgress()` / `sectionProgress()` already computing completion. It is buried behind a link in the Details tab and drives nothing. That is the actual bug — the protocol every event should follow is written and invisible.
+
+**Discord is real but nearly empty.** Six members, eight text channels correctly filed into categories, zero forum channels. The bot has Manage Channels, so the forum can be created on demand.
+
+### The integration assessment
+
+- **Discord**: fully available today. Bot, MCP, and read access already work.
+- **Instagram DMs**: needs a Meta app review for `instagram_manage_messages`, realistically weeks, can be rejected, and only ever sees the org inbox — never Max's personal DMs.
+- **iMessage**: impossible from a deployed app. Apple ships no API; the only path is a local agent reading `~/Library/Messages/chat.db` on the Mac, which dies whenever the laptop sleeps.
+
+**The conclusion that matters: the value is in the extractor, not the transport.** Point Claude at a conversation and it reports what changed. That step is identical whether the text came from Discord, a paste of a text thread, or an IG screenshot. So build the extractor once with Discord as the automatic feed and paste-in as a permanent first-class input, and the Meta review becomes optional rather than blocking.
+
+### Decisions Max made
+
+- **All communications migrate to Discord.** Single channel, and the server populates as a side effect.
+- **One channel with forum posts per event**, not a channel per event.
+- **Outside hosts are not required to join.** The portal stays the intake and front door; the confirmation step points them at the Discord thread. Consequence: the paste path is permanent, not a stopgap.
+
+### The wireframe
+
+Built against the real Vol. 5 event (2026-09-25, 23 days out) with real people from the Vol. 4 roster. Lineup states, Discord messages, and the run of show are invented and labeled as such.
+
+- **The booking protocol becomes the left spine**, not a tile. Nine sections down the side, red where a required answer is missing.
+- **Lineup is the largest tile** and carries a per-role rubric — music gets confirmed / set time / tech needs / payout; visual art gets confirmed / hang time / wall space / price list. This makes "2 of 3 musicians confirmed" a computed number rather than a typed one. **This is the piece that does not exist yet and is the real build.**
+- **Conversations is a review queue**, not a log: each proposal shows the change, the quote it came from, and who said it. Apply or dismiss. Nothing writes itself.
+- **Everything else demotes to a tile** — the checklist calendar moves into a modal, media becomes an assets tile, the run of show assembles from the lineup instead of being entered twice.
+
+### Max's verdict
+
+"A perfect start," with three notes for the next session: there is more information on screen than necessary, it needs leaning out, and it has to be reconciled with the event hosting form. Resuming tomorrow.
+
+---
+
+---
+
 ## 2026-09-02 — Events workspace, and the outage that was a paused database
 
 Two threads. `components/AuthGate.jsx`, `components/CRMManager.jsx`, `lib/schemas.js`, `lib/services.js`, one new migration (applied). `npm run build` passes. Effort: diagnose high / fix medium.

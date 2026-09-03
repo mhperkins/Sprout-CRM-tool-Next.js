@@ -1,0 +1,498 @@
+<title>Sprout Event Command</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --paper:#F4F4F0; --card:#FFFFFF; --sunk:#EDEDE6;
+  --line:#DFDFD6; --line-soft:#ECECE4;
+  --text:#171713; --dim:#6C6C61; --faint:#9B9B8F;
+  --cyan:#1F7E92; --fuchsia:#C4007F; --acid:#8F9100; --banana:#B58500;
+  --ok:#15804A; --ok-bg:#E4F3EA;
+  --warn:#9A6B00; --warn-bg:#FAF0D6;
+  --crit:#B3005F; --crit-bg:#FBE6F1;
+  --idle:#A3A399; --idle-bg:#EDEDE6;
+  --shadow:0 1px 2px rgba(20,20,10,.06), 0 8px 24px -12px rgba(20,20,10,.18);
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E0E0B; --card:#1A1A16; --sunk:#131310;
+    --line:#2F2F27; --line-soft:#232320;
+    --text:#F1F1E9; --dim:#9C9C90; --faint:#6F6F65;
+    --cyan:#73C4D6; --fuchsia:#FF4FAE; --acid:#C6C902; --banana:#FAD100;
+    --ok:#43C98A; --ok-bg:#12291F;
+    --warn:#F0C244; --warn-bg:#2B2412;
+    --crit:#FF57A8; --crit-bg:#2E0F22;
+    --idle:#6F6F65; --idle-bg:#232320;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 30px -14px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E0E0B; --card:#1A1A16; --sunk:#131310;
+  --line:#2F2F27; --line-soft:#232320;
+  --text:#F1F1E9; --dim:#9C9C90; --faint:#6F6F65;
+  --cyan:#73C4D6; --fuchsia:#FF4FAE; --acid:#C6C902; --banana:#FAD100;
+  --ok:#43C98A; --ok-bg:#12291F;
+  --warn:#F0C244; --warn-bg:#2B2412;
+  --crit:#FF57A8; --crit-bg:#2E0F22;
+  --idle:#6F6F65; --idle-bg:#232320;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 30px -14px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--text);
+  font-family:Lato,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;text-wrap:balance}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.lbl{font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--faint)}
+
+/* ── wireframe banner ───────────────────────────── */
+.wire{background:var(--text);color:var(--paper);padding:7px 20px;display:flex;
+  gap:14px;align-items:center;flex-wrap:wrap;font-size:11px;letter-spacing:.04em}
+.wire b{color:var(--banana);letter-spacing:.11em;text-transform:uppercase;font-size:10px}
+.wire span{opacity:.72}
+
+/* ── page frame ─────────────────────────────────── */
+.wrap{max-width:1240px;margin:0 auto;padding:22px 20px 64px}
+
+/* ── event header ───────────────────────────────── */
+.hd{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;
+  padding-bottom:20px;border-bottom:2px solid var(--text);margin-bottom:22px}
+.hd-l{flex:1 1 340px;min-width:260px}
+.hd h1{font-size:clamp(26px,4.2vw,38px);font-weight:900;letter-spacing:-.02em;line-height:1.05}
+.hd-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px;color:var(--dim)}
+.dot{width:3px;height:3px;border-radius:50%;background:var(--faint)}
+.cd{display:flex;gap:16px;align-items:center}
+.cd-n{font-size:40px;font-weight:900;line-height:1;letter-spacing:-.03em}
+.cd-u{font-size:11px;color:var(--dim);max-width:74px;line-height:1.25}
+.ring{position:relative;width:78px;height:78px;flex:0 0 auto}
+.ring svg{transform:rotate(-90deg)}
+.ring-t{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.ring-t b{font-size:19px;font-weight:900;display:block;line-height:1}
+.ring-t i{font-style:normal;font-size:9px;color:var(--faint);letter-spacing:.08em;text-transform:uppercase}
+
+/* ── layout ─────────────────────────────────────── */
+.shell{display:grid;grid-template-columns:272px 1fr;gap:20px;align-items:start}
+@media(max-width:900px){.shell{grid-template-columns:1fr}}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.span2{grid-column:1/-1}
+
+/* ── tiles ──────────────────────────────────────── */
+.tile{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);display:flex;flex-direction:column;text-align:left;width:100%;
+  transition:border-color .15s,transform .15s}
+button.tile:hover{border-color:var(--cyan);transform:translateY(-1px)}
+.tile-hd{display:flex;align-items:baseline;gap:10px;padding:13px 15px 0}
+.tile-hd h3{font-size:12px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
+.tile-hd .n{margin-left:auto;font-size:11px;color:var(--faint)}
+.tile-b{padding:11px 15px 15px;display:flex;flex-direction:column;gap:9px;flex:1}
+.tile-f{padding:9px 15px;border-top:1px solid var(--line-soft);font-size:11px;
+  color:var(--cyan);font-weight:700;display:flex;justify-content:space-between}
+.hero{font-size:15px;font-weight:700;line-height:1.3}
+.hero em{font-style:normal;color:var(--crit)}
+
+/* ── readiness spine ────────────────────────────── */
+.spine{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);overflow:hidden;position:sticky;top:16px}
+.spine-hd{padding:13px 15px 11px;border-bottom:1px solid var(--line-soft)}
+.spine-hd h3{font-size:12px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
+.spine-hd p{margin:5px 0 0;font-size:11px;color:var(--dim);line-height:1.4}
+.sec{display:flex;gap:10px;align-items:center;padding:9px 15px;width:100%;
+  border-bottom:1px solid var(--line-soft);text-align:left}
+.sec:last-child{border-bottom:0}
+.sec:hover{background:var(--sunk)}
+.sec-i{flex:0 0 20px;height:20px;border-radius:5px;display:grid;place-content:center;
+  font-size:10px;font-weight:700;font-family:"JetBrains Mono",monospace}
+.sec-n{flex:1;font-size:12.5px;font-weight:700;line-height:1.2}
+.sec-c{font-size:10.5px;color:var(--faint);font-family:"JetBrains Mono",monospace}
+.sec.is-ok .sec-i{background:var(--ok-bg);color:var(--ok)}
+.sec.is-part .sec-i{background:var(--warn-bg);color:var(--warn)}
+.sec.is-crit .sec-i{background:var(--crit-bg);color:var(--crit)}
+.sec.is-idle .sec-i{background:var(--idle-bg);color:var(--idle)}
+.sec.is-crit .sec-n{color:var(--crit)}
+.bar{height:3px;background:var(--line-soft);border-radius:2px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;border-radius:2px}
+
+/* ── status chips & steps ───────────────────────── */
+.chip{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;
+  font-size:10.5px;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+.c-ok{background:var(--ok-bg);color:var(--ok)}
+.c-warn{background:var(--warn-bg);color:var(--warn)}
+.c-crit{background:var(--crit-bg);color:var(--crit)}
+.c-idle{background:var(--idle-bg);color:var(--dim)}
+
+.person{display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line-soft)}
+.person:first-child{border-top:0}
+.av{flex:0 0 30px;height:30px;border-radius:50%;display:grid;place-content:center;
+  font-size:10.5px;font-weight:900;background:var(--sunk);color:var(--dim);letter-spacing:.02em}
+.p-main{flex:1;min-width:0}
+.p-top{display:flex;gap:7px;align-items:baseline;flex-wrap:wrap}
+.p-top b{font-size:13.5px;font-weight:700}
+.role{font-size:10px;color:var(--faint);letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+.steps{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.step{font-size:10.5px;padding:2px 7px;border-radius:5px;border:1px solid var(--line);
+  color:var(--faint);font-weight:600;white-space:nowrap}
+.step.done{background:var(--ok-bg);border-color:transparent;color:var(--ok)}
+.step.wait{background:var(--warn-bg);border-color:transparent;color:var(--warn)}
+.step.miss{border-style:dashed}
+.step.block{background:var(--crit-bg);border-color:transparent;color:var(--crit)}
+
+/* ── rows / actions ─────────────────────────────── */
+.row{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line-soft)}
+.row:first-child{border-top:0}
+.row-t{flex:1;min-width:0;font-size:13px;line-height:1.35}
+.row-t small{display:block;color:var(--faint);font-size:11px;margin-top:2px}
+.box{width:15px;height:15px;border:1.5px solid var(--line);border-radius:4px;flex:0 0 auto;margin-top:2px}
+
+/* ── conversation proposals ─────────────────────── */
+.prop{border:1px solid var(--line);border-left:3px solid var(--cyan);border-radius:7px;
+  padding:10px 12px;background:var(--sunk)}
+.prop-h{display:flex;gap:7px;align-items:baseline;flex-wrap:wrap;font-size:13px}
+.prop-h b{font-weight:900}
+.arrow{color:var(--faint)}
+.quote{margin:7px 0 0;padding-left:9px;border-left:2px solid var(--line);
+  font-size:11.5px;color:var(--dim);font-style:italic;line-height:1.4}
+.quote cite{display:block;font-style:normal;font-size:10px;color:var(--faint);margin-top:3px;
+  letter-spacing:.04em;font-family:"JetBrains Mono",monospace}
+.acts{display:flex;gap:7px;margin-top:9px}
+.btn{padding:4px 12px;border-radius:6px;font-size:11.5px;font-weight:700;border:1px solid var(--line)}
+.btn-p{background:var(--text);color:var(--paper);border-color:var(--text)}
+.btn:hover{border-color:var(--cyan)}
+.btn-p:hover{opacity:.86}
+.sync{display:flex;gap:9px;align-items:center;padding:8px 11px;border-radius:7px;
+  background:var(--sunk);font-size:11.5px;color:var(--dim)}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--ok);flex:0 0 auto}
+
+/* ── run of show ────────────────────────────────── */
+.ros{display:flex;gap:11px;padding:6px 0}
+.ros time{flex:0 0 54px;font-size:11.5px;font-weight:700;color:var(--dim);
+  font-family:"JetBrains Mono",monospace;padding-top:1px}
+.ros-b{flex:1;font-size:13px;border-left:2px solid var(--line);padding:0 0 0 11px}
+.ros-b small{display:block;color:var(--faint);font-size:11px}
+.ros.now .ros-b{border-color:var(--fuchsia)}
+
+/* ── assets ─────────────────────────────────────── */
+.assets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.asset{aspect-ratio:4/3;border-radius:7px;background:var(--sunk);display:grid;place-content:center;
+  text-align:center;font-size:10.5px;color:var(--faint);padding:6px;border:1px dashed var(--line)}
+.asset.has{border-style:solid;border-color:transparent;color:var(--dim);
+  background:linear-gradient(135deg,var(--sunk),var(--line-soft))}
+
+/* ── modal ──────────────────────────────────────── */
+.scrim{position:fixed;inset:0;background:rgba(10,10,6,.55);backdrop-filter:blur(3px);
+  z-index:50;display:grid;place-items:center;padding:20px}
+.modal{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  width:min(760px,100%);max-height:86vh;display:flex;flex-direction:column;
+  box-shadow:0 30px 70px -20px rgba(0,0,0,.55)}
+.modal-hd{display:flex;gap:12px;align-items:baseline;padding:18px 22px 14px;
+  border-bottom:1px solid var(--line-soft)}
+.modal-hd h2{font-size:19px;font-weight:900;letter-spacing:-.01em}
+.modal-hd .lbl{margin-left:auto}
+.x{font-size:20px;line-height:1;color:var(--faint);padding:0 4px}
+.x:hover{color:var(--text)}
+.modal-b{padding:16px 22px 22px;overflow:auto}
+.note{font-size:12px;color:var(--dim);line-height:1.5;background:var(--sunk);
+  padding:10px 12px;border-radius:7px;border-left:3px solid var(--banana)}
+[hidden]{display:none!important}
+</style>
+
+<div class="wire">
+  <b>Wireframe</b>
+  <span>Real event and real people from the CRM. Lineup states, Discord messages and run of show are invented to show the design. Nothing here is saved.</span>
+</div>
+
+<div class="wrap">
+
+  <div class="hd">
+    <div class="hd-l">
+      <div class="lbl">Event workspace</div>
+      <h1>Sprout N Tell Vol.&nbsp;5</h1>
+      <div class="hd-meta mono">
+        <span>Fri 25 Sep 2026</span><i class="dot"></i>
+        <span>7:00&ndash;10:00pm</span><i class="dot"></i>
+        <span>Sprout Society</span><i class="dot"></i>
+        <span>Run by us</span>
+      </div>
+    </div>
+    <div class="cd">
+      <div>
+        <div class="cd-n mono">23</div>
+        <div class="cd-u">days out</div>
+      </div>
+      <div class="ring">
+        <svg width="78" height="78" viewBox="0 0 78 78" aria-hidden="true">
+          <circle cx="39" cy="39" r="33" fill="none" stroke="var(--line)" stroke-width="7"/>
+          <circle cx="39" cy="39" r="33" fill="none" stroke="var(--warn)" stroke-width="7"
+                  stroke-linecap="round" stroke-dasharray="207.3" stroke-dashoffset="118.2"/>
+        </svg>
+        <div class="ring-t"><b>43%</b><i>ready</i></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="shell">
+
+    <aside class="spine">
+      <div class="spine-hd">
+        <h3>Booking protocol</h3>
+        <p>The same nine sections every event clears, ours or an outside host&rsquo;s. Red means a required answer is missing.</p>
+      </div>
+      <button class="sec is-ok"   onclick="open_('m-spine')"><span class="sec-i">&#10003;</span><span class="sec-n">Who you are</span><span class="sec-c">9/9</span></button>
+      <button class="sec is-ok"   onclick="open_('m-spine')"><span class="sec-i">&#10003;</span><span class="sec-n">The event</span><span class="sec-c">13/14</span></button>
+      <button class="sec is-part" onclick="open_('m-lineup')"><span class="sec-i">3</span><span class="sec-n">Lineup &amp; run of show</span><span class="sec-c">4/7</span></button>
+      <button class="sec is-part" onclick="open_('m-spine')"><span class="sec-i">4</span><span class="sec-n">Space &amp; setup</span><span class="sec-c">2/5</span></button>
+      <button class="sec is-crit" onclick="open_('m-spine')"><span class="sec-i">5</span><span class="sec-n">Sound, lights, AV</span><span class="sec-c">0/6</span></button>
+      <button class="sec is-idle" onclick="open_('m-spine')"><span class="sec-i">6</span><span class="sec-n">Tickets &amp; money</span><span class="sec-c">0/4</span></button>
+      <button class="sec is-crit" onclick="open_('m-spine')"><span class="sec-i">7</span><span class="sec-n">Food &amp; drink</span><span class="sec-c">1/3</span></button>
+      <button class="sec is-part" onclick="open_('m-spine')"><span class="sec-i">8</span><span class="sec-n">Promotion</span><span class="sec-c">1/4</span></button>
+      <button class="sec is-idle" onclick="open_('m-spine')"><span class="sec-i">9</span><span class="sec-n">Logistics &amp; paperwork</span><span class="sec-c">0/5</span></button>
+    </aside>
+
+    <main class="grid">
+
+      <button class="tile span2" onclick="open_('m-lineup')">
+        <div class="tile-hd"><h3>Lineup</h3><span class="n mono">6 people</span></div>
+        <div class="tile-b">
+          <p class="hero">2 of 3 musicians confirmed. <em>1 of 2 artists has no hang time.</em></p>
+          <div class="person">
+            <span class="av">CN</span>
+            <span class="p-main">
+              <span class="p-top"><b>Cody Naka</b><span class="role">Music</span></span>
+              <span class="steps"><i class="step done">Confirmed</i><i class="step done">Set time 8:15</i><i class="step miss">Tech needs</i><i class="step miss">Payout</i></span>
+            </span>
+          </div>
+          <div class="person">
+            <span class="av">CW</span>
+            <span class="p-main">
+              <span class="p-top"><b>Candice Wu</b><span class="role">Music</span></span>
+              <span class="steps"><i class="step done">Confirmed</i><i class="step miss">Set time</i><i class="step miss">Tech needs</i><i class="step miss">Payout</i></span>
+            </span>
+          </div>
+          <div class="person">
+            <span class="av">GS</span>
+            <span class="p-main">
+              <span class="p-top"><b>Greg Smith</b><span class="role">Music</span><span class="chip c-crit">No reply, 9 days</span></span>
+              <span class="steps"><i class="step block">Confirmed</i><i class="step miss">Set time</i><i class="step miss">Tech needs</i><i class="step miss">Payout</i></span>
+            </span>
+          </div>
+          <div class="person">
+            <span class="av">MM</span>
+            <span class="p-main">
+              <span class="p-top"><b>Maggie Miles</b><span class="role">Visual art</span></span>
+              <span class="steps"><i class="step done">Confirmed</i><i class="step done">Hang 5:30</i><i class="step done">Wall: back</i><i class="step wait">Price list</i></span>
+            </span>
+          </div>
+          <div class="person">
+            <span class="av">AC</span>
+            <span class="p-main">
+              <span class="p-top"><b>Aidan Cole</b><span class="role">Visual art</span></span>
+              <span class="steps"><i class="step done">Confirmed</i><i class="step miss">Hang time</i><i class="step miss">Wall space</i><i class="step miss">Price list</i></span>
+            </span>
+          </div>
+          <div class="person">
+            <span class="av">PH</span>
+            <span class="p-main">
+              <span class="p-top"><b>Pat Hopkins</b><span class="role">Host</span></span>
+              <span class="steps"><i class="step done">Confirmed</i><i class="step wait">Run of show</i></span>
+            </span>
+          </div>
+        </div>
+        <div class="tile-f"><span>Open the roster</span><span>&rarr;</span></div>
+      </button>
+
+      <button class="tile span2" onclick="open_('m-conv')">
+        <div class="tile-hd"><h3>Conversations</h3><span class="n mono">3 waiting on you</span></div>
+        <div class="tile-b">
+          <div class="sync">
+            <span class="pulse"></span>
+            <span><b>#events &rsaquo; Sprout N Tell Vol. 5</b> &mdash; 14 new messages, read 2 days ago</span>
+          </div>
+          <div class="prop">
+            <div class="prop-h"><b>Greg Smith</b><span class="arrow">&rarr;</span><span class="chip c-ok">Confirmed</span></div>
+            <p class="quote">yes im in for the 25th, can i go on early tho? gotta be somewhere by 9
+              <cite>@gregsmith &middot; Sep 1, 11:42pm</cite></p>
+            <div class="acts"><span class="btn btn-p">Apply</span><span class="btn">Edit</span><span class="btn">Dismiss</span></div>
+          </div>
+          <div class="prop">
+            <div class="prop-h"><b>Maggie Miles</b><span class="arrow">&rarr;</span><span class="chip c-warn">Price list due Sep 18</span></div>
+            <p class="quote">i&rsquo;ll get you the price list once i finish framing, prob week of the 15th
+              <cite>@maggiem &middot; Aug 31, 4:07pm</cite></p>
+            <div class="acts"><span class="btn btn-p">Apply</span><span class="btn">Edit</span><span class="btn">Dismiss</span></div>
+          </div>
+          <div class="prop">
+            <div class="prop-h"><b>Sound, lights, AV</b><span class="arrow">&rarr;</span><span class="chip c-crit">Blocked: no engineer</span></div>
+            <p class="quote">heads up i can&rsquo;t run sound that night, out of town. need to find someone
+              <cite>@patH &middot; Aug 30, 9:15am</cite></p>
+            <div class="acts"><span class="btn btn-p">Apply</span><span class="btn">Edit</span><span class="btn">Dismiss</span></div>
+          </div>
+        </div>
+        <div class="tile-f"><span>Read the thread &amp; review all</span><span>&rarr;</span></div>
+      </button>
+
+      <button class="tile" onclick="open_('m-todo')">
+        <div class="tile-hd"><h3>Needs you</h3><span class="n mono">2 overdue</span></div>
+        <div class="tile-b">
+          <div class="row"><span class="box"></span><span class="row-t">Find a sound engineer<small>Blocking &middot; was due Sep 1</small></span><span class="chip c-crit">Overdue</span></div>
+          <div class="row"><span class="box"></span><span class="row-t">Book the third musician<small>Was due Aug 29</small></span><span class="chip c-crit">Overdue</span></div>
+          <div class="row"><span class="box"></span><span class="row-t">Post the flyer<small>Due Sep 8</small></span><span class="chip c-warn">6 days</span></div>
+          <div class="row"><span class="box"></span><span class="row-t">Confirm Aidan&rsquo;s hang time<small>Due Sep 11</small></span><span class="chip c-idle">9 days</span></div>
+        </div>
+        <div class="tile-f"><span>All 23 items</span><span>&rarr;</span></div>
+      </button>
+
+      <button class="tile" onclick="open_('m-day')">
+        <div class="tile-hd"><h3>Day of</h3><span class="n mono">Sep 25</span></div>
+        <div class="tile-b">
+          <div class="ros"><time>5:30p</time><span class="ros-b">Art hang<small>Maggie Miles &middot; back wall</small></span></div>
+          <div class="ros"><time>6:00p</time><span class="ros-b">Load in &amp; soundcheck<small class="mono" style="color:var(--crit)">No engineer assigned</small></span></div>
+          <div class="ros"><time>7:00p</time><span class="ros-b">Doors<small>Pat hosting</small></span></div>
+          <div class="ros now"><time>8:15p</time><span class="ros-b">Cody Naka<small>Only confirmed set time</small></span></div>
+          <div class="ros"><time>10:00p</time><span class="ros-b">Load out</span></div>
+        </div>
+        <div class="tile-f"><span>Full run of show</span><span>&rarr;</span></div>
+      </button>
+
+      <button class="tile span2" onclick="open_('m-assets')">
+        <div class="tile-hd"><h3>Assets</h3><span class="n mono">1 of 4</span></div>
+        <div class="tile-b">
+          <div class="assets">
+            <div class="asset has">Venue photo<br>Vol. 4</div>
+            <div class="asset">Flyer<br>not uploaded</div>
+            <div class="asset">Artist bios<br>2 of 5</div>
+          </div>
+        </div>
+        <div class="tile-f"><span>Upload or link</span><span>&rarr;</span></div>
+      </button>
+
+    </main>
+  </div>
+</div>
+
+<div class="scrim" id="m-lineup" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Lineup">
+    <div class="modal-hd"><h2>Lineup</h2><span class="lbl">Sprout N Tell Vol. 5</span><button class="x" onclick="close_()" aria-label="Close">&times;</button></div>
+    <div class="modal-b">
+      <p class="note"><b>The piece that does not exist yet.</b> Each role carries its own short rubric, so &ldquo;2 of 3 musicians confirmed&rdquo; and &ldquo;1 of 2 artists scheduled to hang&rdquo; are computed, never typed. Discord extraction writes into these steps.</p>
+      <div style="margin-top:16px">
+        <div class="lbl" style="margin-bottom:6px">Music &mdash; confirmed, set time, tech needs, payout</div>
+        <div class="person"><span class="av">CN</span><span class="p-main"><span class="p-top"><b>Cody Naka</b><span class="chip c-warn">2 of 4</span></span><span class="steps"><i class="step done">Confirmed</i><i class="step done">Set time 8:15</i><i class="step miss">Tech needs</i><i class="step miss">Payout</i></span></span></div>
+        <div class="person"><span class="av">CW</span><span class="p-main"><span class="p-top"><b>Candice Wu</b><span class="chip c-warn">1 of 4</span></span><span class="steps"><i class="step done">Confirmed</i><i class="step miss">Set time</i><i class="step miss">Tech needs</i><i class="step miss">Payout</i></span></span></div>
+        <div class="person"><span class="av">GS</span><span class="p-main"><span class="p-top"><b>Greg Smith</b><span class="chip c-crit">No reply</span></span><span class="steps"><i class="step block">Confirmed</i><i class="step miss">Set time</i><i class="step miss">Tech needs</i><i class="step miss">Payout</i></span></span></div>
+        <div class="lbl" style="margin:18px 0 6px">Visual art &mdash; confirmed, hang time, wall space, price list</div>
+        <div class="person"><span class="av">MM</span><span class="p-main"><span class="p-top"><b>Maggie Miles</b><span class="chip c-ok">3 of 4</span></span><span class="steps"><i class="step done">Confirmed</i><i class="step done">Hang 5:30</i><i class="step done">Wall: back</i><i class="step wait">Price list</i></span></span></div>
+        <div class="person"><span class="av">AC</span><span class="p-main"><span class="p-top"><b>Aidan Cole</b><span class="chip c-warn">1 of 4</span></span><span class="steps"><i class="step done">Confirmed</i><i class="step miss">Hang time</i><i class="step miss">Wall space</i><i class="step miss">Price list</i></span></span></div>
+        <div class="lbl" style="margin:18px 0 6px">Host &mdash; confirmed, run of show</div>
+        <div class="person"><span class="av">PH</span><span class="p-main"><span class="p-top"><b>Pat Hopkins</b><span class="chip c-warn">1 of 2</span></span><span class="steps"><i class="step done">Confirmed</i><i class="step wait">Run of show</i></span></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="m-conv" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Conversations">
+    <div class="modal-hd"><h2>Conversations</h2><span class="lbl">#events &rsaquo; Vol. 5</span><button class="x" onclick="close_()" aria-label="Close">&times;</button></div>
+    <div class="modal-b">
+      <p class="note"><b>Nothing writes itself.</b> The bot reads the forum thread on command, proposes changes, and you approve each one. The extractor is the same whether text arrives from Discord or gets pasted in.</p>
+      <div class="acts" style="margin:14px 0"><span class="btn btn-p">Read thread since Aug 30</span><span class="btn">Paste a conversation</span></div>
+      <div class="prop" style="margin-bottom:10px">
+        <div class="prop-h"><b>Greg Smith</b><span class="arrow">&rarr;</span><span class="chip c-ok">Confirmed</span><span class="chip c-warn">Set time: early, before 9</span></div>
+        <p class="quote">yes im in for the 25th, can i go on early tho? gotta be somewhere by 9<cite>@gregsmith &middot; Sep 1, 11:42pm</cite></p>
+        <div class="acts"><span class="btn btn-p">Apply both</span><span class="btn">Edit</span><span class="btn">Dismiss</span></div>
+      </div>
+      <div class="prop" style="margin-bottom:10px">
+        <div class="prop-h"><b>Maggie Miles</b><span class="arrow">&rarr;</span><span class="chip c-warn">Price list due Sep 18</span></div>
+        <p class="quote">i&rsquo;ll get you the price list once i finish framing, prob week of the 15th<cite>@maggiem &middot; Aug 31, 4:07pm</cite></p>
+        <div class="acts"><span class="btn btn-p">Apply</span><span class="btn">Edit</span><span class="btn">Dismiss</span></div>
+      </div>
+      <div class="prop">
+        <div class="prop-h"><b>Sound, lights, AV</b><span class="arrow">&rarr;</span><span class="chip c-crit">Blocked</span></div>
+        <p class="quote">heads up i can&rsquo;t run sound that night, out of town. need to find someone<cite>@patH &middot; Aug 30, 9:15am</cite></p>
+        <div class="acts"><span class="btn btn-p">Apply &amp; add task</span><span class="btn">Edit</span><span class="btn">Dismiss</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="m-spine" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Booking protocol">
+    <div class="modal-hd"><h2>Booking protocol</h2><span class="lbl">Already built</span><button class="x" onclick="close_()" aria-label="Close">&times;</button></div>
+    <div class="modal-b">
+      <p class="note"><b>This is <span class="mono">lib/eventPortal.js</span>, which already exists.</b> Nine sections, twelve required fields, a public form at <span class="mono">/portal/[token]</span>, and <span class="mono">sectionProgress()</span> already computing these numbers. Today it sits behind a link in the Details tab. Here it becomes the spine of the page.</p>
+      <div style="margin-top:16px">
+        <div class="row"><span class="row-t"><b>Sound, lights, AV</b><small>Required: who is running sound. Unanswered, and Pat just dropped out.</small></span><span class="chip c-crit">Blocking</span></div>
+        <div class="row"><span class="row-t"><b>Food and drink</b><small>Required: is there alcohol. Unanswered, and it drives the insurance question.</small></span><span class="chip c-crit">Blocking</span></div>
+        <div class="row"><span class="row-t"><b>Space and setup</b><small>Chairs and table count still open.</small></span><span class="chip c-warn">2 of 5</span></div>
+        <div class="row"><span class="row-t"><b>Promotion</b><small>Flyer not uploaded, newsletter blurb not written.</small></span><span class="chip c-warn">1 of 4</span></div>
+        <div class="row"><span class="row-t"><b>Tickets and money</b><small>Free event, but the artist payout split is undecided.</small></span><span class="chip c-idle">Not started</span></div>
+        <div class="row"><span class="row-t"><b>Logistics and paperwork</b><small>COI not needed for in-house events.</small></span><span class="chip c-idle">Not started</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="m-todo" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Needs you">
+    <div class="modal-hd"><h2>Needs you</h2><span class="lbl">23 items</span><button class="x" onclick="close_()" aria-label="Close">&times;</button></div>
+    <div class="modal-b">
+      <p class="note">The existing checklist, unchanged. It keeps its calendar, which moves out of the main view and into this modal where it belongs.</p>
+      <div style="margin-top:14px">
+        <div class="row"><span class="box"></span><span class="row-t">Find a sound engineer<small>Blocking &middot; due Sep 1</small></span><span class="chip c-crit">Overdue</span></div>
+        <div class="row"><span class="box"></span><span class="row-t">Book the third musician<small>Due Aug 29 &middot; Greg replied, needs applying</small></span><span class="chip c-crit">Overdue</span></div>
+        <div class="row"><span class="box"></span><span class="row-t">Post the flyer<small>Due Sep 8</small></span><span class="chip c-warn">6 days</span></div>
+        <div class="row"><span class="box"></span><span class="row-t">Confirm Aidan&rsquo;s hang time<small>Due Sep 11</small></span><span class="chip c-idle">9 days</span></div>
+        <div class="row"><span class="box"></span><span class="row-t">Newsletter blurb to Comms<small>Due Sep 15</small></span><span class="chip c-idle">13 days</span></div>
+        <div class="row"><span class="box"></span><span class="row-t">Print artist signage<small>Due Sep 24</small></span><span class="chip c-idle">22 days</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="m-day" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Day of">
+    <div class="modal-hd"><h2>Day of</h2><span class="lbl">Fri 25 Sep</span><button class="x" onclick="close_()" aria-label="Close">&times;</button></div>
+    <div class="modal-b">
+      <p class="note">Assembled from the lineup rubric, not typed twice. A set time entered here is the same field the roster reads.</p>
+      <div style="margin-top:14px">
+        <div class="ros"><time>5:30p</time><span class="ros-b">Art hang<small>Maggie Miles, back wall. Aidan Cole unscheduled.</small></span></div>
+        <div class="ros"><time>6:00p</time><span class="ros-b">Load in and soundcheck<small style="color:var(--crit)">No engineer assigned</small></span></div>
+        <div class="ros"><time>7:00p</time><span class="ros-b">Doors<small>Pat Hopkins hosting</small></span></div>
+        <div class="ros"><time>7:30p</time><span class="ros-b">Greg Smith<small>Requested an early slot, not yet applied</small></span></div>
+        <div class="ros now"><time>8:15p</time><span class="ros-b">Cody Naka<small>Confirmed</small></span></div>
+        <div class="ros"><time>9:00p</time><span class="ros-b">Candice Wu<small>Set time not confirmed</small></span></div>
+        <div class="ros"><time>10:00p</time><span class="ros-b">Load out</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="m-assets" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Assets">
+    <div class="modal-hd"><h2>Assets</h2><span class="lbl">Uploads and links</span><button class="x" onclick="close_()" aria-label="Close">&times;</button></div>
+    <div class="modal-b">
+      <p class="note">The current media panel, unchanged. Small files upload, big video links out. It only ever needed to be a tile, not a tab.</p>
+      <div class="assets" style="margin-top:14px">
+        <div class="asset has">Venue photo<br>Vol. 4</div>
+        <div class="asset">Flyer<br>not uploaded</div>
+        <div class="asset">Artist bios<br>2 of 5</div>
+        <div class="asset">Drive folder<br>link</div>
+        <div class="asset">Recap video<br>after event</div>
+        <div class="asset">Press photos<br>after event</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var openId = null;
+  function open_(id){ close_(); var el = document.getElementById(id); if(el){ el.hidden = false; openId = id; } }
+  function close_(){ if(openId){ var el = document.getElementById(openId); if(el) el.hidden = true; openId = null; } }
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape") close_(); });
+  document.querySelectorAll(".scrim").forEach(function(s){
+    s.addEventListener("mousedown", function(e){ if(e.target === s) close_(); });
+  });
+</script>
