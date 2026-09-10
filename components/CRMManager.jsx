@@ -4726,7 +4726,6 @@ function EventProgramPanel({program,onCreate,onRotate,onDeleteEntry,onRefresh,sh
                       </div>
                     )}
                     <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",marginTop:8,fontSize:11}}>
-                      {d.email&&<span style={{color:"var(--g500)"}}>{d.email} <span style={{color:"var(--g400)"}}>· not for print</span></span>}
                       {d.photo_url&&<a href={dl(d.photo_url,(d.name||"photo").replace(/[^\w\- ]+/g,"")+".jpg")} style={{color:"var(--cyan)",fontWeight:700,textDecoration:"none"}}>⬇ Photo</a>}
                       <button onClick={()=>setConfirmDelete(en)}
                         style={{marginLeft:"auto",background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:11,fontWeight:700,fontFamily:"inherit"}}>Delete</button>

@@ -267,15 +267,6 @@ export default function ProgramForm({ token }) {
           </div>
         </div>
 
-        <div className="pt-card">
-          <div className="pt-sec-ttl">Your email</div>
-          <p className="pt-sec-blurb">Not printed in the program. Only so we can reach you.</p>
-          <div className="pt-sec-body">
-            <input className="pt-in" type="email" autoComplete="email" value={data.email || ""} placeholder="you@email.com"
-              onChange={(e) => set("email", e.target.value)} />
-          </div>
-        </div>
-
         {err && <div className="pt-err">{err}</div>}
 
         <button className="pt-btn" onClick={send} disabled={busy || photoBusy}>
