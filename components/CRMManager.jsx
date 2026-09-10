@@ -36,7 +36,12 @@ import {
   regeneratePortalToken,
   deleteEventPortal,
   updatePortalAnswer,
+  fetchEventProgram,
+  createProgramForm,
+  regenerateProgramFormToken,
+  deleteProgramEntry,
 } from "../lib/services";
+import { programLinks, programToText } from "../lib/programForm";
 import { PORTAL_SECTIONS, FIELD_BY_KEY, displayValue, portalProgress, sectionProgress, portalToText, isBlank as pIsBlank, pickOrganizer, portalSeedFromCRM } from "../lib/eventPortal";
 import { buildNewsletter, TEMPLATES, defaultMonthYear, COMPACT_SECTIONS, QUICK_HIT_SECTIONS, blankCompactItem, COMPACT_BLOCKS, QUICK_HIT_BLOCKS, COMPACT_FIXED_TOP, COMPACT_FIXED_BOTTOM, QH_FIXED_TOP, QH_FIXED_BOTTOM, orderedBlockIds } from "../lib/newsletter";
 import { validateContact, validateOrg } from "../lib/schemas";
@@ -4636,8 +4641,147 @@ function EventCommsPanel({event,contacts,linked,onUpdateEvent,onUpdateContacts,o
   );
 }
 
+/* ─── Event workspace: program form ──────────────────────────────────────────
+   One public link per event (/program/[token]) that artists and musicians use to
+   send their bio, photo, and links. Nothing on it is required. Submissions live in
+   their own table, so this panel reads and deletes them directly.               */
+function EventProgramPanel({program,onCreate,onRotate,onDeleteEntry,onRefresh,showToast}) {
+  const [confirmRotate,setConfirmRotate]=useState(false);
+  const [confirmDelete,setConfirmDelete]=useState(null);
+  const [busy,setBusy]=useState(false);
+  const {form,entries}=program;
+  const link=form?`${typeof window!=="undefined"?window.location.origin:""}/program/${form.token}`:"";
+  const copy=(text,msg)=>{ try{ navigator.clipboard.writeText(text); showToast?.(msg); }catch{ showToast?.("Copy failed","err"); } };
+  // Supabase storage ignores <a download> cross-origin; ?download= forces an attachment.
+  const dl=(url,name)=>url+(url.includes("?")?"&":"?")+"download="+encodeURIComponent(name);
+
+  if(!form) {
+    return (
+      <div>
+        <p style={{fontSize:12,lineHeight:1.7,color:"var(--g600)",margin:"0 0 12px"}}>
+          No participant form yet. Create one link and send it to everyone performing or showing work.
+          They can send a bio, a photo, and their links. Nothing is required.
+        </p>
+        <button className="btn btn-blk btn-sm" disabled={busy}
+          onClick={async()=>{ setBusy(true); await onCreate(); setBusy(false); }}>
+          {busy?"Creating…":"+ Create participant form link"}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{border:"1px solid var(--g200)",borderRadius:8,padding:"10px 12px",marginBottom:16,background:"var(--g50,#fafafa)"}}>
+        <div style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.05em",textTransform:"uppercase",color:"var(--g500)",marginBottom:5}}>
+          Link for participants
+        </div>
+        <div style={{fontSize:11.5,wordBreak:"break-all",color:"var(--cyan)",fontWeight:700,marginBottom:9}}>{link}</div>
+        <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
+          <button className="btn btn-blk btn-sm" onClick={()=>copy(link,"Link copied ✓")}>Copy link</button>
+          <a className="btn btn-ghost btn-sm" href={link} target="_blank" rel="noopener noreferrer">Open ↗</a>
+          <button className="btn btn-ghost btn-sm" onClick={()=>setConfirmRotate(true)}>New link</button>
+        </div>
+        <div style={{fontSize:11,color:"var(--g500)",marginTop:8,lineHeight:1.55}}>
+          One link for everyone in the lineup. Each person only sees and edits what they sent.
+        </div>
+      </div>
+
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,flexWrap:"wrap"}}>
+        <div className="dp-sect-lbl" style={{margin:0}}>{entries.length} submission{entries.length===1?"":"s"}</div>
+        <div style={{marginLeft:"auto",display:"flex",gap:7}}>
+          {entries.length>0&&<button className="btn btn-ghost btn-sm" onClick={()=>copy(programToText(entries),"All submissions copied ✓")}>Copy all as text</button>}
+          <button className="btn btn-ghost btn-sm" onClick={onRefresh}>↻ Refresh</button>
+        </div>
+      </div>
+
+      {entries.length===0
+        ? <p style={{fontSize:12,color:"var(--g500)",lineHeight:1.7}}>Nothing yet. Send the link above to your lineup.</p>
+        : <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            {entries.map(en=>{
+              const d=en.data||{};
+              const links=programLinks(d);
+              return (
+                <div key={en.id} style={{display:"flex",gap:14,border:"1.5px solid var(--g200)",borderRadius:10,padding:14,background:"#fff",boxShadow:"var(--sh-sm)"}}>
+                  {d.photo_url
+                    ? <a href={d.photo_url} target="_blank" rel="noopener noreferrer" style={{flexShrink:0}}>
+                        <img src={d.photo_url} alt={d.name||"Photo"} style={{width:88,height:88,objectFit:"cover",borderRadius:8,display:"block"}}/>
+                      </a>
+                    : <div style={{width:88,height:88,borderRadius:8,background:"var(--g100)",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--g400)"}}>No photo</div>}
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{display:"flex",alignItems:"baseline",gap:8,flexWrap:"wrap"}}>
+                      <div style={{fontSize:14,fontWeight:900}}>{d.name||"(no name)"}</div>
+                      {d.role&&<span className="type-tag">{d.role}</span>}
+                      <span style={{marginLeft:"auto",fontSize:10.5,color:"var(--g400)"}}>Sent {new Date(en.created_at).toLocaleDateString()}</span>
+                    </div>
+                    {d.bio&&<div style={{fontSize:12,lineHeight:1.65,color:"var(--g600)",whiteSpace:"pre-wrap",marginTop:6}}>{d.bio}</div>}
+                    {links.length>0&&(
+                      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
+                        {links.map(l=>(
+                          <a key={l.key} href={l.url} target="_blank" rel="noopener noreferrer"
+                            style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:999,background:"var(--g100)",color:"var(--ink)",textDecoration:"none"}}>
+                            {l.label} ↗
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                    <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap",marginTop:8,fontSize:11}}>
+                      {d.email&&<span style={{color:"var(--g500)"}}>{d.email} <span style={{color:"var(--g400)"}}>· not for print</span></span>}
+                      {d.photo_url&&<a href={dl(d.photo_url,(d.name||"photo").replace(/[^\w\- ]+/g,"")+".jpg")} style={{color:"var(--cyan)",fontWeight:700,textDecoration:"none"}}>⬇ Photo</a>}
+                      <button onClick={()=>setConfirmDelete(en)}
+                        style={{marginLeft:"auto",background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:11,fontWeight:700,fontFamily:"inherit"}}>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>}
+
+      {confirmRotate&&<ConfirmModal
+        title="Create a new link?"
+        confirmLabel="Create new link"
+        message="The current link will stop working immediately. Everything already sent stays. Anyone who has not sent their info yet will need the new link."
+        onConfirm={()=>{ setConfirmRotate(false); onRotate(); }}
+        onCancel={()=>setConfirmRotate(false)}/>}
+      {confirmDelete&&<ConfirmModal
+        title="Delete this submission?"
+        confirmLabel="Delete"
+        message={`This removes what ${confirmDelete.data?.name||"this person"} sent. This cannot be undone.`}
+        onConfirm={()=>{ const en=confirmDelete; setConfirmDelete(null); onDeleteEntry(en); }}
+        onCancel={()=>setConfirmDelete(null)}/>}
+    </div>
+  );
+}
+
 function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,onUpdateContacts,onContactClick,portal,onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals,onSavePortalAnswer,showToast}) {
   const linked = contacts.filter(c=>(event.contact_ids||[]).includes(c.id));
+
+  // Program form: the tile and its popup share one copy, loaded per event.
+  const [program,setProgram]=useState({form:null,entries:[],loaded:false});
+  const loadProgram=useCallback(async()=>{
+    const {data,error}=await fetchEventProgram(event.id);
+    if(error) console.error("fetchEventProgram:",error);
+    setProgram({...data,loaded:true});
+  },[event.id]);
+  useEffect(()=>{ loadProgram(); },[loadProgram]);
+  const makeProgramForm=async()=>{
+    const {data,error}=await createProgramForm(event.id);
+    if(error){ console.error("createProgramForm:",error); showToast("Could not create the form link","err"); return; }
+    setProgram(p=>({...p,form:data}));
+    showToast("Participant form link created ✓");
+  };
+  const rotateProgramForm=async()=>{
+    const {data,error}=await regenerateProgramFormToken(program.form.id);
+    if(error||!data){ showToast("Could not create a new link","err"); return; }
+    setProgram(p=>({...p,form:data}));
+    showToast("New link created ✓");
+  };
+  const removeProgramEntry=async(entry)=>{
+    const {error}=await deleteProgramEntry(entry.id);
+    if(error){ showToast("Could not delete that","err"); return; }
+    setProgram(p=>({...p,entries:p.entries.filter(e=>e.id!==entry.id)}));
+    showToast("Submission deleted");
+  };
   const today=new Date().toISOString().slice(0,10);
 
   // Dashboard popups: which tile is open in a modal (null = just the dashboard).
@@ -4879,6 +5023,39 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
                       </div>
                     </>
               ),portal?"Portal link & all answers":null,true)}
+              {/* PROGRAM: what artists and musicians sent through the participant form. */}
+              {tile("program","Program",program.entries.length?program.entries.length+" sent":"",(
+                !program.form
+                  ? <div>
+                      <div className="evd-empty">{program.loaded?"No participant form yet. Create one link to send your lineup for bios, photos, and links.":"Loading…"}</div>
+                      {program.loaded&&<button className="btn btn-blk btn-sm" style={{marginTop:8}} onClick={makeProgramForm}>+ Create participant form link</button>}
+                    </div>
+                  : <>
+                      <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                        <button className="btn btn-blk btn-sm" onClick={()=>{
+                          const url=window.location.origin+"/program/"+program.form.token;
+                          try{ navigator.clipboard.writeText(url); showToast("Link copied ✓"); }catch{ showToast("Copy failed","err"); }
+                        }}>Copy form link</button>
+                        <a className="btn btn-ghost btn-sm" href={"/program/"+program.form.token} target="_blank" rel="noopener noreferrer">Open ↗</a>
+                      </div>
+                      {program.entries.length===0
+                        ? <div className="evd-empty">Nobody has sent anything yet.</div>
+                        : <div className="evd-host-grid">
+                            {program.entries.slice(0,6).map(en=>(
+                              <div key={en.id} style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
+                                {en.data?.photo_url
+                                  ? <img src={en.data.photo_url} alt="" style={{width:30,height:30,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
+                                  : <div style={{width:30,height:30,borderRadius:"50%",background:"var(--g100)",flexShrink:0}}/>}
+                                <div style={{minWidth:0}}>
+                                  <div style={{fontSize:12.5,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{en.data?.name||"(no name)"}</div>
+                                  {en.data?.role&&<div style={{fontSize:10.5,color:"var(--g500)"}}>{en.data.role}</div>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>}
+                      {program.entries.length>6&&<div className="evd-more">+{program.entries.length-6} more</div>}
+                    </>
+              ),program.form?"All submissions & link":null,true)}
               {tile("plan","Checklist",clTotal?clDone+"/"+clTotal+" done":"",(
                 <>
                   <div style={{height:5,borderRadius:3,background:"var(--g100)",overflow:"hidden"}}>
@@ -5126,6 +5303,18 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
       {openTile==="media"&&(
         <Modal xl title="Media" onClose={()=>setOpenTile(null)}>
           <EventMediaPanel event={event} onUpdateEvent={onUpdateEvent} showToast={showToast}/>
+        </Modal>
+      )}
+      {openTile==="program"&&(
+        <Modal wide title={"Program · "+(event.name||"Event")} onClose={()=>setOpenTile(null)}>
+          <EventProgramPanel
+            program={program}
+            onCreate={makeProgramForm}
+            onRotate={rotateProgramForm}
+            onDeleteEntry={removeProgramEntry}
+            onRefresh={loadProgram}
+            showToast={showToast}
+          />
         </Modal>
       )}
       {openTile==="portal"&&(

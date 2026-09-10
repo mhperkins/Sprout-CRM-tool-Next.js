@@ -125,7 +125,7 @@ export const PORTAL_CSS = `
 
 /* ─── Page frame ───────────────────────────────────────────────────────────── */
 
-export function PortalShell({ title, subtitle, children }) {
+export function PortalShell({ title, subtitle, footNote, children }) {
   return (
     <div className="pt">
       <style dangerouslySetInnerHTML={{ __html: PORTAL_CSS }} />
@@ -143,7 +143,7 @@ export function PortalShell({ title, subtitle, children }) {
       <div className="pt-foot">
         Sprout Society · Brooklyn, NY · <a href="mailto:hello@sproutsociety.org" style={{ color: "#2a8ca0", fontWeight: 700 }}>hello@sproutsociety.org</a>
         <br />
-        Questions about your booking? Reply to any email from us and a human will answer.
+        {footNote || "Questions about your booking? Reply to any email from us and a human will answer."}
       </div>
     </div>
   );
