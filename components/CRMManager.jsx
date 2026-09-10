@@ -5248,7 +5248,23 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
     <div className="page">
       <div className="pg-hd">
         <div><div className="pg-ttl">Events</div><div className="pg-sub">{events.length} event{events.length!==1?"s":""} total</div></div>
-        <button className="btn btn-blk" onClick={()=>{ setEditDraft({...BLANK_EVENT(),_isNew:true}); setEvtPage("new"); }}>+ Add Event</button>
+        <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+          {/* Public booking form: send this to anyone who wants to host. Submissions land here as Requests. */}
+          {(()=>{
+            const bookLink=`${typeof window!=="undefined"?window.location.origin:""}/book`;
+            return (
+              <div style={{display:"flex",alignItems:"center",gap:8,border:"1px solid var(--g200)",borderRadius:8,padding:"6px 8px 6px 12px",background:"#fff"}}>
+                <div style={{minWidth:0}}>
+                  <div style={{fontSize:9.5,fontWeight:700,letterSpacing:"0.05em",textTransform:"uppercase",color:"var(--g500)"}}>Hosting request form</div>
+                  <div style={{fontSize:12,fontWeight:700,color:"var(--cyan)",wordBreak:"break-all"}}>{bookLink}</div>
+                </div>
+                <button className="btn btn-blk btn-sm" onClick={()=>{ try{ navigator.clipboard.writeText(bookLink); showToast("Booking link copied ✓"); }catch{ showToast("Copy failed","err"); } }}>Copy link</button>
+                <a className="btn btn-ghost btn-sm" href={bookLink} target="_blank" rel="noopener noreferrer">Open ↗</a>
+              </div>
+            );
+          })()}
+          <button className="btn btn-blk" onClick={()=>{ setEditDraft({...BLANK_EVENT(),_isNew:true}); setEvtPage("new"); }}>+ Add Event</button>
+        </div>
       </div>
       {(()=>{
         const today=new Date().toISOString().slice(0,10);
@@ -5256,15 +5272,15 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
         const completed=events.filter(e=>e.status==="completed").length;
         const pendingReq=events.filter(e=>e.status==="pending").length;   // unapproved portal bookings
         const overdue=events.reduce((acc,e)=>acc+(e.checklist||[]).filter(i=>!i.completed&&i.date&&i.date<=today).length,0);
-        const statCard=(label,val,valColor)=>(
-          <div className="stat" style={{flex:1,minWidth:90}}>
+        const statCard=(label,val,valColor,onClick)=>(
+          <div className="stat" style={{flex:1,minWidth:90,...(onClick?{cursor:"pointer"}:{})}} onClick={onClick} title={onClick?"Show only booking requests":undefined}>
             <div className="stat-lbl">{label}</div>
             <div className="stat-val" style={valColor?{color:valColor}:{}}>{val}</div>
           </div>
         );
         return <div className="stats" style={{marginBottom:18}}>
           {statCard("Total",events.length)}
-          {statCard("Requests",pendingReq,pendingReq>0?"#5c4a00":undefined)}
+          {statCard("Requests",pendingReq,pendingReq>0?"#5c4a00":undefined,()=>{ setFStatus("pending"); setView("list"); })}
           {statCard("Upcoming",upcoming,"var(--cyan)")}
           {statCard("Completed",completed)}
           {statCard("Checklist overdue",overdue,overdue>0?"var(--orange)":undefined)}
