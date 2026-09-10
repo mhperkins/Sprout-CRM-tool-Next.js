@@ -4844,6 +4844,19 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
                       <button className="btn btn-blk btn-sm" style={{marginTop:8}} onClick={()=>onCreatePortal(event)}>+ Create portal link</button>
                     </div>
                   : <>
+                      {(()=>{
+                        const portalLink=`${typeof window!=="undefined"?window.location.origin:""}/portal/${portal.token}`;
+                        return (
+                          <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",border:"1px solid var(--g200)",borderRadius:8,padding:"8px 10px",background:"var(--g50,#fafafa)"}}>
+                            <div style={{flex:"1 1 220px",minWidth:0}}>
+                              <div style={{fontSize:9.5,fontWeight:700,letterSpacing:"0.05em",textTransform:"uppercase",color:"var(--g500)"}}>Send this to the host</div>
+                              <div style={{fontSize:11.5,fontWeight:700,color:"var(--cyan)",wordBreak:"break-all"}}>{portalLink}</div>
+                            </div>
+                            <button className="btn btn-blk btn-sm" onClick={()=>{ try{ navigator.clipboard.writeText(portalLink); showToast("Portal link copied ✓"); }catch{ showToast("Copy failed","err"); } }}>Copy portal link</button>
+                            <a className="btn btn-ghost btn-sm" href={portalLink} target="_blank" rel="noopener noreferrer">Open ↗</a>
+                          </div>
+                        );
+                      })()}
                       {!prog.readyToSchedule&&(
                         <div style={{fontSize:12,fontWeight:700,color:"#8b0057"}}>
                           Still needed: {prog.missingRequired.map(k=>FIELD_BY_KEY[k]?.label||k).join(", ")}
