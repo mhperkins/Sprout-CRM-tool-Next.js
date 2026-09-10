@@ -2,6 +2,25 @@
 
 ---
 
+## 2026-09-10 (third session): Participant program form, sign-in sheet, QR tracker findings
+
+App code + two new Supabase tables. Commits `2e08e55` (form + tile), `58a7e87` (slide), `9f80af2` (autofill fix); `npm run build` passes. Effort: medium; diagnose medium / fix low for the autofill bug.
+
+### Brainstorm: QR sign-ins, program, and TV in one place
+The QR tracker is no longer a Cloudflare app. It runs on Vercel (`qr-tracker-gold.vercel.app`) with its data in the CRM's own Supabase project (`qr_events`, `qr_codes`, `qr_daily_scans`), so the CRM can read scan counts directly and the printed QRs keep working as long as that host stays up. Found, not fixed: the tracker's destination endpoints have no auth and the `qr_*` tables allow public writes, so anyone could repoint a printed QR. Max settled on two QRs (door sign-in, inside program), sign-ins staying in the kiosk sheet, and CRM adds only on request. Nothing built toward the combined "Event Night" tile yet.
+
+### Sign-in sheet is a live intake source again
+The sign-in page still writes to `Sprout Society — Sign-Ins`. Max moved it out of Archive into `03 Surveys & Forms/SPROUT N TELL`; the sweep list in CLAUDE.md and the READ ME FIRST doc in the CRM INTAKE folder now list it as live source #4.
+
+### Participant program form (`2e08e55`)
+One public link per event (`/program/<token>`) for artists and musicians to send a name, role, bio, photo, and links (Instagram, Venmo, website, Linktree, one other), plus an email that is not printed. Nothing is required. Each send gets a private edit key stored in the browser so the sender can fix it later. New tables `sprout_program_forms` and `sprout_program_entries` (authenticated-only RLS, public access through the service-role route); submissions sit apart from the event record so an event save cannot wipe them. Photos must come from the `event-portal-files` bucket; 60 sends per hour per event. The event dashboard gets a Program tile and a popup with every submission, link buttons, photo download, delete, rotate link, and copy-all-as-text. 15 API checks passed against the built app; test data deleted.
+
+### Autofill blocked a real send (`9f80af2`)
+Max's first send failed with "Something went wrong." A clean send to production saved, and the message matched the honeypot: Chrome autofilled the hidden spam-trap field beside the email box. The honeypot is removed from the program form. The `/book` form has the same honeypot and the same risk; not changed yet.
+
+### Correction
+Vol. 5's event id is `evt_sprout_n_tell_sprout_society_x_buzzkill_`, not the id in the earlier notes.
+
 ## 2026-09-10 (later): Events portal fixes, prefill, logos, and booking alerts
 
 App code + one Vercel env change. Commits `fb1a5c4`, `cdf5ee2`, `cdf8d8c`, `426c0ff`, `c5a22a1`, `3942425`, all pushed; `npm run build` passes. Effort: diagnose medium / fix low for the broken link, medium for the rest.

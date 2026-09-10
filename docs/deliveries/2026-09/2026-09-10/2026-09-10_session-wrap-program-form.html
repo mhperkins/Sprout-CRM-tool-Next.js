@@ -1,0 +1,91 @@
+<title>Program Form Session Wrap</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{--ink:#030000;--paper:#F7F7F6;--cyan:#73C4D6;--fuchsia:#E10098;--acid:#C6C902;--banana:#FAD100;--g:#6b6b68;--line:#DCDCD9}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',-apple-system,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);padding:32px 16px}
+  .slide{max-width:1100px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+  .hd{background:var(--ink);color:#fff;padding:30px 34px 26px}
+  .eyebrow{font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--acid)}
+  h1{font-size:32px;font-weight:900;line-height:1.15;margin-top:8px}
+  .sub{color:#c2c2bf;font-size:15px;margin-top:8px;line-height:1.5}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+  .pill{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:#1c1a1a;border:1px solid #333}
+  .pill b{color:var(--acid)}
+  .rule{height:5px;background:linear-gradient(90deg,var(--cyan) 0 25%,var(--fuchsia) 25% 50%,var(--acid) 50% 75%,var(--banana) 75%)}
+  .body{padding:26px 34px 30px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .card{border:1.5px solid var(--line);border-left:6px solid var(--cyan);border-radius:10px;padding:16px}
+  .card.f{border-left-color:var(--fuchsia)} .card.a{border-left-color:var(--acid)} .card.b{border-left-color:var(--banana)}
+  .card h4{font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+  .tag{display:inline-block;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle}
+  .ship{background:var(--acid);color:var(--ink)} .fix{background:var(--fuchsia);color:#fff} .info{background:var(--cyan);color:var(--ink)} .open{background:var(--banana);color:var(--ink)}
+  .card ul{margin-top:8px;padding-left:18px;font-size:13px;line-height:1.65;color:#2f2f2d}
+  code{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;background:#f0f0ee;padding:1px 5px;border-radius:4px}
+  h3{font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;margin:24px 0 10px;color:var(--g)}
+  .todo{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+  .todo div{background:var(--paper);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.55}
+  .todo b{display:block;font-size:13.5px}
+</style>
+
+<div class="slide">
+  <div class="hd">
+    <div class="eyebrow">Session wrap · Sprout CRM · 2026-09-10</div>
+    <h1>Program form shipped, sign-ins sorted</h1>
+    <div class="sub">A participant form for the night's program, a Program tile on the event dashboard, and a clear plan for QR sign-ins, program, and TV.</div>
+    <div class="meta">
+      <span class="pill">branch <b>main</b></span>
+      <span class="pill">form <b>2e08e55</b></span>
+      <span class="pill">slide <b>58a7e87</b></span>
+      <span class="pill">fix <b>9f80af2</b></span>
+      <span class="pill">docs: changelog + this slide</span>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <div class="grid">
+      <div class="card a">
+        <h4>Program form <span class="tag ship">Shipped</span></h4>
+        <ul>
+          <li><code>/program/&lt;token&gt;</code>, one link per event</li>
+          <li>Name, role, bio, photo, links, email</li>
+          <li>Nothing required; senders can edit later</li>
+          <li>Program tile + popup with delete and copy-all</li>
+        </ul>
+      </div>
+      <div class="card f">
+        <h4>Autofill bug <span class="tag fix">Fixed</span></h4>
+        <ul>
+          <li>Chrome filled a hidden spam trap</li>
+          <li>Real send rejected as a bot</li>
+          <li>Trap removed; hourly cap stays</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Sign-in sheet <span class="tag info">Settled</span></h4>
+        <ul>
+          <li>Door QR writes to the kiosk Sign-Ins sheet</li>
+          <li>Moved out of Archive; live source #4</li>
+          <li>CRM adds only when Max says</li>
+        </ul>
+      </div>
+      <div class="card b">
+        <h4>QR tracker <span class="tag open">Found</span></h4>
+        <ul>
+          <li>Runs on Vercel + the CRM's Supabase</li>
+          <li>Keep <code>qr-tracker-gold</code> up for printed codes</li>
+          <li>Destination edits have no auth</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Next up</h3>
+    <div class="todo">
+      <div><b>Delete the 2 test sends</b>Vol. 4 Program tile → All submissions → Delete.</div>
+      <div><b>Fix the /book spam trap</b>Same autofill risk on booking requests.</div>
+      <div><b>Lock down QR edits</b>Auth on destination changes, tighter table rules.</div>
+      <div><b>Event Night tile</b>Both QRs with scans; program page and TV read the submissions.</div>
+    </div>
+  </div>
+</div>
