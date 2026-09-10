@@ -45,3 +45,5 @@ next-env.d.ts
 # Claude Code local config — do not commit
 .claude
 CLAUDE.md
+
+.vercel

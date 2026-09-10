@@ -20,7 +20,12 @@ const NOT_FOUND = () =>
 async function load(params) {
   if (!hasServiceKey()) return { fail: Response.json({ error: "Portal is not configured yet." }, { status: 503 }) };
   const { token } = await params;
-  const portal = await portalByToken(token);
+  let portal;
+  try {
+    portal = await portalByToken(token);
+  } catch {
+    return { fail: Response.json({ error: "The portal is temporarily unavailable. Please try again in a few minutes." }, { status: 503 }) };
+  }
   if (!portal) return { fail: NOT_FOUND() };
   return { portal };
 }
