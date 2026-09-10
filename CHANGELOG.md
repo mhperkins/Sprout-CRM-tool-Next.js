@@ -2,7 +2,7 @@
 
 ---
 
-## 2026-09-10 — Calendar into the CRM, flyers from email, and the one-screen event dashboard
+## 2026-09-10: Calendar into the CRM, flyers from email, and the one-screen event dashboard
 
 App code + data. Commits `da3e871` (downloads + links first) and `ae07b74` (the dashboard); `npm run build` passes. Effort: medium for the data work, high for the dashboard.
 
