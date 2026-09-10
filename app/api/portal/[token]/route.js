@@ -8,8 +8,8 @@
 // client can never read or write another booking. An unknown token always 404s
 // with the same message, so the endpoint cannot be used to probe for valid links.
 
-import { sanitizePortalData, portalProgress } from "@/lib/eventPortal";
-import { hasServiceKey, portalByToken, publicEvent, savePortalData, syncEventFromPortal } from "@/lib/portalDb";
+import { sanitizePortalData, portalProgress, fillBlanks } from "@/lib/eventPortal";
+import { hasServiceKey, portalByToken, publicEvent, savePortalData, syncEventFromPortal, crmSeedForEvent } from "@/lib/portalDb";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,11 +33,26 @@ async function load(params) {
 export async function GET(_req, { params }) {
   const { portal, fail } = await load(params);
   if (fail) return fail;
+
+  // Prefill blank answers with what the CRM already knows (event, organizer, their
+  // org). Blanks only, so nothing the host typed is ever overwritten. A failure here
+  // never blocks the portal from loading.
+  let data = portal.data;
+  try {
+    const filled = fillBlanks(data, sanitizePortalData(await crmSeedForEvent(portal.event_id)));
+    if (filled.changed) {
+      const { error } = await savePortalData(portal.id, filled.data);
+      if (!error) data = filled.data;
+    }
+  } catch (e) {
+    console.error("portal GET — prefill failed:", e?.message);
+  }
+
   const event = await publicEvent(portal.event_id);
   return Response.json({
-    portal: { status: portal.status, submitted_at: portal.submitted_at, data: portal.data, updatedAt: portal.updatedAt },
+    portal: { status: portal.status, submitted_at: portal.submitted_at, data, updatedAt: portal.updatedAt },
     event,
-    progress: portalProgress(portal.data),
+    progress: portalProgress(data),
   });
 }
 

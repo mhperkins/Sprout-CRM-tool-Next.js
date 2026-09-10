@@ -36,7 +36,7 @@ import {
   regeneratePortalToken,
   deleteEventPortal,
 } from "../lib/services";
-import { PORTAL_SECTIONS, FIELD_BY_KEY, displayValue, portalProgress, sectionProgress, portalToText, isBlank as pIsBlank } from "../lib/eventPortal";
+import { PORTAL_SECTIONS, FIELD_BY_KEY, displayValue, portalProgress, sectionProgress, portalToText, isBlank as pIsBlank, pickOrganizer, portalSeedFromCRM } from "../lib/eventPortal";
 import { buildNewsletter, TEMPLATES, defaultMonthYear, COMPACT_SECTIONS, QUICK_HIT_SECTIONS, blankCompactItem, COMPACT_BLOCKS, QUICK_HIT_BLOCKS, COMPACT_FIXED_TOP, COMPACT_FIXED_BOTTOM, QH_FIXED_TOP, QH_FIXED_BOTTOM, orderedBlockIds } from "../lib/newsletter";
 import { validateContact, validateOrg } from "../lib/schemas";
 import { blocksOf, firstHeading, parseTableBlock, serializeTable, renderInline } from "../lib/md";
@@ -5532,12 +5532,16 @@ const saveProfile = useCallback((u) => {
   // CRM only ever creates, rotates, or removes the link itself. It never edits a
   // client's answers behind their back.
   const makePortal = useCallback(async (event) => {
-    const { data, error } = await createEventPortal(event);
+    // Prefill from what we already know: the organizer and their org.
+    const organizer = pickOrganizer(event, contacts);
+    const orgId = organizer?.org_ids?.[0] || organizer?.org_id;
+    const org = orgId ? orgs.find(o => o.id === orgId) : null;
+    const { data, error } = await createEventPortal(event, portalSeedFromCRM({ event, organizer, org }));
     if (error) { console.error("createEventPortal:", error); showToast("Could not create the portal link","err"); return null; }
     setPortals(p => ({ ...p, [event.id]: data }));
     showToast("Portal link created ✓");
     return data;
-  }, [showToast]);
+  }, [showToast, contacts, orgs]);
 
   const rotatePortal = useCallback(async (portal) => {
     const { data, error } = await regeneratePortalToken(portal.id);
