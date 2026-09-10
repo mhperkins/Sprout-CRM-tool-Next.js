@@ -7,6 +7,7 @@
 import { validateEvent } from "@/lib/schemas";
 import { REQUEST_KEYS, ALL_FIELDS, isBlank, portalToEventPatch } from "@/lib/eventPortal";
 import { svc, hasServiceKey, newToken, newPortalId, newEventId } from "@/lib/portalDb";
+import { notifyBookingRequest } from "@/lib/notify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -124,6 +125,14 @@ export async function POST(req) {
     await sb.from("sprout_events").delete().eq("id", valid.id);
     console.error("portal/request — portal insert failed:", pErr.message);
     return Response.json({ error: "We could not save that request. Please try again." }, { status: 500 });
+  }
+
+  // Tell staff a request came in. Awaited so serverless doesn't cut it off, but a
+  // failed email never fails the request — it is already saved as a pending event.
+  try {
+    await notifyBookingRequest({ answers, eventId: valid.id, token, origin: new URL(req.url).origin });
+  } catch (e) {
+    console.error("portal/request — notification email failed:", e?.message);
   }
 
   return Response.json({ token, event_id: valid.id });
