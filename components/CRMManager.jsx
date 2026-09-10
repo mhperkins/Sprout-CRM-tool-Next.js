@@ -4821,6 +4821,20 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
 
         return (
         <>
+          {event.status==="pending"&&(
+            <div style={{display:"flex",alignItems:"center",gap:14,flexWrap:"wrap",borderLeft:"6px solid var(--banana)",background:"#fff",borderRadius:"0 10px 10px 0",padding:"14px 18px",marginBottom:16,boxShadow:"0 2px 10px rgba(0,0,0,0.06)"}}>
+              <div style={{flex:"1 1 260px",minWidth:0}}>
+                <div style={{fontSize:14,fontWeight:900}}>This is a pending booking request.</div>
+                <div style={{fontSize:12.5,color:"var(--g600)",lineHeight:1.6,marginTop:2}}>
+                  It is not on the calendar and will not appear in the newsletter until you approve it.
+                  {prog&&!prog.readyToSchedule&&` ${prog.requiredTotal-prog.requiredDone} essential${prog.requiredTotal-prog.requiredDone===1?" is":"s are"} still missing from the portal.`}
+                </div>
+              </div>
+              <button className="btn btn-blk" onClick={()=>{ onUpdateEvent({...event,status:"upcoming"}); showToast?.("Approved onto the calendar ✓"); }}>
+                Approve onto the calendar →
+              </button>
+            </div>
+          )}
           <div className="evd-strip">
             {daysOut!=null&&<span className="evd-strip-n">{daysOut>0?daysOut+" days out":daysOut===0?"Today":(-daysOut)+" days ago"}</span>}
             {overdue>0&&<span className="evd-chip" style={{background:"var(--fuchsia-lt)",color:"#8b0057"}}>{overdue} overdue</span>}
@@ -5325,6 +5339,10 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
                   <td style={{fontSize:12,color:"var(--g600)"}}>{(e.contact_ids||[]).length}</td>
                   <td style={{fontSize:12,color:"var(--g600)",maxWidth:160,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.location||"—"}</td>
                   <td onClick={ev=>ev.stopPropagation()} style={{display:"flex",gap:4}}>
+                    {e.status==="pending"&&(
+                      <button className="btn btn-blk btn-xs" title="Put this event on the calendar"
+                        onClick={()=>{ handleUpdateEvent({...e,status:"upcoming"}); showToast(`Approved "${e.name||"event"}" onto the calendar ✓`); }}>Approve</button>
+                    )}
                     <button className="btn btn-ghost btn-xs" onClick={()=>{setEditDraft({...e});setEvtPage("edit");}}>Edit</button>
                     <button className="btn btn-danger btn-xs" onClick={()=>setConfirmDel(e.id)}>Del</button>
                   </td>
