@@ -2,6 +2,38 @@
 
 ---
 
+## 2026-09-10 — Calendar into the CRM, flyers from email, and the one-screen event dashboard
+
+App code + data. Commits `da3e871` (downloads + links first) and `ae07b74` (the dashboard); `npm run build` passes. Effort: medium for the data work, high for the dashboard.
+
+### Google Calendar is readable (no new setup)
+The existing `google-workspace` MCP already carries calendar tools. The real schedule lives on **Sprout HQ - Program Calendar** (`c_ddc75ed1…@group.calendar.google.com`); the hello@ primary calendar is empty. Saved to memory.
+
+### Calendar events landed in the CRM (GGC excluded)
+GGC is the daytime resident and Sprout does not run it, so none of its events were imported.
+- **Created:** Queer Social Body Wellness Class (9/15), Queer Social - Sober Hangout (9/25), Sing Easy (9/29), Bar Nun (hold) on 10/8 as `pending`.
+- **Moved:** Sprout N Tell Vol. 4 from 8/28 to **9/11** (postponed) and back to upcoming; Vol. 5 from 9/25 to **10/23**, renamed "Sprout N Tell Vol. 5 feat. Buzzkill", 6-10pm.
+- **Fixed:** 12-Step Group ends at 8:00pm, not 8:30.
+- **Skipped:** Pat's All Day Market already existed as Pat's Industry Day.
+- Calendar times are room holds that include setup and breakdown, so they can run longer than the public flyer time. Max confirmed that is intended; saved to memory.
+
+### Queer Social flyers pulled from email
+Jonathan Winkles (Queer Social) emailed both September flyers to maxperkins@ on 9/5. Downloaded both attachments, uploaded them to the `event-media` bucket, and attached each to its event with the ticket link (`bit.ly/safespacetickets`), a comms entry, and Jonathan on the roster. The same email was logged as a touchpoint on his contact.
+
+### Downloads and links (`da3e871`)
+Uploaded files get a Download button. Cross-origin storage ignores `<a download>`, so it uses Supabase's `?download=` param, verified to return `Content-Disposition: attachment`. Links moved to the top of Details.
+
+### The one-screen event dashboard (`ae07b74`)
+The five tabs are gone. The event page is now one screen:
+- **Status strip:** days out, overdue items, awaiting replies, essentials missing.
+- **Booking protocol spine** down the left: the nine portal sections with per-section progress via `sectionProgress()`. Red only when a portal exists and a required answer is missing.
+- **Tiles:** Checklist (next 6 open items, tick in place), People (first 5 with RSVP), Links (inline + Add link), Media (thumbnails with download), Communications (latest 3), Details (description, notes, editable recap).
+- Each tile footer opens the existing full editor in a popup. The checklist calendar moved into its popup unchanged. `Modal` gained an `xl` size.
+- Tile bodies are plain function calls, not nested components, so inline inputs keep focus while typing.
+- No schema or data change.
+
+Max's verdict: "this is BEAUTIFUL."
+
 ## 2026-09-02 (later) — Rethinking the event workspace: wireframe, not code
 
 Design session. No app code, schema, or data change. One new file: `docs/wireframes/2026-09-02_event-dashboard-wireframe.html`. Effort: high (the decisions here set up a real build).

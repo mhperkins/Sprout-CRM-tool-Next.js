@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery: One-Screen Event Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap">
+<style>
+  :root{ --ink:#030000; --paper:#F7F7F6; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6; --g:#8a8a86; }
+  *{box-sizing:border-box}
+  body{margin:0;background:#1b1b19;font-family:Lato,system-ui,sans-serif;color:var(--ink);display:grid;place-items:center;min-height:100vh;padding:24px}
+  .slide{width:min(1280px,100%);aspect-ratio:16/9;background:var(--paper);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+  .top{background:var(--ink);color:#fff;padding:26px 40px 22px;display:flex;align-items:flex-end;gap:24px}
+  .top h1{margin:0;font-size:clamp(22px,3.2vw,40px);font-weight:900;letter-spacing:-.02em;line-height:1.05}
+  .top .eyebrow{font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--acid);margin-bottom:8px}
+  .badges{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .b{font-size:11px;font-weight:900;padding:5px 11px;border-radius:999px;letter-spacing:.04em;white-space:nowrap}
+  .b-acid{background:var(--acid);color:var(--ink)} .b-cyan{background:var(--cyan);color:var(--ink)} .b-w{background:#fff;color:var(--ink)}
+  .rule{height:5px;background:var(--acid)}
+  .body{flex:1;display:grid;grid-template-columns:1.35fr 1fr;gap:18px;padding:22px 40px 18px;min-height:0}
+  .hero{background:#fff;border-radius:12px;border-left:7px solid var(--fuchsia);box-shadow:0 4px 14px rgba(0,0,0,.12);padding:18px 22px;display:flex;flex-direction:column;gap:10px;min-height:0}
+  .hero h2{margin:0;font-size:20px;font-weight:900}
+  .hash{font-family:ui-monospace,Consolas,monospace;font-size:12px;font-weight:700;background:var(--ink);color:var(--acid);padding:2px 8px;border-radius:5px}
+  .mock{flex:1;display:grid;grid-template-columns:30% 1fr;gap:8px;min-height:0}
+  .spine{background:var(--paper);border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:4px}
+  .spine b{font-size:9px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px}
+  .sec{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700}
+  .sec i{width:13px;height:13px;border-radius:3px;display:inline-block;flex:0 0 auto}
+  .ok{background:var(--cyan)} .part{background:var(--acid)} .crit{background:var(--fuchsia)} .idle{background:#ddd}
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .t{background:var(--paper);border-radius:8px;padding:8px 10px;font-size:10px;line-height:1.35}
+  .t b{display:block;font-size:9px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:3px}
+  .t.w{grid-column:1/-1}
+  .side{display:flex;flex-direction:column;gap:12px;min-height:0}
+  .card{background:#fff;border-radius:12px;padding:13px 16px;box-shadow:0 4px 14px rgba(0,0,0,.1);border-left:6px solid var(--banana)}
+  .card.c{border-left-color:var(--cyan)} .card.a{border-left-color:var(--acid)}
+  .card h3{margin:0 0 6px;font-size:14px;font-weight:900;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .card ul{margin:0;padding-left:17px;font-size:12px;line-height:1.5}
+  .foot{padding:10px 40px 16px;font-size:11px;color:var(--g);display:flex;gap:16px;flex-wrap:wrap}
+  .foot strong{color:var(--ink)}
+  @media (max-width:820px){ .slide{aspect-ratio:auto} .body{grid-template-columns:1fr} .top{flex-wrap:wrap} .badges{margin-left:0} }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Sprout CRM · Delivered 2026-09-10</div>
+      <h1>The event page is one screen now</h1>
+    </div>
+    <div class="badges">
+      <span class="b b-acid">main</span>
+      <span class="b b-w">ae07b74</span>
+      <span class="b b-w">da3e871</span>
+      <span class="b b-cyan">build passes</span>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <div class="hero">
+      <h2>🗂 One-screen event dashboard <span class="hash">ae07b74</span></h2>
+      <div class="mock">
+        <div class="spine">
+          <b>Booking protocol</b>
+          <div class="sec"><i class="ok"></i>Who you are</div>
+          <div class="sec"><i class="ok"></i>The event</div>
+          <div class="sec"><i class="part"></i>Lineup</div>
+          <div class="sec"><i class="crit"></i>Sound, lights, AV</div>
+          <div class="sec"><i class="idle"></i>Tickets &amp; money</div>
+          <div class="sec"><i class="part"></i>Promotion</div>
+          <div class="sec"><i class="idle"></i>+3 more</div>
+        </div>
+        <div class="tiles">
+          <div class="t"><b>Checklist</b>Next 6 open items, tick in place</div>
+          <div class="t"><b>People</b>First 5 with RSVP toggle</div>
+          <div class="t"><b>Links</b>Tickets ↗ · + Add link inline</div>
+          <div class="t"><b>Media</b>Flyer thumbnails · ⬇ download</div>
+          <div class="t w"><b>Communications</b>Latest 3 with status · full log one click away</div>
+          <div class="t w"><b>Details</b>Description · notes · editable recap</div>
+        </div>
+      </div>
+      <div style="font-size:12px;line-height:1.5">Five tabs replaced by a status strip, the nine-section booking protocol down the side, and six tiles. Each tile opens its full editor in a popup; the checklist calendar moved in unchanged. <strong>No schema or data change.</strong></div>
+    </div>
+
+    <div class="side">
+      <div class="card c">
+        <h3>⬇ Downloads + links first <span class="hash">da3e871</span></h3>
+        <ul><li>Flyers save straight to your computer (Supabase <code>?download=</code>)</li><li>Ticket links sit at the top</li></ul>
+      </div>
+      <div class="card a">
+        <h3>🗓 Program Calendar → CRM</h3>
+        <ul><li>4 events created, GGC left out</li><li>Vol. 4 moved to 9/11 · Vol. 5 to 10/23 feat. Buzzkill</li><li>12-Step ends 8:00pm</li></ul>
+      </div>
+      <div class="card">
+        <h3>📨 Queer Social flyers from email</h3>
+        <ul><li>Both flyers on their events with the ticket link</li><li>Email logged in Comms and on Jonathan's contact</li></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span><strong>Branch</strong> main</span>
+    <span><strong>Files</strong> components/CRMManager.jsx</span>
+    <span><strong>Data</strong> sprout_events · event-media bucket</span>
+    <span><strong>Verdict</strong> "this is BEAUTIFUL"</span>
+  </div>
+</div>
+</body>
+</html>
