@@ -1,0 +1,104 @@
+<title>Program Participant Form</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{--ink:#030000;--paper:#F7F7F6;--cyan:#73C4D6;--cyan-dk:#2a8ca0;--fuchsia:#E10098;--acid:#C6C902;--banana:#FAD100;--g:#6b6b68;--line:#DCDCD9}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',-apple-system,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);padding:32px 16px}
+  .slide{max-width:1100px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+  .hd{background:var(--ink);color:#fff;padding:30px 34px 26px}
+  .eyebrow{font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--acid)}
+  h1{font-size:34px;font-weight:900;line-height:1.15;margin-top:8px}
+  .sub{color:#c2c2bf;font-size:15px;margin-top:8px;line-height:1.5}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+  .pill{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:#1c1a1a;color:#fff;border:1px solid #333}
+  .pill b{color:var(--acid)}
+  .rule{height:5px;background:var(--acid)}
+  .body{padding:28px 34px 32px}
+  .flow{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;margin-bottom:26px}
+  .step{flex:1 1 180px;border:1.5px solid var(--line);border-radius:10px;padding:14px;position:relative}
+  .step .n{width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+  .step h3{font-size:14px;font-weight:900}
+  .step p{font-size:12.5px;color:var(--g);line-height:1.55;margin-top:4px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .card{border:1.5px solid var(--line);border-radius:10px;padding:16px;border-left:6px solid var(--cyan)}
+  .card.f{border-left-color:var(--fuchsia)} .card.a{border-left-color:var(--acid)} .card.b{border-left-color:var(--banana)}
+  .card h4{font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+  .card ul{margin-top:8px;padding-left:18px;font-size:13px;line-height:1.65;color:#2f2f2d}
+  code{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:#f0f0ee;padding:1px 5px;border-radius:4px}
+  .tests{margin-top:22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--ink);color:#fff;border-radius:10px;padding:14px 18px}
+  .big{font-size:30px;font-weight:900;color:var(--acid)}
+  .tests p{font-size:13px;line-height:1.55;color:#dcdcd9;flex:1 1 300px}
+  .next{margin-top:14px;font-size:13px;color:var(--g);line-height:1.6}
+  .next b{color:var(--ink)}
+</style>
+
+<div class="slide">
+  <div class="hd">
+    <div class="eyebrow">Delivered · Sprout CRM</div>
+    <h1>Participant form for the program</h1>
+    <div class="sub">One link per event. Artists and musicians send what they want printed. Staff see it all in a new Program tile.</div>
+    <div class="meta">
+      <span class="pill">commit <b>2e08e55</b></span>
+      <span class="pill">branch <b>main</b></span>
+      <span class="pill">9 files · <b>+870</b></span>
+      <span class="pill">pushed <b>2026-09-10</b></span>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <div class="flow">
+      <div class="step"><div class="n">1</div><h3>Create the link</h3><p>Event dashboard → Program tile → + Create participant form link.</p></div>
+      <div class="step"><div class="n">2</div><h3>Send it to the lineup</h3><p>Copy form link. The same link works for everyone. No sign-in.</p></div>
+      <div class="step"><div class="n">3</div><h3>They fill what they want</h3><p>Nothing is required. They can come back on the same device to edit.</p></div>
+      <div class="step"><div class="n">4</div><h3>It lands in the CRM</h3><p>The tile shows who sent info. The popup shows everything.</p></div>
+    </div>
+
+    <div class="grid">
+      <div class="card f">
+        <h4>Public form</h4>
+        <ul>
+          <li><code>/program/&lt;token&gt;</code></li>
+          <li>Name · Music / Art / Something else</li>
+          <li>Bio · photo upload</li>
+          <li>Instagram · Venmo · Website · Linktree · other link</li>
+          <li>Email, marked not printed</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Program tile + popup</h4>
+        <ul>
+          <li>Copy / open the link, rotate it</li>
+          <li>Photo, name, role for each person</li>
+          <li>Link buttons, photo download, delete</li>
+          <li>Copy all as text for the layout</li>
+        </ul>
+      </div>
+      <div class="card a">
+        <h4>Data + safety</h4>
+        <ul>
+          <li>New tables <code>sprout_program_forms</code>, <code>sprout_program_entries</code></li>
+          <li>Logged-in only RLS; public route uses the service key</li>
+          <li>Separate from the event record, so event saves never wipe it</li>
+          <li>Per-submission edit key · honeypot · 60/hour cap</li>
+        </ul>
+      </div>
+      <div class="card b">
+        <h4>Files</h4>
+        <ul>
+          <li><code>components/ProgramForm.jsx</code></li>
+          <li><code>lib/programForm.js</code> · <code>lib/programDb.js</code></li>
+          <li><code>app/api/program/[token]</code> · <code>app/program/[token]</code></li>
+          <li><code>CRMManager.jsx</code> · <code>services.js</code> · <code>PortalForm.jsx</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tests">
+      <div class="big">15 / 15</div>
+      <p>API checks passed against the built app: bad links, spam, empty sends, saving, editing, and no reading or changing someone else's submission. Build passes. Test data deleted.</p>
+    </div>
+
+    <div class="next"><b>Not built yet:</b> the sign-in program page and the TV slideshow reading these submissions.</div>
+  </div>
+</div>
