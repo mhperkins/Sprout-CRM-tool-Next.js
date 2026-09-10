@@ -36,7 +36,7 @@ import {
   regeneratePortalToken,
   deleteEventPortal,
 } from "../lib/services";
-import { PORTAL_SECTIONS, FIELD_BY_KEY, displayValue, portalProgress, portalToText, isBlank as pIsBlank } from "../lib/eventPortal";
+import { PORTAL_SECTIONS, FIELD_BY_KEY, displayValue, portalProgress, sectionProgress, portalToText, isBlank as pIsBlank } from "../lib/eventPortal";
 import { buildNewsletter, TEMPLATES, defaultMonthYear, COMPACT_SECTIONS, QUICK_HIT_SECTIONS, blankCompactItem, COMPACT_BLOCKS, QUICK_HIT_BLOCKS, COMPACT_FIXED_TOP, COMPACT_FIXED_BOTTOM, QH_FIXED_TOP, QH_FIXED_BOTTOM, orderedBlockIds } from "../lib/newsletter";
 import { validateContact, validateOrg } from "../lib/schemas";
 import { blocksOf, firstHeading, parseTableBlock, serializeTable, renderInline } from "../lib/md";
@@ -250,6 +250,57 @@ const STYLES = `
   .mover { position:fixed; inset:0; background:rgba(3,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:400; padding:20px; animation:fIn 0.15s ease; }
   .modal { background:#fff; border-radius:14px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.18); animation:sUp 0.18s ease; }
   .modal-wide { max-width:700px; }
+  /* Event dashboard (one screen, tiles + booking protocol spine) */
+  .modal-xl { max-width:1000px; width:95vw; }
+  .evd-strip { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:-6px 0 16px; }
+  .evd-strip-n { font-size:12px; font-weight:900; letter-spacing:0.02em; }
+  .evd-shell { display:grid; grid-template-columns:250px minmax(0,1fr); gap:16px; align-items:start; }
+  .evd-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; align-items:start; }
+  .evd-span2 { grid-column:1/-1; }
+  .evd-tile, .evd-spine { background:#fff; border:1.5px solid var(--g200); border-radius:11px; box-shadow:var(--sh-sm); display:flex; flex-direction:column; min-width:0; }
+  .evd-spine { position:sticky; top:16px; overflow:hidden; }
+  .evd-tile-hd { display:flex; align-items:baseline; gap:8px; padding:12px 14px 0; }
+  .evd-spine-hd { display:flex; flex-direction:column; padding:12px 14px 10px; border-bottom:1px solid var(--g100); }
+  .evd-tile-ttl { font-size:10px; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; }
+  .evd-tile-n { margin-left:auto; font-size:11px; color:var(--g500); font-weight:700; }
+  .evd-tile-b { padding:10px 14px 14px; display:flex; flex-direction:column; gap:8px; flex:1; min-width:0; }
+  .evd-tile-f { display:flex; justify-content:space-between; width:100%; padding:9px 14px; border:none; border-top:1px solid var(--g100); background:none; font-family:inherit; font-size:11px; font-weight:700; color:var(--cyan); cursor:pointer; text-align:left; }
+  .evd-tile-f:hover { background:var(--g50); }
+  .evd-sec { display:flex; align-items:center; gap:9px; width:100%; padding:8px 14px; border:none; border-bottom:1px solid var(--g100); background:none; font-family:inherit; text-align:left; cursor:pointer; }
+  .evd-sec:hover { background:var(--g50); }
+  .evd-sec-i { flex:0 0 20px; height:20px; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; background:var(--g100); color:var(--g500); }
+  .evd-sec-n { flex:1; font-size:12px; font-weight:700; line-height:1.25; }
+  .evd-sec-c { font-size:10px; color:var(--g400); font-weight:700; }
+  .evd-sec.is-ok .evd-sec-i { background:var(--cyan-lt); color:#155e6e; }
+  .evd-sec.is-part .evd-sec-i { background:var(--acid-lt); color:#3a3d00; }
+  .evd-sec.is-crit .evd-sec-i { background:var(--fuchsia-lt); color:#8b0057; }
+  .evd-sec.is-crit .evd-sec-n { color:#8b0057; }
+  .evd-chip { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:9.5px; font-weight:800; white-space:nowrap; flex-shrink:0; }
+  .evd-row { display:flex; align-items:flex-start; gap:9px; padding:6px 0; border-top:1px solid var(--g100); }
+  .evd-row-t { flex:1; min-width:0; font-size:12.5px; line-height:1.35; }
+  .evd-row-t small { display:block; font-size:10.5px; color:var(--g400); margin-top:1px; }
+  .evd-row-t small.evd-clamp { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; color:var(--g600); font-size:11.5px; }
+  .evd-date { width:40px; flex-shrink:0; font-size:10px; font-weight:700; color:var(--g400); padding-top:2px; }
+  .evd-empty { font-size:12px; color:var(--g400); }
+  .evd-more { font-size:11px; color:var(--g500); font-weight:700; }
+  .evd-lbl { font-size:9px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--g400); margin-bottom:4px; }
+  .evd-p { font-size:12px; line-height:1.65; margin:0; white-space:pre-wrap; }
+  .evd-link { display:flex; align-items:center; gap:6px; border:1.5px solid var(--g200); border-radius:8px; padding:6px 8px 6px 10px; }
+  .evd-link-a { flex:1; min-width:0; text-decoration:none; color:inherit; display:flex; flex-direction:column; }
+  .evd-link-l { font-size:12px; font-weight:700; color:var(--cyan); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .evd-link-u { font-size:10px; color:var(--g400); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .evd-x { background:none; border:none; cursor:pointer; color:var(--g400); font-size:15px; line-height:1; padding:0 2px; }
+  .evd-x:hover { color:var(--red); }
+  .evd-thumbs { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .evd-thumb { border:1.5px solid var(--g200); border-radius:8px; overflow:hidden; min-width:0; }
+  .evd-thumb-img { display:flex; align-items:center; justify-content:center; height:92px; background:var(--g100); font-size:22px; text-decoration:none; }
+  .evd-thumb-img img { width:100%; height:100%; object-fit:cover; }
+  .evd-thumb-f { display:flex; align-items:center; gap:6px; padding:5px 7px; font-size:10.5px; font-weight:700; }
+  .evd-thumb-f span { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .evd-dl { text-decoration:none; color:var(--black); border:1.5px solid var(--g200); border-radius:5px; padding:0 6px; font-size:11px; }
+  .evd-dl:hover { border-color:var(--cyan); }
+  @media (max-width:900px) { .evd-shell { grid-template-columns:1fr; } .evd-spine { position:static; } }
+  @media (max-width:700px) { .evd-grid { grid-template-columns:1fr; } }
   @keyframes sUp { from { transform:translateY(14px); opacity:0; } to { transform:translateY(0); opacity:1; } }
   .m-hd { padding:17px 21px 13px; border-bottom:1px solid var(--g200); display:flex; justify-content:space-between; align-items:center; }
   .m-ttl { font-size:14px; font-weight:900; }
@@ -627,13 +678,13 @@ function healthScore(c) {
 
 /* ─── Small UI Components ────────────────────────────────────────────────────── */
 function RelTag({status}) { return <span className={`tag t-${status||"cold"}`}>{REL_STATUS[status]||status}</span>; }
-function Modal({title,onClose,children,footer,wide}) {
+function Modal({title,onClose,children,footer,wide,xl}) {
   const mouseDownTarget = useRef(null);
   useEffect(()=>{ const h=(e)=>{ if(e.key==="Escape") onClose(); }; document.addEventListener("keydown",h); return ()=>document.removeEventListener("keydown",h); },[onClose]);
   return (    <div className="mover"
       onMouseDown={e=>{ mouseDownTarget.current = e.target; }}
       onClick={e=>{ if (e.target===e.currentTarget && mouseDownTarget.current===e.currentTarget) onClose(); }}>
-      <div className={`modal ${wide?"modal-wide":""}`}>
+      <div className={`modal ${wide?"modal-wide":""}${xl?" modal-xl":""}`}>
         <div className="m-hd"><span className="m-ttl">{title}</span><button className="m-close" onClick={onClose}>×</button></div>
         <div className="m-bd">{children}</div>
         {footer&&<div className="m-ft">{footer}</div>}
@@ -4399,7 +4450,7 @@ function EventMediaPanel({event,onUpdateEvent,showToast}) {
                         send Content-Disposition: attachment via its ?download= param instead. */}
                     {m.kind==="file"&&<a href={m.url+(m.url.includes("?")?"&":"?")+"download="+encodeURIComponent(m.name||"")}
                       rel="noopener noreferrer" title="Download"
-                      style={{marginLeft:"auto",marginRight:6,fontSize:10,fontWeight:700,color:"var(--ink)",textDecoration:"none",border:"1.5px solid var(--g200)",borderRadius:5,padding:"2px 7px"}}>⬇ Download</a>}
+                      style={{marginLeft:"auto",marginRight:6,fontSize:10,fontWeight:700,color:"var(--black)",textDecoration:"none",border:"1.5px solid var(--g200)",borderRadius:5,padding:"2px 7px"}}>⬇ Download</a>}
                     <button onClick={()=>removeItem(m)} title="Remove"
                       style={{background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:14,lineHeight:1,padding:"0 2px"}}>×</button>
                   </div>
@@ -4598,10 +4649,12 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
   const linked = contacts.filter(c=>(event.contact_ids||[]).includes(c.id));
   const today=new Date().toISOString().slice(0,10);
 
-  // Workspace tab. Planning is the daily driver so it opens first, and the choice
-  // is remembered for the session so moving between events keeps your place.
-  const [tab,setTab]=useState(()=>{ try{ return sessionStorage.getItem("sprout_evt_tab")||"plan"; }catch{ return "plan"; } });
-  const goTab=(t)=>{ setTab(t); try{ sessionStorage.setItem("sprout_evt_tab",t); }catch{} };
+  // Dashboard popups: which tile is open in a modal (null = just the dashboard).
+  const [openTile,setOpenTile]=useState(null);
+  // Inline "+ Add link" on the Links tile.
+  const [linkAdding,setLinkAdding]=useState(false);
+  const [linkLabel,setLinkLabel]=useState("");
+  const [linkUrl,setLinkUrl]=useState("");
 
   // contacts modal
   const [showContactsModal,setShowContactsModal]=useState(false);
@@ -4715,118 +4768,220 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
       </div>
       <div style={{marginBottom:16}}><EventStatusTag status={event.status}/></div>
 
-      {/* WORKSPACE TABS — planning, people, comms, media, reference details.
-          Counts render inline so you can see what an event still needs without
-          opening every tab. */}
-      <div className="tabs">
-        {[
-          ["plan",   "Plan",    clTotal?clDone+"/"+clTotal:""],
-          ["people", "People",  linked.length||""],
-          ["comms",  "Comms",   (event.comms||[]).length||""],
-          ["media",  "Media",   (event.media||[]).length||""],
-          ["details","Details", (event.links||[]).length||""],
-        ].map(([key,label,badge])=>(
-          <button key={key} className={"tab"+(tab===key?" on":"")} onClick={()=>goTab(key)}>
-            {label}
-            {badge!==""&&badge!=null&&<span style={{marginLeft:6,fontSize:9,fontWeight:800,color:tab===key?"var(--cyan)":"var(--g400)"}}>{badge}</span>}
-          </button>
-        ))}
-      </div>
-
-      {/* ── DETAILS TAB ── */}
-      {tab==="details"&&(
-      <div style={{marginBottom:24}}>
-        <div>
-          {/* LINKS first: ticket and RSVP links are what you reach for on this tab, so they
-              should not sit below the description, notes and recap. */}
-          {(event.links||[]).length>0&&<div className="dp-section">
-            <div className="dp-sect-lbl">Links</div>
-            {(event.links||[]).map(l=>{
-              const isDoc=l.url.includes("docs.google.com");
-              const isFolder=l.url.includes("drive.google.com");
-              const iconBg=isDoc?"rgba(115,196,214,0.15)":isFolder?"var(--acid-lt)":"var(--g100)";
-              const iconColor=isDoc?"#155e6e":isFolder?"#3a3d00":"var(--g600)";
-              const iconChar=isDoc?"D":isFolder?"F":"↗";
-              return (
-                <div key={l.id} onClick={()=>window.open(l.url,"_blank","noreferrer")} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",marginBottom:6,border:"1.5px solid var(--g200)",borderRadius:8,background:"#fff",boxShadow:"var(--sh-sm)",cursor:"pointer"}}>
-                  <div style={{width:28,height:28,borderRadius:6,background:iconBg,color:iconColor,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,flexShrink:0}}>{iconChar}</div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:12,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{l.label||l.url}</div>
-                    {l.label&&<div style={{fontSize:10,color:"var(--g400)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{l.url}</div>}
-                  </div>
-                  <span style={{color:"var(--g400)",fontSize:13,flexShrink:0,padding:"4px"}}>↗</span>
-                </div>
-              );
-            })}
-          </div>}
-          {event.description&&<div className="dp-section"><div className="dp-sect-lbl">Description</div><p style={{fontSize:12,lineHeight:1.7,margin:0}}>{event.description}</p></div>}
-          {event.notes&&<div className="dp-section"><div className="dp-sect-lbl">Notes</div><p style={{fontSize:12,lineHeight:1.7,margin:0}}>{event.notes}</p></div>}
-          {/* RECAP — editable here because this is the only screen you are on after
-              an event runs. assemble_newsletter pulls recaps from completed events
-              that have this filled, so an empty box is why an event never shows up
-              in the monthly roundup. */}
-          <div className="dp-section">
-            <div className="dp-sect-lbl">Recap <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--g400)"}}>· feeds the newsletter</span></div>
-            <textarea className="fi" style={{fontSize:12,minHeight:70,resize:"vertical",lineHeight:1.6}}
-              placeholder="A short paste-ready blurb about how it went…"
-              defaultValue={event.recap||""}
-              onBlur={e=>{const v=e.target.value;if(v!==(event.recap||"")){onUpdateEvent({...event,recap:v});showToast("Recap saved ✓");}}}/>
-            {event.status!=="completed"&&(event.recap||"").trim()&&(
-              <div style={{fontSize:10,color:"var(--g400)",marginTop:5}}>
-                This event is not marked completed yet, so the recap will not appear in the roundup.
-              </div>
-            )}
-          </div>
-          {/* EVENTS PORTAL — what the organizer filled in through their private link */}
-          <EventPortalPanel
-            event={event}
-            portal={portal}
-            onCreate={onCreatePortal}
-            onRotate={onRotatePortal}
-            onRemove={onRemovePortal}
-            onRefresh={onRefreshPortals}
-            onApprove={()=>onUpdateEvent({...event,status:"upcoming"})}
-            showToast={showToast}
-          />
-        </div>
-
-      </div>
-      )}
-
-      {/* ── PEOPLE TAB — the full roster, not the old 3-row preview ── */}
-      {tab==="people"&&(
-      <div style={{marginBottom:24}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-          <div style={{fontSize:11,color:"var(--g500)"}}>
-            {linked.length===0?"Nobody attached yet":linked.length+" attached · "+(event.confirmed_ids||[]).length+" confirmed"}
-          </div>
-        </div>
-        {linked.length===0
-          ? <div style={{border:"1.5px dashed var(--g200)",borderRadius:10,padding:24,textAlign:"center",color:"var(--g400)",fontSize:12}}>
-              Attach contacts to this event from a contact&rsquo;s Affiliations, or from the Edit Event screen.
+      {/* ── EVENT DASHBOARD ─────────────────────────────────────────────────────
+          Everything on one screen instead of five tabs. The booking protocol runs
+          down the left (the same nine sections the public portal asks every host),
+          and each tile shows a summary. A tile's footer opens its full editor in a
+          popup. Summaries are plain function calls, not nested components, so the
+          inline inputs keep focus while you type. */}
+      {(()=>{
+        const localToday=localTodayISO();
+        const dayDiff=(d)=>Math.round((new Date(d+"T12:00:00")-new Date(localToday+"T12:00:00"))/86400000);
+        const daysOut=event.event_date?dayDiff(event.event_date):null;
+        const openItems=cl.filter(i=>!i.completed).sort((a,b)=>(a.date||"9999-99-99").localeCompare(b.date||"9999-99-99"));
+        const overdue=openItems.filter(i=>i.date&&i.date<localToday).length;
+        const comms=event.comms||[];
+        const awaiting=comms.filter(c=>c.status==="awaiting").length;
+        const recentComms=[...comms].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,3);
+        const media=event.media||[];
+        const links=event.links||[];
+        const confirmedN=(event.confirmed_ids||[]).length;
+        const nameOf=(id)=>{ const c=contacts.find(x=>x.id===id); return c?(((c.first_name||"")+" "+(c.last_name||"")).trim()||c.email||id):id; };
+        const pdata=portal?.data||{};
+        const prog=portal?portalProgress(pdata):null;
+        const isImg=(m)=>(m.mime||"").startsWith("image/")||/\.(png|jpe?g|gif|webp|avif)$/i.test(m.url||"");
+        // Supabase storage ignores <a download> cross-origin; ?download= forces an attachment.
+        const dlUrl=(m)=>m.url+(m.url.includes("?")?"&":"?")+"download="+encodeURIComponent(m.name||"");
+        const dueChip=(d)=>{
+          if(!d) return null;
+          const n=dayDiff(d);
+          const s=n<0?{t:(-n)+"d overdue",bg:"var(--fuchsia-lt)",fg:"#8b0057"}
+            :n===0?{t:"today",bg:"var(--banana-lt)",fg:"#6b5200"}
+            :{t:"in "+n+"d",bg:"var(--g100)",fg:"var(--g600)"};
+          return <span className="evd-chip" style={{background:s.bg,color:s.fg}}>{s.t}</span>;
+        };
+        const addLinkInline=()=>{
+          const raw=linkUrl.trim();
+          if(!raw) return;
+          const url=/^https?:\/\//i.test(raw)?raw:"https://"+raw;
+          onUpdateEvent({...event,links:[...links,{id:uid(),label:linkLabel.trim()||url,url}]});
+          setLinkLabel(""); setLinkUrl(""); setLinkAdding(false);
+          showToast("Link added ✓");
+        };
+        const tile=(key,title,count,body,footer,span)=>(
+          <div className={"evd-tile"+(span?" evd-span2":"")}>
+            <div className="evd-tile-hd">
+              <span className="evd-tile-ttl">{title}</span>
+              {count!==""&&count!=null&&<span className="evd-tile-n">{count}</span>}
             </div>
-          : <div style={{maxWidth:520}}>{linked.map(c=><ContactRow key={c.id} c={c}/>)}</div>}
-      </div>
-      )}
+            <div className="evd-tile-b">{body}</div>
+            {footer&&<button className="evd-tile-f" onClick={()=>setOpenTile(key)}><span>{footer}</span><span>→</span></button>}
+          </div>
+        );
 
-      {/* ── COMMS TAB ── */}
-      {tab==="comms"&&(
-      <div style={{marginBottom:24}}>
-        <EventCommsPanel event={event} contacts={contacts} linked={linked}
-          onUpdateEvent={onUpdateEvent} onUpdateContacts={onUpdateContacts}
-          onContactClick={onContactClick} showToast={showToast}/>
-      </div>
-      )}
+        return (
+        <>
+          <div className="evd-strip">
+            {daysOut!=null&&<span className="evd-strip-n">{daysOut>0?daysOut+" days out":daysOut===0?"Today":(-daysOut)+" days ago"}</span>}
+            {overdue>0&&<span className="evd-chip" style={{background:"var(--fuchsia-lt)",color:"#8b0057"}}>{overdue} overdue</span>}
+            {awaiting>0&&<span className="evd-chip" style={{background:"var(--acid-lt)",color:"#3a3d00"}}>{awaiting} awaiting reply</span>}
+            {prog&&!prog.readyToSchedule&&<span className="evd-chip" style={{background:"var(--g100)",color:"var(--g600)"}}>{prog.requiredTotal-prog.requiredDone} essentials missing</span>}
+          </div>
 
-      {/* ── MEDIA TAB ── */}
-      {tab==="media"&&(
-      <div style={{marginBottom:24}}>
-        <EventMediaPanel event={event} onUpdateEvent={onUpdateEvent} showToast={showToast}/>
-      </div>
-      )}
+          <div className="evd-shell">
+            {/* BOOKING PROTOCOL SPINE */}
+            <aside className="evd-spine">
+              <div className="evd-spine-hd">
+                <span className="evd-tile-ttl">Booking protocol</span>
+                <div style={{fontSize:11,color:"var(--g500)",marginTop:4,lineHeight:1.45}}>
+                  {!portal?"No portal yet. Create one to track these nine sections."
+                    :prog.readyToSchedule?"All essentials answered."
+                    :prog.requiredDone+" of "+prog.requiredTotal+" essentials answered."}
+                </div>
+              </div>
+              {PORTAL_SECTIONS.map((sec,i)=>{
+                const sp=sectionProgress(sec,pdata);
+                const state=!portal?"idle":sp.missingRequired>0?"crit":sp.answered===sp.total?"ok":sp.answered>0?"part":"idle";
+                return (
+                  <button key={sec.key} className={"evd-sec is-"+state} onClick={()=>setOpenTile("portal")}>
+                    <span className="evd-sec-i">{state==="ok"?"✓":i+1}</span>
+                    <span className="evd-sec-n">{sec.title}</span>
+                    <span className="evd-sec-c">{sp.answered}/{sp.total}</span>
+                  </button>
+                );
+              })}
+              <button className="evd-tile-f" onClick={()=>setOpenTile("portal")}>
+                <span>{portal?"Portal link & answers":"Create portal link"}</span><span>→</span>
+              </button>
+            </aside>
 
-      {/* ── PLAN TAB ── */}
-      {tab==="plan"&&(
+            <div className="evd-grid">
+              {tile("plan","Checklist",clTotal?clDone+"/"+clTotal+" done":"",(
+                <>
+                  <div style={{height:5,borderRadius:3,background:"var(--g100)",overflow:"hidden"}}>
+                    <div style={{height:"100%",background:"var(--cyan)",width:clTotal?(clDone/clTotal*100)+"%":"0%",transition:"width 0.3s"}}/>
+                  </div>
+                  {openItems.length===0
+                    ? <div className="evd-empty">{clTotal?"Everything is done.":"No checklist yet."}</div>
+                    : openItems.slice(0,6).map(item=>(
+                        <div key={item.id} className="evd-row">
+                          <input type="checkbox" checked={false} onChange={()=>onToggleChecklist(item.id)}
+                            style={{accentColor:"var(--cyan)",cursor:"pointer",marginTop:2,flexShrink:0}}/>
+                          <div className="evd-row-t">{item.text}{item.date&&<small>{fmtDate(item.date)}</small>}</div>
+                          {dueChip(item.date)}
+                        </div>
+                      ))}
+                  {openItems.length>6&&<div className="evd-more">+{openItems.length-6} more open</div>}
+                </>
+              ),clTotal?"Calendar & all "+clTotal+" items":"Open the calendar to add items")}
+
+              {tile("people","People",linked.length?linked.length+" · "+confirmedN+" confirmed":"",(
+                linked.length===0
+                  ? <div className="evd-empty">Nobody attached yet. Attach people from Edit Event or a contact&rsquo;s Affiliations.</div>
+                  : <div>
+                      {linked.slice(0,5).map(c=><ContactRow key={c.id} c={c}/>)}
+                      {linked.length>5&&<div className="evd-more" style={{marginTop:6}}>+{linked.length-5} more</div>}
+                    </div>
+              ),linked.length>5?"All "+linked.length+" people":null)}
+
+              {tile("links","Links",links.length||"",(
+                <>
+                  {links.length===0&&!linkAdding&&<div className="evd-empty">No links yet. Add ticket, RSVP or Drive links.</div>}
+                  {links.map(l=>(
+                    <div key={l.id} className="evd-link">
+                      <a href={l.url} target="_blank" rel="noopener noreferrer" className="evd-link-a">
+                        <span className="evd-link-l">{l.label||l.url} ↗</span>
+                        {l.label&&l.label!==l.url&&<span className="evd-link-u">{l.url}</span>}
+                      </a>
+                      <button className="evd-x" title="Remove link"
+                        onClick={()=>onUpdateEvent({...event,links:links.filter(x=>x.id!==l.id)})}>×</button>
+                    </div>
+                  ))}
+                  {linkAdding
+                    ? <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                        <input className="fi" style={{fontSize:12}} placeholder="Label, e.g. Tickets"
+                          value={linkLabel} onChange={e=>setLinkLabel(e.target.value)}/>
+                        <input className="fi" style={{fontSize:12}} placeholder="https://…" value={linkUrl}
+                          onChange={e=>setLinkUrl(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")addLinkInline();}}/>
+                        <div style={{display:"flex",gap:6}}>
+                          <button className="btn btn-blk btn-sm" onClick={addLinkInline}>Add</button>
+                          <button className="btn btn-ghost btn-sm" onClick={()=>{setLinkAdding(false);setLinkLabel("");setLinkUrl("");}}>Cancel</button>
+                        </div>
+                      </div>
+                    : <button className="btn btn-ghost btn-sm" style={{alignSelf:"flex-start"}} onClick={()=>setLinkAdding(true)}>+ Add link</button>}
+                </>
+              ),null)}
+
+              {tile("media","Media",media.length||"",(
+                media.length===0
+                  ? <div className="evd-empty">No flyers or photos yet.</div>
+                  : <>
+                      <div className="evd-thumbs">
+                        {media.slice(0,4).map(m=>(
+                          <div key={m.id} className="evd-thumb">
+                            <a href={m.url} target="_blank" rel="noopener noreferrer" className="evd-thumb-img" title={m.name}>
+                              {isImg(m)?<img src={m.url} alt={m.name}/>:<span>{m.kind==="link"?"🔗":"📄"}</span>}
+                            </a>
+                            <div className="evd-thumb-f">
+                              <span title={m.name}>{m.name}</span>
+                              {m.kind==="file"&&<a href={dlUrl(m)} title="Download" className="evd-dl">⬇</a>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {media.length>4&&<div className="evd-more">+{media.length-4} more</div>}
+                    </>
+              ),"Upload & manage")}
+
+              {tile("comms","Communications",comms.length?comms.length+" logged"+(awaiting?" · "+awaiting+" awaiting":""):"",(
+                recentComms.length===0
+                  ? <div className="evd-empty">Nothing logged yet.</div>
+                  : recentComms.map(c=>{
+                      const st=COMM_STATUS[c.status]||COMM_STATUS.sent;
+                      return (
+                        <div key={c.id} className="evd-row">
+                          <div className="evd-date">{(c.date||"").slice(5).replace("-","/")}</div>
+                          <div className="evd-row-t">
+                            <b>{c.contact_id?nameOf(c.contact_id):(c.to||"—")}</b>{" "}
+                            <span style={{color:"var(--g500)",fontSize:11}}>{COMM_CHANNELS[c.channel]||c.channel}</span>
+                            <small className="evd-clamp">{c.summary}</small>
+                          </div>
+                          <span className="evd-chip" style={{background:st.bg,color:st.fg}}>{st.label}</span>
+                        </div>
+                      );
+                    })
+              ),comms.length?"Log a message · see all "+comms.length:"Log a message",true)}
+
+              {tile("details","Details","",(
+                <>
+                  {event.description&&<div><div className="evd-lbl">Description</div><p className="evd-p">{event.description}</p></div>}
+                  {event.notes&&<div><div className="evd-lbl">Notes</div><p className="evd-p">{event.notes}</p></div>}
+                  {!event.description&&!event.notes&&<div className="evd-empty">No description or notes. Add them with Edit Event.</div>}
+                  {/* RECAP: assemble_newsletter only pulls recaps from completed events that have
+                      this filled, so an empty box is why an event never reaches the roundup. */}
+                  <div>
+                    <div className="evd-lbl">Recap <span style={{fontWeight:400,textTransform:"none",letterSpacing:0}}>· feeds the newsletter</span></div>
+                    <textarea key={event.id} className="fi" style={{fontSize:12,minHeight:64,resize:"vertical",lineHeight:1.6}}
+                      placeholder="A short paste-ready blurb about how it went…"
+                      defaultValue={event.recap||""}
+                      onBlur={e=>{const v=e.target.value;if(v!==(event.recap||"")){onUpdateEvent({...event,recap:v});showToast("Recap saved ✓");}}}/>
+                    {event.status!=="completed"&&(event.recap||"").trim()&&(
+                      <div style={{fontSize:10,color:"var(--g400)",marginTop:5}}>
+                        This event is not marked completed yet, so the recap will not appear in the roundup.
+                      </div>
+                    )}
+                  </div>
+                </>
+              ),null,true)}
+            </div>
+          </div>
+        </>
+        );
+      })()}
+
+      {/* ── TILE POPUPS: the full editors, unchanged, one click from the dashboard ── */}
+      {openTile==="plan"&&(
+        <Modal xl title={"Checklist · "+(event.name||"Event")} onClose={()=>setOpenTile(null)}>
       <div>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
@@ -4931,6 +5086,38 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
           ))}
         </div>}
       </div>
+        </Modal>
+      )}
+      {openTile==="people"&&(
+        <Modal title={"People ("+linked.length+")"} onClose={()=>setOpenTile(null)}>
+          {linked.map(c=><ContactRow key={c.id} c={c}/>)}
+        </Modal>
+      )}
+      {openTile==="comms"&&(
+        <Modal xl title="Communications" onClose={()=>setOpenTile(null)}>
+          <EventCommsPanel event={event} contacts={contacts} linked={linked}
+            onUpdateEvent={onUpdateEvent} onUpdateContacts={onUpdateContacts}
+            onContactClick={onContactClick} showToast={showToast}/>
+        </Modal>
+      )}
+      {openTile==="media"&&(
+        <Modal xl title="Media" onClose={()=>setOpenTile(null)}>
+          <EventMediaPanel event={event} onUpdateEvent={onUpdateEvent} showToast={showToast}/>
+        </Modal>
+      )}
+      {openTile==="portal"&&(
+        <Modal wide title="Booking protocol" onClose={()=>setOpenTile(null)}>
+          <EventPortalPanel
+            event={event}
+            portal={portal}
+            onCreate={onCreatePortal}
+            onRotate={onRotatePortal}
+            onRemove={onRemovePortal}
+            onRefresh={onRefreshPortals}
+            onApprove={()=>onUpdateEvent({...event,status:"upcoming"})}
+            showToast={showToast}
+          />
+        </Modal>
       )}
 
       {/* CONTACTS MODAL */}
