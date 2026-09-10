@@ -40,7 +40,6 @@ export default function ProgramForm({ token }) {
   const [busy, setBusy] = useState(false);
   const [photoBusy, setPhotoBusy] = useState(false);
   const [err, setErr] = useState("");
-  const [hp, setHp] = useState("");
   const fileRef = useRef(null);
 
   /* ── load (and reopen this browser's earlier send, if any) ── */
@@ -93,7 +92,7 @@ export default function ProgramForm({ token }) {
       const res = await fetch(`/api/program/${token}`, {
         method: editing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editing ? { entry_id: saved.entry_id, key: saved.key, data } : { data, company_website: hp }),
+        body: JSON.stringify(editing ? { entry_id: saved.entry_id, key: saved.key, data } : { data }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -276,8 +275,6 @@ export default function ProgramForm({ token }) {
               onChange={(e) => set("email", e.target.value)} />
           </div>
         </div>
-
-        <input className="pt-hp" tabIndex={-1} autoComplete="off" aria-hidden="true" value={hp} onChange={(e) => setHp(e.target.value)} />
 
         {err && <div className="pt-err">{err}</div>}
 

@@ -66,11 +66,8 @@ export async function POST(req, { params }) {
   const body = await readBody(req);
   if (!body) return fail("Invalid request.");
 
-  // Honeypot: a hidden field real people never fill in.
-  if (typeof body.company_website === "string" && body.company_website.trim()) {
-    return fail("Something went wrong. Please try again.");
-  }
-
+  // No honeypot here: Chrome autofill filled the hidden field and blocked a real
+  // participant. The link is private to the lineup, and the hourly cap covers abuse.
   const data = cleanData(body.data);
   if (!hasProgramContent(data)) return fail("Fill in anything you want in the program first.");
 

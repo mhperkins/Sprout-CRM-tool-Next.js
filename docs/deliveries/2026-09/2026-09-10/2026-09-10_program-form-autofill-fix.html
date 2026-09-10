@@ -1,0 +1,48 @@
+<title>Program Form Autofill Fix</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{--ink:#030000;--paper:#F7F7F6;--cyan:#73C4D6;--fuchsia:#E10098;--acid:#C6C902;--banana:#FAD100;--g:#6b6b68;--line:#DCDCD9}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',-apple-system,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);padding:32px 16px}
+  .slide{max-width:980px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+  .hd{background:var(--ink);color:#fff;padding:28px 32px 24px}
+  .eyebrow{font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--fuchsia)}
+  h1{font-size:30px;font-weight:900;line-height:1.2;margin-top:8px}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .pill{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:#1c1a1a;border:1px solid #333}
+  .pill b{color:var(--acid)}
+  .rule{height:5px;background:var(--fuchsia)}
+  .body{padding:26px 32px 30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+  .card{border:1.5px solid var(--line);border-left:6px solid var(--fuchsia);border-radius:10px;padding:16px}
+  .card.c{border-left-color:var(--cyan)} .card.a{border-left-color:var(--acid)}
+  .card h4{font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+  .card p{font-size:13.5px;line-height:1.65;color:#2f2f2d;margin-top:8px}
+  code{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:#f0f0ee;padding:1px 5px;border-radius:4px}
+</style>
+
+<div class="slide">
+  <div class="hd">
+    <div class="eyebrow">Fix · Sprout CRM</div>
+    <h1>Program form no longer blocks real people</h1>
+    <div class="meta">
+      <span class="pill">branch <b>main</b></span>
+      <span class="pill">2 files</span>
+      <span class="pill">pushed <b>2026-09-10</b></span>
+    </div>
+  </div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="card">
+      <h4>What happened</h4>
+      <p>Max hit "Something went wrong" on send. Chrome autofill filled the hidden spam trap next to the email box, so the form rejected him as a bot.</p>
+    </div>
+    <div class="card c">
+      <h4>How we knew</h4>
+      <p>Nothing had saved for the Vol. 4 link. A clean send to production returned <code>200</code> and saved, so the server was healthy. The error text matched the spam trap exactly. Test entry deleted.</p>
+    </div>
+    <div class="card a">
+      <h4>The fix</h4>
+      <p>Removed the spam trap from <code>ProgramForm.jsx</code> and <code>/api/program/[token]</code>. The link is private to the lineup and still capped at 60 sends per hour per event.</p>
+    </div>
+  </div>
+</div>
