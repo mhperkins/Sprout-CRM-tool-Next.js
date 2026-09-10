@@ -4395,6 +4395,11 @@ function EventMediaPanel({event,onUpdateEvent,showToast}) {
                     <span style={{fontSize:9,color:"var(--g400)"}}>
                       {m.kind==="file"&&m.size?(m.size/1048576).toFixed(1)+"MB":m.kind==="link"?"linked":""}
                     </span>
+                    {/* Cross-origin storage ignores the <a download> attribute, so ask Supabase to
+                        send Content-Disposition: attachment via its ?download= param instead. */}
+                    {m.kind==="file"&&<a href={m.url+(m.url.includes("?")?"&":"?")+"download="+encodeURIComponent(m.name||"")}
+                      rel="noopener noreferrer" title="Download"
+                      style={{marginLeft:"auto",marginRight:6,fontSize:10,fontWeight:700,color:"var(--ink)",textDecoration:"none",border:"1.5px solid var(--g200)",borderRadius:5,padding:"2px 7px"}}>⬇ Download</a>}
                     <button onClick={()=>removeItem(m)} title="Remove"
                       style={{background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:14,lineHeight:1,padding:"0 2px"}}>×</button>
                   </div>
@@ -4719,7 +4724,7 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
           ["people", "People",  linked.length||""],
           ["comms",  "Comms",   (event.comms||[]).length||""],
           ["media",  "Media",   (event.media||[]).length||""],
-          ["details","Details", ""],
+          ["details","Details", (event.links||[]).length||""],
         ].map(([key,label,badge])=>(
           <button key={key} className={"tab"+(tab===key?" on":"")} onClick={()=>goTab(key)}>
             {label}
@@ -4732,24 +4737,8 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
       {tab==="details"&&(
       <div style={{marginBottom:24}}>
         <div>
-          {event.description&&<div className="dp-section"><div className="dp-sect-lbl">Description</div><p style={{fontSize:12,lineHeight:1.7,margin:0}}>{event.description}</p></div>}
-          {event.notes&&<div className="dp-section"><div className="dp-sect-lbl">Notes</div><p style={{fontSize:12,lineHeight:1.7,margin:0}}>{event.notes}</p></div>}
-          {/* RECAP — editable here because this is the only screen you are on after
-              an event runs. assemble_newsletter pulls recaps from completed events
-              that have this filled, so an empty box is why an event never shows up
-              in the monthly roundup. */}
-          <div className="dp-section">
-            <div className="dp-sect-lbl">Recap <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--g400)"}}>· feeds the newsletter</span></div>
-            <textarea className="fi" style={{fontSize:12,minHeight:70,resize:"vertical",lineHeight:1.6}}
-              placeholder="A short paste-ready blurb about how it went…"
-              defaultValue={event.recap||""}
-              onBlur={e=>{const v=e.target.value;if(v!==(event.recap||"")){onUpdateEvent({...event,recap:v});showToast("Recap saved ✓");}}}/>
-            {event.status!=="completed"&&(event.recap||"").trim()&&(
-              <div style={{fontSize:10,color:"var(--g400)",marginTop:5}}>
-                This event is not marked completed yet, so the recap will not appear in the roundup.
-              </div>
-            )}
-          </div>
+          {/* LINKS first: ticket and RSVP links are what you reach for on this tab, so they
+              should not sit below the description, notes and recap. */}
           {(event.links||[]).length>0&&<div className="dp-section">
             <div className="dp-sect-lbl">Links</div>
             {(event.links||[]).map(l=>{
@@ -4770,7 +4759,24 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
               );
             })}
           </div>}
-
+          {event.description&&<div className="dp-section"><div className="dp-sect-lbl">Description</div><p style={{fontSize:12,lineHeight:1.7,margin:0}}>{event.description}</p></div>}
+          {event.notes&&<div className="dp-section"><div className="dp-sect-lbl">Notes</div><p style={{fontSize:12,lineHeight:1.7,margin:0}}>{event.notes}</p></div>}
+          {/* RECAP — editable here because this is the only screen you are on after
+              an event runs. assemble_newsletter pulls recaps from completed events
+              that have this filled, so an empty box is why an event never shows up
+              in the monthly roundup. */}
+          <div className="dp-section">
+            <div className="dp-sect-lbl">Recap <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--g400)"}}>· feeds the newsletter</span></div>
+            <textarea className="fi" style={{fontSize:12,minHeight:70,resize:"vertical",lineHeight:1.6}}
+              placeholder="A short paste-ready blurb about how it went…"
+              defaultValue={event.recap||""}
+              onBlur={e=>{const v=e.target.value;if(v!==(event.recap||"")){onUpdateEvent({...event,recap:v});showToast("Recap saved ✓");}}}/>
+            {event.status!=="completed"&&(event.recap||"").trim()&&(
+              <div style={{fontSize:10,color:"var(--g400)",marginTop:5}}>
+                This event is not marked completed yet, so the recap will not appear in the roundup.
+              </div>
+            )}
+          </div>
           {/* EVENTS PORTAL — what the organizer filled in through their private link */}
           <EventPortalPanel
             event={event}
