@@ -157,7 +157,9 @@ const prettySize = (b) => (b > 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${M
 // Uploads go straight from the browser to Supabase Storage rather than through the
 // API, because Vercel caps a serverless request body at 4.5MB and artwork/riders
 // routinely exceed that. The bucket is public-read, same as newsletter-images.
-async function uploadPortalFile(file, scope) {
+// Scope with the event id, never the portal token: object paths in a public bucket
+// can be listed, and the token is the portal's only credential.
+export async function uploadPortalFile(file, scope) {
   const sb = getSupabase();
   const ext = (file.name?.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8);
   const rand = Math.random().toString(36).slice(2, 8);

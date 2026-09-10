@@ -69,8 +69,8 @@ export default function BookingRequest() {
             <div className="pt-sec-ttl">What happens next</div>
             <ol style={{ margin: "14px 0 0 20px", fontSize: 14.5, lineHeight: 1.85, color: "#5f5f5c" }}>
               <li>We check the date against the calendar and email you.</li>
-              <li>You fill in the rest of the portal: lineup, sound, setup, promo, whatever applies.</li>
-              <li>Once the essentials are in and we have both said yes, the event goes on the calendar.</li>
+              <li>On your portal, add food and drink plans, links, files, and any extra details.</li>
+              <li>Once we have both said yes, the event goes on the calendar.</li>
             </ol>
             <p className="pt-help" style={{ marginTop: 14 }}>
               You do not have to finish it in one sitting. The link works whenever you come back, and

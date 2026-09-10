@@ -35,6 +35,7 @@ import {
   createEventPortal,
   regeneratePortalToken,
   deleteEventPortal,
+  updatePortalAnswer,
 } from "../lib/services";
 import { PORTAL_SECTIONS, FIELD_BY_KEY, displayValue, portalProgress, sectionProgress, portalToText, isBlank as pIsBlank, pickOrganizer, portalSeedFromCRM } from "../lib/eventPortal";
 import { buildNewsletter, TEMPLATES, defaultMonthYear, COMPACT_SECTIONS, QUICK_HIT_SECTIONS, blankCompactItem, COMPACT_BLOCKS, QUICK_HIT_BLOCKS, COMPACT_FIXED_TOP, COMPACT_FIXED_BOTTOM, QH_FIXED_TOP, QH_FIXED_BOTTOM, orderedBlockIds } from "../lib/newsletter";
@@ -254,7 +255,8 @@ const STYLES = `
   .modal-xl { max-width:1000px; width:95vw; }
   .evd-strip { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:-6px 0 16px; }
   .evd-strip-n { font-size:12px; font-weight:900; letter-spacing:0.02em; }
-  .evd-shell { display:grid; grid-template-columns:250px minmax(0,1fr); gap:16px; align-items:start; }
+  .evd-shell { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; align-items:start; }
+  .evd-host-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px 16px; }
   .evd-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; align-items:start; }
   .evd-span2 { grid-column:1/-1; }
   .evd-tile, .evd-spine { background:#fff; border:1.5px solid var(--g200); border-radius:11px; box-shadow:var(--sh-sm); display:flex; flex-direction:column; min-width:0; }
@@ -4229,20 +4231,9 @@ function EventPortalPanel({event,portal,onCreate,onRotate,onRemove,onRefresh,onA
         <button className="btn btn-ghost btn-sm" style={{marginLeft:"auto"}} onClick={onRefresh}>↻ Refresh</button>
       </div>
 
-      {/* progress */}
-      <div style={{marginBottom:14}}>
-        <div style={{display:"flex",justifyContent:"space-between",fontSize:11,fontWeight:700,color:"var(--g600)",marginBottom:5}}>
-          <span>{prog.readyToSchedule?"All essentials answered":`${prog.requiredDone} of ${prog.requiredTotal} essentials`}</span>
-          <span>{prog.answered}/{prog.total} fields · {prog.pct}%</span>
-        </div>
-        <div style={{height:7,borderRadius:20,background:"var(--g100)",overflow:"hidden"}}>
-          <div style={{height:"100%",width:`${Math.max(3,prog.pct)}%`,background:prog.readyToSchedule?"var(--acid)":"var(--cyan-lt)",borderRadius:20}}/>
-        </div>
-        {!prog.readyToSchedule&&(
-          <div style={{fontSize:11.5,color:"var(--g500)",marginTop:6,lineHeight:1.6}}>
-            Still needed: {prog.missingRequired.map(k=>FIELD_BY_KEY[k]?.label||k).join(" · ")}
-          </div>
-        )}
+      {/* what is still missing, by name (no counts) */}
+      <div style={{marginBottom:14,fontSize:12,fontWeight:700,lineHeight:1.6,color:prog.readyToSchedule?"#3a3d00":"#8b0057"}}>
+        {prog.readyToSchedule?"✓ All essentials answered":`Still needed: ${prog.missingRequired.map(k=>FIELD_BY_KEY[k]?.label||k).join(", ")}`}
         {submitted&&portal.submitted_at&&(
           <div style={{fontSize:11.5,color:"var(--g500)",marginTop:6}}>
             Marked ready {new Date(portal.submitted_at).toLocaleDateString()}
@@ -4645,7 +4636,7 @@ function EventCommsPanel({event,contacts,linked,onUpdateEvent,onUpdateContacts,o
   );
 }
 
-function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,onUpdateContacts,onContactClick,portal,onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals,showToast}) {
+function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,onUpdateContacts,onContactClick,portal,onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals,onSavePortalAnswer,showToast}) {
   const linked = contacts.filter(c=>(event.contact_ids||[]).includes(c.id));
   const today=new Date().toISOString().slice(0,10);
 
@@ -4843,33 +4834,38 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
           </div>
 
           <div className="evd-shell">
-            {/* BOOKING PROTOCOL SPINE */}
-            <aside className="evd-spine">
-              <div className="evd-spine-hd">
-                <span className="evd-tile-ttl">Booking protocol</span>
-                <div style={{fontSize:11,color:"var(--g500)",marginTop:4,lineHeight:1.45}}>
-                  {!portal?"No portal yet. Create one to track these nine sections."
-                    :prog.readyToSchedule?"All essentials answered."
-                    :prog.requiredDone+" of "+prog.requiredTotal+" essentials answered."}
-                </div>
-              </div>
-              {PORTAL_SECTIONS.map((sec,i)=>{
-                const sp=sectionProgress(sec,pdata);
-                const state=!portal?"idle":sp.missingRequired>0?"crit":sp.answered===sp.total?"ok":sp.answered>0?"part":"idle";
-                return (
-                  <button key={sec.key} className={"evd-sec is-"+state} onClick={()=>setOpenTile("portal")}>
-                    <span className="evd-sec-i">{state==="ok"?"✓":i+1}</span>
-                    <span className="evd-sec-n">{sec.title}</span>
-                    <span className="evd-sec-c">{sp.answered}/{sp.total}</span>
-                  </button>
-                );
-              })}
-              <button className="evd-tile-f" onClick={()=>setOpenTile("portal")}>
-                <span>{portal?"Portal link & answers":"Create portal link"}</span><span>→</span>
-              </button>
-            </aside>
-
             <div className="evd-grid">
+              {/* HOST DETAILS: what the host entered on their portal, plus the shared
+                  "More details" box that both sides edit. */}
+              {tile("portal","Host details","",(
+                !portal
+                  ? <div>
+                      <div className="evd-empty">No host portal yet. Create one to send the host a private link.</div>
+                      <button className="btn btn-blk btn-sm" style={{marginTop:8}} onClick={()=>onCreatePortal(event)}>+ Create portal link</button>
+                    </div>
+                  : <>
+                      {!prog.readyToSchedule&&(
+                        <div style={{fontSize:12,fontWeight:700,color:"#8b0057"}}>
+                          Still needed: {prog.missingRequired.map(k=>FIELD_BY_KEY[k]?.label||k).join(", ")}
+                        </div>
+                      )}
+                      <div className="evd-host-grid">
+                        {[["Host",pdata.contact_name],["Email",pdata.contact_email],["Phone",pdata.contact_phone],["Organization",pdata.org_name],
+                          ["Type",pdata.event_type],["Public or private",pdata.audience],["Attendance",pdata.attendance],["Backup date",pdata.alt_date?fmtDate(pdata.alt_date):""]]
+                          .filter(([,v])=>!pIsBlank(v)).map(([k,v])=>(
+                            <div key={k}><div className="evd-lbl">{k}</div><div style={{fontSize:12.5,wordBreak:"break-word"}}>{String(v)}</div></div>
+                          ))}
+                      </div>
+                      {!pIsBlank(pdata.food_drink)&&<div><div className="evd-lbl">Food and drinks</div><p className="evd-p">{pdata.food_drink}</p></div>}
+                      <div>
+                        <div className="evd-lbl">More details <span style={{fontWeight:400,textTransform:"none",letterSpacing:0}}>· the host sees and edits this too</span></div>
+                        <textarea key={portal.id+(portal.updatedAt||"")} className="fi" style={{fontSize:12,minHeight:90,resize:"vertical",lineHeight:1.6}}
+                          placeholder="Lineup, sound, setup, promo…"
+                          defaultValue={pdata.more_details||""}
+                          onBlur={e=>{const v=e.target.value;if(v!==(pdata.more_details||"")) onSavePortalAnswer?.(portal,"more_details",v);}}/>
+                      </div>
+                    </>
+              ),portal?"Portal link & all answers":null,true)}
               {tile("plan","Checklist",clTotal?clDone+"/"+clTotal+" done":"",(
                 <>
                   <div style={{height:5,borderRadius:3,background:"var(--g100)",overflow:"hidden"}}>
@@ -5120,7 +5116,7 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
         </Modal>
       )}
       {openTile==="portal"&&(
-        <Modal wide title="Booking protocol" onClose={()=>setOpenTile(null)}>
+        <Modal wide title="Host portal" onClose={()=>setOpenTile(null)}>
           <EventPortalPanel
             event={event}
             portal={portal}
@@ -5152,7 +5148,7 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
   );
 }
 
-function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateContacts,pendingEvent,onPendingEventConsumed,portals={},onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals}) {
+function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateContacts,pendingEvent,onPendingEventConsumed,portals={},onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals,onSavePortalAnswer}) {
   const [search,setSearch]=useState("");
   const [fStatus,setFStatus]=useState("all");
   const [viewMode,setViewMode]=useState(()=>{ try{ return localStorage.getItem("sprout_evt_view")||"calendar"; }catch{ return "calendar"; } });
@@ -5248,6 +5244,7 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
       onUpdateEvent={handleUpdateEvent}
       onContactClick={handleContactClick}
       portal={portals[selectedEvent.id]}
+      onSavePortalAnswer={onSavePortalAnswer}
       onCreatePortal={onCreatePortal}
       onRotatePortal={onRotatePortal}
       onRemovePortal={onRemovePortal}
@@ -5327,10 +5324,10 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
                     {e.name||"(Unnamed)"}
                     {portals[e.id]&&(()=>{
                       const p=portalProgress(portals[e.id].data);
-                      return <span title={`Events portal · ${p.pct}% filled${p.readyToSchedule?" · essentials in":""}`}
+                      return <span title={p.readyToSchedule?"Host portal: all essentials answered":`Host portal still needs: ${p.missingRequired.map(k=>FIELD_BY_KEY[k]?.label||k).join(", ")}`}
                         style={{marginLeft:6,fontSize:9,fontWeight:700,padding:"2px 6px",borderRadius:20,whiteSpace:"nowrap",
                           background:p.readyToSchedule?"var(--acid-lt)":"var(--g100)",color:p.readyToSchedule?"#3a3d00":"var(--g600)"}}>
-                        ▤ {p.pct}%
+                        {p.readyToSchedule?"✓ portal":"portal: needs info"}
                       </span>;
                     })()}
                   </td>
@@ -5591,6 +5588,14 @@ const saveProfile = useCallback((u) => {
     showToast("Portal removed");
   }, [showToast]);
 
+  // Staff edit of one portal answer (the shared "More details" box on the event page).
+  const savePortalAnswer = useCallback(async (portal, key, value) => {
+    const { data, error } = await updatePortalAnswer(portal.id, key, value);
+    if (error) { console.error("updatePortalAnswer:", error); showToast("Could not save","err"); return; }
+    if (data) setPortals(p => ({ ...p, [portal.event_id]: data }));
+    showToast("Saved ✓");
+  }, [showToast]);
+
   const refreshPortals = useCallback(async () => {
     const { data, error } = await fetchEventPortals();
     if (error) { console.warn("refreshPortals:", error); showToast("Could not refresh","err"); return; }
@@ -5679,7 +5684,7 @@ if (dbError) return (
         {view==="dashboard"&&<DashboardView contacts={contacts} orgs={orgs} events={events} setView={setView} openContact={openContact} openEvent={openEvent} onUpdateContacts={saveContacts} onUpdateOrgs={saveOrgs} onUpdateEvents={saveEvents} showToast={showToast}/>}
 {view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail} setView={setView}/>}
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
-{view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))} pendingEvent={pendingEvent} onPendingEventConsumed={clearPendingEvent} portals={portals} onCreatePortal={makePortal} onRotatePortal={rotatePortal} onRemovePortal={removePortal} onRefreshPortals={refreshPortals}/>}
+{view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))} pendingEvent={pendingEvent} onPendingEventConsumed={clearPendingEvent} portals={portals} onCreatePortal={makePortal} onRotatePortal={rotatePortal} onRemovePortal={removePortal} onRefreshPortals={refreshPortals} onSavePortalAnswer={savePortalAnswer}/>}
         {view==="newsletter"&&<NewsletterView newsletters={newsletters} events={events} contacts={contacts} profile={profile} onUpdate={saveNewsletter} onDelete={deleteNewsletter} showToast={showToast}/>}
         {view==="outreach"&&<OutreachView contacts={contacts} orgs={orgs} events={events}/>}
         {view==="import"&&<ImportView contacts={contacts} orgs={orgs} onImportContact={importContact} onImportOrg={importOrg} showToast={showToast}/>}
