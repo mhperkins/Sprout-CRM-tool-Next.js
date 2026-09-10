@@ -5619,6 +5619,20 @@ const saveProfile = useCallback((u) => {
   const openEvent=useCallback((e)=>{ setPendingEvent(e); setView("events"); },[]);
   const clearPendingEvent=useCallback(()=>setPendingEvent(null),[]);
 
+  // Deep link (used by the booking-request email): /?event=evt_xxx opens that event's
+  // page. The param is stripped after reading so a refresh doesn't keep reopening it.
+  useEffect(()=>{
+    try{
+      const url=new URL(window.location.href);
+      const id=url.searchParams.get("event");
+      if(!id) return;
+      setPendingEvent({id});
+      setView("events");
+      url.searchParams.delete("event");
+      window.history.replaceState(null,"",url.pathname+url.search+url.hash);
+    }catch{}
+  },[]);
+
 if (loading) return (
     <><style>{STYLES}</style>
     <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",fontFamily:"Lato,sans-serif",flexDirection:"column",gap:12,color:"#9CA3AF"}}>
