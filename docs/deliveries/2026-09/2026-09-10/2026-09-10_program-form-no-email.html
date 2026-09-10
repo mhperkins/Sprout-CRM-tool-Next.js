@@ -1,0 +1,44 @@
+<title>Program Form Email Removed</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{--ink:#030000;--paper:#F7F7F6;--cyan:#73C4D6;--acid:#C6C902;--g:#6b6b68;--line:#DCDCD9}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',-apple-system,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);padding:32px 16px}
+  .slide{max-width:900px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+  .hd{background:var(--ink);color:#fff;padding:26px 30px 22px}
+  .eyebrow{font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan)}
+  h1{font-size:28px;font-weight:900;line-height:1.2;margin-top:8px}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .pill{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:#1c1a1a;border:1px solid #333}
+  .pill b{color:var(--acid)}
+  .rule{height:5px;background:var(--cyan)}
+  .body{padding:24px 30px 28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .card{border:1.5px solid var(--line);border-left:6px solid var(--cyan);border-radius:10px;padding:16px}
+  .card.a{border-left-color:var(--acid)}
+  .card h4{font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+  .card p{font-size:13.5px;line-height:1.65;color:#2f2f2d;margin-top:8px}
+  code{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:#f0f0ee;padding:1px 5px;border-radius:4px}
+</style>
+
+<div class="slide">
+  <div class="hd">
+    <div class="eyebrow">Tweak · Sprout CRM</div>
+    <h1>Program form no longer asks for email</h1>
+    <div class="meta">
+      <span class="pill">commit <b>0c5d26b</b></span>
+      <span class="pill">branch <b>main</b></span>
+      <span class="pill">3 files · <b>−13</b></span>
+    </div>
+  </div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="card">
+      <h4>Why</h4>
+      <p>People filling out the program form are already in Sprout's orbit, so we already have their email.</p>
+    </div>
+    <div class="card a">
+      <h4>What changed</h4>
+      <p>Removed from the form (<code>ProgramForm.jsx</code>), the saved fields (<code>programForm.js</code>), the CRM popup, and the copy-all text. Build passes.</p>
+    </div>
+  </div>
+</div>
