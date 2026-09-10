@@ -2,6 +2,27 @@
 
 ---
 
+## 2026-09-10 (later): Events portal fixes, prefill, logos, and booking alerts
+
+App code + one Vercel env change. Commits `fb1a5c4`, `cdf5ee2`, `cdf8d8c`, `426c0ff`, `c5a22a1`, `3942425`, all pushed; `npm run build` passes. Effort: diagnose medium / fix low for the broken link, medium for the rest.
+
+### "This link did not work" on a valid portal link (`fb1a5c4`)
+Max created a portal link from the Queer Social - Sober Hangout event and it opened to "This link did not work." The portal row and its 22-char token were correct, and the local service key found it instantly; production 404'd. Root cause: the production `SUPABASE_SERVICE_ROLE_KEY` on Vercel was stale. It is marked sensitive, so its value could not be compared; it was replaced with the verified local key and the site redeployed. `portalByToken` had swallowed the database error and returned null, which made a server failure look like a dead link. It now throws, and the route answers 503 "temporarily unavailable". Verified the live link loads.
+
+### Logos for hosts' flyers (`cdf5ee2`)
+New "Our logos for your flyer" card on the portal, above "Done for now?": preview tiles with PNG/SVG download buttons plus usage guidelines. Variations are listed in `lib/brandAssets.js` and served from `public/brand/`. Ships with the flower icon only (SVG + a 2000px transparent PNG rendered from it). The existing wordmark PNGs are 200-473px and two have solid backgrounds, too small for print, so they wait on exports from the Canva brand kit (the Canva connector needs re-auth).
+
+### Portal prefill from the CRM (`cdf8d8c`)
+Portals now open with what the CRM already knows. `pickOrganizer` picks the linked contact tagged `event_host`, or the only linked contact; it returns null when ambiguous, so an attendee never lands in "Your name" (Sprout N Tell Vol. 4, 10 contacts, correctly fills nothing). `portalSeedFromCRM` maps the organizer, their org, and the event onto portal keys. Blank-only via `fillBlanks`, so a host's answers are never overwritten. Two entry points: creating the link in the CRM seeds it, and every portal load backfills blanks server-side (`crmSeedForEvent`), which covers existing portals and organizers linked later. Verified live: Queer Social filled name, email, phone, org, @queer_social, website, member status.
+
+Booking requests already carried their answers into the portal, and approval only flips the event status, so that path needed no change.
+
+### Hosting request form link on the Events page (`426c0ff`)
+The Events header shows the public `/book` link with Copy link and Open buttons. Clicking the Requests stat filters the list to pending requests.
+
+### Email alert on each booking request (`c5a22a1`, `3942425`)
+Each `/book` submission emails maxperkins@sproutsociety.org (override with `BOOKING_NOTIFY_TO`) from hello@ through the Gmail API, via new server-only `lib/notify.js`. Reply-To is the requester. A failed email never fails the request. "Review in the CRM" first pointed at the app root and landed on the Dashboard; the app now reads `/?event=<id>`, opens that event's page, and strips the param. Two test emails sent; the second pointed at the real Queer Social event so both buttons resolve.
+
 ## 2026-09-10: Calendar into the CRM, flyers from email, and the one-screen event dashboard
 
 App code + data. Commits `da3e871` (downloads + links first) and `ae07b74` (the dashboard); `npm run build` passes. Effort: medium for the data work, high for the dashboard.

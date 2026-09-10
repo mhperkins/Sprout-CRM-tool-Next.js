@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery · Events portal: prefill, logos, alerts</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--cyan-d:#2a8ca0;--g5:#6b6b68;--g2:#e4e4e1}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);font-family:Lato,Helvetica,Arial,sans-serif;color:var(--ink);padding:32px 20px}
+  .slide{max-width:1180px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.10)}
+  .top{background:var(--ink);color:#fff;padding:26px 36px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+  .brand{font-weight:900;letter-spacing:.12em;text-transform:uppercase;font-size:13px}
+  .meta{display:flex;gap:8px;flex-wrap:wrap}
+  .pill{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;background:#1c1c1a;color:#fff;border:1px solid #333}
+  .pill.acid{background:var(--acid);color:var(--ink);border-color:var(--acid)}
+  .rule{height:5px;background:var(--acid)}
+  .hero{padding:34px 36px 10px}
+  h1{font-size:38px;font-weight:900;line-height:1.1;letter-spacing:-.02em;margin:0}
+  .lead{font-size:17px;color:var(--g5);margin:10px 0 0;line-height:1.55;max-width:900px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:26px 36px}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{border:1px solid var(--g2);border-radius:10px;padding:18px 18px 16px;position:relative;overflow:hidden;background:#fff}
+  .card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--c,var(--cyan))}
+  .hash{font-family:ui-monospace,Consolas,monospace;font-size:12px;font-weight:700;background:var(--paper);border:1px solid var(--g2);padding:2px 7px;border-radius:5px}
+  .ic{font-size:22px;line-height:1}
+  .ch{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+  .ct{font-size:17px;font-weight:900;margin:0 0 6px}
+  .cb{font-size:13.5px;line-height:1.55;color:#3a3a38;margin:0}
+  .tag{display:inline-block;font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:4px;margin-top:10px}
+  .t-fix{background:#fde3f1;color:#9b0068}.t-new{background:#eef0b8;color:#4a4b00}.t-ver{background:#dff1f5;color:#1d6676}
+  .foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 36px 26px;border-top:1px solid var(--g2);font-size:13px;color:var(--g5)}
+  .foot b{color:var(--ink)}
+  .open{background:var(--paper);margin:0 36px 26px;border-radius:10px;padding:14px 18px;font-size:13.5px;line-height:1.6}
+  .open b{color:var(--fuchsia)}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div class="brand">Sprout CRM · Delivery</div>
+    <div class="meta">
+      <span class="pill">2026-09-10</span>
+      <span class="pill">branch main</span>
+      <span class="pill acid">6 commits pushed</span>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="hero">
+    <h1>The events portal, end to end</h1>
+    <p class="lead">Staff-created portal links work, portals fill themselves in from the CRM, hosts can grab our logos, the booking form link lives on the Events page, and every new request lands in Max's inbox.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card" style="--c:var(--fuchsia)">
+      <div class="ch"><span class="ic">🔗</span><span class="hash">fb1a5c4</span></div>
+      <p class="ct">"This link did not work," fixed</p>
+      <p class="cb">The link and portal were fine. Vercel's service key was stale, so production could not look it up. Key replaced, and a database failure now says "temporarily unavailable" instead of calling the link dead.</p>
+      <span class="tag t-fix">Fix · verified live</span>
+    </div>
+
+    <div class="card" style="--c:var(--banana)">
+      <div class="ch"><span class="ic">🌸</span><span class="hash">cdf5ee2</span></div>
+      <p class="ct">Logos for your flyer</p>
+      <p class="cb">New portal card with PNG and SVG downloads plus usage rules. Ships with the flower icon; the wordmarks wait on print-size exports from Canva.</p>
+      <span class="tag t-new">New</span>
+    </div>
+
+    <div class="card" style="--c:var(--acid)">
+      <div class="ch"><span class="ic">✍️</span><span class="hash">cdf8d8c</span></div>
+      <p class="ct">Portals prefill from the CRM</p>
+      <p class="cb">Organizer, their org, and the event fill blank answers automatically. Never overwrites what a host typed. Queer Social filled 7 contact fields live.</p>
+      <span class="tag t-ver">New · verified live</span>
+    </div>
+
+    <div class="card" style="--c:var(--cyan)">
+      <div class="ch"><span class="ic">📋</span><span class="hash">426c0ff</span></div>
+      <p class="ct">Booking link on the Events page</p>
+      <p class="cb">Copy the public /book link straight from the Events header. Clicking the Requests stat shows only pending requests.</p>
+      <span class="tag t-new">New</span>
+    </div>
+
+    <div class="card" style="--c:var(--fuchsia)">
+      <div class="ch"><span class="ic">📬</span><span class="hash">c5a22a1</span></div>
+      <p class="ct">Email on every request</p>
+      <p class="cb">Each submission emails maxperkins@sproutsociety.org from hello@ with the details. Reply goes straight to the requester. A failed email never loses the request.</p>
+      <span class="tag t-new">New · test received</span>
+    </div>
+
+    <div class="card" style="--c:var(--ink)">
+      <div class="ch"><span class="ic">🎯</span><span class="hash">3942425</span></div>
+      <p class="ct">"Review in the CRM" opens the request</p>
+      <p class="cb">The button used to land on the Dashboard. The app now opens /?event=&lt;id&gt; straight to that event's page, even after signing in.</p>
+      <span class="tag t-fix">Fix</span>
+    </div>
+  </div>
+
+  <div class="open">
+    <b>Still open:</b> export print-size wordmarks from the Canva brand kit · run one real /book test and delete it · Queer Social's portal shows staff-only text ("room held 7–11pm")
+  </div>
+
+  <div class="foot">
+    <span>Files: <b>lib/portalDb.js · lib/eventPortal.js · lib/notify.js · lib/brandAssets.js · app/api/portal/* · EventPortal.jsx · CRMManager.jsx</b></span>
+    <span>npm run build <b>passes</b> · Vercel env <b>SUPABASE_SERVICE_ROLE_KEY replaced</b></span>
+  </div>
+</div>
+</body>
+</html>
