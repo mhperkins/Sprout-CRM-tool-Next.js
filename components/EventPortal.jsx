@@ -11,6 +11,46 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { PORTAL_SECTIONS, sectionProgress, portalProgress, REQUIRED_KEYS, FIELD_BY_KEY, isBlank } from "../lib/eventPortal";
 import { PortalShell, FieldList, useAutosave } from "./PortalForm";
+import { BRAND_ASSETS, BRAND_GUIDELINES } from "../lib/brandAssets";
+
+/** Download cards for our logos, so hosts can drop them straight onto a flyer. */
+function BrandKit() {
+  if (!BRAND_ASSETS.length) return null;
+  return (
+    <div className="pt-card">
+      <div className="pt-sec-ttl">Our logos for your flyer</div>
+      <p className="pt-sec-blurb" style={{ marginTop: 6 }}>
+        Download whichever version fits your design. PNGs have a transparent background; SVGs scale to any size.
+      </p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14, marginTop: 18 }}>
+        {BRAND_ASSETS.map((a) => (
+          <div key={a.key} style={{ border: "1px solid #e4e4e1", borderRadius: 8, overflow: "hidden", background: "#fff" }}>
+            <div style={{
+              height: 140, display: "flex", alignItems: "center", justifyContent: "center", padding: 18,
+              background: a.bg === "dark" ? "#030000" : "#F7F7F6",
+            }}>
+              <img src={a.preview} alt={a.label} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+            </div>
+            <div style={{ padding: "12px 14px" }}>
+              <div style={{ fontSize: 14.5, fontWeight: 900 }}>{a.label}</div>
+              <div style={{ fontSize: 12.5, color: "#6b6b68", marginTop: 3, lineHeight: 1.5 }}>{a.note}</div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+                {a.files.map((f) => (
+                  <a key={f.format} href={f.href} download className="pt-btn pt-btn-2 pt-btn-sm" style={{ textDecoration: "none" }}>
+                    ↓ {f.format}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <ul style={{ margin: "18px 0 0", paddingLeft: 20, fontSize: 13.5, lineHeight: 1.75, color: "#5f5f5c" }}>
+        {BRAND_GUIDELINES.map((g) => <li key={g}>{g}</li>)}
+      </ul>
+    </div>
+  );
+}
 
 const fmtDate = (d) => {
   if (!d) return "";
@@ -184,6 +224,8 @@ export default function EventPortal({ token }) {
             </div>
           );
         })}
+
+        <BrandKit />
 
         <div className="pt-card">
           <div className="pt-sec-ttl">Done for now?</div>
