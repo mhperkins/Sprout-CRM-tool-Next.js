@@ -1,0 +1,54 @@
+<title>State Update Program Email</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root{--ink:#030000;--paper:#F7F7F6;--cyan:#73C4D6;--fuchsia:#E10098;--acid:#C6C902;--banana:#FAD100;--line:#DCDCD9}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',-apple-system,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);padding:32px 16px}
+  .slide{max-width:900px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+  .hd{background:var(--ink);color:#fff;padding:26px 30px 22px}
+  .eyebrow{font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--banana)}
+  h1{font-size:28px;font-weight:900;line-height:1.2;margin-top:8px}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .pill{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:#1c1a1a;border:1px solid #333}
+  .pill b{color:var(--acid)}
+  .rule{height:5px;background:var(--banana)}
+  .body{padding:24px 30px 28px}
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .card{border:1.5px solid var(--line);border-left:6px solid var(--cyan);border-radius:10px;padding:14px 16px}
+  .card.f{border-left-color:var(--fuchsia)} .card.a{border-left-color:var(--acid)}
+  .card h4{font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+  .card p{font-size:13px;line-height:1.6;color:#2f2f2d;margin-top:6px}
+  code{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;background:#f0f0ee;padding:1px 5px;border-radius:4px}
+  .note{margin-top:16px;font-size:13px;color:#6b6b68;line-height:1.6}
+</style>
+
+<div class="slide">
+  <div class="hd">
+    <div class="eyebrow">State update · Sprout CRM · 2026-09-10</div>
+    <h1>Program form: email field gone, docs caught up</h1>
+    <div class="meta">
+      <span class="pill">branch <b>main</b></span>
+      <span class="pill">code <b>0c5d26b</b></span>
+      <span class="pill">slide <b>3c7bc97</b></span>
+      <span class="pill">docs: changelog + this slide</span>
+    </div>
+  </div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="row">
+      <div class="card">
+        <h4>Program form</h4>
+        <p>No email field. Participants are already known contacts.</p>
+      </div>
+      <div class="card a">
+        <h4>Booking form</h4>
+        <p><code>/book</code> still requires email. Confirmed correct.</p>
+      </div>
+      <div class="card f">
+        <h4>Docs</h4>
+        <p>CHANGELOG entry extended. CLAUDE.md current state updated (local, gitignored).</p>
+      </div>
+    </div>
+    <div class="note">Still open: delete the 2 Vol. 4 test submissions, fix the <code>/book</code> spam trap, lock down QR tracker edits, build the Event Night tile.</div>
+  </div>
+</div>

@@ -18,6 +18,9 @@ One public link per event (`/program/<token>`) for artists and musicians to send
 ### Autofill blocked a real send (`9f80af2`)
 Max's first send failed with "Something went wrong." A clean send to production saved, and the message matched the honeypot: Chrome autofilled the hidden spam-trap field beside the email box. The honeypot is removed from the program form. The `/book` form has the same honeypot and the same risk; not changed yet.
 
+### Email field removed from the program form (`0c5d26b`)
+Participants filling out the program form are already known contacts, so the form no longer asks for an email. Removed from the form, the saved fields, the CRM popup, and the copy-all text. The `/book` booking form still asks for email.
+
 ### Correction
 Vol. 5's event id is `evt_sprout_n_tell_sprout_society_x_buzzkill_`, not the id in the earlier notes.
 
