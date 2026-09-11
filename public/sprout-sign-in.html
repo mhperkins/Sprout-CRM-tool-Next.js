@@ -127,11 +127,17 @@
   }
   .lineup{display:flex; flex-direction:column; gap:9px;}
   .act{
-    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    display:flex; flex-direction:column; gap:10px;
     padding:12px 14px; background:#fff; border:2px solid #e3e3e0; border-radius:11px;
   }
+  .act .head{display:flex; align-items:center; gap:12px;}
+  .act .photo{width:56px; height:56px; border-radius:10px; object-fit:cover; flex-shrink:0; background:#f0f0ee;}
   .act .name{font-size:16px; font-weight:700; color:var(--ink);}
-  .act .links{display:flex; gap:8px; flex-shrink:0;}
+  .act .bio{font-size:14px; color:var(--muted);}
+  .act .bio summary{cursor:pointer; font-weight:700; color:var(--ink); font-size:13px;}
+  .act .bio p{font-size:14px; line-height:1.55; margin:8px 0 0; white-space:pre-line;}
+  .act .links{display:flex; gap:8px; flex-wrap:wrap;}
+  .pill-other{background:#6b6b68;}
   .pill{
     padding:8px 14px; font-size:13px; font-weight:900; border-radius:999px;
     text-decoration:none; color:#fff; transition:filter .12s, transform .08s; white-space:nowrap;
@@ -186,43 +192,37 @@
     <!-- STEP 2 — LANDING -->
     <section class="step" id="step3">
       <div class="panel active" id="panel-welcome">
-        <h3 style="font-size:24px; margin-bottom:6px;">Welcome to Sprout Society</h3>
-        <p>Here's the program for tonight. Tap a name to learn more.</p>
+        <h3 style="font-size:24px; margin-bottom:6px;">Welcome to Sprout N Tell Vol. 4</h3>
+        <p>Here's the program for tonight. Tap About to read each bio, and tip the artists you love.</p>
 
+        <!-- PROGRAM: Sprout N Tell Vol. 4 (2026-09-11), built from the CRM program form submissions -->
         <div class="program-sec">
           <h4>Artists</h4>
           <div class="lineup">
             <div class="act">
-              <span class="name">Rachel Long</span>
+              <div class="head">
+                <img class="photo" loading="lazy" src="https://ixdnmjchvjzytyhmripc.supabase.co/storage/v1/object/public/event-portal-files/evt_mrkzhez3qdj3/program/1789084592543_2ea3eo.jpeg" alt="Shradha Sardana" />
+                <span class="name">Shradha Sardana</span>
+              </div>
+              <details class="bio"><summary>About</summary><p>‘mind-blown’ in new york
+
+celebrates all those big and small moments that our brains experience at an individual level.
+
+moments we can’t quite put down in words, but manage to blow our minds away, everyday…</p></details>
               <span class="links">
-                <a class="pill pill-link" href="https://linktr.ee/buzzkillnyc" target="_blank" rel="noopener">Links</a>
+                <a class="pill pill-ig" href="https://instagram.com/shradhasardana" target="_blank" rel="noopener">Instagram</a>
               </span>
             </div>
             <div class="act">
-              <span class="name">Natasha Nesari</span>
+              <div class="head">
+                <img class="photo" loading="lazy" src="https://ixdnmjchvjzytyhmripc.supabase.co/storage/v1/object/public/event-portal-files/evt_mrkzhez3qdj3/program/1789085894090_ii8acf.jpeg" alt="Brandon Wisecarver" />
+                <span class="name">Brandon Wisecarver</span>
+              </div>
+              <details class="bio"><summary>About</summary><p>Brandon Wisecarver is a well-known fixture of the New York City artist's scene, coming to prominence for running the former Con Artist Collective - one of the largest art collectives in 21st century New York City. He is also a podcaster, writer, and a working artist in his own right, with a focus on tech and virtual reality.</p></details>
               <span class="links">
-                <a class="pill pill-ig" href="https://instagram.com/natashanesss" target="_blank" rel="noopener">Instagram</a>
-              </span>
-            </div>
-            <div class="act">
-              <span class="name">Alex Lo Grasso</span>
-              <span class="links">
-                <a class="pill pill-web" href="https://lograsso.weebly.com" target="_blank" rel="noopener">Website</a>
-                <a class="pill pill-ig" href="https://instagram.com/Alex.lo.Grasso" target="_blank" rel="noopener">Instagram</a>
-              </span>
-            </div>
-            <div class="act">
-              <span class="name">PictureManBob</span>
-              <span class="links">
-                <a class="pill pill-web" href="https://picturemanbob.square.site/" target="_blank" rel="noopener">Website</a>
-                <a class="pill pill-ig" href="https://www.instagram.com/b.o.l.o.ties/" target="_blank" rel="noopener">Bolo Ties</a>
-              </span>
-            </div>
-            <div class="act">
-              <span class="name">Jaclyn</span>
-              <span class="links">
-                <a class="pill pill-web" href="https://www.jjkc.art" target="_blank" rel="noopener">Website</a>
-                <a class="pill pill-ig" href="https://www.instagram.com/b.o.l.o.ties/" target="_blank" rel="noopener">Bolo Ties</a>
+                <a class="pill pill-venmo" href="https://venmo.com/u/brandon-wisecarver" target="_blank" rel="noopener">Tip</a>
+                <a class="pill pill-ig" href="https://instagram.com/brandonwisecarver" target="_blank" rel="noopener">Instagram</a>
+                <a class="pill pill-other" href="https://www.tiktok.com/@wisecarver" target="_blank" rel="noopener">TikTok</a>
               </span>
             </div>
           </div>
@@ -232,28 +232,64 @@
           <h4>Music</h4>
           <div class="lineup">
             <div class="act">
-              <span class="name">Class V</span>
+              <div class="head">
+                <img class="photo" loading="lazy" src="https://ixdnmjchvjzytyhmripc.supabase.co/storage/v1/object/public/event-portal-files/evt_mrkzhez3qdj3/program/1789066779224_a8250j.jpeg" alt="Tim Falvey of Big Iron Echoes" />
+                <span class="name">Tim Falvey of Big Iron Echoes</span>
+              </div>
+              <details class="bio"><summary>About</summary><p>Fusing Celtic-tinged vocals, poetic lyricism, and street performance grit, Tim Falvey delivers a tastefully emotive catalog of original Americana music for New York City audiences. As a soloist, the harmonica-wielding troubadour distills his semi-autobiographical catalog into a coffeehouse tapestry woven with tales of tryst and travel and torment -- with a few laughs along the way. As the ringleader for the conceptual, Manhattan-based band &ldquo;Big Iron Echoes,&rdquo; Falvey's sights are set on activating an intellectual, palatable, and polished NYC Americana-rock movement.</p></details>
               <span class="links">
-                <a class="pill pill-ig" href="https://www.instagram.com/class.v.music/" target="_blank" rel="noopener">Instagram</a>
+                <a class="pill pill-venmo" href="https://venmo.com/u/bigironechoes" target="_blank" rel="noopener">Tip</a>
+                <a class="pill pill-ig" href="https://instagram.com/bigironechoes" target="_blank" rel="noopener">Instagram</a>
+                <a class="pill pill-web" href="https://www.bigironechoes.com" target="_blank" rel="noopener">Website</a>
+                <a class="pill pill-other" href="https://www.youtube.com/@bigironechoes" target="_blank" rel="noopener">YouTube</a>
               </span>
             </div>
             <div class="act">
-              <span class="name">Jared Luís</span>
+              <div class="head">
+                <img class="photo" loading="lazy" src="https://ixdnmjchvjzytyhmripc.supabase.co/storage/v1/object/public/event-portal-files/evt_mrkzhez3qdj3/program/1789066868413_dagtqq.jpeg" alt="This Here Giraffe" />
+                <span class="name">This Here Giraffe</span>
+              </div>
+              <details class="bio"><summary>About</summary><p>Singer-songwriter from Los Angeles, CA. Lo-fi indie folk. Plans to release an EP within the next couple of weeks.</p></details>
               <span class="links">
-                <a class="pill pill-web" href="https://www.jaredluis.com/" target="_blank" rel="noopener">Website</a>
-                <a class="pill pill-ig" href="https://instagram.com/jaredluismusic" target="_blank" rel="noopener">Instagram</a>
+                <a class="pill pill-venmo" href="https://venmo.com/u/aidanpcole" target="_blank" rel="noopener">Tip</a>
+                <a class="pill pill-ig" href="https://instagram.com/this.here.giraffe" target="_blank" rel="noopener">Instagram</a>
+                <a class="pill pill-link" href="https://linktr.ee/this.here.giraffe" target="_blank" rel="noopener">Links</a>
               </span>
             </div>
             <div class="act">
-              <span class="name">Rune Puzzles</span>
+              <div class="head">
+                <img class="photo" loading="lazy" src="https://ixdnmjchvjzytyhmripc.supabase.co/storage/v1/object/public/event-portal-files/evt_mrkzhez3qdj3/program/1789084169852_oo30y5.jpeg" alt="Sean Jeffers" />
+                <span class="name">Sean Jeffers</span>
+              </div>
+              <details class="bio"><summary>About</summary><p>Once described by Steve Earle as &ldquo;Almost like musical theater – except that I like it&rdquo;, Sean Jeffers’ style is built upon character driven songs with singer-songwriter aesthetics. Originally from Maryland, Sean moved to New York City to attend New York University and pursue his master’s degree in music composition and songwriting.</p></details>
               <span class="links">
-                <a class="pill pill-link" href="https://solo.to/runepuzzles" target="_blank" rel="noopener">Links</a>
+                <a class="pill pill-venmo" href="https://venmo.com/u/Sean-R-Jeffers" target="_blank" rel="noopener">Tip</a>
+                <a class="pill pill-ig" href="https://instagram.com/seanrjeffers" target="_blank" rel="noopener">Instagram</a>
+                <a class="pill pill-web" href="https://sean-jeffers.com" target="_blank" rel="noopener">Website</a>
               </span>
             </div>
             <div class="act">
-              <span class="name">Drifting Petals</span>
+              <div class="head">
+                <img class="photo" loading="lazy" src="https://ixdnmjchvjzytyhmripc.supabase.co/storage/v1/object/public/event-portal-files/evt_mrkzhez3qdj3/program/1789084587529_d1ztz6.jpeg" alt="mPATH" />
+                <span class="name">mPATH</span>
+              </div>
+              <details class="bio"><summary>About</summary><p>mPATH is a groundbreaking producer and DJ bending electronic genres to create everything from feet-pounding dance music to deep slow ballads.</p></details>
               <span class="links">
-                <a class="pill pill-ig" href="https://instagram.com/bethsoulden" target="_blank" rel="noopener">Instagram</a>
+                <a class="pill pill-venmo" href="https://venmo.com/u/patrick-hopkins-5" target="_blank" rel="noopener">Tip</a>
+                <a class="pill pill-ig" href="https://instagram.com/m.pat.h" target="_blank" rel="noopener">Instagram</a>
+                <a class="pill pill-link" href="https://linktr.ee/proactivepanic" target="_blank" rel="noopener">Links</a>
+                <a class="pill pill-other" href="https://open.spotify.com/artist/4hcQLVPd60Q91jC03n9LwC" target="_blank" rel="noopener">Spotify</a>
+              </span>
+            </div>
+            <div class="act">
+              <div class="head">
+                <img class="photo" loading="lazy" src="https://ixdnmjchvjzytyhmripc.supabase.co/storage/v1/object/public/event-portal-files/evt_mrkzhez3qdj3/program/1789086552957_aj43gh.jpeg" alt="Greg Smith" />
+                <span class="name">Greg Smith</span>
+              </div>
+              <details class="bio"><summary>About</summary><p>Alt. rock singer, guitarist, and songwriter based in Bushwick.</p></details>
+              <span class="links">
+                <a class="pill pill-venmo" href="https://venmo.com/u/gregsmithgalaxy" target="_blank" rel="noopener">Tip</a>
+                <a class="pill pill-ig" href="https://instagram.com/gregsmithgalaxy" target="_blank" rel="noopener">Instagram</a>
               </span>
             </div>
           </div>
