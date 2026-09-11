@@ -95,3 +95,10 @@ dates come from the CRM (`sprout-crm` MCP `list_events`).
 - **2026-09-11 (Sprout N Tell Vol. 4):** Removed the Sprout By Day slide (`04-sprout-by-day.html`)
   and raised the slide time from 12s to 17s. Deck is now three slides. The hosted
   `public/sprout-tv.html` was edited directly (same change mirrored to the local `sprout-tv.html`).
+- **2026-09-11 (Sprout N Tell Vol. 4):** Added three event-specific lineup slides after Welcome:
+  `lineup-1-artists.html` (Shradha Sardana, Brandon Wisecarver, Maggie V. Miles),
+  `lineup-2-music.html` (Tim Falvey, This Here Giraffe, Sean Jeffers), `lineup-3-music.html`
+  (mPATH, Greg Smith). Photo + name + Instagram + bio per act, from the program form submissions
+  (`sprout_program_entries`). Tim's and Maggie's bios trimmed to two sentences for the TV. A small
+  script shrinks bios evenly if a card ever overflows. Each lineup slide was inserted into the deck
+  as its own `srcdoc` iframe. **Swap or remove these after tonight.**
