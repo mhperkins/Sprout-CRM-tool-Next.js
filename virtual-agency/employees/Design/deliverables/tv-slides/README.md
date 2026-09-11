@@ -10,7 +10,6 @@ recombined into one looping deck once the content is final.
 | `01-welcome.html` | Welcome to Sprout N Tell | acid | tonight's lineup (PLACEHOLDER — needs real URL) |
 | `02-story.html` | Founding story + impact stats | fuchsia | givebutter.com/sproutspacedonors |
 | `03-host.html` | Host at Sprout Society | acid accent (dark) | still membership URL — needs a hosting-inquiry target |
-| `04-sprout-by-day.html` | Co-working | cyan (light) | givebutter.com/sproutmembership — needs the real form URL |
 
 ## Previewing
 
@@ -60,7 +59,7 @@ slide `<section ...>` tag inside an HTML comment** (a comment containing one sil
 poisoned the original split). The recombine lifts one `<style>` block plus each file's
 `<section class="slide ...">`, drops the `on` class, and adds back the loop chrome:
 
-- 12s per slide, 0.9s cross-fade, infinite wrap
+- 17s per slide, 0.9s cross-fade, infinite wrap
 - progress bar + dot position indicator in the footer
 - space pauses, arrows step, F toggles fullscreen, click/tap advances
 
@@ -93,3 +92,6 @@ dates come from the CRM (`sprout-crm` MCP `list_events`).
   the membership slide into `04-host.html` ("Host at Sprout Society" — grow/nurture your
   community, host events/performances/markets/workshops). Pricing rows dropped. Deck is now
   four slides.
+- **2026-09-11 (Sprout N Tell Vol. 4):** Removed the Sprout By Day slide (`04-sprout-by-day.html`)
+  and raised the slide time from 12s to 17s. Deck is now three slides. The hosted
+  `public/sprout-tv.html` was edited directly (same change mirrored to the local `sprout-tv.html`).
