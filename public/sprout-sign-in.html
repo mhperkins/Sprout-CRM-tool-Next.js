@@ -32,14 +32,15 @@
     --paper:#F7F7F6; --muted:#8a8a86;
   }
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
-  html,body{height:100%;}
   body{
     font-family:'Lato',-apple-system,Segoe UI,Roboto,sans-serif;
     background:var(--paper); color:var(--ink);
-    display:flex; align-items:center; justify-content:center;
-    min-height:100vh; padding:24px;
+    display:flex; min-height:100vh; padding:24px;
   }
+  /* margin:auto centers the card when it fits, and pins it to the top when it's taller than the screen
+     (align-items:center pushed tall content above the viewport where it couldn't be scrolled to) */
   .card{
+    margin:auto;
     width:100%; max-width:560px; background:#fff; border-radius:18px;
     box-shadow:0 18px 50px rgba(0,0,0,0.18); overflow:hidden;
   }
