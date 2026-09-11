@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-09-11: Vol. 4 program notes, QR dashboard all-time view, People tile add button
+
+App code in two repos. CRM commits `351a41f`, `4921aec`, `9f7c75e`; qr-tracker commits `46dedbf`, `86a9385`, `7d4c259`. `npm run build` passes. Effort: low for the program; diagnose medium / fix low for the QR dashboard.
+
+### Sprout N Tell Vol. 4 program (`351a41f`, `4921aec`)
+Built tonight's program on the sign-in page Welcome panel from the 7 program form submissions (Art: Shradha Sardana, Brandon Wisecarver; Music: Tim Falvey of Big Iron Echoes, This Here Giraffe, Sean Jeffers, mPATH, Greg Smith). Each act now has a photo, a collapsible About bio (verbatim), and every submitted link as a pill (Tip, Instagram, Website, Links, YouTube, TikTok, Spotify). mPATH typed a Spotify URL into the link-label field, so it became a Spotify button. Maggie Miles still to add. The taller page exposed a layout bug: `body` used `align-items:center`, which pushed content taller than the screen above the viewport where it could not be scrolled to. Fixed with `margin:auto` on the card. The inside "program notes" QR already skips sign-in via `sprout-sign-in.html?welcome`.
+
+### QR tracker "0 scans" (qr-tracker `46dedbf`, `86a9385`, `7d4c259`)
+No data was lost: all 20 codes kept their counts in `qr_daily_scans`. The dashboard only offered 30/60/90-day ranges, opened on 30d, and the last scans before tonight were 8/5, so every view read 0. Added `days=all` to `/api/stats` (reaches back to each code's first scan), an All button that is now the default, all-time totals on every QR tile, and a total label that names the selected range. Max was also viewing a stale local `QR Dashboard.html` that still called the retired Cloudflare Worker (which errors on the all-time request); that file is now a shortcut to `qr-tracker-gold.vercel.app`. The old worker still writes to the same Supabase table, so scans through either URL count.
+
+### People tile add button (`9f7c75e`)
+The event dashboard redesign left no quick way to attach people. The People tile and its popup now have "+ Add person": search contacts by name, email or @handle, click (or Enter) to attach. Not clicked through by me (login wall).
+
+---
+
 ## 2026-09-10 (third session): Participant program form, sign-in sheet, QR tracker findings
 
 App code + two new Supabase tables. Commits `2e08e55` (form + tile), `58a7e87` (slide), `9f80af2` (autofill fix); `npm run build` passes. Effort: medium; diagnose medium / fix low for the autofill bug.

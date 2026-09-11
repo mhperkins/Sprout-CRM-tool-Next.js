@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Delivery · 2026-09-11 · Vol. 4 program, QR all-time, People add</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#030000;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--cyan-deep:#2a8ca0;--paper:#F7F7F6;--muted:#6b6b68;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Lato',system-ui,sans-serif;background:var(--paper);color:var(--ink);padding:40px 20px;}
+  .slide{max-width:1100px;margin:0 auto;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.14);}
+  .hd{background:var(--ink);color:#fff;padding:30px 36px;display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;}
+  .hd h1{font-size:30px;font-weight:900;line-height:1.15;}
+  .hd .sub{color:#b9b9b5;font-size:14px;margin-top:6px;}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;}
+  .b{font-size:12px;font-weight:900;padding:6px 12px;border-radius:999px;letter-spacing:.5px;}
+  .b-acid{background:var(--acid);color:var(--ink);} .b-cyan{background:var(--cyan);color:var(--ink);} .b-fu{background:var(--fuchsia);color:#fff;}
+  .rule{height:5px;background:var(--acid);}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:28px 36px;}
+  @media (max-width:860px){.grid{grid-template-columns:1fr;}}
+  .card{border-radius:12px;padding:20px 20px 18px;box-shadow:0 4px 14px rgba(0,0,0,.1);border-left:6px solid;background:#fff;display:flex;flex-direction:column;gap:10px;}
+  .c1{border-color:var(--fuchsia);} .c2{border-color:var(--cyan-deep);} .c3{border-color:var(--banana);}
+  .ico{font-size:28px;}
+  .card h2{font-size:18px;font-weight:900;}
+  .card p,.card li{font-size:14px;line-height:1.5;color:#3a3a38;}
+  .card ul{padding-left:18px;display:flex;flex-direction:column;gap:4px;}
+  .hash{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:var(--paper);border-radius:6px;padding:2px 7px;margin-right:4px;display:inline-block;margin-top:2px;}
+  .repo{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);}
+  .ft{padding:0 36px 28px;display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media (max-width:860px){.ft{grid-template-columns:1fr;}}
+  .box{background:var(--paper);border-radius:12px;padding:16px 18px;}
+  .box h3{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:1.3px;color:var(--fuchsia);margin-bottom:8px;}
+  .box li{font-size:13.5px;line-height:1.5;margin-left:16px;}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="hd">
+    <div>
+      <h1>Vol. 4 program, QR all-time view, People add</h1>
+      <div class="sub">2026-09-11 · Sprout N Tell Vol. 4 night · branch <b>main</b> · two repos pushed</div>
+    </div>
+    <div class="badges"><span class="b b-acid">BUILD PASSES</span><span class="b b-cyan">6 COMMITS</span><span class="b b-fu">NO DATA LOST</span></div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="grid">
+    <div class="card c1">
+      <div class="ico">🎤</div>
+      <h2>Tonight's program notes</h2>
+      <p>Built from the 7 program form submissions on the Vol. 4 dashboard.</p>
+      <ul>
+        <li>Art: Shradha Sardana, Brandon Wisecarver</li>
+        <li>Music: Tim Falvey, This Here Giraffe, Sean Jeffers, mPATH, Greg Smith</li>
+        <li>Photo, About bio, and every link per act</li>
+        <li>Fixed the top of the page being cut off</li>
+      </ul>
+      <div class="repo">sprout-crm-next</div>
+      <div><span class="hash">351a41f</span><span class="hash">4921aec</span></div>
+    </div>
+
+    <div class="card c2">
+      <div class="ico">📈</div>
+      <h2>QR dashboard shows all time</h2>
+      <p>The "0 scans" was a 30-day window, not lost data. Door code: 81 all time.</p>
+      <ul>
+        <li><code>/stats?days=all</code> on the API</li>
+        <li>Opens on All; every tile shows its total</li>
+        <li>Total label names the range</li>
+        <li>Stale local file now opens the live dashboard</li>
+      </ul>
+      <div class="repo">qr-tracker</div>
+      <div><span class="hash">46dedbf</span><span class="hash">86a9385</span><span class="hash">7d4c259</span></div>
+    </div>
+
+    <div class="card c3">
+      <div class="ico">➕</div>
+      <h2>Add person on the People tile</h2>
+      <p>The event dashboard lost its quick way to attach people. It's back.</p>
+      <ul>
+        <li>Search by name, email or @handle</li>
+        <li>Click or Enter to attach</li>
+        <li>On the tile and in the People popup</li>
+      </ul>
+      <div class="repo">sprout-crm-next</div>
+      <div><span class="hash">9f7c75e</span></div>
+    </div>
+  </div>
+
+  <div class="ft">
+    <div class="box">
+      <h3>Links</h3>
+      <ul>
+        <li>Program: sprout-crm-tool-next-js.vercel.app/sprout-sign-in.html?welcome</li>
+        <li>QR dashboard: qr-tracker-gold.vercel.app</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Still open</h3>
+      <ul>
+        <li>Add Maggie Miles to the program when her form arrives</li>
+        <li>Click through + Add person in the app</li>
+        <li>QR tracker edit endpoints still have no auth</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</body>
+</html>
