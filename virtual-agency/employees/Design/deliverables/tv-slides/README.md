@@ -102,3 +102,6 @@ dates come from the CRM (`sprout-crm` MCP `list_events`).
   (`sprout_program_entries`). Tim's and Maggie's bios trimmed to two sentences for the TV. A small
   script shrinks bios evenly if a card ever overflows. Each lineup slide was inserted into the deck
   as its own `srcdoc` iframe. **Swap or remove these after tonight.**
+- **2026-09-11 (same night):** Lineup slides changed from three columns to stacked rows (square
+  photo + name/handle on the left, bio on the right). Three columns made the bios too small to
+  read on the TV. Bio type went from 1.2vw to 1.55vw.
