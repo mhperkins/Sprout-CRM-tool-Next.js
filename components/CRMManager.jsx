@@ -4789,6 +4789,9 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
   const [linkAdding,setLinkAdding]=useState(false);
   const [linkLabel,setLinkLabel]=useState("");
   const [linkUrl,setLinkUrl]=useState("");
+  // Inline "+ Add person" on the People tile and its popup.
+  const [personAdding,setPersonAdding]=useState(false);
+  const [personQ,setPersonQ]=useState("");
 
   // contacts modal
   const [showContactsModal,setShowContactsModal]=useState(false);
@@ -4801,6 +4804,41 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
   const [addDate,setAddDate]=useState(null);  // dateStr → inline add input shown in that cell
   const [addText,setAddText]=useState("");
   const [dragId,setDragId]=useState(null);    // checklist item id being dragged
+
+  const personName = (c) => `${c.first_name||""} ${c.last_name||""}`.trim() || c.email || c.id;
+  const addPerson = (cId) => {
+    const ids=event.contact_ids||[];
+    if(ids.includes(cId)) return;
+    onUpdateEvent({...event, contact_ids:[...ids,cId]});
+    setPersonQ("");
+    showToast("Added to event ✓");
+  };
+  // Plain render function (not a nested component) so the search input keeps focus while typing.
+  const peopleAdder = () => {
+    if(!personAdding) return (
+      <button className="btn btn-ghost btn-sm" style={{alignSelf:"flex-start",marginTop:8}} onClick={()=>setPersonAdding(true)}>+ Add person</button>
+    );
+    const q=personQ.trim().toLowerCase();
+    const ids=event.contact_ids||[];
+    const matches=q
+      ? contacts.filter(c=>!ids.includes(c.id)&&(personName(c)+" "+(c.email||"")+" "+(c.instagram_handle||"")).toLowerCase().includes(q)).slice(0,6)
+      : [];
+    const close=()=>{setPersonAdding(false);setPersonQ("");};
+    return (
+      <div style={{display:"flex",flexDirection:"column",gap:6,marginTop:8}}>
+        <input className="fi" style={{fontSize:12}} autoFocus placeholder="Search contacts by name, email or @handle"
+          value={personQ} onChange={e=>setPersonQ(e.target.value)}
+          onKeyDown={e=>{ if(e.key==="Enter"&&matches[0]) addPerson(matches[0].id); if(e.key==="Escape") close(); }}/>
+        {q&&matches.length===0&&<div className="evd-empty">No matching contacts. Add them in Contacts first.</div>}
+        {matches.map(c=>(
+          <button key={c.id} className="btn btn-ghost btn-sm" style={{justifyContent:"flex-start",textAlign:"left"}} onClick={()=>addPerson(c.id)}>
+            + {personName(c)}{c.email&&personName(c)!==c.email&&<span style={{color:"var(--g500)",fontWeight:400,marginLeft:6}}>{c.email}</span>}
+          </button>
+        ))}
+        <button className="btn btn-ghost btn-sm" style={{alignSelf:"flex-start"}} onClick={close}>Done</button>
+      </div>
+    );
+  };
 
   const onToggleConfirm = (cId) => {
     const ids=event.confirmed_ids||[];
@@ -5075,12 +5113,15 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
               ),clTotal?"Calendar & all "+clTotal+" items":"Open the calendar to add items")}
 
               {tile("people","People",linked.length?linked.length+" · "+confirmedN+" confirmed":"",(
-                linked.length===0
-                  ? <div className="evd-empty">Nobody attached yet. Attach people from Edit Event or a contact&rsquo;s Affiliations.</div>
-                  : <div>
-                      {linked.slice(0,5).map(c=><ContactRow key={c.id} c={c}/>)}
-                      {linked.length>5&&<div className="evd-more" style={{marginTop:6}}>+{linked.length-5} more</div>}
-                    </div>
+                <div style={{display:"flex",flexDirection:"column"}}>
+                  {linked.length===0
+                    ? <div className="evd-empty">Nobody attached yet.</div>
+                    : <div>
+                        {linked.slice(0,5).map(c=><ContactRow key={c.id} c={c}/>)}
+                        {linked.length>5&&<div className="evd-more" style={{marginTop:6}}>+{linked.length-5} more</div>}
+                      </div>}
+                  {peopleAdder()}
+                </div>
               ),linked.length>5?"All "+linked.length+" people":null)}
 
               {tile("links","Links",links.length||"",(
@@ -5289,6 +5330,7 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
       )}
       {openTile==="people"&&(
         <Modal title={"People ("+linked.length+")"} onClose={()=>setOpenTile(null)}>
+          <div style={{display:"flex",flexDirection:"column",marginBottom:8}}>{peopleAdder()}</div>
           {linked.map(c=><ContactRow key={c.id} c={c}/>)}
         </Modal>
       )}
