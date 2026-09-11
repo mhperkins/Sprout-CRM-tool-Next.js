@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Delivery: TV Slideshow for Sprout N Tell Vol. 4</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#030000; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6; --cyan-deep:#2a8ca0; --paper:#F7F7F6; --muted:#8a8a86;}
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Lato',-apple-system,Segoe UI,Roboto,sans-serif; background:var(--ink); color:#fff; min-height:100vh; padding:40px 20px;}
+  .wrap{max-width:1180px; margin:0 auto;}
+  .top{display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap;}
+  .eyebrow{color:var(--acid); font-weight:900; letter-spacing:.3em; text-transform:uppercase; font-size:13px;}
+  h1{font-size:44px; font-weight:900; line-height:1.05; margin-top:8px; letter-spacing:-.01em;}
+  .rule{height:6px; width:110px; background:var(--acid); border-radius:3px; margin:18px 0 22px;}
+  .lede{color:#d8d8d4; font-size:17px; line-height:1.55; max-width:760px;}
+  .badges{display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{font-size:12px; font-weight:900; letter-spacing:.06em; text-transform:uppercase; padding:7px 12px; border-radius:99px; background:#1a1a18; color:#fff; border:1px solid #2c2c2a;}
+  .badge.live{background:var(--acid); color:var(--ink); border-color:var(--acid);}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin-top:30px;}
+  .card{background:#121211; border:1px solid #242422; border-radius:12px; padding:20px; position:relative; overflow:hidden;}
+  .card::before{content:""; position:absolute; left:0; top:0; bottom:0; width:6px; background:var(--c,var(--acid));}
+  .card h3{font-size:18px; font-weight:900; margin-bottom:8px; padding-left:6px;}
+  .card p, .card li{color:#cfcfca; font-size:14px; line-height:1.55; padding-left:6px;}
+  .card ul{list-style:none; margin-top:6px;}
+  .card li::before{content:"\2022"; color:var(--c,var(--acid)); font-weight:900; margin-right:8px;}
+  .icon{font-size:22px; padding-left:6px; margin-bottom:6px; display:block;}
+  code{font-family:ui-monospace,Consolas,monospace; font-size:12.5px; background:#1e1e1c; padding:1px 6px; border-radius:4px; color:#fff;}
+
+  .deck{margin-top:34px;}
+  .deck h2{font-size:14px; font-weight:900; letter-spacing:.25em; text-transform:uppercase; color:var(--muted); margin-bottom:12px;}
+  .strip{display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px;}
+  .thumb{aspect-ratio:16/9; border-radius:8px; background:#0b0b0a; border:1px solid #2a2a28; padding:8px; display:flex; flex-direction:column; justify-content:space-between; overflow:hidden;}
+  .thumb.light{background:var(--paper); color:var(--ink); border-color:var(--paper);}
+  .thumb b{font-size:11px; font-weight:900; line-height:1.15;}
+  .thumb small{font-size:9px; color:var(--muted); font-weight:700; letter-spacing:.05em; text-transform:uppercase;}
+  .rows{display:flex; flex-direction:column; gap:3px; flex:1; margin-top:5px;}
+  .row{flex:1; display:flex; gap:4px; align-items:center;}
+  .ph{width:26%; height:100%; border-radius:2px; background:linear-gradient(135deg,#5a4a44,#2b2b2b);}
+  .ln{flex:1; height:40%; border-radius:2px; background:repeating-linear-gradient(180deg,#8a8a86 0 2px,transparent 2px 5px); opacity:.55;}
+  .new{outline:2px solid var(--fuchsia); outline-offset:2px;}
+  .legend{font-size:12px; color:var(--muted); margin-top:8px;}
+  .legend span{color:var(--fuchsia); font-weight:900;}
+
+  .commits{margin-top:30px; background:#121211; border:1px solid #242422; border-radius:12px; padding:20px;}
+  .commits h2{font-size:14px; font-weight:900; letter-spacing:.25em; text-transform:uppercase; color:var(--muted); margin-bottom:12px;}
+  .clist{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:8px 20px;}
+  .c{display:flex; gap:10px; align-items:baseline; font-size:14px; color:#d8d8d4;}
+  .c code{background:var(--acid); color:var(--ink); font-weight:900; flex-shrink:0;}
+  .foot{margin-top:22px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; color:var(--muted); font-size:13px;}
+  @media (max-width:700px){ h1{font-size:32px;} .strip{grid-template-columns:repeat(3,minmax(0,1fr));} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Delivery &middot; 2026-09-11 &middot; Sprout N Tell Vol. 4</div>
+      <h1>TV slideshow, ready for tonight</h1>
+    </div>
+    <div class="badges">
+      <span class="badge live">&#9679; Live on Vercel</span>
+      <span class="badge">branch main</span>
+      <span class="badge">6 commits</span>
+      <span class="badge">Effort: medium</span>
+    </div>
+  </div>
+  <div class="rule"></div>
+  <p class="lede">Audited the looping TV deck, trimmed it to what matters tonight, and added three lineup slides with every act's photo, name, Instagram, and bio, plus a scannable link to the program. Each push was confirmed on the live URL. No app code, schema, or data change.</p>
+
+  <div class="deck">
+    <h2>The deck now &middot; 17 seconds per slide</h2>
+    <div class="strip">
+      <div class="thumb"><b>Welcome to Sprout N Tell!</b><small>01 &middot; postponed from 8/28</small></div>
+      <div class="thumb new"><b style="color:var(--fuchsia)">Tonight's Artists</b><div class="rows"><div class="row"><div class="ph"></div><div class="ln"></div></div><div class="row"><div class="ph"></div><div class="ln"></div></div><div class="row"><div class="ph"></div><div class="ln"></div></div></div></div>
+      <div class="thumb new"><b style="color:var(--cyan)">Tonight's Music</b><div class="rows"><div class="row"><div class="ph"></div><div class="ln"></div></div><div class="row"><div class="ph"></div><div class="ln"></div></div><div class="row"><div class="ph"></div><div class="ln"></div></div></div></div>
+      <div class="thumb new"><b style="color:var(--cyan)">Tonight's Music</b><div class="rows"><div class="row"><div class="ph"></div><div class="ln"></div></div><div class="row"><div class="ph"></div><div class="ln"></div></div><div class="row"></div></div></div>
+      <div class="thumb light"><b>In honor of Russell Efros</b><small>02 &middot; our story</small></div>
+      <div class="thumb"><b>Host at Sprout Society</b><small>03 &middot; host</small></div>
+    </div>
+    <p class="legend"><span>Outlined</span> = new tonight. Sprout By Day slide removed.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card" style="--c:var(--cyan)">
+      <span class="icon">&#128269;</span>
+      <h3>Audit</h3>
+      <ul>
+        <li>Live deck renders, loops, and wraps in real Chrome</li>
+        <li>Every QR decoded and redirects to the right place</li>
+        <li>Flagged: TV QRs still use the old worker host (works today)</li>
+      </ul>
+    </div>
+    <div class="card" style="--c:var(--banana)">
+      <span class="icon">&#9986;&#65039;</span>
+      <h3>Trims</h3>
+      <ul>
+        <li>Removed the Sprout By Day slide</li>
+        <li>Slide time 12s &rarr; 17s</li>
+        <li>Slide 1 QR: "Scan for Tonight's Program"</li>
+        <li>"(postponed from 8/28)" on slide 1</li>
+      </ul>
+    </div>
+    <div class="card" style="--c:var(--fuchsia)">
+      <span class="icon">&#127908;</span>
+      <h3>Lineup slides</h3>
+      <ul>
+        <li>8 acts from the program form submissions</li>
+        <li>Each act fills a third of the screen</li>
+        <li>Photo + name + handle left, bio right</li>
+        <li>Bios auto-size: about 39&ndash;58px on 1080p</li>
+      </ul>
+    </div>
+    <div class="card" style="--c:var(--acid)">
+      <span class="icon">&#128241;</span>
+      <h3>Program callout</h3>
+      <ul>
+        <li>"Full bios, links, and tips are in tonight's program." in large white type</li>
+        <li>Small program QR on all three lineup slides</li>
+        <li>Same tracked code as slide 1, skips sign-in</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="commits">
+    <h2>Commits pushed to main</h2>
+    <div class="clist">
+      <div class="c"><code>7e969e8</code>Drop Sprout By Day, 17s per slide, program QR caption</div>
+      <div class="c"><code>5373362</code>Note Vol. 4 was postponed from 8/28</div>
+      <div class="c"><code>dbc0818</code>Vol. 4 lineup slides (artists + music)</div>
+      <div class="c"><code>968c26d</code>Lineup slides as stacked rows</div>
+      <div class="c"><code>40fa058</code>Rows fill a third of the screen, bigger type</div>
+      <div class="c"><code>7bc15eb</code>Prominent program callout + program QR</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Live: <code>sprout-crm-tool-next-js.vercel.app/sprout-tv.html</code></span>
+    <span>Next: swap the lineup slides after tonight &middot; move TV QRs to qr-tracker-gold</span>
+  </div>
+</div>
+</body>
+</html>

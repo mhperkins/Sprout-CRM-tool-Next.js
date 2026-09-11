@@ -2,6 +2,24 @@
 
 ---
 
+## 2026-09-11 (second session): TV slideshow ready for Sprout N Tell Vol. 4
+
+Design deliverable + hosted deck only (`public/sprout-tv.html`, `virtual-agency/employees/Design/deliverables/tv-slides/`). Commits `7e969e8`, `5373362`, `dbc0818`, `968c26d`, `40fa058`, `7bc15eb`, each confirmed live on Vercel. No app code, schema, or data change. Effort: medium.
+
+### Audit
+The live deck loaded, looped, and wrapped cleanly in real Chrome. Every slide QR decoded and redirected correctly. All TV QRs still encode the old Cloudflare worker host (`qr-tracker.maxwellhperkins.workers.dev`); it still works and its targets match `qr_codes.dest`, so it was left alone for tonight and flagged for later.
+
+### Trims (`7e969e8`, `5373362`)
+Removed the Sprout By Day slide. Raised the slide time from 12s to 17s. Slide 1's QR caption now reads "Scan for Tonight's Program", and its lead line notes Vol. 4 was postponed from 8/28.
+
+### Lineup slides (`dbc0818`, `968c26d`, `40fa058`)
+Three event-specific slides after Welcome, built from the program form submissions: Tonight's Artists (Shradha Sardana, Brandon Wisecarver, Maggie V. Miles), Tonight's Music (Tim Falvey of Big Iron Echoes, This Here Giraffe, Sean Jeffers), Tonight's Music (mPATH, Greg Smith). Photos are resized and embedded so the deck stays self-contained. Went through three layouts on Max's feedback: three columns were too small, stacked rows were still too small, and the final version gives each act a third of the screen height on any screen shape, with the photo and name/handle on the left and the bio on the right. Bio text auto-sizes to the largest size that fits (about 39-58px on 1080p). Long bios are cut to their first sentence; full bios stay in the program.
+
+### Program callout (`7bc15eb`)
+"Full bios, links, and tips are in tonight's program." is now large and white on all three lineup slides, with a small QR beside it. It is the same tracked program code as slide 1 and skips sign-in.
+
+---
+
 ## 2026-09-11: Vol. 4 program notes, QR dashboard all-time view, People tile add button
 
 App code in two repos. CRM commits `351a41f`, `4921aec`, `9f7c75e`; qr-tracker commits `46dedbf`, `86a9385`, `7d4c259`. `npm run build` passes. Effort: low for the program; diagnose medium / fix low for the QR dashboard.
