@@ -105,3 +105,7 @@ dates come from the CRM (`sprout-crm` MCP `list_events`).
 - **2026-09-11 (same night):** Lineup slides changed from three columns to stacked rows (square
   photo + name/handle on the left, bio on the right). Three columns made the bios too small to
   read on the TV. Bio type went from 1.2vw to 1.55vw.
+- **2026-09-11 (same night, final):** Each act now fills a third of the screen height on any screen
+  shape (sizes use `min(vw, vh)`). Photo on the left with name + handle below it, bio on the right.
+  A script picks the largest bio size that fits (about 40-58px on 1080p). Long bios cut to their
+  first sentence; the "full bios in the program" note moved into the header.
