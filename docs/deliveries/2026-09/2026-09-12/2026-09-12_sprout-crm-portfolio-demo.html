@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery: Sprout CRM portfolio demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#030000; --paper:#F7F7F6; --cyan:#73C4D6; --cyan-dk:#2a8ca0; --fuchsia:#E10098; --acid:#C6C902; --banana:#FAD100; --g200:#E5E7EB; --g600:#4B5563; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ink); font-family: 'Lato', system-ui, sans-serif; color: var(--ink); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 28px; }
+  .slide { width: 100%; max-width: 1280px; aspect-ratio: 16 / 9; background: var(--paper); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .top { background: var(--ink); color: #fff; padding: 26px 40px 22px; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
+  .eyebrow { font-size: 12px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; color: var(--cyan); }
+  h1 { margin: 6px 0 0; font-size: 34px; font-weight: 900; letter-spacing: -.02em; line-height: 1.1; }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  .badge { font-size: 12px; font-weight: 900; padding: 6px 12px; border-radius: 999px; background: rgba(247,247,246,.1); color: #fff; white-space: nowrap; }
+  .badge b { color: var(--acid); }
+  .rule { height: 5px; background: var(--acid); }
+  .body { flex: 1; padding: 26px 40px 30px; display: grid; grid-template-columns: 1.25fr 1fr; gap: 22px; min-height: 0; }
+  .card { background: #fff; border: 1.5px solid var(--g200); border-radius: 12px; padding: 18px 20px; box-shadow: 0 4px 14px rgba(0,0,0,.06); }
+  .lbl { font-size: 11px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; color: var(--g600); margin-bottom: 12px; }
+  .slides { display: flex; flex-direction: column; gap: 9px; }
+  .s { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; background: var(--paper); }
+  .n { width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: var(--acid); font-weight: 900; font-size: 14px; display: flex; align-items: center; justify-content: center; flex: none; }
+  .s-t { font-size: 16px; font-weight: 900; }
+  .s-d { font-size: 12.5px; color: var(--g600); margin-top: 1px; }
+  .new { font-size: 10px; font-weight: 900; background: var(--fuchsia); color: #fff; padding: 2px 7px; border-radius: 8px; margin-left: 6px; vertical-align: 2px; }
+  .right { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+  ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.6; }
+  li b { font-weight: 900; }
+  .cut { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cut span { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #FFCDF0; color: #8b0057; text-decoration: line-through; }
+  .ok { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .ok div { background: #E9E99A; border-radius: 8px; padding: 9px 10px; font-size: 12.5px; font-weight: 700; color: #3a3d00; text-align: center; }
+  .path { font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: var(--cyan-dk); word-break: break-all; }
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="top">
+      <div>
+        <div class="eyebrow">Delivery &middot; September 12, 2026</div>
+        <h1>Sprout CRM demo carousel for the AI portfolio</h1>
+      </div>
+      <div class="badges">
+        <span class="badge">AI Tool Portfolio &middot; <b>6c226cc</b></span>
+        <span class="badge">branch <b>main</b> &middot; pushed</span>
+        <span class="badge">sprout-crm-next &middot; docs</span>
+      </div>
+    </div>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="card">
+        <div class="lbl">Replaces the Sprout CRM Loom &middot; 5 slides, placeholder data</div>
+        <div class="slides">
+          <div class="s"><span class="n">1</span><div><div class="s-t">Dashboard</div><div class="s-d">Key numbers, next actions, overdue, upcoming events</div></div></div>
+          <div class="s"><span class="n">2</span><div><div class="s-t">Contacts</div><div class="s-d">Buckets in one list, plus everything at a glance on each person</div></div></div>
+          <div class="s"><span class="n">3</span><div><div class="s-t">Events Portal<span class="new">NEW</span></div><div class="s-d">Sprout N Tell Vol. 4 page: host, program, checklist, people, links, media</div></div></div>
+          <div class="s"><span class="n">4</span><div><div class="s-t">Newsletter</div><div class="s-d">Polish, drag to reorder, test then send, live preview</div></div></div>
+          <div class="s"><span class="n">5</span><div><div class="s-t">Outreach / Claude MCP</div><div class="s-d">Rewrite panel plus how Claude finds people under an editable protocol</div></div></div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="card">
+          <div class="lbl">Built in</div>
+          <ul>
+            <li><b>Numbered notes</b> with matching pins, pinned to the top while you scroll</li>
+            <li>Live HTML from the real CRM styles, <b>never the real CRM data</b></li>
+            <li>Composer Hub scaffolding reused, so the transplant is drop-in</li>
+          </ul>
+          <div class="path" style="margin-top: 10px;">AI Tool Portfolio/demo/sprout-crm-demo.html</div>
+        </div>
+        <div class="card">
+          <div class="lbl">Cut on Max's feedback (11 to 5)</div>
+          <div class="cut"><span>Book the space</span><span>Host portal page</span><span>Program form</span><span>Events calendar</span><span>Claude transcript</span><span>JSON import</span></div>
+        </div>
+        <div class="card">
+          <div class="lbl">Verified headless</div>
+          <div class="ok"><div>0 script errors</div><div>0 em dashes</div><div>No overflow at 420 / 960 / 1280</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

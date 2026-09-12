@@ -2,6 +2,24 @@
 
 ---
 
+## 2026-09-12: Sprout CRM demo carousel for the AI portfolio
+
+Portfolio deliverable, built in the AI Tool Portfolio repo (`demo/sprout-crm-demo.html`, commit `6c226cc`). No Sprout app code, schema, or data change. Effort: low/medium.
+
+### What it is
+A standalone HTML slideshow that will replace the Sprout CRM Loom video on the portfolio, in the same style as the Composer Hub carousels: a clickable nav strip, a large title and state line per slide, side arrows. Every screen is rebuilt as live HTML from the real CRM styles, filled with placeholder people and emails. Sprout N Tell Vol. 4 is the only real name.
+
+### The five slides
+Dashboard, Contacts, Events Portal (marked NEW), Newsletter, Outreach/Claude MCP. The Events Portal slide mirrors the real Vol. 4 event page: host details, program submissions, checklist, people, links, and media. The Outreach slide adds a short text box on how Claude finds people to reach out to under an editable outreach protocol.
+
+### Numbered notes
+Each slide except Outreach carries short numbered notes with matching pins on the screen, in the Dasha-Board demo's style. The notes stay pinned to the top while a slide scrolls (the stage clips with `overflow: clip`, since `overflow: hidden` disables sticky).
+
+### Iteration
+Started at 11 slides and cut to 5 on Max's feedback: the booking request, host portal, program form, events calendar, Claude Code transcript, and JSON import slides were removed. Verified headless at 1280, 960, and 420px wide: no script errors, no em dashes, no horizontal overflow, every nav tab lands correctly. Not yet transplanted into the portfolio's `index.html`.
+
+---
+
 ## 2026-09-11 (second session): TV slideshow ready for Sprout N Tell Vol. 4
 
 Design deliverable + hosted deck only (`public/sprout-tv.html`, `virtual-agency/employees/Design/deliverables/tv-slides/`). Commits `7e969e8`, `5373362`, `dbc0818`, `968c26d`, `40fa058`, `7bc15eb`, each confirmed live on Vercel. No app code, schema, or data change. Effort: medium.
