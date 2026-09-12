@@ -4,7 +4,7 @@ Writes public/industry-tv.html (hosted) + industry-tv.html here (local copy)."""
 import html, os, re
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, *[".."]*6))
-SLIDES = ["01-title.html", "02-lineup.html", "03-lineup-2.html", "04-story.html", "05-host.html"]
+SLIDES = ["01-title.html", "02-lineup-music.html", "03-lineup-art-1.html", "04-lineup-art-2.html", "05-story.html", "06-host.html"]
 DUR = 17000
 
 frames = []

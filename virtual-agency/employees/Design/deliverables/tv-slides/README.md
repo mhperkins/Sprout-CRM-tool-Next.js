@@ -118,3 +118,9 @@ dates come from the CRM (`sprout-crm` MCP `list_events`).
 - **2026-09-12 (later):** Late program submissions go on `03-lineup-2.html` (Kyle first, room for two
   more; a fourth late maker starts `03-lineup-3.html`). Story + host renumbered to `04-story.html` +
   `05-host.html`. Add each new file to `SLIDES` in `build-deck.py`, then rebuild.
+- **2026-09-12 (Industry, 7 makers):** Lineup regrouped 3 / 2 / 2 so no slide carries one person:
+  `02-lineup-music.html` (Maxwell Höuse, Kyle, BENSN), `03-lineup-art-1.html` (Maia Baird, Mara Einson),
+  `04-lineup-art-2.html` (Natalya Ixchel, Christina Madrid). Two-person slides use two rows so they
+  fill the screen. Replaces `02-lineup.html` + `03-lineup-2.html`; story and host are now `05`/`06`.
+  Each lineup header carries the tracked program QR `industry-2026-digital-program`
+  (-> `/industry-program.html`). Christina added to that program page.
