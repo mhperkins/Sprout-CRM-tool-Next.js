@@ -115,3 +115,6 @@ dates come from the CRM (`sprout-crm` MCP `list_events`).
   `python industry/build-deck.py`; it writes `public/industry-tv.html` (hosted at `/industry-tv.html`)
   and a local copy. No program QR on the lineup: this event has no program page. The Sprout N Tell
   deck (`sprout-tv.html`) is untouched.
+- **2026-09-12 (later):** Late program submissions go on `03-lineup-2.html` (Kyle first, room for two
+  more; a fourth late maker starts `03-lineup-3.html`). Story + host renumbered to `04-story.html` +
+  `05-host.html`. Add each new file to `SLIDES` in `build-deck.py`, then rebuild.
