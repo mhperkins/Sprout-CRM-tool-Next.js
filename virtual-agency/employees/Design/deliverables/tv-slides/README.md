@@ -109,3 +109,9 @@ dates come from the CRM (`sprout-crm` MCP `list_events`).
   shape (sizes use `min(vw, vh)`). Photo on the left with name + handle below it, bio on the right.
   A script picks the largest bio size that fits (about 40-58px on 1080p). Long bios cut to their
   first sentence; the "full bios in the program" note moved into the header.
+- **2026-09-12 (Industry creative market):** New separate deck in `industry/`: `01-title.html` (the
+  event flyer, embedded on black), `02-lineup.html` (Maia Baird, Mara Einson, Maxwell Höuse from the
+  program form), `03-story.html` + `04-host.html` (copies of the Sprout slides). Build with
+  `python industry/build-deck.py`; it writes `public/industry-tv.html` (hosted at `/industry-tv.html`)
+  and a local copy. No program QR on the lineup: this event has no program page. The Sprout N Tell
+  deck (`sprout-tv.html`) is untouched.

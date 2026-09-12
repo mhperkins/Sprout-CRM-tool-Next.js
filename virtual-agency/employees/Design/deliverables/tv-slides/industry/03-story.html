@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sprout Society: Our Story</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>" />
+
+<!-- ============================================================
+     SPROUT SOCIETY TV SLIDE 02: OUR STORY
+
+     One standalone slide, for iterating on in isolation.
+     Open it and press F11 to see it as it will look on the TV.
+
+     Designed at 16:9. Everything is sized in vw units, so it scales
+     to any screen width. The logo and QR code are inlined as base64,
+     so this file needs no network except the Lato webfont (it falls
+     back to a system sans offline).
+
+     ⚠️ These six slides get recombined into one looping deck once the
+     content is final. Keep the markup structure below intact so the
+     recombine stays mechanical: the style block is shared across all six,
+     and the slide section in the body is what gets lifted out.
+     Edit the copy freely; avoid renaming classes.
+     ============================================================ -->
+
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#030000; --acid:#C6C902; --banana:#FAD100;
+    --fuchsia:#E10098; --cyan:#73C4D6; --cyan-deep:#2a8ca0;
+    --paper:#F7F7F6; --muted:#8a8a86;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%; overflow:hidden;}
+  body{
+    font-family:'Lato',-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--ink); color:var(--ink);
+  }
+
+  /* ---- slide plumbing ---------------------------------------- */
+  .deck{position:relative; width:100vw; height:100vh; overflow:hidden;}
+  .slide{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; justify-content:center;
+    padding:5.5vw 6vw 7vw;
+    opacity:0; transition:opacity .9s ease;
+    pointer-events:none;
+  }
+  .slide.on{opacity:1;}
+  .slide.dark{background:var(--ink); color:#fff;}
+  .slide.light{background:var(--paper); color:var(--ink);}
+
+  /* ---- shared type ------------------------------------------- */
+  .eyebrow{
+    font-size:1.5vw; font-weight:900; letter-spacing:.35em;
+    text-transform:uppercase; margin-bottom:1.6vw;
+  }
+  h1{font-size:6.6vw; font-weight:900; line-height:1.02; letter-spacing:-.02em;}
+  h2{font-size:4.6vw; font-weight:900; line-height:1.08; letter-spacing:-.015em;}
+  .lead{font-size:2.5vw; font-weight:700; line-height:1.4; max-width:60vw;}
+  .body{font-size:1.85vw; font-weight:400; line-height:1.55; max-width:52vw;}
+  .dark .body{color:#d8d8d4;}
+  .light .body{color:#3a3a38;}
+  /* flex-shrink:0 is load-bearing. The slide is a column flex container,
+     so a childless bar like this collapses to height 0 without it. */
+  .rule{height:.65vw; width:11vw; border-radius:.4vw; margin:2.4vw 0; flex-shrink:0;}
+
+  /* ---- accents ----------------------------------------------- */
+  .a-acid    .eyebrow, .a-acid    .hl{color:var(--acid);}
+  .a-fuchsia .eyebrow, .a-fuchsia .hl{color:var(--fuchsia);}
+  .a-cyan    .eyebrow, .a-cyan    .hl{color:var(--cyan);}
+  .a-banana  .eyebrow, .a-banana  .hl{color:var(--banana);}
+  .light.a-cyan .eyebrow, .light.a-cyan .hl{color:var(--cyan-deep);}
+  .a-acid    .rule{background:var(--acid);}
+  .a-fuchsia .rule{background:var(--fuchsia);}
+  .a-cyan    .rule{background:var(--cyan);}
+  .light.a-cyan .rule{background:var(--cyan-deep);}
+  .a-banana  .rule{background:var(--banana);}
+
+  /* ---- layout helpers ---------------------------------------- */
+  .row{display:flex; align-items:center; justify-content:space-between; gap:5vw; flex-shrink:0;}
+  .col{flex:1; min-width:0;}
+  /* align-self keeps width:auto honest. In a column flex container the
+     cross axis is horizontal, so without it the logo stretches full-width
+     and the aspect ratio blows out. */
+  .logo{height:9vw; width:auto; display:block; margin-bottom:3vw; align-self:flex-start; flex-shrink:0;}
+  .logo-sm{height:4.4vw; width:auto; display:block; align-self:flex-start; flex-shrink:0;}
+
+  /* ---- QR block ---------------------------------------------- */
+  /* Fixed block width so the code lands in the same spot on every
+     slide. Sizing to content lets a longer caption shift it sideways,
+     which reads as a jump during the cross-fade. */
+  .qr{flex:0 0 19vw; text-align:center;}
+  .qr img{
+    width:16vw; height:16vw; display:block; margin:0 auto;
+    background:#fff; padding:1vw; border-radius:1.2vw;
+  }
+  .qr-cap{
+    font-size:1.25vw; font-weight:900; line-height:1.35;
+    margin-top:1.1vw; max-width:100%; text-transform:uppercase; letter-spacing:.06em;
+  }
+  .dark .qr-cap{color:#fff;}
+
+  /* ---- stat row (story slide) -------------------------------- */
+  .stats{display:flex; gap:4.5vw; margin-top:2.6vw;}
+  .stat b{display:block; font-size:3.4vw; font-weight:900; line-height:1;}
+  .stat span{display:block; font-size:1.15vw; font-weight:700; color:var(--muted); margin-top:.5vw; text-transform:uppercase; letter-spacing:.08em;}
+
+  /* ---- price rows (membership slide) ------------------------- */
+  .prices{margin:2.4vw 0 0; max-width:34vw;}
+  .price{
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:1.3vw 0; border-bottom:1px solid rgba(255,255,255,.16);
+  }
+  .price:last-child{border-bottom:0;}
+  .price span{font-size:2vw; font-weight:700;}
+  .price b{font-size:3vw; font-weight:900;}
+
+  /* ---- date pill (SnT slide) --------------------------------- */
+  .pill{
+    display:inline-block; background:var(--fuchsia); color:#fff;
+    font-size:2vw; font-weight:900; padding:1vw 2.2vw; border-radius:99vw;
+    margin-top:2.4vw;
+  }
+
+  /* ---- footer + progress ------------------------------------- */
+  .foot{
+    position:absolute; left:6vw; right:6vw; bottom:3vw;
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:1.1vw; font-weight:700; letter-spacing:.04em;
+  }
+  .dark .foot{color:#7a7a76;}
+  .light .foot{color:var(--muted);}
+  .dots{display:flex; gap:.8vw;}
+  .dot{width:.75vw; height:.75vw; border-radius:50%; background:currentColor; opacity:.28; transition:opacity .3s, transform .3s;}
+  .dot.on{opacity:1; transform:scale(1.35);}
+  .bar{
+    position:absolute; left:0; bottom:0; height:.45vw; width:0%;
+    background:var(--acid); transition:width .25s linear;
+  }
+  .paused .bar{background:var(--muted);}
+</style>
+</head>
+<body>
+
+<div class="deck">
+<section class="slide on light a-fuchsia">
+    <!-- decorative flower, upper-right -->
+    <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDI3LjUuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IgoJIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCAyMDAgMjAwOyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+CjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+Cgkuc3Qwe2ZpbGw6dXJsKCNTVkdJRF8xXyk7fQoJLnN0MXtmaWxsOnVybCgjU1ZHSURfMDAwMDAwNjg2NDQwMDI3NTMxOTU1NjY0MDAwMDAwMTY4MTU2ODgxMTkzOTI0NDEwMDhfKTt9Cgkuc3Qye2ZpbGw6dXJsKCNTVkdJRF8wMDAwMDE3OTYxNDAzMDYyMDA0OTY0MzQ0MDAwMDAwNTU3NDIyNTAyODAxMTU2OTg1M18pO30KCS5zdDN7c3Ryb2tlOiMwMTAxMDE7c3Ryb2tlLW1pdGVybGltaXQ6MTA7fQoJLnN0NHtmaWxsOnVybCgjU1ZHSURfMDAwMDAwMTE3MzE0MDUyNzgyOTc1Mjk4NzAwMDAwMDYxMjY1MDI2NzcyODg5MTQzMzFfKTt9Cgkuc3Q1e2ZpbGw6dXJsKCNTVkdJRF8wMDAwMDA5NDYwNzY4MDU1NDc2NzM2OTkxMDAwMDAwMDUzNjY0OTg3MDI0MzkwOTMwNF8pO30KCS5zdDZ7ZmlsbDp1cmwoI1NWR0lEXzAwMDAwMDg2NjYyNDgzNTQyMzE1MDIzNTgwMDAwMDA1MDIxNDIxMTQwMTg0MDUzOTAxXyk7fQoJLnN0N3tmaWxsOnVybCgjU1ZHSURfMDAwMDAxNTgwMjYzMTYxODA5NTc3Nzc0MTAwMDAwMTgyNDIyNDg2MTE4NDE1ODE5NzhfKTt9Cgkuc3Q4e2ZpbGw6dXJsKCNTVkdJRF8wMDAwMDA2NjUwMjMzMTk1OTU0MDc5MDMzMDAwMDAwOTg3NzgxMzI5OTM3Mzk2MzQxMF8pO30KCS5zdDl7ZmlsbDp1cmwoI1NWR0lEXzAwMDAwMDcxNTYwNTQxNzAyNTA3NzYwMzYwMDAwMDEwNTE4NDc2MjEzMjgxMjA4NDU1Xyk7fQoJLnN0MTB7ZmlsbDp1cmwoI1NWR0lEXzAwMDAwMDg0NTI1MDI4MTc0MzAwOTYwMzQwMDAwMDE3Njc3NzExMDIyMzk3MzI0NzI0Xyk7fQo8L3N0eWxlPgo8Zz4KCTxsaW5lYXJHcmFkaWVudCBpZD0iU1ZHSURfMV8iIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMTAzLjE1MjgiIHkxPSI1My45MjMiIHgyPSIxNTkuOTU2OCIgeTI9IjUzLjkyMyI+CgkJPHN0b3AgIG9mZnNldD0iMCIgc3R5bGU9InN0b3AtY29sb3I6I0UwM0Y5NiIvPgoJCTxzdG9wICBvZmZzZXQ9IjEiIHN0eWxlPSJzdG9wLWNvbG9yOiNFOTlEQzMiLz4KCTwvbGluZWFyR3JhZGllbnQ+Cgk8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMTU5LDYxLjRjLTEuMS0xLjctMi4zLTMuMy0zLjQtNWMtMC4zLTAuNS0xLjQtMi44LTIuNC0zLjNjMS41LTEuNSwzLjctMy4yLDQuNC00LjFjMy4zLTQuOCwwLjYtMTEtNS4zLTExLjUKCQljLTMuMi0wLjMtNi42LDEuOC05LjUsNC4zYy0wLjUtMC4zLTEtMC43LTEuNS0wLjljMC4yLTEuNCwwLjMtMi43LDAuMy00LjJjLTAuMS0zLTIuNS01LjYtNS42LTUuNmMtMy41LDAtNi42LDEuOS04LjEsNC44CgkJYy0zLjUtMS42LTcuNC0yLTExLjEtMC44Yy01LjYsMS44LTguNiw3LjUtNi40LDEzLjFjMC45LDIuMiwyLjIsMy44LDMuOSw1Yy0yLjMtMC43LTQuMS0xLjItNy0wLjdjLTYuMSwxLjEtNC41LDksMCwxMC45CgkJYzEuOCwwLjcsMy43LDEuNCw1LjUsMmMtMC44LDEuOS0wLjgsNC4xLDAsNmMxLjMsMy4yLDQuMiw1LjEsNy42LDUuM2MzLjcsMC4yLDgtNCwxMS4yLTIuMmMyLjMsMS4zLDQuNywwLjgsNi42LTAuOAoJCWMyLDQuMyw4LjgsNC41LDEwLjUtMC44YzAuNS0xLjUsMC45LTMuMSwxLjItNC42YzAuNSwwLjQsMSwwLjcsMS42LDFDMTU1LjksNzEuNCwxNjIuNCw2Ni41LDE1OSw2MS40eiIvPgoJPHBhdGggZD0iTTE3Ni40LDE1Ny43Yy0yMy41LDAtNDcsMC4yLTcwLjUtMC4xYy04LjYtMC4xLTE3LjIsMS4yLTI2LjcsMWM3LjEtNi42LDE0LjYtMTEuNCwyMC41LTE3LjljMC40LTAuNSwxLjItMC44LDEuOS0wLjkKCQljMC4xLTAuMiwwLjMtMC40LDAuNC0wLjZjMS4yLTEuNCwyLjMtMi43LDMuNi0zLjljMC4xLTAuNCwwLjItMC44LDAuNi0xLjJjNS4yLTYuOSwxMC41LTEzLjcsMTYuMy0yMS4xYzEuNCwzLjMsMi41LDYsMy42LDguNwoJCWMxLjIsMi45LDMuOCwzLjYsNi40LDMuOGMxLjYsMC4xLDMtMSwzLjktMi45YzQtOC4zLDIuMi0xNC40LTUuOS0xOC4xYy0xLjktMC45LTIuNi0xLjMtMS4zLTMuMWM1LjItNi45LDguMy0xNC43LDEwLjQtMjMuMQoJCWM4LDUuOCw4LjcsNS43LDE0LjktMmMxLTEuMywyLjMtMS4yLDMuNy0xLjVjNi40LTEuMyw5LjgtNy43LDYuMS0xMi45Yy0yLjYtMy42LTEuNi01LjMsMC41LTguMmMyLjktNCwxLjgtMTIuNS0xLjYtMTMuNgoJCWMtMy44LTEuMi03LjktMi41LTExLjgtMS4yYy0yLjcsMC45LTMuNi0wLjEtNS0xLjhjLTUtNi0xMS4xLTYuNS0xNy4yLTEuNGMtMS40LDEuMi0yLjUsMS4zLTQuMSwwLjljLTQuNi0xLjItOC40LDAuNi0xMC44LDQuMwoJCWMtMi4zLDMuNS00LjksNy41LTEuMSwxMS44Yy0xLjMsMC42LTIuMiwxLTMuMSwxLjRjLTMuNSwxLjQtNiwzLjQtNi4xLDcuNmMtMC4xLDQsMS44LDYuNyw1LjUsNy45YzIuNCwwLjgsMy40LDIuNyw0LjUsNC43CgkJYzQuMiw3LjMsNy41LDguNiwxNS4xLDYuMmMzLjUtMS4xLDUuOSwxLDQuOSw0LjdjLTEuNSw1LjYtNSwxMC4yLTcuOSwxNS4yYy0xLjUsMi42LTIuMywzLjUtNS4yLDEuMmMtNy42LTUuOS0xOC40LTMuOS0yNCwzLjgKCQljLTEuMywxLjgtMS45LDQuNywwLjksMy45YzcuMi0xLjksMTIuNi0wLjEsMTcuMiw1LjRjMC4zLDAuMywwLjgsMC40LDEuNCwwLjdjLTUuNiw3LjctMTAuMywxNS45LTE3LjUsMjIuMgoJCWMtMC45LDAuOC0xLjYsMS4zLTIuNSwxLjZjLTAuMiwwLjMtMC4zLDAuNS0wLjUsMC44Yy0xLjQsMS43LTIuNiwzLjItNC40LDQuM2MtMC4xLDAuOC0wLjgsMS43LTIuNCwyLjhjLTQsMi43LTksNS0xMS40LDguOAoJCWMtMi4zLDMuNi00LjYsMy4zLTcuNSwzLjJjLTkuNS0wLjMtMTkuMS0wLjYtMjguNi0xLjFjLTkuNS0wLjUtMTguNywxLjEtMjguMSwyLjFjLTIuNCwwLjMtNi45LTIuNi02LjksMS4xYzAsMi45LDUuMSwyLDguMSwyLjEKCQljMC45LDAsMS43LTAuMiwyLjYtMC40YzYuMi0xLDEyLjQtMS41LDE4LjctMS4zYzI5LjIsMC44LDU4LjQsMC4xLDg3LjYsMC4zYzE3LjYsMC4xLDM1LjItMS4xLDUyLjcsMC41YzIuNSwwLjIsNC40LTEuMiw0LjQtMi41CgkJQzE4MC44LDE1Ni44LDE3OC4xLDE1Ny43LDE3Ni40LDE1Ny43eiBNMTM3LjcsNjYuM2MtMi4xLDAuNS0zLjUtMi4zLTQtMy45Yy0wLjYtMi4xLTMuNy00LjMtMS42LTYuMmMxLjYtMS41LDEuMi01LjIsNC00LjcKCQljMi45LDAuNSwyLjMsMy45LDMuMSw2YzAuNCwxLjEsMC4zLDIuNCwwLjQsMy42QzEzOS40LDYzLDE0MC4xLDY1LjgsMTM3LjcsNjYuM3ogTTE0OS42LDQ2LjZjMC4xLTMuNywyLjctNC40LDUuMy00LjgKCQljNi4yLDAsOS4zLDQuNCw2LjYsOS41Yy0xLjQsMi43LTMuMSw2LjEtNi4zLDEuM2MtMC40LTAuNi0xLjUtMS40LTIuMS0xLjNDMTQ4LjYsNTIuMSwxNDkuNSw0OS4xLDE0OS42LDQ2LjZ6IE0xNDkuOCw1Ni4yCgkJYzAuNC0wLjMsMC45LTAuNiwxLjQtMC43YzIuNS0wLjMsMTAuNiw4LjksOS44LDExLjNjLTAuOSwyLjktMi43LDUtNi4yLDMuMmMtMi44LTEuNS0zLjctMC4yLTQsMi40Yy0wLjMsMi41LTAuMyw1LjUtNCw1LjUKCQljLTIuNSwwLTUuNC0zLjgtNS41LTcuN0MxNDQsNjYuMiwxNDUuMiw2MC4yLDE0OS44LDU2LjJ6IE0xMzMuMywzNi42YzMuMS0yLjEsOS4zLTAuNiwxMC41LDMuNGMxLjYsNS40LDMuNiwxMS4zLTAuNywxNy43CgkJYy0wLjctMi41LTEuMy00LTEuNS01LjVjLTAuNC0zLTEuNi00LjktNS00LjVjLTEuNiwwLjItMi43LTAuNC0zLjQtMS44QzEzMS44LDQyLjgsMTI4LjYsMzkuNywxMzMuMywzNi42eiBNMTE1LjMsNDcuMQoJCWMwLjUtMy40LDIuMS02LjcsNi42LTYuOGMzLjktMC4xLDcsNC4zLDcuMSwxMC43Yy0wLjMsMS42LDAsNC0zLDQuMUMxMjEuMSw1NS4zLDExNC43LDUwLjgsMTE1LjMsNDcuMXogTTEwOS43LDY0LjkKCQljLTIuMi0yLTIuOC00LjEtMC42LTYuM2MxLjgtMS45LDQuMy0zLjYsNi44LTEuMmMzLjYsMy40LDcuMSw2LjYsMTIuNyw1LjhjMS40LTAuMiwyLjIsMSwyLjMsMi4zYzAuMiwxLjYtMSwyLTIuMywyLjMKCQljLTEuOSwwLjMtMy43LDAuNy01LjYsMUMxMTguNCw2Ny42LDExMy41LDY4LjMsMTA5LjcsNjQuOXogTTEyNy42LDc3LjZjLTMuMiwzLjEtNy4xLDAuOS0xMC40LTUuOWM1LjMsMS42LDEwLDAuMywxNC45LTAuNQoJCWM1LTAuOSwwLjksNCwzLjMsNS40QzEzMi4yLDc0LjgsMTMwLjEsNzUuMSwxMjcuNiw3Ny42eiBNMTI2LjMsMTA4LjRjMS4zLTEuMywzLjEtMC40LDQuNCwwLjNjMiwxLjIsNC42LDIuMywzLjYsNS43CgkJYzAsMC43LDAsMS42LTAuMSwyLjRjLTAuNCwxLjYtMC4zLDMuOS0yLjMsNC4zYy0yLjQsMC41LTMuMS0xLjgtMy45LTMuNWMtMC41LTEuMS0wLjctMi4zLTEuMS0zLjUKCQlDMTI2LjEsMTEyLjIsMTI0LjQsMTEwLjMsMTI2LjMsMTA4LjR6IE0xMTQuNCwxMDkuNmMtMi40LTQuMi02LjEtNC42LTExLjEtNC42YzUuMi00LDEyLjEtMy45LDE1LjQtMC41YzEuMywxLjQsMi4yLDMsMC42LDQuNQoJCUMxMTcuOSwxMTAuMywxMTUuNiwxMTEuOCwxMTQuNCwxMDkuNnoiLz4KPC9nPgo8L3N2Zz4K" alt="" aria-hidden="true" style="position:absolute; top:4vw; right:5vw; width:12vw; height:auto; z-index:2;" />
+    <div class="eyebrow">Our story</div>
+    <h2>In honor of Russell Efros</h2>
+    <div class="rule"></div>
+    <p class="body" style="max-width:82vw; font-size:2.7vw; line-height:1.5;">Russell was a Bushwick musician, artist, and filmmaker with a gift for making everyone around him feel they belonged. It was his dream to have a space where people could create and build community. His family started the Russell J. Efros Foundation to carry his vision forward. We want to thank you for making this dream a reality.</p>
+    <div class="foot">
+      <div style="font-size:1.6vw;">A registered 501(c)(3) nonprofit &nbsp;·&nbsp; EIN 83-1298420</div>
+    </div>
+  </section>
+</div>
+
+</body>
+</html>
