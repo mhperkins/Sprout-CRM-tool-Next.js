@@ -2,6 +2,24 @@
 
 ---
 
+## 2026-09-14: Eventbrite links on the September Queer Social events
+
+Data-only (two link appends on `sprout_events` via `execute_sql`). No app code or schema change. Effort: medium.
+
+### What changed
+- **Queer Social Body Wellness Class, 9/15** (`evt_qs_body_wellness_20260915`): added the direct Eventbrite ticket page.
+- **Queer Social Sober Hangout, 9/25** (`evt_qs_sober_hang_20260925`): added the direct Eventbrite ticket page.
+
+### Why
+Max asked to add the media and links from his maxperkins@ Gmail. Both flyers and the `bit.ly/safespacetickets` link were already attached on 9/10, and Gmail held nothing newer. The bit.ly link on the flyers only reaches Queer Social's Eventbrite organizer page, so each event now also links to its own ticket page. I verified each page's date and address (26 Scott Ave, 7pm) before writing. The existing links stay.
+
+### Found, not acted on
+- Queer Social's 10/30 Halloween Rec Center Realness is on Eventbrite but has no CRM event.
+- The 8/13 Body Wellness event is empty; its link and flyers are in the July and August emails.
+- The claude.ai Gmail connector's attachment IDs return 403 in the `google-workspace` MCP, and no maxperkins@ workspace token is cached.
+
+---
+
 ## 2026-09-12: Sprout CRM demo carousel for the AI portfolio
 
 Portfolio deliverable, built in the AI Tool Portfolio repo (`demo/sprout-crm-demo.html`, commit `6c226cc`). No Sprout app code, schema, or data change. Effort: low/medium.
