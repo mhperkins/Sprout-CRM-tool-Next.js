@@ -46,6 +46,7 @@ import { PORTAL_SECTIONS, FIELD_BY_KEY, displayValue, portalProgress, sectionPro
 import { buildNewsletter, TEMPLATES, defaultMonthYear, COMPACT_SECTIONS, QUICK_HIT_SECTIONS, blankCompactItem, COMPACT_BLOCKS, QUICK_HIT_BLOCKS, COMPACT_FIXED_TOP, COMPACT_FIXED_BOTTOM, QH_FIXED_TOP, QH_FIXED_BOTTOM, orderedBlockIds } from "../lib/newsletter";
 import { validateContact, validateOrg } from "../lib/schemas";
 import { blocksOf, firstHeading, parseTableBlock, serializeTable, renderInline } from "../lib/md";
+import DayBoard from "./DayBoard";
 
 /* ─── Styles ───────────────────────────────────────────────────────────────── */
 const STYLES = `
@@ -1438,7 +1439,7 @@ function Sidebar({view,setView,contacts,events,profile,onQuickLog,onCollapse}) {
   })();
   const nav = [
     {section:"Overview"},
-    {id:"dashboard",label:"Dashboard",icon:"📊",badge:notifCount>0?notifCount:null},
+    {id:"dashboard",label:"Day Board",icon:"📋",badge:notifCount>0?notifCount:null},
     {section:"Relationships"},
     {id:"contacts",label:"Contacts",icon:"👤"},
     {id:"orgs",label:"Organizations",icon:"🏢"},
@@ -5776,6 +5777,21 @@ const saveOrgs = useCallback((u) => {
     });
   }, [showToast]);
 
+  // Day Board saves ONE record at a time (the bulk saves above re-upsert every row).
+  const saveOneContact = useCallback((rec) => {
+    setContacts(prev => prev.map(c => c.id === rec.id ? rec : c));
+    svcSaveContacts([rec]).then(({ error }) => {
+      if (error) { console.error("saveOneContact:", error); showToast(`Save failed: ${error}`, "err"); }
+    });
+  }, [showToast]);
+
+  const saveOneOrg = useCallback((rec) => {
+    setOrgs(prev => prev.map(o => o.id === rec.id ? rec : o));
+    svcSaveOrgs([rec]).then(({ error }) => {
+      if (error) { console.error("saveOneOrg:", error); showToast(`Save failed: ${error}`, "err"); }
+    });
+  }, [showToast]);
+
   const saveEvents = useCallback((u) => {
     setEvents(u);
     svcSaveEvents(u).then(({ error }) => {
@@ -5924,7 +5940,7 @@ if (dbError) return (
 <Sidebar view={view} setView={(v)=>{setPendingDetail(null);setPendingEvent(null);setView(v);}} contacts={contacts} events={events} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)} onCollapse={toggleSidebar}/>
       {sbCollapsed&&<button className="sb-reopen" onClick={toggleSidebar} title="Show sidebar">☰</button>}
       <main className="main">
-        {view==="dashboard"&&<DashboardView contacts={contacts} orgs={orgs} events={events} setView={setView} openContact={openContact} openEvent={openEvent} onUpdateContacts={saveContacts} onUpdateOrgs={saveOrgs} onUpdateEvents={saveEvents} showToast={showToast}/>}
+        {view==="dashboard"&&<DayBoard contacts={contacts} orgs={orgs} onSaveContact={saveOneContact} onSaveOrg={saveOneOrg} openContact={openContact} setView={setView} showToast={showToast}/>}
 {view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail} setView={setView}/>}
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
 {view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))} pendingEvent={pendingEvent} onPendingEventConsumed={clearPendingEvent} portals={portals} onCreatePortal={makePortal} onRotatePortal={rotatePortal} onRemovePortal={removePortal} onRefreshPortals={refreshPortals} onSavePortalAnswer={savePortalAnswer}/>}

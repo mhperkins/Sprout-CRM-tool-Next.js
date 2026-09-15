@@ -2,6 +2,26 @@
 
 ---
 
+## 2026-09-15: Day Board replaces the CRM dashboard
+
+App code + one applied migration. `npm run build` passes. Effort: high (new table + RLS, CRM next-action writes, scheduled email). Ran on Opus 5.
+
+### What changed
+- **Designed it first.** Clickable wireframe `docs/wireframes/2026-09-15_day-board-wireframe.html` (published as an artifact, 6 versions). Max's calls: Dasha-Board structure (a checklist, not a timed calendar); a weekly bank of tasks to place on days; Trello, Givebutter and the QR tracker stay off; Sprout calendar hours are their own total; no targets; a completed task STAYS on the list struck through with Undo; push notes optional; anything not done moves forward at midnight (replaces Dasha's "review unlogged days"); day cycling; emails on New York time.
+- **`components/DayBoard.jsx`** (new): the sidebar's Dashboard is now "Day Board". Day view (calendar items, then tasks with Complete / Push / Follow up and a ⋯ menu for hours, category, move to another day, back to the bank, open in the CRM, delete) and Week view (weekly bank with priority order + a 7-day grid). Meters show done out of what the week asks for, by category (Google Calendar colors: Flamingo, Peacock, Graphite, Banana, Sage).
+- **`lib/dayBoard.js`** (new): the shared rules (New York dates, push, CRM follow-up mirroring, CRM record transforms, totals), used by the board and the emails.
+- **`lib/googleCalendar.js`** (new) + **`app/api/day-board/calendar`**: reads `maxperkins@sproutsociety.org` and the Sprout HQ Program Calendar with hello@'s existing server token (no new sign-in). Signed-in staff only. Skips declined invites.
+- **`lib/dayBoardSummary.js`** + **`app/api/cron/summaries`** (new): daily recap (9pm ET, or 30 min after the last calendar item) and weekly summary (Sunday 6pm ET) to maxperkins@, sent once via a claim table, with stale-claim takeover.
+- **Migration `sprout_day_board` (applied):** `sprout_tasks` (authenticated RLS), `sprout_summary_sends` + `sprout_cron_keys` (service role only), `sprout_tasks_roll_forward()`, pg_cron + pg_net, a Vault secret generated in the database (the route checks its sha256), jobs `sprout-tasks-roll-forward` (hourly) and `sprout-day-board-summaries` (every 15 min).
+- **`lib/services.js`:** task CRUD, roll-forward RPC, fresh CRM record reads, calendar fetch. **`CRMManager.jsx`:** `saveOneContact` / `saveOneOrg`, render DayBoard. **`lib/notify.js`:** exports `accessToken`.
+
+### Verified
+- `/code-review high` found 5 issues, all fixed: Undo could erase an org's newer follow-up; rescheduling a single-action record closed its task and duplicated it; a stale page could close open tasks (now re-reads records before syncing and before every CRM write); a killed send blocked that email forever; declined invites counted as hours.
+- 21 logic checks against the real modules; real CRM → 19 follow-ups land in this week's bank; both calendars read live; both emails rendered.
+- Not clicked through by Claude (login wall). Max previewed on localhost:3000: "beautiful."
+
+---
+
 ## 2026-09-15: Intake sweep (17 new contacts) + Vol. 4 thank-you list
 
 Data-only: 17 creates via the `sprout-crm` MCP, one `alt_emails` update and one event roster update via `execute_sql`, plus two Google Sheet edits. No app code or schema change. Effort: medium.

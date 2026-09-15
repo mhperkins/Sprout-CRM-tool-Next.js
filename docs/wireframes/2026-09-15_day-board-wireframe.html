@@ -1,0 +1,775 @@
+<title>Sprout Day Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --paper:#F4F4F0; --card:#FFFFFF; --sunk:#EDEDE6;
+  --line:#DFDFD6; --line-soft:#ECECE4;
+  --text:#171713; --ink2:#3A3A33; --dim:#6C6C61; --faint:#9B9B8F;
+  --btn:#171713; --btn-ink:#F4F4F0;
+  --accent:#C4007F; --crit:#B3005F; --crit-bg:#FBE6F1;
+  --warn:#9A6B00; --warn-bg:#FAF0D6; --ok:#15804A; --ok-bg:#E4F3EA;
+  --hatch:rgba(23,23,19,.10);
+  /* Google Calendar event colors, one per category */
+  --c-events:#E67C73; --c-outreach:#039BE5; --c-admin:#616161;
+  --c-grants:#F6BF26; --c-personal:#33B679; --c-none:#B9B9AE;
+  --shadow:0 1px 2px rgba(20,20,10,.06), 0 8px 24px -14px rgba(20,20,10,.2);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E0E0B; --card:#1A1A16; --sunk:#131310;
+    --line:#2F2F27; --line-soft:#232320;
+    --text:#F1F1E9; --ink2:#D0D0C6; --dim:#9C9C90; --faint:#6F6F65;
+    --btn:#F1F1E9; --btn-ink:#0E0E0B;
+    --accent:#FF4FAE; --crit:#FF57A8; --crit-bg:#2E0F22;
+    --warn:#F0C244; --warn-bg:#2B2412; --ok:#43C98A; --ok-bg:#12291F;
+    --hatch:rgba(241,241,233,.09);
+    --c-admin:#A3A39B; --c-none:#5A5A51;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 30px -14px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E0E0B; --card:#1A1A16; --sunk:#131310;
+  --line:#2F2F27; --line-soft:#232320;
+  --text:#F1F1E9; --ink2:#D0D0C6; --dim:#9C9C90; --faint:#6F6F65;
+  --btn:#F1F1E9; --btn-ink:#0E0E0B;
+  --accent:#FF4FAE; --crit:#FF57A8; --crit-bg:#2E0F22;
+  --warn:#F0C244; --warn-bg:#2B2412; --ok:#43C98A; --ok-bg:#12291F;
+  --hatch:rgba(241,241,233,.09);
+  --c-admin:#A3A39B; --c-none:#5A5A51;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 30px -14px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--text);
+  font-family:Lato,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;text-wrap:balance}
+button,input,select,textarea{font:inherit;color:inherit}
+ul{list-style:none;margin:0;padding:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700}
+.sub{color:var(--dim);font-size:13px;margin:0}
+
+[data-cat="events"]{--cat:var(--c-events)} [data-cat="outreach"]{--cat:var(--c-outreach)}
+[data-cat="admin"]{--cat:var(--c-admin)} [data-cat="grants"]{--cat:var(--c-grants)}
+[data-cat="personal"]{--cat:var(--c-personal)} [data-cat="none"]{--cat:var(--c-none)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--cat);flex:0 0 auto;vertical-align:-1px}
+
+/* wireframe banner */
+.wire{background:var(--btn);color:var(--btn-ink);padding:8px 20px;display:flex;gap:10px 18px;align-items:center;flex-wrap:wrap;font-size:12px}
+.wire b{letter-spacing:.11em;text-transform:uppercase;font-size:10px}
+.wire .note{opacity:.75;flex:1 1 320px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--card)}
+.seg button{appearance:none;border:0;background:none;cursor:pointer;padding:4px 13px;border-radius:999px;font-size:13px;color:var(--dim)}
+.seg button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);font-weight:700}
+.wire .seg{background:transparent;border-color:color-mix(in srgb,var(--btn-ink) 35%,transparent)}
+.wire .seg button{color:var(--btn-ink);opacity:.75;font-size:12px;padding:3px 11px}
+.wire .seg button[aria-pressed="true"]{background:var(--btn-ink);color:var(--btn);opacity:1}
+
+.wrap{max-width:1180px;margin:0 auto;padding:22px 20px 72px}
+.top{display:flex;gap:16px 24px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;
+  padding-bottom:16px;border-bottom:2px solid var(--text);margin-bottom:18px}
+.top h1{font-size:clamp(28px,4.4vw,40px);font-weight:900;letter-spacing:-.02em;line-height:1.02}
+.sum{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;color:var(--dim)}
+.sum b{color:var(--text)}
+.sum .crit b{color:var(--crit)}
+.top-r{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.daynav{display:inline-flex;gap:4px}
+.daynav .act{font-size:14px;padding:6px 11px}
+.dayjump{appearance:none;border:0;background:none;padding:0;cursor:pointer;font-weight:700;color:inherit;text-decoration:underline;text-underline-offset:2px}
+
+/* buttons (Dasha-Board .act) */
+.act{appearance:none;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid var(--line);background:var(--card);
+  color:var(--ink2);border-radius:5px;padding:6px 11px;white-space:nowrap}
+.act:hover{background:var(--sunk);color:var(--text);border-color:var(--dim)}
+.act.pri{background:var(--btn);color:var(--btn-ink);border-color:var(--btn)}
+.act.pri:hover{opacity:.87}
+.act:disabled{opacity:.45;cursor:default}
+.act.lg{font-size:14px;padding:9px 16px}
+.act.ok,.act.ok:hover{background:var(--ok);color:var(--card);border-color:var(--ok);cursor:default;opacity:1}
+.undo{appearance:none;border:0;background:none;cursor:pointer;padding:0;font-size:12px;color:var(--dim);text-decoration:underline;text-underline-offset:2px}
+.undo:hover{color:var(--text)}
+
+/* layout */
+.grid2{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+.stack{display:grid;gap:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;box-shadow:var(--shadow)}
+.card-pad{padding:16px 18px}
+.card-hd{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--line)}
+.card-hd h2{font-size:16px;font-weight:900}
+
+/* today list (Dasha-Board .daybar / .blocks / .blk) */
+.daybar{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.big{font-size:21px;font-weight:600}
+.group{padding:12px 18px 4px;display:flex;gap:8px;align-items:baseline}
+.group span{text-transform:none;letter-spacing:0;font-weight:400;color:var(--faint)}
+.row{display:grid;grid-template-columns:86px 4px minmax(0,1fr) auto;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line-soft);align-items:start}
+.rows > .row:last-child{border-bottom:0}
+.row .t{font-size:12.5px;color:var(--dim);padding-top:2px}
+.rail{width:4px;border-radius:2px;align-self:stretch;min-height:34px;background:var(--cat)}
+.rail.hatch{background:repeating-linear-gradient(180deg,var(--faint) 0 4px,transparent 4px 8px)}
+.row .name{font-weight:700;font-size:15px;overflow-wrap:anywhere}
+.row .meta{font-size:12.5px;color:var(--dim);margin-top:2px;overflow-wrap:anywhere}
+.row.done .name{color:var(--dim);text-decoration:line-through;text-decoration-thickness:2px}
+.row.done .meta{color:var(--faint)}
+.row.cal .name{font-weight:400}
+.acts{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap;align-items:center}
+.statline{display:flex;gap:9px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:3px;background:var(--ok-bg);color:var(--ok)}
+.flag{font-size:11px;font-weight:700;padding:1px 6px;border-radius:3px;white-space:nowrap}
+.f-crit{background:var(--crit-bg);color:var(--crit)}
+.f-warn{background:var(--warn-bg);color:var(--warn)}
+.linkline{font-size:12.5px;color:var(--ink2);margin-top:6px;padding:6px 9px;background:var(--sunk);border-radius:4px}
+.linkline b{font-weight:700;color:var(--text)}
+.rowmenu{appearance:none;border:1px solid transparent;background:none;cursor:pointer;font-size:19px;line-height:1;color:var(--dim);padding:1px 7px 7px;border-radius:4px}
+.rowmenu:hover{color:var(--text);border-color:var(--line);background:var(--sunk)}
+.pushbox{margin-top:9px;display:grid;gap:6px}
+textarea.note{width:100%;min-height:58px;resize:vertical;padding:8px 10px;border:1px solid var(--line);border-radius:5px;background:var(--paper);font-size:13px}
+.err{margin:0;font-size:12.5px;color:var(--crit)}
+.empty{margin:14px 18px 18px;padding:26px 20px;text-align:center;color:var(--dim);font-size:13px;border:1px dashed var(--line);border-radius:5px;background:var(--sunk)}
+.empty b{display:block;font-size:15px;color:var(--ink2);margin-bottom:4px}
+.empty .act{margin-top:10px}
+
+/* catch-up (Dasha-Board .catchup) */
+.catchup{border-left:0}
+.chhead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line);background:var(--warn-bg);color:var(--warn);border-radius:6px 6px 0 0}
+.chday{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line-soft)}
+.chday span{color:var(--dim);margin-left:8px}
+
+/* meters (Dasha-Board .meter) */
+.meters{display:grid;gap:14px;margin-top:10px}
+.mtop{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px}
+.mtop small{color:var(--faint);font-size:11px;margin-left:4px}
+.mval{font-weight:600;font-size:12.5px;white-space:nowrap}
+.track{height:7px;border-radius:4px;background:var(--sunk);margin-top:7px;overflow:hidden;border:1px solid var(--line-soft)}
+.fill{height:100%;border-radius:4px;background:var(--cat)}
+.mfoot{font-size:12px;color:var(--dim);margin-top:5px}
+.totline{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:6px}
+.brk{display:grid;gap:4px;margin-top:10px;font-size:13px}
+.brk div{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line-soft);padding-top:4px}
+.brk div:first-child{border-top:0;padding-top:0}
+.minibank{display:grid;gap:6px;margin:10px 0 12px}
+.minibank li{display:flex;gap:8px;align-items:baseline;font-size:13px}
+.minibank li .mono{color:var(--dim);font-size:11.5px;min-width:34px}
+
+/* week (Dasha-Board .week) */
+.weekscroll{overflow-x:auto}
+.week{display:grid;grid-template-columns:repeat(7,minmax(128px,1fr));min-width:900px}
+.wd{border-right:1px solid var(--line)} .wd:last-child{border-right:0}
+.wd.is-today{background:color-mix(in srgb,var(--accent) 4%,transparent)}
+.wd h4{margin:0;padding:10px 10px 8px;font-size:12px;font-weight:700;border-bottom:1px solid var(--line)}
+.wd h4 .d{display:flex;justify-content:space-between;gap:6px}
+.wd.is-today h4 .d b{color:var(--accent)}
+.load{display:block;font-size:10.5px;color:var(--dim);font-weight:400;margin-top:3px}
+.wcol{display:grid;gap:5px;padding:8px}
+.ev{appearance:none;display:grid;gap:1px;text-align:left;width:100%;padding:5px 7px;border-radius:4px;font-size:12px;line-height:1.25;border:1px solid transparent}
+.ev .evt{font-size:10.5px;color:var(--dim)}
+.ev .evn{overflow-wrap:anywhere}
+.ev.cal{background:var(--sunk);color:var(--ink2)}
+.ev.sprout{background:repeating-linear-gradient(135deg,var(--hatch) 0 5px,transparent 5px 10px);border:1px dashed var(--line);color:var(--dim)}
+.ev.task{cursor:pointer;background:color-mix(in srgb,var(--cat) 20%,var(--card));border-color:color-mix(in srgb,var(--cat) 55%,var(--card));color:var(--text)}
+.ev.task:hover{border-color:var(--text)}
+.ev.task.done{opacity:.55}
+.ev.task.done .evn{text-decoration:line-through}
+.meterrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:20px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);margin:0 0 12px}
+.legend .hsw{display:inline-block;width:14px;height:10px;border:1px dashed var(--faint);background:repeating-linear-gradient(135deg,var(--hatch) 0 3px,transparent 3px 6px);vertical-align:-1px}
+
+/* bank rows */
+.prio{display:grid;gap:2px;padding-top:1px}
+.prio button{appearance:none;border:1px solid var(--line);background:var(--card);border-radius:3px;cursor:pointer;font-size:10px;line-height:1;padding:3px 6px;color:var(--dim)}
+.prio button:hover:not(:disabled){color:var(--text);border-color:var(--dim)}
+.prio button:disabled{opacity:.35;cursor:default}
+.row.bank{grid-template-columns:28px 52px 4px minmax(0,1fr) auto}
+
+/* dialogs (Dasha-Board .daymodal) */
+dialog{border:0;padding:0;border-radius:8px;background:var(--card);color:var(--text);box-shadow:var(--shadow);max-width:480px;width:calc(100vw - 32px)}
+dialog.wide{max-width:720px}
+dialog::backdrop{background:rgba(10,12,16,.55)}
+.dm-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.dm-head h3{font-size:19px;margin-top:2px;overflow-wrap:anywhere}
+.dm-close{appearance:none;border:0;background:none;font-size:22px;line-height:1;color:var(--dim);cursor:pointer;padding:2px 4px}
+.dm-close:hover{color:var(--text)}
+.lm-body{padding:14px 18px 18px;display:flex;flex-direction:column;gap:16px;max-height:74vh;overflow-y:auto}
+.lm-sec > .eyebrow{margin-bottom:7px}
+.segs{display:flex;gap:6px;flex-wrap:wrap}
+.segs .act[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);border-color:var(--btn)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{appearance:none;display:inline-flex;gap:6px;align-items:center;padding:5px 10px;border:1px solid var(--line);border-radius:999px;background:var(--card);cursor:pointer;font-size:12.5px}
+.chips button[aria-pressed="true"]{border-color:var(--text);background:color-mix(in srgb,var(--cat) 22%,var(--card));font-weight:700}
+.menulist{border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.menuitem{appearance:none;display:flex;width:100%;text-align:left;gap:12px;align-items:center;background:var(--card);border:0;border-bottom:1px solid var(--line);padding:11px 14px;cursor:pointer}
+.menulist > li:last-child .menuitem{border-bottom:0}
+.menuitem:hover{background:var(--sunk)}
+.menuitem .mi-main{flex:1;min-width:0}
+.menuitem b{display:block;font-size:14px}
+.menuitem .mi-sub{display:block;font-size:12.5px;color:var(--dim);margin-top:1px}
+.menuitem::after{content:"›";color:var(--dim);font-size:18px}
+.menuitem.danger b{color:var(--crit)}
+.daypick{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+@media(max-width:560px){.daypick{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.dp{appearance:none;display:grid;gap:2px;justify-items:start;text-align:left;padding:8px;border:1px solid var(--line);border-radius:5px;background:var(--card);cursor:pointer;font-size:12px;position:relative}
+.dp:hover:not(:disabled){border-color:var(--dim)}
+.dp:disabled{background:var(--sunk);opacity:.55;cursor:default}
+.dp small{font-size:10.5px;color:var(--dim)}
+.dp.cur{background:var(--warn-bg)}
+.dp em{font-style:normal;font-size:10px;font-weight:700;color:var(--warn)}
+.dp[aria-pressed="true"]{border-color:var(--text);box-shadow:inset 0 0 0 1px var(--text);background:color-mix(in srgb,var(--c-outreach) 16%,var(--card))}
+.rsconfirm{padding:11px 13px;border-radius:6px;background:var(--sunk);border:1px solid var(--line);font-size:13.5px;line-height:1.55}
+.rsconfirm b{font-weight:700}
+.mc{border:1px solid var(--line);border-radius:6px;padding:10px}
+.mc-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.mc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+.mc-grid .wdh{font-size:10px;color:var(--faint);font-weight:700;padding:3px 0}
+.mc-grid button{appearance:none;border:1px solid transparent;background:none;border-radius:4px;padding:6px 0;cursor:pointer;font-size:13px}
+.mc-grid button:hover:not(:disabled){background:var(--sunk)}
+.mc-grid button:disabled{color:var(--faint);opacity:.5;cursor:default}
+.mc-grid button.today{border-color:var(--accent)}
+.mc-grid button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);font-weight:700}
+.fld{display:grid;gap:4px}
+.fld label{font-size:12px;font-weight:700}
+.fld input,.fld select{padding:8px 10px;border:1px solid var(--line);border-radius:5px;background:var(--paper);width:100%}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* emails */
+.mails{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;align-items:start}
+.mail{background:var(--card);border:1px solid var(--line);border-radius:6px;box-shadow:var(--shadow);overflow:hidden}
+.mail-hd{padding:12px 16px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--dim);display:grid;gap:2px}
+.mail-hd b{color:var(--text)}
+.mail-when{padding:8px 16px;background:var(--sunk);font-size:12px;color:var(--ink2);border-bottom:1px solid var(--line)}
+.mail-bd{padding:6px 20px 18px}
+.msec{padding:14px 0;border-bottom:1px solid var(--line-soft)}
+.msec:last-of-type{border-bottom:0}
+.mcount{font-size:26px;font-weight:900;letter-spacing:-.02em;line-height:1.1}
+.mcount .hr{color:var(--accent)}
+.msec p{margin:2px 0 8px;color:var(--dim);font-size:13px}
+.mli{display:grid;gap:4px;font-size:13px}
+.mli li{display:flex;gap:8px;align-items:baseline}
+.mli li .mono{font-size:11.5px;color:var(--dim);min-width:52px}
+.mlink{display:inline-block;margin-top:8px;font-weight:700;color:var(--text);text-decoration:underline}
+
+.calls{margin-top:28px;padding:16px 18px;border:1px dashed var(--line);border-radius:6px}
+.calls h2{font-size:15px;font-weight:900;margin-bottom:8px}
+.calls ol{margin:0;padding-left:20px;display:grid;gap:7px;max-width:82ch;color:var(--dim)}
+.calls b{color:var(--text)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom, 0px));background:var(--btn);color:var(--btn-ink);padding:9px 16px;border-radius:6px;font-weight:700;z-index:50;max-width:calc(100vw - 32px)}
+</style>
+
+<div class="wire">
+  <b>Wireframe v2 · 9/15</b>
+  <span class="note">CRM follow-ups, their people and the Sprout calendar are real. Which day each one sits on, the other tasks, and your own calendar are sample.</span>
+  <span class="seg" role="group" aria-label="Content state">
+    <button type="button" data-state="typical" aria-pressed="true">Typical</button>
+    <button type="button" data-state="empty" aria-pressed="false">Empty</button>
+    <button type="button" data-state="much" aria-pressed="false">Too much</button>
+  </span>
+</div>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow" id="dayEyebrow">Tuesday · Today</div>
+      <h1 id="dayTitle">September 15</h1>
+      <div class="sum" id="summary"></div>
+    </div>
+    <div class="top-r">
+      <span class="daynav" id="dayNav">
+        <button type="button" class="act" data-act="dayPrev" aria-label="Previous day">‹</button>
+        <button type="button" class="act" data-act="dayToday" id="todayBtn">Today</button>
+        <button type="button" class="act" data-act="dayNext" aria-label="Next day">›</button>
+      </span>
+      <span class="seg" role="group" aria-label="View">
+        <button type="button" data-tab="day" aria-pressed="true">Day</button>
+        <button type="button" data-tab="week" aria-pressed="false">Week</button>
+        <button type="button" data-tab="emails" aria-pressed="false">Emails</button>
+      </span>
+      <button type="button" class="act pri lg" data-act="add">+ Add task</button>
+    </div>
+  </header>
+
+  <main id="view"></main>
+
+  <section class="calls" aria-labelledby="callsH">
+    <h2 id="callsH">Settled 9/15</h2>
+    <ol>
+      <li><b>Tasks live in the CRM.</b> Both Google calendars show here read-only.</li>
+      <li><b>Sunday carry-over.</b> A task still open Sunday night moves into next week's bank, marked "carried over."</li>
+      <li><b>GGC stays in the Sprout calendar total,</b> listed on its own line.</li>
+      <li><b>Emails run on New York time.</b> Daily at 9pm ET, or 30 minutes after your last calendar item if later. Weekly on Sunday at 6pm ET. From hello@ to maxperkins@.</li>
+      <li><b>Complete</b> turns the button green and strikes through the task. It stays in its place on the list, with Undo beside it.</li>
+      <li><b>Push</b> just means it didn't happen today. The note is optional.</li>
+      <li><b>Anything not done by midnight ET moves to the next day on its own,</b> marked "Not done Mon 9/14, moved here at midnight." Sunday night it goes to next week's bank instead.</li>
+    </ol>
+  </section>
+</div>
+
+<dialog id="dlgMenu" aria-labelledby="menuH"></dialog>
+<dialog id="dlgFu" aria-labelledby="fuH">
+  <div class="dm-head">
+    <div><div class="eyebrow">Follow up</div><h3 id="fuH"></h3><div class="sub" id="fuSub"></div></div>
+    <button type="button" class="dm-close" aria-label="Close" data-close="dlgFu">×</button>
+  </div>
+  <div class="lm-body">
+    <div id="fuCal"></div>
+    <div class="lm-sec">
+      <div class="eyebrow"><label for="fuNote">What's the follow-up?</label></div>
+      <textarea id="fuNote" class="note" placeholder="e.g. Check whether she picked a date"></textarea>
+    </div>
+    <p class="sub" id="fuHint"></p>
+    <p class="err" id="fuErr" hidden></p>
+    <div class="acts" style="margin-top:0">
+      <button type="button" class="act pri" id="fuGo">Set follow-up</button>
+      <button type="button" class="act" data-close="dlgFu">Cancel</button>
+    </div>
+  </div>
+</dialog>
+<dialog id="dlgAdd" aria-labelledby="addH">
+  <div class="dm-head">
+    <div><div class="eyebrow">This week</div><h3 id="addH">Add a task</h3></div>
+    <button type="button" class="dm-close" aria-label="Close" data-close="dlgAdd">×</button>
+  </div>
+  <form class="lm-body" id="addForm" novalidate>
+    <div class="fld"><label for="aTitle">What needs to get done?</label><input id="aTitle" type="text" placeholder="Vol. 5 flyer"></div>
+    <div class="lm-sec"><div class="eyebrow">Category</div><div class="chips" id="aCats"></div></div>
+    <div class="frow">
+      <div class="fld"><label for="aHours">Hours it needs</label>
+        <select id="aHours"><option value="0.5">30 min</option><option value="1" selected>1 hr</option><option value="2">2 hrs</option><option value="3">3 hrs</option><option value="4">4 hrs</option></select></div>
+      <div class="fld"><label for="aDay">Put it on</label><select id="aDay"></select></div>
+    </div>
+    <p class="err" id="addErr" hidden></p>
+    <div class="acts" style="margin-top:0">
+      <button type="submit" class="act pri">Add task</button>
+      <button type="button" class="act" data-close="dlgAdd">Cancel</button>
+    </div>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+const CATS = {
+  events:{name:"Events & Programs", gc:"Flamingo"}, outreach:{name:"Outreach", gc:"Peacock"},
+  admin:{name:"Admin", gc:"Graphite"}, grants:{name:"Grants & Fundraising", gc:"Banana"},
+  personal:{name:"Personal", gc:"Sage"}, none:{name:"Uncategorized", gc:"no color"}
+};
+const ORDER = ["events","outreach","admin","grants","personal","none"];
+const TODAY = 15;
+const DAYS = [["Mon",14],["Tue",15],["Wed",16],["Thu",17],["Fri",18],["Sat",19],["Sun",20]];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const m = s => { const [h,mi] = s.split(":").map(Number); return h*60+mi; };
+const fmtT = n => { const h = Math.floor(n/60), mi = n%60; return (((h+11)%12)+1) + (mi ? ":" + String(mi).padStart(2,"0") : "") + (h<12 ? "a" : "p"); };
+const dayLbl = d => `${DAYS.find(x => x[1] === d)[0]} 9/${d}`;
+const hrsTxt = h => h === 0.5 ? "30 min" : `${h} hr${h === 1 ? "" : "s"}`;
+const hm = mins => `${Math.floor(mins/60)}h ${String(mins%60).padStart(2,"0")}m`;
+const fmtH = n => String(Math.round(n*2)/2);
+const late = t => t.kind === "Follow-up" && t.due && t.due < "2026-09-15" ? Math.round((new Date(2026,8,15) - new Date(t.due + "T00:00"))/864e5) : 0;
+
+// Real: Sprout HQ Program Calendar, week of 9/14
+const SPROUT = [[14,"14:00","18:00","GGC Programming"],[15,"19:00","22:00","QS Body Wellness"],[16,"14:00","18:00","GGC Programming"],[18,"14:00","18:00","GGC Programming"],[18,"18:30","20:00","12 Step"]]
+  .map(([d,s,e,t]) => ({d, s:m(s), e:m(e), t, cal:"sprout"}));
+// Sample: your Max Perkins calendar
+const MINE = [[14,"18:00","19:00","Gym","personal"],[15,"12:30","13:30","Lunch","personal"],[16,"11:00","12:00","Call: Buzzkill NYC about Vol. 5","events"],[17,"19:00","21:00","Dinner with friends","personal"],[18,"18:00","20:00","Rehearsal","personal"]]
+  .map(([d,s,e,t,c]) => ({d, s:m(s), e:m(e), t, c, cal:"mine"}));
+
+let uid = 0;
+function seed(state){
+  if (state === "empty") return {tasks:[], mine:false};
+  const fu = (who, what, c, day, due, x={}) => ({id:"k"+(++uid), t:what, who, c, h:1, day, done:false, kind:"Follow-up", due, pushed:[], ...x});
+  const tk = (t, c, h, day, x={}) => ({id:"k"+(++uid), t, c, h, day, done:false, kind:"Task", pushed:[], ...x});
+  let tasks = [
+    tk("Industry wrap-up: photos and thank-yous","events",2,14,{done:true}),
+    fu("Aidan Cole","Check in","outreach",14,"2026-08-25",{done:true}),
+    tk("Bookkeeping","admin",1,15,{pushed:[{from:14, auto:true}]}),
+    fu("Sing Easy","Check in about 9/1","outreach",15,"2026-08-25",{pushed:[{from:14, auto:true}]}),
+    tk("Sprout Fund report draft","grants",2,15,{done:true}),
+    fu("Kate Russell","Follow up about hosting","outreach",15,"2026-09-15"),
+    fu("Buzzkill NYC","Send out newsletter for SnT x Buzzkill","events",15,"2026-09-15"),
+    tk("Vol. 5 lineup emails","events",1,15,{pushed:[{from:14, note:"Waiting on Tim's dates before emailing everyone"}]}),
+    fu("Candice Wu","Follow up about Vol. 5","events",15,"2026-09-01"),
+    tk("Vol. 5 flyer","events",2,16),
+    fu("Brandon Wisecarver","Confirm fit for Vol. 5, wall space and hang time","events",16,"2026-09-05"),
+    fu("Tim Falvey","Confirm fit for Vol. 5, set time and tech needs","events",16,"2026-09-05"),
+    fu("Jess McAvoy","Check in about 9/29 Sing Easy","outreach",17,"2026-09-17"),
+    tk("Grant applications","grants",2,17),
+    tk("Weekly admin","admin",1,18),
+    fu("Kelly Yin","Reach out about new membership","outreach",null,"2026-07-23"),
+    fu("TOLK","Discuss some cross promotion","outreach",null,"2026-07-27"),
+    fu("Brooke Lynn Flores","Follow up about membership SbD","outreach",null,"2026-08-17"),
+    fu("Sean Jeffers","Find some dates that work with Tim and others","events",null,"2026-08-27"),
+    fu("Hidden City","Reach out","outreach",null,"2026-08-27"),
+    fu("Floorwork Arts Collective","Confirm proposal","outreach",null,"2026-08-27"),
+    fu("Moonwater","Check in about SnT Vol. 5","events",null,"2026-09-01"),
+    tk("Create the #events forum in Discord","admin",1,null),
+    tk("Newsletter template cleanup","events",1,null,{carried:true})
+  ];
+  if (state === "much"){
+    tasks = tasks.concat([
+      tk("Sample task with a much longer title to check how a row wraps when the name runs past one line","none",1,15),
+      tk("Sample: board meeting prep","admin",2,15),
+      tk("Sample: sponsor deck","grants",3,15,{pushed:[{from:14, note:"Deck template is not final"},{from:13, note:"Waiting on numbers"}]}),
+      fu("Sample contact","Sample follow-up","outreach",15,"2026-09-10")
+    ], Array.from({length:10}, (_,i) => fu("Sample person " + (i+1), "Sample follow-up from the CRM", i%2 ? "events" : "outreach", null, "2026-09-0" + (1+i%8))));
+  }
+  tasks.forEach((t,i) => t.pri = i);
+  return {tasks, mine:true};
+}
+
+const FULLDAY = {14:"Monday",15:"Tuesday",16:"Wednesday",17:"Thursday",18:"Friday",19:"Saturday",20:"Sunday"};
+const ui = {state:"typical", tab:"day", day:TODAY, data:{}, pushOpen:null, review:false, menu:null, fu:null, addCat:"events"};
+const D = () => ui.data[ui.state] || (ui.data[ui.state] = seed(ui.state));
+const cal = () => (D().mine ? MINE : []).concat(SPROUT);
+const byPri = (a,b) => a.pri - b.pri;
+const find = id => D().tasks.find(t => t.id === id);
+const inWeek = t => typeof t.day === "number" || t.day === null;
+
+function dayLoad(d){
+  const c = cal().filter(e => e.d === d);
+  return {
+    mine: c.filter(e => e.cal === "mine").reduce((a,e) => a + e.e - e.s, 0),
+    sprout: c.filter(e => e.cal === "sprout").reduce((a,e) => a + e.e - e.s, 0),
+    task: D().tasks.filter(t => t.day === d).reduce((a,t) => a + t.h, 0)
+  };
+}
+
+/* ---------- rows ---------- */
+function pushLine(p, style=""){
+  const from = p.from >= 14 ? dayLbl(p.from) : "last week";
+  return p.auto
+    ? `<div class="linkline"${style}>Not done <b>${from}</b>, moved here at midnight</div>`
+    : `<div class="linkline"${style}>Pushed from <b>${from}</b>${p.note ? `: ${esc(p.note)}` : ""}</div>`;
+}
+function taskRow(t, opts={}){
+  const lt = late(t);
+  const title = t.who ? esc(t.who) : esc(t.t);
+  const meta = [CATS[t.c].name, t.kind, t.who ? esc(t.t) : null].filter(Boolean).join(" · ");
+  const flags = (lt ? ` <span class="flag f-crit mono">${lt}d late</span>` : "") + (t.carried ? ` <span class="flag f-warn">Carried over</span>` : "") +
+    (t.pushed.length > 1 ? ` <span class="flag f-warn">Pushed ${t.pushed.length}×</span>` : "");
+  const pushes = t.pushed.slice(-1).map(p => pushLine(p)).join("");
+  let body;
+  if (opts.bank){
+    body = `<div class="acts"><button type="button" class="act" data-act="place" data-id="${t.id}">Place on a day</button></div>`;
+  } else if (t.done){
+    body = `<div class="acts"><button type="button" class="act ok" aria-disabled="true">✓ Done</button><button type="button" class="undo" data-act="undo" data-id="${t.id}">Undo</button></div>`;
+  } else if (ui.pushOpen === t.id){
+    const next = t.day + 1;
+    body = `<div class="pushbox">
+      <label class="eyebrow" for="push-${t.id}">Note (optional)</label>
+      <textarea id="push-${t.id}" class="note" placeholder="e.g. Waiting on her reply"></textarea>
+      <div class="acts" style="margin-top:0"><button type="button" class="act pri" data-act="pushGo" data-id="${t.id}">Push to ${next <= 20 ? dayLbl(next) : "next week"}</button>
+      <button type="button" class="act" data-act="pushCancel">Cancel</button></div></div>`;
+  } else {
+    body = `<div class="acts">
+      <button type="button" class="act pri" data-act="complete" data-id="${t.id}">Complete</button>
+      <button type="button" class="act" data-act="push" data-id="${t.id}">Push</button>
+      <button type="button" class="act" data-act="fu" data-id="${t.id}">Follow up</button></div>`;
+  }
+  const prio = opts.bank ? `<div class="prio"><button type="button" aria-label="Move up" data-act="up" data-id="${t.id}" ${opts.first ? "disabled" : ""}>▲</button><button type="button" aria-label="Move down" data-act="down" data-id="${t.id}" ${opts.last ? "disabled" : ""}>▼</button></div>` : "";
+  return `<li class="row${t.done ? " done" : ""}${opts.bank ? " bank" : ""}">${prio}
+    <div class="t mono">${hrsTxt(t.h)}</div><div class="rail" data-cat="${t.c}"></div>
+    <div><div class="name">${title}${flags}</div><div class="meta">${meta}</div>${pushes}${body}</div>
+    <button type="button" class="rowmenu" aria-label="Actions for ${title}" data-act="menu" data-id="${t.id}">⋯</button></li>`;
+}
+function calRow(e){
+  const sprout = e.cal === "sprout";
+  return `<li class="row cal"><div class="t mono">${fmtT(e.s)}</div>
+    <div class="rail${sprout ? " hatch" : ""}" ${sprout ? "" : `data-cat="${e.c}"`}></div>
+    <div><div class="name">${esc(e.t)}</div><div class="meta">Until ${fmtT(e.e)} · ${sprout ? "Sprout calendar · not in your hours" : "Your calendar · " + CATS[e.c].name}</div></div><span></span></li>`;
+}
+
+/* ---------- meters ---------- */
+function weekTotals(){
+  const tot = {}; ORDER.forEach(c => tot[c] = {done:0, plan:0, fu:0, tk:0, ev:0});
+  D().tasks.filter(inWeek).forEach(t => { tot[t.c].plan += t.h; if (t.done) tot[t.c].done += t.h; t.kind === "Follow-up" ? tot[t.c].fu++ : tot[t.c].tk++; });
+  cal().filter(e => e.cal === "mine").forEach(e => { const h = (e.e - e.s)/60; tot[e.c].plan += h; tot[e.c].ev++; if (e.d < TODAY) tot[e.c].done += h; });
+  return tot;
+}
+function metersHTML(){
+  const tot = weekTotals();
+  const rows = ORDER.filter(c => tot[c].plan > 0).map(c => {
+    const t = tot[c];
+    const foot = [t.fu && `${t.fu} follow-up${t.fu > 1 ? "s" : ""}`, t.tk && `${t.tk} task${t.tk > 1 ? "s" : ""}`, t.ev && `${t.ev} calendar item${t.ev > 1 ? "s" : ""}`].filter(Boolean).join(", ");
+    return `<div class="meter" data-cat="${c}"><div class="mtop"><span><span class="sw"></span> ${CATS[c].name}<small>${CATS[c].gc}</small></span><span class="mval mono">${fmtH(t.done)} / ${fmtH(t.plan)} hrs</span></div>
+      <div class="track"><div class="fill" style="width:${t.done/t.plan*100}%"></div></div><div class="mfoot">${foot}</div></div>`;
+  });
+  const done = ORDER.reduce((a,c) => a + tot[c].done, 0), plan = ORDER.reduce((a,c) => a + tot[c].plan, 0);
+  return {rows, done, plan};
+}
+function sproutCard(){
+  const groups = {};
+  SPROUT.forEach(e => groups[e.t] = (groups[e.t] || 0) + e.e - e.s);
+  const total = SPROUT.reduce((a,e) => a + e.e - e.s, 0);
+  return `<div class="card card-pad"><div class="eyebrow">Sprout calendar this week</div>
+    <div class="totline"><span class="big mono">${hm(total)}</span><span class="sub">Its own total. Not in your hours.</span></div>
+    <div class="brk">${Object.entries(groups).map(([k,v]) => `<div><span>${esc(k)}</span><span class="mono">${hm(v)}</span></div>`).join("")}</div></div>`;
+}
+
+/* ---------- views ---------- */
+function renderDay(){
+  const V = ui.day, isToday = V === TODAY;
+  const tasks = D().tasks.filter(t => t.day === V).sort(byPri);
+  const calToday = cal().filter(e => e.d === V).sort((a,b) => a.s - b.s);
+  const mins = tasks.reduce((a,t) => a + t.h*60, 0), done = tasks.filter(t => t.done).length;
+  const bank = D().tasks.filter(t => t.day === null).sort(byPri);
+  const {rows, done: wDone, plan} = metersHTML();
+  document.getElementById("view").innerHTML = `<div class="grid2">
+    <div class="stack">
+      <div class="card">
+        <div class="daybar"><div><div class="eyebrow">Sprout hours ${isToday ? "today" : "on " + dayLbl(V)}</div><div class="big mono">${hm(mins)}</div></div>
+          <div style="text-align:right"><div class="eyebrow">Done</div><div class="big mono">${done} / ${tasks.length}</div></div></div>
+        ${calToday.length ? `<div class="group eyebrow">On the calendar</div><ul class="rows">${calToday.map(calRow).join("")}</ul>` : ""}
+        <div class="group eyebrow">${isToday ? "To do today" : V < TODAY ? "Done that day" : "Planned"} <span>in priority order</span></div>
+        ${tasks.length ? `<ul class="rows">${tasks.map(t => taskRow(t)).join("")}</ul>`
+          : `<div class="empty"><b>Nothing ${V < TODAY ? "done" : "planned"} ${isToday ? "today" : "on " + dayLbl(V)}</b>Place something from the weekly bank, or add a task.<br><button type="button" class="act pri" data-act="tab" data-tab="week">Plan the week</button></div>`}
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card card-pad"><div class="eyebrow">This week so far</div>
+        <div class="totline"><span class="big mono">${fmtH(wDone)} / ${fmtH(plan)} hrs</span><span class="sub">done of what the week asks for</span></div>
+        ${rows.length ? `<div class="meters">${rows.join("")}</div>` : `<p class="sub" style="margin-top:8px">No tasks or calendar time this week yet.</p>`}</div>
+      ${sproutCard()}
+      <div class="card card-pad"><div class="eyebrow">Weekly bank</div>
+        <div class="totline"><span class="big"><span class="mono">${bank.length}</span> task${bank.length === 1 ? "" : "s"} · <span class="mono">${fmtH(bank.reduce((a,t) => a + t.h, 0))}</span> hrs</span><span class="sub">not on a day yet</span></div>
+        ${bank.length ? `<ul class="minibank">${bank.slice(0,3).map(t => `<li data-cat="${t.c}"><span class="sw"></span><span>${esc(t.who ? t.who + ": " + t.t : t.t)}</span></li>`).join("")}${bank.length > 3 ? `<li class="sub">and ${bank.length - 3} more</li>` : ""}</ul>` : `<p class="sub" style="margin:8px 0 12px">Everything this week has a day.</p>`}
+        <button type="button" class="act" data-act="tab" data-tab="week">Plan the week</button></div>
+    </div></div>`;
+}
+
+function renderWeek(){
+  const bank = D().tasks.filter(t => t.day === null).sort(byPri);
+  const {rows} = metersHTML();
+  const cols = DAYS.map(([n,d]) => {
+    const L = dayLoad(d);
+    const evs = cal().filter(e => e.d === d).sort((a,b) => a.s - b.s).map(e =>
+      `<div class="ev ${e.cal === "sprout" ? "sprout" : "cal"}"><span class="evt mono">${fmtT(e.s)} to ${fmtT(e.e)}</span><span class="evn">${esc(e.t)}</span></div>`).join("");
+    const tks = D().tasks.filter(t => t.day === d).sort((a,b) => (a.done - b.done) || byPri(a,b)).map(t =>
+      `<button type="button" class="ev task${t.done ? " done" : ""}" data-cat="${t.c}" data-act="menu" data-id="${t.id}"><span class="evt mono">${t.done ? "✓ " : ""}${hrsTxt(t.h)}</span><span class="evn">${esc(t.who ? t.who + ": " + t.t : t.t)}</span></button>`).join("");
+    return `<div class="wd${d === TODAY ? " is-today" : ""}"><h4><span class="d"><b><button type="button" class="dayjump" data-act="openDay" data-d="${d}" aria-label="Open ${FULLDAY[d]} in Day view">${n}</button></b><span class="mono">9/${d}</span></span>
+      <span class="load mono">You ${hm(L.mine)} · Sprout ${hm(L.sprout)}</span><span class="load mono">Tasks ${fmtH(L.task)} hrs</span></h4>
+      <div class="wcol">${evs}${tks}</div></div>`;
+  }).join("");
+  document.getElementById("view").innerHTML = `
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-hd"><div><h2>Weekly bank</h2><p class="sub">Follow-ups due this week, overdue ones, and whatever carried over. Put each on a day that has room.</p></div>
+        <span class="mono sub">${bank.length} tasks · ${fmtH(bank.reduce((a,t) => a + t.h, 0))} hrs</span></div>
+      ${bank.length ? `<ul class="rows">${bank.map((t,i) => taskRow(t, {bank:true, first:i === 0, last:i === bank.length - 1})).join("")}</ul>`
+        : `<div class="empty"><b>The bank is empty</b>Everything this week has a day. New CRM follow-ups land here on their own.<br><button type="button" class="act pri" data-act="add">+ Add task</button></div>`}
+    </div>
+    <div class="legend"><span><span class="sw" style="--cat:var(--sunk);border:1px solid var(--line)"></span> Your calendar</span><span><span class="hsw"></span> Sprout calendar</span><span>Colored: tasks by category. Tap one to move it.</span></div>
+    <div class="card"><div class="weekscroll"><div class="week">${cols}</div></div></div>
+    <div class="meterrow">${rows.map(r => `<div class="card card-pad">${r}</div>`).join("")}${sproutCard()}</div>`;
+}
+
+function renderEmails(){
+  document.getElementById("view").innerHTML = `<p class="sub" style="margin:0 0 14px">Sample figures from this week's mix. Both follow Dasha-Board's recap: every section leads with its count, and each sends once.</p>
+  <div class="mails">
+    <article class="mail">
+      <div class="mail-hd"><span>From <b>Sprout Society</b> &lt;hello@sproutsociety.org&gt;</span><span>To maxperkins@sproutsociety.org</span><span>Subject <b>Tue 9/15: 5 hrs done, 1 pushed</b></span></div>
+      <div class="mail-when">Daily recap · 9pm ET, or 30 minutes after your last calendar item if that runs later</div>
+      <div class="mail-bd">
+        <section class="msec"><div class="mcount">4 done · <span class="hr">5 hrs</span></div><p>By category</p>
+          <ul class="mli"><li><span class="mono">2 hrs</span>Grants & Fundraising: Sprout Fund report draft</li><li><span class="mono">1 hr</span>Outreach: Kate Russell, follow up about hosting</li><li><span class="mono">1 hr</span>Events & Programs: Buzzkill NYC newsletter</li><li><span class="mono">1 hr</span>Events & Programs: Candice Wu, Vol. 5</li></ul></section>
+        <section class="msec"><div class="mcount">1 pushed</div><p>Moved to tomorrow, with your note</p>
+          <ul class="mli"><li><span class="mono">1 hr</span>Vol. 5 lineup emails: "Waiting on Tim's dates before emailing everyone" (pushed 2×)</li></ul></section>
+        <section class="msec"><div class="mcount">2 not done</div><p>They move to Wed 9/16 on their own at midnight.</p>
+          <ul class="mli"><li><span class="mono">1 hr</span>Bookkeeping</li><li><span class="mono">1 hr</span>Sing Easy: check in about 9/1</li></ul></section>
+        <section class="msec"><div class="mcount">Tomorrow · <span class="hr">4 hrs</span> of tasks</div><p>Wed 9/16</p>
+          <ul class="mli"><li><span class="mono">11a</span>Call: Buzzkill NYC about Vol. 5</li><li><span class="mono">2p</span>GGC Programming (Sprout calendar)</li><li><span class="mono">2 hrs</span>Vol. 5 flyer</li><li><span class="mono">1 hr</span>Brandon Wisecarver: confirm fit for Vol. 5</li><li><span class="mono">1 hr</span>Tim Falvey: set time and tech needs</li></ul></section>
+        <section class="msec"><div class="mcount">9 in the bank · 7 overdue</div><p>Oldest: Kelly Yin, 54 days</p><a class="mlink" href="#" onclick="return false">Open the Day Board</a></section>
+      </div>
+    </article>
+    <article class="mail">
+      <div class="mail-hd"><span>From <b>Sprout Society</b> &lt;hello@sproutsociety.org&gt;</span><span>To maxperkins@sproutsociety.org</span><span>Subject <b>Week of 9/14: 24 Sprout hours</b></span></div>
+      <div class="mail-when">Weekly summary · Sunday 6pm ET, so you can plan the week ahead</div>
+      <div class="mail-bd">
+        <section class="msec"><div class="mcount"><span class="hr">24 hrs</span> of your time</div><p>Last week: 19 hrs</p>
+          <ul class="mli"><li><span class="mono">10 hrs</span>Events & Programs (last week 7)</li><li><span class="mono">5 hrs</span>Outreach (last week 6)</li><li><span class="mono">4 hrs</span>Grants & Fundraising (last week 2)</li><li><span class="mono">2 hrs</span>Admin (last week 3)</li><li><span class="mono">3 hrs</span>Personal (last week 1)</li></ul></section>
+        <section class="msec"><div class="mcount">Sprout calendar · <span class="hr">16h 30m</span></div><p>Separate from your hours</p>
+          <ul class="mli"><li><span class="mono">12h</span>GGC Programming</li><li><span class="mono">3h</span>QS Body Wellness</li><li><span class="mono">1h 30m</span>12 Step</li></ul></section>
+        <section class="msec"><div class="mcount">16 done · 3 pushed · 2 never finished</div><p>Pushed the most</p>
+          <ul class="mli"><li><span class="mono">3×</span>Vol. 5 lineup emails</li></ul></section>
+        <section class="msec"><div class="mcount">Follow-ups · 8 closed, 5 new</div><p>7 still overdue. Oldest: Kelly Yin, 59 days</p></section>
+        <section class="msec"><div class="mcount">Next week's bank · <span class="hr">7 hrs</span></div><p>2 carried over, 1 CRM follow-up due (Bar Nun, Sober October, 9/24), 7 overdue</p><a class="mlink" href="#" onclick="return false">Plan next week</a></section>
+      </div>
+    </article>
+  </div>`;
+}
+
+function renderSummary(){
+  const dayView = ui.tab === "day", V = dayView ? ui.day : TODAY;
+  document.getElementById("dayEyebrow").textContent = dayView ? FULLDAY[V] + (V === TODAY ? " · Today" : "") : "Week of";
+  document.getElementById("dayTitle").textContent = dayView ? `September ${V}` : "September 14 to 20";
+  document.getElementById("dayNav").hidden = !dayView;
+  document.getElementById("todayBtn").disabled = V === TODAY;
+  document.querySelector('[data-act="dayPrev"]').disabled = V <= 14;
+  document.querySelector('[data-act="dayNext"]').disabled = V >= 20;
+  const today = D().tasks.filter(t => t.day === V);
+  const bank = D().tasks.filter(t => t.day === null);
+  const od = D().tasks.filter(t => !t.done && late(t)).length;
+  document.getElementById("summary").innerHTML =
+    `<span><b class="mono">${fmtH(today.reduce((a,t) => a + t.h, 0))}</b> hrs of tasks ${V === TODAY ? "today" : "on " + dayLbl(V)}</span>` +
+    `<span><b class="mono">${today.filter(t => t.done).length} / ${today.length}</b> done</span>` +
+    `<span><b class="mono">${bank.length}</b> in the weekly bank</span>` +
+    `<span class="${od ? "crit" : ""}"><b class="mono">${od}</b> overdue follow-ups</span>`;
+}
+
+function render(){
+  document.querySelectorAll("[data-tab]").forEach(b => { if (b.closest(".seg")) b.setAttribute("aria-pressed", String(b.dataset.tab === ui.tab)); });
+  document.querySelectorAll("[data-state]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.state === ui.state)));
+  renderSummary();
+  ({day:renderDay, week:renderWeek, emails:renderEmails})[ui.tab]();
+  if (ui.menu) renderMenu();
+}
+
+/* ---------- action menu (Dasha-Board LessonMenu) ---------- */
+const dlgMenu = document.getElementById("dlgMenu");
+function renderMenu(){
+  const t = find(ui.menu.id); if (!t) { dlgMenu.close(); return; }
+  const title = t.who ? `${t.who}: ${t.t}` : t.t;
+  const where = t.day === null ? "Weekly bank" : dayLbl(t.day);
+  let body;
+  if (ui.menu.step === "move"){
+    const pick = ui.menu.pick;
+    body = `<p class="sub">Each day shows what's already on it. Pick one with room.</p>
+      <div class="daypick">${DAYS.map(([n,d]) => { const L = dayLoad(d), cur = t.day === d;
+        return `<button type="button" class="dp${cur ? " cur" : ""}" data-act="pickDay" data-d="${d}" aria-pressed="${pick === d}" ${d < TODAY || cur ? "disabled" : ""}>
+          <b>${n}</b><span class="mono">9/${d}</span><small>You ${hm(L.mine)}</small><small>Sprout ${hm(L.sprout)}</small><small>Tasks ${fmtH(L.task)} hrs</small>${cur ? "<em>Now</em>" : ""}</button>`; }).join("")}</div>
+      ${pick ? `<div class="rsconfirm"><div><b>From</b> ${where}</div><div><b>To</b> ${dayLbl(pick)}, with ${fmtH(dayLoad(pick).task)} hrs of tasks already there</div></div>` : ""}
+      <div class="acts" style="margin-top:0"><button type="button" class="act pri" data-act="moveGo" ${pick ? "" : "disabled"}>Move the task</button>
+        <button type="button" class="act" data-act="menuStep" data-step="menu">Back</button></div>`;
+  } else {
+    body = `${t.pushed.length ? `<div>${t.pushed.map(p => pushLine(p, ' style="margin-top:4px"')).join("")}</div>` : ""}
+      <div class="lm-sec"><div class="eyebrow">Hours it needs</div><div class="segs">${[0.5,1,2,3,4].map(h => `<button type="button" class="act" data-act="hours" data-h="${h}" aria-pressed="${t.h === h}">${hrsTxt(h)}</button>`).join("")}</div></div>
+      <div class="lm-sec"><div class="eyebrow">Category</div><div class="chips">${ORDER.filter(c => c !== "none").map(c => `<button type="button" data-cat="${c}" data-act="cat" data-c="${c}" aria-pressed="${t.c === c}"><span class="sw"></span>${CATS[c].name}</button>`).join("")}</div></div>
+      <ul class="menulist">
+        <li><button type="button" class="menuitem" data-act="menuStep" data-step="move"><span class="mi-main"><b>Move to another day</b><span class="mi-sub">See what's on each day this week, then pick one</span></span></button></li>
+        ${t.day !== null ? `<li><button type="button" class="menuitem" data-act="toBank"><span class="mi-main"><b>Back to the weekly bank</b><span class="mi-sub">Take it off ${where} without a day</span></span></button></li>` : ""}
+        ${t.kind === "Follow-up" ? `<li><button type="button" class="menuitem" data-act="noop"><span class="mi-main"><b>Open ${esc(t.who)} in the CRM</b><span class="mi-sub">Contact, history and next actions</span></span></button></li>`
+          : `<li><button type="button" class="menuitem danger" data-act="del"><span class="mi-main"><b>Delete task</b><span class="mi-sub">Removes it from this week</span></span></button></li>`}
+      </ul>`;
+  }
+  dlgMenu.className = ui.menu.step === "move" ? "wide" : "";
+  dlgMenu.innerHTML = `<div class="dm-head"><div><div class="eyebrow">${ui.menu.step === "move" ? "Move" : where + " · " + hrsTxt(t.h)}</div>
+    <h3 id="menuH">${esc(title)}</h3><div class="sub">${CATS[t.c].name} · ${t.kind}${late(t) ? ` · ${late(t)} days late` : ""}</div></div>
+    <button type="button" class="dm-close" aria-label="Close" data-close="dlgMenu">×</button></div><div class="lm-body">${body}</div>`;
+  if (!dlgMenu.open) dlgMenu.showModal();
+}
+dlgMenu.addEventListener("close", () => { ui.menu = null; });
+
+/* ---------- follow-up calendar ---------- */
+const dlgFu = document.getElementById("dlgFu");
+function renderFuCal(){
+  const {month, pick} = ui.fu, first = new Date(2026, month, 1), days = new Date(2026, month+1, 0).getDate();
+  const name = first.toLocaleString("en-US", {month:"long"});
+  let cells = ["S","M","T","W","T","F","S"].map(x => `<span class="wdh">${x}</span>`).join("") + "<span></span>".repeat(first.getDay());
+  for (let i = 1; i <= days; i++){
+    const key = month * 100 + i, past = month === 8 && i <= TODAY;
+    cells += `<button type="button" class="${month === 8 && i === TODAY ? "today" : ""}" data-fud="${key}" aria-pressed="${pick === key}" ${past ? "disabled" : ""} aria-label="${name} ${i}">${i}</button>`;
+  }
+  document.getElementById("fuCal").innerHTML = `<div class="mc"><div class="mc-nav"><button type="button" class="act" data-fum="-1" ${month <= 8 ? "disabled" : ""} aria-label="Previous month">‹</button><b>${name} 2026</b><button type="button" class="act" data-fum="1" ${month >= 11 ? "disabled" : ""} aria-label="Next month">›</button></div><div class="mc-grid">${cells}</div></div>`;
+  const t = find(ui.fu.id);
+  const when = pick ? new Date(2026, Math.floor(pick/100), pick % 100).toLocaleDateString("en-US", {weekday:"short", month:"numeric", day:"numeric"}) : null;
+  document.getElementById("fuGo").textContent = when ? `Set follow-up for ${when}` : "Set follow-up";
+  document.getElementById("fuHint").textContent = t.kind === "Follow-up"
+    ? `Marks this done and sets ${t.who}'s next action in the CRM to that day, as a 1-hour follow-up.`
+    : "Marks this done and adds a 1-hour follow-up on that day.";
+}
+function openFu(id){
+  const t = find(id);
+  ui.fu = {id, month:8, pick:null};
+  document.getElementById("fuH").textContent = t.who ? `${t.who}: ${t.t}` : t.t;
+  document.getElementById("fuSub").textContent = `${CATS[t.c].name} · pick the day to follow up`;
+  document.getElementById("fuNote").value = "";
+  document.getElementById("fuErr").hidden = true;
+  renderFuCal(); dlgFu.showModal();
+}
+dlgFu.addEventListener("click", e => {
+  const d = e.target.closest("[data-fud]"); if (d){ ui.fu.pick = Number(d.dataset.fud); renderFuCal(); }
+  const mo = e.target.closest("[data-fum]"); if (mo){ ui.fu.month += Number(mo.dataset.fum); renderFuCal(); }
+});
+document.getElementById("fuGo").addEventListener("click", () => {
+  const {id, pick} = ui.fu, t = find(id), err = document.getElementById("fuErr");
+  if (!pick){ err.textContent = "Pick the day you want to follow up."; err.hidden = false; return; }
+  const month = Math.floor(pick/100), dd = pick % 100, note = document.getElementById("fuNote").value.trim();
+  t.done = true;
+  const day = month === 8 && dd <= 20 ? dd : "later";
+  D().tasks.push({id:"k"+(++uid), t: note || "Follow up", who: t.who || null, c:t.c, h:1, day, done:false, kind:"Follow-up", due:`2026-${String(month+1).padStart(2,"0")}-${String(dd).padStart(2,"0")}`, pushed:[], pri:D().tasks.length});
+  dlgFu.close(); render();
+  toast(day === "later" ? `Follow-up set for ${month+1}/${dd}. It lands in that week's bank.` : `Follow-up set for ${dayLbl(dd)}.`);
+});
+
+/* ---------- add task ---------- */
+const dlgAdd = document.getElementById("dlgAdd");
+function openAdd(){
+  document.getElementById("aTitle").value = "";
+  document.getElementById("addErr").hidden = true;
+  document.getElementById("aDay").innerHTML = `<option value="bank">The weekly bank</option>` + DAYS.filter(([,d]) => d >= TODAY).map(([n,d]) => `<option value="${d}">${n} 9/${d}</option>`).join("");
+  paintAddCats(); dlgAdd.showModal(); document.getElementById("aTitle").focus();
+}
+function paintAddCats(){
+  document.getElementById("aCats").innerHTML = ORDER.filter(c => c !== "none").map(c => `<button type="button" data-cat="${c}" data-addcat="${c}" aria-pressed="${ui.addCat === c}"><span class="sw"></span>${CATS[c].name}</button>`).join("");
+}
+document.getElementById("aCats").addEventListener("click", e => { const b = e.target.closest("[data-addcat]"); if (b){ ui.addCat = b.dataset.addcat; paintAddCats(); } });
+document.getElementById("addForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const t = document.getElementById("aTitle").value.trim();
+  if (!t){ const er = document.getElementById("addErr"); er.textContent = "Give the task a name."; er.hidden = false; return; }
+  const dv = document.getElementById("aDay").value, day = dv === "bank" ? null : Number(dv);
+  D().tasks.push({id:"k"+(++uid), t, c:ui.addCat, h:Number(document.getElementById("aHours").value), day, done:false, kind:"Task", pushed:[], pri:-1 - D().tasks.length});
+  dlgAdd.close(); render(); toast(`Added to ${day === null ? "the weekly bank" : dayLbl(day)}.`);
+});
+
+/* ---------- delegation ---------- */
+function toast(msg){ const el = document.getElementById("toast"); el.textContent = msg; el.hidden = false; clearTimeout(window._tt); window._tt = setTimeout(() => el.hidden = true, 2800); }
+document.addEventListener("click", e => {
+  const cl = e.target.closest("[data-close]"); if (cl){ document.getElementById(cl.dataset.close).close(); return; }
+  const st = e.target.closest("[data-state]"); if (st){ ui.state = st.dataset.state; ui.pushOpen = null; ui.review = false; render(); return; }
+  const b = e.target.closest("[data-act],[data-tab]"); if (!b) return;
+  if (b.dataset.tab && !b.dataset.act){ ui.tab = b.dataset.tab; render(); return; }
+  const a = b.dataset.act, t = b.dataset.id ? find(b.dataset.id) : ui.menu ? find(ui.menu.id) : null;
+  switch (a){
+    case "tab": ui.tab = b.dataset.tab; if (dlgMenu.open) dlgMenu.close(); render(); window.scrollTo({top:0}); break;
+    case "add": openAdd(); break;
+    case "dayPrev": ui.day = Math.max(14, ui.day - 1); ui.pushOpen = null; render(); break;
+    case "dayNext": ui.day = Math.min(20, ui.day + 1); ui.pushOpen = null; render(); break;
+    case "dayToday": ui.day = TODAY; ui.pushOpen = null; render(); break;
+    case "openDay": ui.day = Number(b.dataset.d); ui.tab = "day"; render(); window.scrollTo({top:0}); break;
+    case "complete": t.done = true; ui.pushOpen = null; render(); break;
+    case "undo": t.done = false; render(); break;
+    case "push": ui.pushOpen = t.id; render(); document.getElementById("push-" + t.id)?.focus(); break;
+    case "pushCancel": ui.pushOpen = null; render(); break;
+    case "pushGo": {
+      const note = document.getElementById("push-" + t.id).value.trim();
+      const from = t.day; t.pushed.push({from, note}); t.day = from + 1 <= 20 ? from + 1 : "later"; ui.pushOpen = null;
+      render(); toast(t.day === "later" ? "Pushed to next week's bank." : `Pushed to ${dayLbl(t.day)}.`); break;
+    }
+    case "fu": openFu(t.id); break;
+    case "review": ui.review = !ui.review; render(); break;
+    case "menu": ui.menu = {id:t.id, step:"menu", pick:null}; renderMenu(); break;
+    case "place": ui.menu = {id:t.id, step:"move", pick:null}; renderMenu(); break;
+    case "menuStep": ui.menu.step = b.dataset.step; ui.menu.pick = null; renderMenu(); break;
+    case "pickDay": ui.menu.pick = Number(b.dataset.d); renderMenu(); break;
+    case "moveGo": { const to = ui.menu.pick; t.day = to; dlgMenu.close(); render(); toast(`Moved to ${dayLbl(to)}.`); break; }
+    case "toBank": t.day = null; dlgMenu.close(); render(); toast("Back in the weekly bank."); break;
+    case "hours": t.h = Number(b.dataset.h); render(); break;
+    case "cat": t.c = b.dataset.c; render(); break;
+    case "del": D().tasks.splice(D().tasks.indexOf(t), 1); dlgMenu.close(); render(); toast("Task deleted."); break;
+    case "up": case "down": {
+      const bank = D().tasks.filter(x => x.day === null).sort(byPri), i = bank.indexOf(t), j = a === "up" ? i - 1 : i + 1;
+      if (bank[j]){ const p = bank[j].pri; bank[j].pri = t.pri; t.pri = p; render(); }
+      break;
+    }
+  }
+});
+
+document.addEventListener("keydown", e => {
+  if (ui.tab !== "day" || document.querySelector("dialog[open]") || e.target.closest("input,textarea,select")) return;
+  if (e.key === "ArrowLeft" && ui.day > 14){ ui.day--; render(); }
+  if (e.key === "ArrowRight" && ui.day < 20){ ui.day++; render(); }
+});
+
+render();
+</script>
