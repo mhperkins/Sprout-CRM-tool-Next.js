@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Intake Sweep + Vol. 4 Thank-You List</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#030000; --paper:#F7F7F6; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6; --grey:#8a8a86; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ink); color:#fff; font-family:Lato, Helvetica, Arial, sans-serif; padding:32px 16px; }
+  .slide { max-width:1200px; margin:0 auto; background:var(--ink); }
+  .top { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:16px; border-bottom:4px solid var(--acid); padding-bottom:18px; }
+  .eyebrow { color:var(--acid); font-weight:900; letter-spacing:3px; text-transform:uppercase; font-size:13px; }
+  h1 { font-size:clamp(28px, 4vw, 46px); font-weight:900; margin:6px 0 0; line-height:1.1; }
+  .meta { display:flex; gap:8px; flex-wrap:wrap; }
+  .badge { font-size:13px; font-weight:700; padding:6px 12px; border-radius:999px; background:#1b1b1a; border:1px solid #333; }
+  .badge b { color:var(--banana); }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:14px; margin:26px 0; }
+  .stat { background:#141413; border-radius:10px; padding:18px; border-left:6px solid var(--cyan); }
+  .stat:nth-child(2) { border-color:var(--fuchsia); }
+  .stat:nth-child(3) { border-color:var(--acid); }
+  .stat:nth-child(4) { border-color:var(--banana); }
+  .num { font-size:44px; font-weight:900; line-height:1; }
+  .lbl { color:#c9c9c5; font-size:14px; margin-top:6px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:16px; }
+  .card { background:#fff; color:var(--ink); border-radius:10px; padding:20px; box-shadow:0 4px 14px rgba(0,0,0,.3); }
+  .card h3 { margin:0 0 4px; font-size:19px; font-weight:900; }
+  .card .tag { display:inline-block; font-size:11px; font-weight:900; letter-spacing:2px; text-transform:uppercase; padding:3px 8px; border-radius:4px; margin-bottom:10px; }
+  .t-cyan { background:var(--cyan); } .t-fuch { background:var(--fuchsia); color:#fff; } .t-acid { background:var(--acid); } .t-banana { background:var(--banana); }
+  .card ul { margin:8px 0 0; padding-left:18px; font-size:14px; line-height:1.55; color:#3a3a38; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .chip { font-size:12px; background:#ECECEA; padding:4px 9px; border-radius:999px; }
+  .foot { margin-top:22px; display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; color:var(--grey); font-size:13px; }
+  .warn { color:var(--banana); font-weight:700; }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Sprout CRM · Delivery · 2026-09-15</div>
+      <h1>Intake sweep + Vol. 4 thank-you list</h1>
+    </div>
+    <div class="meta">
+      <span class="badge">branch <b>main</b></span>
+      <span class="badge">commit <b>a267449</b></span>
+      <span class="badge">effort <b>medium</b></span>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="num">17</div><div class="lbl">new CRM contacts</div></div>
+    <div class="stat"><div class="num">4</div><div class="lbl">intake sheets swept, every row</div></div>
+    <div class="stat"><div class="num">23</div><div class="lbl">people on the Campaign Monitor list</div></div>
+    <div class="stat"><div class="num">28</div><div class="lbl">people on the Vol. 4 event (was 13)</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <span class="tag t-cyan">CRM · created</span>
+      <h3>17 new contacts</h3>
+      <ul>
+        <li>12 Vol. 4 kiosk sign-ins (attendee, warm)</li>
+        <li>3 Interest Form RSVPs: Saihaj, Nasir, Janaye</li>
+        <li>Isabella Paris, showcase applicant (music)</li>
+        <li>Nic Black, hosting lead (@queerbk)</li>
+      </ul>
+      <div class="chips"><span class="chip">email + alt_emails match</span><span class="chip">name check</span><span class="chip">1 junk skipped</span></div>
+    </div>
+    <div class="card">
+      <span class="tag t-fuch">Sheet · MASTER</span>
+      <h3>Master List rows 95 to 111</h3>
+      <ul>
+        <li>All 17 added with the sheet each came from</li>
+        <li>Kiosk, Interest Form, or Host at Sprout Society form</li>
+        <li>Notes on guests, first-name-only, and repeat RSVPs</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag t-acid">Sheet · new tab</span>
+      <h3>Campaign Monitor Import (Vol. 4)</h3>
+      <ul>
+        <li>12 sign-ins, 8 performers, 3 RSVPs</li>
+        <li>mPATH resolved to Pat Hopkins</li>
+        <li>Greg Smith included per Max</li>
+        <li class="warn">Max sends it. Nothing was sent.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag t-banana">CRM · event</span>
+      <h3>Sprout N Tell Vol. 4</h3>
+      <ul>
+        <li>People: 13 to 28 (sign-ins + RSVPs)</li>
+        <li>Confirmed: 8 to 20 (the 12 who signed in)</li>
+        <li>Duplicate-safe append, re-run safe</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Committed: CHANGELOG.md (a267449) + this slide. Data lives in Supabase and Google Sheets.</span>
+    <span>docs/deliveries/2026-09/2026-09-15/</span>
+  </div>
+</div>
+</body>
+</html>
