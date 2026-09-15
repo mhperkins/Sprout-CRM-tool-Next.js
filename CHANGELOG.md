@@ -2,6 +2,28 @@
 
 ---
 
+## 2026-09-15: Intake sweep (17 new contacts) + Vol. 4 thank-you list
+
+Data-only: 17 creates via the `sprout-crm` MCP, one `alt_emails` update and one event roster update via `execute_sql`, plus two Google Sheet edits. No app code or schema change. Effort: medium.
+
+### What changed
+- **Swept all 4 canonical intake sheets** (every row read, one SQL email match incl. `alt_emails`, then a name check). 19 unmatched emails became **17 new contacts** (1 junk, 2 were the same person).
+  - **12 Vol. 4 kiosk sign-ins (9/11):** Gabby Morales, Ryan Bouimad, Alice Kutuzoff, Robbie Donaldson, Nikita Boyce, Jeanne Yvonne, Arshnoor Kaur, Donovan Tula, Robert Fernandez, Srushti Hebbar, Miloni, Jay. All `attendee`, warm, Community, with a dated touchpoint.
+  - **3 Interest Form RSVPs:** Saihaj Gulati, Nasir, Janaye Betts (second RSVP email `danicameron536@` stored in `alt_emails`).
+  - **1 showcase applicant:** Isabella Paris (`music`, applied 9/14). Max confirmed she is new, not the older "Isabella" (`ind_mosrukqkxzbf`).
+  - **1 hosting lead:** Nic Black (`event_host`, cool, @queerbk; no reply to the 7/27 follow-up).
+- **MASTER Master List:** appended all 17 (rows 95–111) with the source sheet for each.
+- **New tab "Campaign Monitor Import (Vol. 4)"** in MASTER: 23 people for the Vol. 4 thank-you note (12 sign-ins, 8 performers, 3 RSVPs). mPATH resolved to Pat Hopkins from his program submission (Venmo + Proactive Panic Linktree). Greg Smith included per Max despite an old column F "don't include".
+- **Vol. 4 event (`evt_mrkzhez3qdj3`):** added the 12 sign-ins + 3 RSVPs to `contact_ids` (13 → 28); the 12 sign-ins also to `confirmed_ids` (8 → 20).
+
+### Why
+Max asked to enter the new people from the sheets and to build a Campaign Monitor list for a Vol. 4 thank-you note. Nothing was sent; Max sends it himself.
+
+### Skipped
+`jshgdgsh@` ("Jason X" junk) and Max's own test row on the Host form.
+
+---
+
 ## 2026-09-14: Eventbrite links on the September Queer Social events
 
 Data-only (two link appends on `sprout_events` via `execute_sql`). No app code or schema change. Effort: medium.
