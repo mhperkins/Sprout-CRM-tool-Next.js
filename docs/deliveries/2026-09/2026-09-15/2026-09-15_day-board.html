@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Day Board Delivery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root{--ink:#030000;--paper:#F7F7F6;--cyan:#73C4D6;--fuchsia:#E10098;--acid:#C6C902;--banana:#FAD100;--dim:#5f5f57;--line:#E3E3DD;
+    --flamingo:#E67C73;--peacock:#039BE5;--graphite:#616161;--bananacal:#F6BF26;--sage:#33B679}
+  *{box-sizing:border-box}
+  body{margin:0;background:#1a1a17;font-family:Lato,Helvetica,Arial,sans-serif;color:var(--ink);display:grid;place-items:center;min-height:100vh;padding:24px 16px}
+  .slide{width:min(1280px,100%);aspect-ratio:16/9;background:var(--paper);border-radius:14px;overflow:hidden;display:grid;grid-template-rows:auto 1fr auto;box-shadow:0 30px 80px -30px rgba(0,0,0,.6)}
+  @media(max-width:900px){.slide{aspect-ratio:auto}}
+  .mono{font-family:"JetBrains Mono",Menlo,monospace;font-variant-numeric:tabular-nums}
+  header{background:var(--ink);color:var(--paper);padding:22px 36px 18px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;border-bottom:5px solid var(--acid)}
+  .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:900;color:var(--cyan)}
+  h1{margin:6px 0 0;font-size:clamp(28px,3.6vw,46px);font-weight:900;letter-spacing:-.02em;line-height:1.02}
+  h1 span{color:var(--banana)}
+  .badges{display:flex;gap:8px;flex-wrap:wrap}
+  .badge{font-size:13px;padding:6px 11px;border-radius:6px;border:1px solid rgba(247,247,246,.25);display:inline-flex;gap:7px;align-items:center}
+  .badge b{color:var(--acid)}
+  main{padding:22px 36px;display:grid;grid-template-columns:1.25fr 1fr;gap:22px;min-height:0}
+  @media(max-width:900px){main{grid-template-columns:1fr}}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-content:start}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px 15px;display:grid;gap:5px;align-content:start}
+  .card h3{margin:0;font-size:15px;font-weight:900;display:flex;gap:8px;align-items:center}
+  .card p{margin:0;font-size:12.5px;line-height:1.45;color:#34342e}
+  .ico{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;font-size:14px;flex:0 0 auto}
+  .col{display:grid;gap:12px;align-content:start}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .stat{background:var(--ink);color:var(--paper);border-radius:10px;padding:12px 14px}
+  .stat .n{font-size:32px;font-weight:900;line-height:1}
+  .stat .l{font-size:11.5px;opacity:.8;margin-top:5px;line-height:1.3}
+  .stat:nth-child(1) .n{color:var(--acid)} .stat:nth-child(2) .n{color:var(--cyan)} .stat:nth-child(3) .n{color:var(--banana)}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px 15px}
+  .panel h4{margin:0 0 8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  .fixes{margin:0;padding:0;list-style:none;display:grid;gap:6px;font-size:12.5px;line-height:1.4}
+  .fixes li{display:grid;grid-template-columns:18px 1fr;gap:6px}
+  .fixes li::before{content:"✓";color:#15804A;font-weight:900}
+  .cats{display:flex;gap:6px;flex-wrap:wrap}
+  .cat{font-size:12px;padding:4px 9px;border-radius:999px;background:var(--paper);border:1px solid var(--line);display:inline-flex;gap:6px;align-items:center}
+  .cat i{width:10px;height:10px;border-radius:2px;display:inline-block}
+  .done-row{display:flex;gap:8px;align-items:center;font-size:13px}
+  .ok{background:#15804A;color:#fff;font-weight:700;font-size:12px;padding:4px 9px;border-radius:5px}
+  .strike{text-decoration:line-through;text-decoration-thickness:2px;color:var(--dim);font-weight:700}
+  footer{padding:12px 36px 16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--dim);border-top:1px solid var(--line)}
+  footer b{color:var(--fuchsia)}
+</style>
+</head>
+<body>
+<section class="slide" aria-label="Day Board delivery slide">
+  <header>
+    <div>
+      <div class="eyebrow">Sprout CRM · Delivered 9/15/2026</div>
+      <h1>The Dashboard is now the <span>Day Board</span></h1>
+    </div>
+    <div class="badges">
+      <span class="badge mono">commit <b>0ffb771</b></span>
+      <span class="badge mono">branch <b>main</b></span>
+      <span class="badge mono">12 files · +2,649</span>
+      <span class="badge">Pushed + live on Vercel</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <div class="card">
+        <h3><span class="ico" style="background:var(--banana)">☑</span>Day view</h3>
+        <p>Calendar items with times, then tasks with Complete, Push and Follow up. ‹ Today › and arrow keys step through days.</p>
+        <div class="done-row"><span class="ok">✓ Done</span><span class="strike">Kate Russell</span><span style="color:var(--dim)">stays on the list, with Undo</span></div>
+      </div>
+      <div class="card">
+        <h3><span class="ico" style="background:var(--cyan)">▤</span>Weekly bank</h3>
+        <p>CRM follow-ups due this week, overdue ones, and carried-over tasks. Order them, then place each on a day that has room.</p>
+      </div>
+      <div class="card">
+        <h3><span class="ico" style="background:var(--acid)">↻</span>Midnight auto-push</h3>
+        <p>Anything not done moves to the next day on its own at midnight ET. Sunday night it goes to next week's bank. Push notes are optional.</p>
+      </div>
+      <div class="card">
+        <h3><span class="ico" style="background:#FFCDF0">🗓</span>Both calendars</h3>
+        <p>Your Max Perkins calendar and the Sprout HQ Program Calendar, read-only. Sprout calendar hours get their own total. No new sign-in.</p>
+      </div>
+      <div class="card">
+        <h3><span class="ico" style="background:var(--banana)">✉</span>Two emails</h3>
+        <p>Daily recap at 9pm ET, or 30 minutes after your last calendar item. Weekly summary Sunday 6pm ET. Each sends once.</p>
+      </div>
+      <div class="card">
+        <h3><span class="ico" style="background:var(--cyan)">⇄</span>CRM stays in step</h3>
+        <p>Complete and Follow up update the contact's or org's next action. Every write re-reads the record first.</p>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="stats">
+        <div class="stat"><div class="n mono">19</div><div class="l">CRM follow-ups in this week's bank</div></div>
+        <div class="stat"><div class="n mono">21</div><div class="l">logic checks passing on real modules</div></div>
+        <div class="stat"><div class="n mono">5/5</div><div class="l">code review issues fixed</div></div>
+      </div>
+      <div class="panel">
+        <h4>Hours by Google Calendar color</h4>
+        <div class="cats">
+          <span class="cat"><i style="background:var(--flamingo)"></i>Events &amp; Programs</span>
+          <span class="cat"><i style="background:var(--peacock)"></i>Outreach</span>
+          <span class="cat"><i style="background:var(--graphite)"></i>Admin</span>
+          <span class="cat"><i style="background:var(--bananacal)"></i>Grants &amp; Fundraising</span>
+          <span class="cat"><i style="background:var(--sage)"></i>Personal</span>
+        </div>
+      </div>
+      <div class="panel">
+        <h4>Fixed before shipping</h4>
+        <ul class="fixes">
+          <li>Undo no longer erases an org's newer follow-up</li>
+          <li>Rescheduling an action updates its task instead of duplicating it</li>
+          <li>An old browser tab can't close tasks that are still open</li>
+          <li>A cut-off send no longer blocks that email for good</li>
+          <li>Declined invites don't count as hours</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h4>Database</h4>
+        <p style="margin:0;font-size:12.5px;line-height:1.45">New task table (signed-in only), send-once records, a midnight roll-forward, and two scheduled jobs. The job secret was generated inside the database and never shown.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <span>Next: <b>color your calendar events</b> so hours stop reading Uncategorized.</span>
+    <span class="mono">docs/deliveries/2026-09/2026-09-15/2026-09-15_day-board.html</span>
+  </footer>
+</section>
+</body>
+</html>
