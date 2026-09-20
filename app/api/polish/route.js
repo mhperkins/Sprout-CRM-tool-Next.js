@@ -49,7 +49,13 @@ export async function POST(req) {
     const msg = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 400,
-      // Cache the system block so repeated polishes are cheaper/faster.
+      // This marker currently does nothing, and the comment that used to sit here claimed
+      // a saving that was never happening. Haiku 4.5 does not cache a prefix under 4096
+      // tokens; measured with count_tokens, this request is 531. A too-short prefix fails
+      // SILENTLY, with no error, just cache_creation_input_tokens: 0, which is why it read
+      // as working. Nothing to fix: the prompt would have to grow roughly eightfold to
+      // reach the floor. Left in place because it costs nothing and would start working if
+      // the model changed. The call is cheap regardless: Haiku, 400 max tokens.
       system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
       messages: [
         {

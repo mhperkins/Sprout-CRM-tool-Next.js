@@ -61,7 +61,14 @@ export async function POST(req) {
     const msg = await client.messages.create({
       model: "claude-sonnet-5",
       max_tokens: 1200,
-      // Cache the system block so repeated rewrites are cheaper/faster.
+      // This marker does not fire yet, and it is close. Sonnet 5 does not cache a prefix
+      // under 1024 tokens; measured with count_tokens, this request is 860, so it misses by
+      // about 164. A too-short prefix fails SILENTLY, with no error, just
+      // cache_creation_input_tokens: 0, which is why the comment that used to sit here
+      // claimed a saving that never happened. Worth knowing before editing SYSTEM: adding
+      // roughly a paragraph of voice rules would push this over the floor and the marker
+      // would start paying off on its own. Verify with usage.cache_read_input_tokens rather
+      // than assuming.
       system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
       messages: [{ role: "user", content: userMsg }],
     });
