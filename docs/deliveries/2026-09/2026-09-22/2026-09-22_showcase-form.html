@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivered — Showcase form (2026-09-22)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --card:#fff;
+    --cyan:#73C4D6; --cyan-dk:#2a8ca0; --fuchsia:#E10098; --acid:#C6C902; --banana:#FAD100;
+    --line:#E5E7EB; --dim:#5f5f5c; --faint:#8a8a86;
+    --ok:#15804A; --ok-bg:#E4F3EA;
+    --sh:0 4px 14px rgba(0,0,0,.08);
+  }
+  body{font-family:Lato,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .mono{font-family:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px 72px}
+
+  .mast{background:var(--ink);padding:26px 20px}
+  .mast-in{max-width:1080px;margin:0 auto;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .mast-t{color:#fff;font-size:15px;font-weight:900;letter-spacing:.07em;text-transform:uppercase}
+  .mast-s{color:#C2C2BF;font-size:12.5px;margin-top:3px}
+  .mast-r{display:flex;gap:8px;flex-wrap:wrap}
+  .badge{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:5px 12px;color:#fff;border:1px solid rgba(255,255,255,.25)}
+  .badge.ship{background:var(--ok);border-color:transparent}
+  .badge.sha{background:transparent;font-family:'JetBrains Mono',monospace;letter-spacing:0;text-transform:none}
+  .rule{height:4px;background:var(--acid)}
+
+  .hero{padding:40px 0 26px}
+  .hero h1{font-size:38px;font-weight:900;line-height:1.1;letter-spacing:-.02em;max-width:20ch}
+  .hero p{font-size:17px;line-height:1.6;color:var(--dim);margin-top:14px;max-width:66ch}
+  .linkbox{display:inline-flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:20px;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--cyan);border-radius:0 8px 8px 0;padding:13px 17px;box-shadow:var(--sh)}
+  .linkbox b{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
+  .linkbox a{color:var(--cyan-dk);font-weight:900;font-size:15px;text-decoration:none;word-break:break-all}
+
+  h2{font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:34px 0 14px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:17px 19px;box-shadow:var(--sh)}
+  .card .ic{font-size:19px;line-height:1}
+  .card h3{font-size:15px;font-weight:900;margin:9px 0 6px}
+  .card p{font-size:13.5px;line-height:1.6;color:var(--dim)}
+  .card code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#F1F1EC;border-radius:4px;padding:1px 5px}
+  .card.accent{border-left:5px solid var(--fuchsia)}
+  .card.accent2{border-left:5px solid var(--cyan)}
+  .card.accent3{border-left:5px solid var(--acid)}
+  .card.accent4{border-left:5px solid var(--banana)}
+
+  .flow{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
+  .step{flex:1 1 190px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:15px 17px;box-shadow:var(--sh);position:relative}
+  .step .n{font-size:10.5px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--fuchsia)}
+  .step h4{font-size:14.5px;font-weight:900;margin:5px 0 5px}
+  .step p{font-size:12.5px;line-height:1.55;color:var(--dim)}
+  .step.gate{border-left:5px solid var(--fuchsia)}
+
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:var(--sh)}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:top}
+  th{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);background:#F1F1EC}
+  tr:last-child td{border-bottom:0}
+  td.f{font-family:'JetBrains Mono',monospace;font-size:12.5px;white-space:nowrap}
+  .new{display:inline-block;font-size:10px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;background:var(--acid);color:var(--ink);border-radius:3px;padding:1px 5px;margin-left:6px}
+
+  .checks{display:grid;gap:9px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+  .chk{display:flex;gap:10px;align-items:flex-start;background:var(--ok-bg);border-radius:8px;padding:10px 13px;font-size:13px;line-height:1.5}
+  .chk span{color:var(--ok);font-weight:900;flex:0 0 auto}
+
+  .bug{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--fuchsia);border-radius:0 10px 10px 0;padding:18px 20px;box-shadow:var(--sh)}
+  .bug h3{font-size:16px;font-weight:900;margin-bottom:7px}
+  .bug p{font-size:13.5px;line-height:1.65;color:var(--dim);max-width:78ch}
+  .bug b{color:var(--ink)}
+
+  .next{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 20px;box-shadow:var(--sh)}
+  .next li{list-style:none;padding:12px 0;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.6;color:var(--dim)}
+  .next li:last-child{border-bottom:0}
+  .next b{color:var(--ink)}
+
+  .foot{text-align:center;color:var(--faint);font-size:12px;padding:34px 20px 0;line-height:1.7}
+  @media (max-width:600px){ .hero h1{font-size:28px} .hero p{font-size:15px} }
+</style>
+</head>
+<body>
+
+<div class="mast">
+  <div class="mast-in">
+    <div>
+      <div class="mast-t">Sprout Society · CRM</div>
+      <div class="mast-s">Delivered Monday, September 22, 2026</div>
+    </div>
+    <div class="mast-r">
+      <span class="badge ship">Shipped &amp; live</span>
+      <span class="badge sha mono">main · 9fdec49</span>
+      <span class="badge">Effort: medium</span>
+    </div>
+  </div>
+</div>
+<div class="rule"></div>
+
+<div class="wrap">
+  <section class="hero">
+    <h1>The Google Form is replaced.</h1>
+    <p>
+      Musicians and artists now apply at a Sprout-branded page that takes links to their work,
+      audio and images, and lands every application in a review queue instead of your contacts.
+      Nothing reaches the CRM until you accept it.
+    </p>
+    <div class="linkbox">
+      <b>The link</b>
+      <a href="https://sprout-crm-tool-next-js.vercel.app/showcase">sprout-crm-tool-next-js.vercel.app/showcase</a>
+    </div>
+  </section>
+
+  <h2>What people see</h2>
+  <div class="grid">
+    <div class="card accent2">
+      <div class="ic">🔗</div>
+      <h3>Links first</h3>
+      <p>Spotify, SoundCloud, Bandcamp, YouTube, a portfolio — as many rows as they want. Most applicants send a streaming link, so this sits above the uploads.</p>
+    </div>
+    <div class="card accent2">
+      <div class="ic">🎵</div>
+      <h3>Audio and images</h3>
+      <p>Up to 3 files, 25MB each, for anyone without a public link. Uploads go straight to storage, so a big demo never hits the request limit.</p>
+    </div>
+    <div class="card accent2">
+      <div class="ic">📝</div>
+      <h3>Four required answers</h3>
+      <p>What they do, what they'd showcase, name, email. Phone, Instagram and access or gear notes are optional. No sign-in, no Google account.</p>
+    </div>
+    <div class="card accent3">
+      <div class="ic">🗓</div>
+      <h3>No date question</h3>
+      <p>The page says Sprout N Tell usually runs the fourth Friday and that we write back with date options. Picking the night is a conversation, not a dropdown.</p>
+    </div>
+  </div>
+
+  <h2>What happens to an application</h2>
+  <div class="flow">
+    <div class="step">
+      <div class="n">Step 1</div>
+      <h4>It lands inert</h4>
+      <p>Saved in its own table. Your contacts are untouched.</p>
+    </div>
+    <div class="step">
+      <div class="n">Step 2</div>
+      <h4>You get an email</h4>
+      <p>The pitch and their links are in the email itself, so most can be judged without opening the CRM. Reply goes straight to them.</p>
+    </div>
+    <div class="step">
+      <div class="n">Step 3</div>
+      <h4>You review it</h4>
+      <p>The 🎤 Showcase view plays their audio inline and shows image thumbnails. New / Accepted / Passed.</p>
+    </div>
+    <div class="step gate">
+      <div class="n">Step 4 · the only write</div>
+      <h4>Accept</h4>
+      <p>Creates or updates the contact, tags them Showcase, and adds them to the night you pick. Pass keeps junk out entirely.</p>
+    </div>
+  </div>
+
+  <h2>The duplicate guard</h2>
+  <div class="grid">
+    <div class="card accent">
+      <div class="ic">🧬</div>
+      <h3>A known email updates, never duplicates</h3>
+      <p>Matching runs on the contact's email <em>and</em> their <code>alt_emails</code>, so a second address still finds the person. Their record is merged: blanks filled, types unioned, a touchpoint appended, status never downgraded.</p>
+    </div>
+    <div class="card accent">
+      <div class="ic">🆕</div>
+      <h3>A new person gets a clean record</h3>
+      <p><code>ind_first_last</code>, tagged Showcase plus Music or Art, Community bucket, warm, <code>how_heard</code> filled, pitch and links in notes, dated touchpoint, added to the event's people.</p>
+    </div>
+    <div class="card accent">
+      <div class="ic">🚫</div>
+      <h3>Junk never arrives</h3>
+      <p>Pass and Delete act on the application only. The three test rows and empty submissions this CRM used to collect never reach the relationship data.</p>
+    </div>
+  </div>
+
+  <h2>Files</h2>
+  <table>
+    <tr><th>File</th><th>What it does</th></tr>
+    <tr><td class="f">app/showcase/page.js<span class="new">new</span></td><td>The public page at <code>/showcase</code>.</td></tr>
+    <tr><td class="f">components/ShowcaseForm.jsx<span class="new">new</span></td><td>The form itself, on the existing portal shell.</td></tr>
+    <tr><td class="f">app/api/showcase/route.js<span class="new">new</span></td><td>Public write path: service role, hourly cap, duplicate guard, file URLs accepted only from our own bucket.</td></tr>
+    <tr><td class="f">lib/showcaseForm.js<span class="new">new</span></td><td>One shape shared by form, route and CRM: limits, sanitizing, required checks, link labelling.</td></tr>
+    <tr><td class="f">lib/showcaseDb.js<span class="new">new</span></td><td>Server-only inserts and counts.</td></tr>
+    <tr><td class="f">components/ShowcaseApplications.jsx<span class="new">new</span></td><td>The review queue: New / Accepted / Passed, inline audio, thumbnails, link pills, Accept modal.</td></tr>
+    <tr><td class="f">supabase/migrations/…applications.sql<span class="new">applied</span></td><td><code>sprout_showcase_applications</code>, authenticated-only RLS.</td></tr>
+    <tr><td class="f">lib/notify.js</td><td>The alert email, carrying the pitch and the links.</td></tr>
+    <tr><td class="f">lib/schemas.js</td><td><code>alt_emails</code> added to <code>ContactSchema</code> — see below.</td></tr>
+    <tr><td class="f">lib/services.js</td><td>Read, patch and delete applications as a signed-in user.</td></tr>
+    <tr><td class="f">components/CRMManager.jsx</td><td>Showcase sidebar item and view, single-row saves, <code>?view=showcase</code> deep link.</td></tr>
+    <tr><td class="f">docs/wireframes/…wireframe.html<span class="new">new</span></td><td>The wireframe the structure was settled on, before any code.</td></tr>
+  </table>
+
+  <h2>A bug found on the way</h2>
+  <div class="bug">
+    <h3>Second email addresses were being deleted on every save</h3>
+    <p>
+      <b><code>alt_emails</code> was missing from <code>ContactSchema</code>.</b> Zod strips keys it does not know about,
+      so the field survived in the database but was quietly dropped the moment that contact was saved anywhere in the app.
+      Janaye, Camilla, Remy, Kingsley, Mac, Nina and Syd each carry a second address folded in during intake sweeps, and
+      each would have lost it on the next edit. Now declared as a JSONB-only array field with a default, so old records
+      without the key still validate and nothing needed migrating. The showcase queue relies on it to match people.
+    </p>
+  </div>
+
+  <h2>Verified</h2>
+  <div class="checks">
+    <div class="chk"><span>✓</span><div><b>Build passes</b>; both routes registered.</div></div>
+    <div class="chk"><span>✓</span><div><b>RLS confirmed</b> authenticated-only, nothing else.</div></div>
+    <div class="chk"><span>✓</span><div><b>5 validation rejections</b>, including a forged role value.</div></div>
+    <div class="chk"><span>✓</span><div><b>Live round-trip</b>: blank and duplicate links dropped, an outside-host file URL stripped, the real one kept.</div></div>
+    <div class="chk"><span>✓</span><div><b>Double-send swallowed</b> as a duplicate.</div></div>
+    <div class="chk"><span>✓</span><div><b>15 logic checks</b> against the real modules, including Accept through the real validator.</div></div>
+    <div class="chk"><span>✓</span><div><b>Rendered at 390px and 1280px</b>: no sideways scroll, no page errors.</div></div>
+    <div class="chk"><span>✓</span><div><b>Live in production</b>; test row deleted, table back to zero.</div></div>
+  </div>
+
+  <h2>Over to you</h2>
+  <ul class="next">
+    <li><b>Retire the Google Form.</b> Turn off responses and put the /showcase link in its description. One catch: it also collects <b>attendee RSVPs</b>, and the new form is showcase-only, so decide where those go before you close it.</li>
+    <li><b>Watch for the first real application.</b> The email arrives with the pitch and links; Accept in the CRM is what creates the contact. The queue has not been clicked through by Claude, since it sits behind the login wall.</li>
+    <li><b>Optional: a tracked QR for /showcase</b> on the door, the TV slide and flyers, through qr-tracker-gold like the others.</li>
+    <li><b>One test email</b> is sitting in maxperkins@ — subject "Showcase application: Test Applicant (please ignore)."</li>
+  </ul>
+
+  <p class="foot">
+    Sprout Society · CRM Manager<br>
+    Commit 9fdec49 on main · migration sprout_showcase_applications applied · deployed and confirmed live
+  </p>
+</div>
+
+</body>
+</html>

@@ -2,6 +2,38 @@
 
 ---
 
+## 2026-09-22: Showcase form replaces the Sprout N Tell Google Form
+
+App code + one applied migration. `npm run build` passes. Committed + pushed (`9fdec49`) and confirmed live. Effort: medium.
+
+### What changed
+- **Wireframed first** (`docs/wireframes/2026-09-22_showcase-form-wireframe.html`, published as an artifact). Max's calls: showcase applications only (attendee RSVPs stay on the Google Form for now); one standing link rather than a per-event token; a review queue rather than auto-created contacts; links matter more than uploads because most people send a streaming URL; no "which night" question, since the form says we usually host the fourth Friday and we reply with date options.
+- **`/showcase` (new):** the public application. Role chips (Music / Art / Something else), what you would showcase, repeatable link rows, optional audio or image uploads (3 files, 25MB each), name, email, phone, Instagram, and anything we should know. No sign-in, no Google account. Required: role, pitch, name, email.
+- **`app/api/showcase` (new):** the only public write path in the CRM not scoped by a secret token. Writes with the service-role key into its own table, caps submissions per hour, swallows a repeat send from the same address, and accepts file URLs only from our own public bucket. No honeypot field, deliberately: Chrome autofill filled the program form's hidden trap and blocked a real person.
+- **`lib/showcaseForm.js` (new):** one shape shared by the form, the route and the CRM (limits, sanitizing, required-field checks, link labelling, plain-text dump).
+- **`lib/showcaseDb.js` (new)** + **migration `sprout_showcase_applications` (applied):** `id/status/name/email/role/data/contact_id/event_id`, authenticated-only RLS, matching every other `sprout_*` table.
+- **`components/ShowcaseApplications.jsx` (new):** a Showcase sidebar item with New / Accepted / Passed. Each card plays submitted audio inline, shows image thumbnails, and renders pasted URLs as labelled pills (Spotify, SoundCloud, Bandcamp, YouTube...). Accept opens a modal to pick the night; Pass and Delete keep junk out of the CRM entirely.
+- **Accept is the only path that writes to contacts.** A new person becomes a contact tagged Showcase (plus Music or Art), Community bucket, warm, `how_heard` filled, pitch and links in notes, a dated touchpoint, and is added to the chosen event's people. An email that already belongs to a contact **merges** into that record (fills blanks, unions types, appends a touchpoint) instead of creating a second one, and a different address is kept in `alt_emails`.
+- **`lib/notify.js`:** a staff alert email per application carrying the pitch and the links, so most can be judged without opening the CRM.
+- **`CRMManager.jsx`:** Showcase nav item and view, single-row `createOneContact` / `saveOneEvent` (the bulk saves re-upsert all ~3,800 rows), and a `/?view=showcase` deep link for the alert email's button.
+
+### The bug found on the way
+`alt_emails` was missing from `ContactSchema`. Zod strips unknown keys, so **every save through the app silently dropped it** — any contact with a second email (Janaye, Camilla, Remy, Kingsley, Mac, Nina, Syd) would have lost it the next time their record was saved. Added as a JSONB-only field with an array default. No migration; existing records without the key still validate.
+
+### Why
+Max asked to abandon the Google Form so applicants can send audio, images or links to their work along with their contact details, in the same spirit as the program link.
+
+### Verified
+- `npm run build` passes; `/showcase` and `/api/showcase` both registered.
+- Migration applied; `pg_policies` confirms `authenticated_all` only.
+- Five validation rejections return plain-language errors, including a forged role value.
+- A real submission round-tripped through the live route: duplicate and blank links dropped, a file URL pointing at an outside host stripped while the legitimate one was kept, a double-send swallowed as a duplicate. Test row deleted (table back to 0).
+- 15 logic checks against the real modules, including the Accept records through the real `validateContact`: new and merged contacts validate, `alt_emails` survive Zod, existing relationship types are kept.
+- Rendered in real Chrome at 390px and 1280px: no horizontal scroll, no page errors.
+- Deployed and confirmed in production: the page serves and the API validates on the live host. The CRM queue was not clicked through by Claude (login wall).
+
+---
+
 ## 2026-09-15: Day Board replaces the CRM dashboard
 
 App code + one applied migration. `npm run build` passes. Effort: high (new table + RLS, CRM next-action writes, scheduled email). Ran on Opus 5.
