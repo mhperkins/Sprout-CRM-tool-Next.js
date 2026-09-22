@@ -47,6 +47,7 @@ import { buildNewsletter, TEMPLATES, defaultMonthYear, COMPACT_SECTIONS, QUICK_H
 import { validateContact, validateOrg } from "../lib/schemas";
 import { blocksOf, firstHeading, parseTableBlock, serializeTable, renderInline } from "../lib/md";
 import DayBoard from "./DayBoard";
+import ShowcaseApplications from "./ShowcaseApplications";
 
 /* ─── Styles ───────────────────────────────────────────────────────────────── */
 const STYLES = `
@@ -1444,6 +1445,7 @@ function Sidebar({view,setView,contacts,events,profile,onQuickLog,onCollapse}) {
     {id:"contacts",label:"Contacts",icon:"👤"},
     {id:"orgs",label:"Organizations",icon:"🏢"},
     {id:"events",label:"Events",icon:"🗓"},
+    {id:"showcase",label:"Showcase",icon:"🎤"},
     {id:"newsletter",label:"Newsletter",icon:"📰"},
     {id:"outreach",label:"Outreach",icon:"📣"},
     {section:"Tools"},
@@ -5792,6 +5794,20 @@ const saveOrgs = useCallback((u) => {
     });
   }, [showToast]);
 
+  const createOneContact = useCallback((rec) => {
+    setContacts(prev => prev.some(c => c.id === rec.id) ? prev.map(c => c.id === rec.id ? rec : c) : [...prev, rec]);
+    svcSaveContacts([rec]).then(({ error }) => {
+      if (error) { console.error("createOneContact:", error); showToast(`Save failed: ${error}`, "err"); }
+    });
+  }, [showToast]);
+
+  const saveOneEvent = useCallback((rec) => {
+    setEvents(prev => prev.map(e => e.id === rec.id ? rec : e));
+    svcSaveEvents([rec]).then(({ error }) => {
+      if (error) { console.error("saveOneEvent:", error); showToast(`Save failed: ${error}`, "err"); }
+    });
+  }, [showToast]);
+
   const saveEvents = useCallback((u) => {
     setEvents(u);
     svcSaveEvents(u).then(({ error }) => {
@@ -5906,6 +5922,12 @@ const saveProfile = useCallback((u) => {
   useEffect(()=>{
     try{
       const url=new URL(window.location.href);
+      const v=url.searchParams.get("view");
+      if(v==="showcase"){
+        setView("showcase");
+        url.searchParams.delete("view");
+        window.history.replaceState({},"",url.pathname+(url.searchParams.toString()?`?${url.searchParams}`:"")+url.hash);
+      }
       const id=url.searchParams.get("event");
       if(!id) return;
       setPendingEvent({id});
@@ -5944,6 +5966,7 @@ if (dbError) return (
 {view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail} setView={setView}/>}
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
 {view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))} pendingEvent={pendingEvent} onPendingEventConsumed={clearPendingEvent} portals={portals} onCreatePortal={makePortal} onRotatePortal={rotatePortal} onRemovePortal={removePortal} onRefreshPortals={refreshPortals} onSavePortalAnswer={savePortalAnswer}/>}
+        {view==="showcase"&&<ShowcaseApplications contacts={contacts} events={events} onSaveContact={saveOneContact} onCreateContact={createOneContact} onUpdateEvent={saveOneEvent} openContact={openContact} showToast={showToast}/>}
         {view==="newsletter"&&<NewsletterView newsletters={newsletters} events={events} contacts={contacts} profile={profile} onUpdate={saveNewsletter} onDelete={deleteNewsletter} showToast={showToast}/>}
         {view==="outreach"&&<OutreachView contacts={contacts} orgs={orgs} events={events}/>}
         {view==="import"&&<ImportView contacts={contacts} orgs={orgs} onImportContact={importContact} onImportOrg={importOrg} showToast={showToast}/>}
