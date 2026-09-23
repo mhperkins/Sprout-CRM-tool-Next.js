@@ -9,7 +9,8 @@
 // with the same message, so the endpoint cannot be used to probe for valid links.
 
 import { sanitizePortalData, portalProgress, fillBlanks } from "@/lib/eventPortal";
-import { hasServiceKey, portalByToken, publicEvent, savePortalData, syncEventFromPortal, crmSeedForEvent } from "@/lib/portalDb";
+import { hasServiceKey, portalByToken, publicEvent, savePortalData, syncEventFromPortal, crmSeedForEvent, markPortalAlerted } from "@/lib/portalDb";
+import { notifyPortalActivity } from "@/lib/notify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,6 +29,33 @@ async function load(params) {
   }
   if (!portal) return { fail: NOT_FOUND() };
   return { portal };
+}
+
+// The portal autosaves, so an alert per save would flood the inbox. Edits alert at
+// most once every 12 hours per portal; a submit always alerts. Awaited because
+// serverless stops the function once the response is sent, but caught: a failed
+// email must never fail a host's save.
+const ALERT_EVERY_MS = 12 * 3600_000;
+
+const alertDue = (portal) => {
+  const last = portal?.alerted_at ? Date.parse(portal.alerted_at) : 0;
+  return !last || Date.now() - last >= ALERT_EVERY_MS;
+};
+
+async function alertStaff(req, portal, data, progress, submitted) {
+  try {
+    const event = await publicEvent(portal.event_id);
+    await notifyPortalActivity({
+      portal: { ...portal, data },
+      event,
+      progress,
+      origin: new URL(req.url).origin,
+      submitted,
+    });
+    await markPortalAlerted(portal.id);
+  } catch (e) {
+    console.error("portal — notification email failed:", e?.message || e);
+  }
 }
 
 export async function GET(_req, { params }) {
@@ -77,7 +105,10 @@ export async function PUT(req, { params }) {
   // Keep the CRM event in step with the answers that define it.
   await syncEventFromPortal(portal.event_id, data);
 
-  return Response.json({ ok: true, savedAt: new Date().toISOString(), progress: portalProgress(data) });
+  const progress = portalProgress(data);
+  if (alertDue(portal)) await alertStaff(req, portal, data, progress, false);
+
+  return Response.json({ ok: true, savedAt: new Date().toISOString(), progress });
 }
 
 export async function POST(req, { params }) {
@@ -98,5 +129,8 @@ export async function POST(req, { params }) {
   }
   await syncEventFromPortal(portal.event_id, data);
 
-  return Response.json({ ok: true, status: "submitted", submitted_at: now, progress: portalProgress(data) });
+  const progress = portalProgress(data);
+  await alertStaff(req, portal, data, progress, true);
+
+  return Response.json({ ok: true, status: "submitted", submitted_at: now, progress });
 }
