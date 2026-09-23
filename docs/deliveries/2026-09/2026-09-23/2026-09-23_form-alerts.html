@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivered — Every form emails you (2026-09-23)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --card:#fff;
+    --cyan:#73C4D6; --cyan-dk:#2a8ca0; --fuchsia:#E10098; --acid:#C6C902; --banana:#FAD100;
+    --line:#E5E7EB; --dim:#5f5f5c; --faint:#8a8a86;
+    --ok:#15804A; --ok-bg:#E4F3EA; --warn:#8A6100; --warn-bg:#FAF0D6;
+    --sh:0 4px 14px rgba(0,0,0,.08);
+  }
+  body{font-family:Lato,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .mono{font-family:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 20px 72px}
+
+  .mast{background:var(--ink);padding:26px 20px}
+  .mast-in{max-width:1060px;margin:0 auto;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .mast-t{color:#fff;font-size:15px;font-weight:900;letter-spacing:.07em;text-transform:uppercase}
+  .mast-s{color:#C2C2BF;font-size:12.5px;margin-top:3px}
+  .badge{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:5px 12px;color:#fff;border:1px solid rgba(255,255,255,.25);margin-left:8px}
+  .badge.ok{background:var(--ok);border-color:transparent}
+  .badge.sha{font-family:'JetBrains Mono',monospace;letter-spacing:0;text-transform:none}
+  .rule{height:4px;background:var(--acid)}
+
+  .hero{padding:40px 0 22px}
+  .hero h1{font-size:37px;font-weight:900;line-height:1.1;letter-spacing:-.02em;max-width:20ch}
+  .hero p{font-size:16.5px;line-height:1.6;color:var(--dim);margin-top:14px;max-width:70ch}
+
+  h2{font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:34px 0 14px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+
+  table.forms{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:var(--sh)}
+  table.forms th,table.forms td{text-align:left;padding:12px 15px;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:top}
+  table.forms th{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);background:#F1F1EC}
+  table.forms tr:last-child td{border-bottom:0}
+  td.f{font-family:'JetBrains Mono',monospace;font-size:12.5px;white-space:nowrap}
+  .tag{display:inline-block;font-size:10px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;border-radius:3px;padding:2px 6px}
+  .tag.new{background:var(--acid);color:var(--ink)}
+  .tag.was{background:#ECECEA;color:var(--dim)}
+  .tag.quiet{background:var(--warn-bg);color:var(--warn)}
+
+  .two{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(310px,1fr))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:17px 19px;box-shadow:var(--sh)}
+  .card.cy{border-left:5px solid var(--cyan)}
+  .card.fu{border-left:5px solid var(--fuchsia)}
+  .card.ac{border-left:5px solid var(--acid)}
+  .card h3{font-size:15px;font-weight:900;margin-bottom:7px}
+  .card p{font-size:13.5px;line-height:1.65;color:var(--dim)}
+  .card b{color:var(--ink)}
+  .card code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#F1F1EC;border-radius:4px;padding:1px 5px}
+
+  .thr{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .thr div{flex:1 1 120px;background:#F1F1EC;border-radius:7px;padding:9px 11px;text-align:center}
+  .thr .w{display:block;font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700}
+  .thr .l{display:block;font-size:11px;color:var(--faint);margin-top:2px}
+  .thr .yes{background:var(--ok-bg)} .thr .yes .w{color:var(--ok)}
+
+  .chk{display:flex;gap:10px;align-items:flex-start;background:var(--ok-bg);border-radius:8px;padding:10px 13px;font-size:13.5px;line-height:1.55;margin-bottom:9px}
+  .chk span{color:var(--ok);font-weight:900;flex:0 0 auto}
+
+  .lesson{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--fuchsia);border-radius:0 10px 10px 0;padding:17px 19px;box-shadow:var(--sh);margin-bottom:13px}
+  .lesson h3{font-size:15px;font-weight:900;margin-bottom:6px}
+  .lesson p{font-size:13.5px;line-height:1.65;color:var(--dim)}
+  .lesson b{color:var(--ink)}
+  .lesson code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#F1F1EC;border-radius:4px;padding:1px 5px}
+
+  .foot{text-align:center;color:var(--faint);font-size:12px;padding:34px 20px 0;line-height:1.7}
+  @media (max-width:600px){ .hero h1{font-size:27px} }
+</style>
+</head>
+<body>
+
+<div class="mast">
+  <div class="mast-in">
+    <div>
+      <div class="mast-t">Sprout Society · CRM</div>
+      <div class="mast-s">Delivered Wednesday, September 23, 2026</div>
+    </div>
+    <div>
+      <span class="badge ok">Live</span>
+      <span class="badge sha mono">1c260db · a411108</span>
+      <span class="badge">Effort: medium</span>
+    </div>
+  </div>
+</div>
+<div class="rule"></div>
+
+<div class="wrap">
+  <section class="hero">
+    <h1>Nothing goes into a form without telling you.</h1>
+    <p>
+      Two of your four public forms used to submit in silence. An act could send their bio and photo,
+      or a host could answer every question about their event, and you would only find out by opening
+      the CRM and going looking. Both of them email you now.
+    </p>
+  </section>
+
+  <h2>Where every public form stands</h2>
+  <table class="forms">
+    <tr><th>Form</th><th>Who uses it</th><th>Alert</th></tr>
+    <tr>
+      <td class="f">/book</td>
+      <td>Someone asking to host an event</td>
+      <td><span class="tag was">already had one</span></td>
+    </tr>
+    <tr>
+      <td class="f">/showcase</td>
+      <td>Musicians and artists applying</td>
+      <td><span class="tag was">already had one</span> confirmed live on a real submission today</td>
+    </tr>
+    <tr>
+      <td class="f">/program/&lt;token&gt;</td>
+      <td>The lineup sending bio, photo and links</td>
+      <td><span class="tag new">new</span> on submit and on edit</td>
+    </tr>
+    <tr>
+      <td class="f">/portal/&lt;token&gt;</td>
+      <td>A host answering their booking questions</td>
+      <td><span class="tag new">new</span> on submit, plus throttled edits</td>
+    </tr>
+    <tr>
+      <td class="f">Door kiosk</td>
+      <td>Guests signing in at events</td>
+      <td><span class="tag quiet">silent by design</span> writes to its Google Sheet</td>
+    </tr>
+  </table>
+
+  <h2>What lands in your inbox</h2>
+  <div class="two">
+    <div class="card cy">
+      <h3>Program info</h3>
+      <p>
+        Their name, role and bio, <b>their photo inline at 120px</b> so you can judge whether it is usable
+        without downloading it, and every link as a tappable chip. Handles become real URLs, and a custom
+        label is kept, so mPATH's Spotify link would read "Spotify". Editing what they already sent sends a
+        separate <b>"Program update"</b>, which matters for the shared-phone case and for anyone fixing a bad photo.
+      </p>
+    </div>
+    <div class="card fu">
+      <h3>Portal activity</h3>
+      <p>
+        A progress bar, how many required answers are in, and <b>exactly which ones are still missing</b>.
+        When nothing is missing it says so in green rather than listing gaps. The host's contact details are
+        in the email and Reply-To points at them, so you can answer without opening anything.
+      </p>
+    </div>
+  </div>
+
+  <h2>The flooding problem, and the fix</h2>
+  <div class="card ac">
+    <h3>The portal autosaves as the host types</h3>
+    <p>
+      An alert per save would have put dozens of emails in your inbox while one person filled in one form.
+      So pressing <b>"everything I have is in" always emails you</b>, and <b>edits email at most once per
+      portal every 12 hours</b>, tracked by a new <code>alerted_at</code> column. Worst case is two emails a
+      day per portal, however long they work. If that is still too much, raise the window or keep submit only.
+    </p>
+    <div class="thr">
+      <div class="yes"><span class="w">never</span><span class="l">alerts</span></div>
+      <div><span class="w">1h ago</span><span class="l">stays quiet</span></div>
+      <div><span class="w">11.9h ago</span><span class="l">stays quiet</span></div>
+      <div class="yes"><span class="w">13h ago</span><span class="l">alerts</span></div>
+    </div>
+  </div>
+
+  <h2>Also done today</h2>
+  <div class="chk"><span>✓</span><div><b>Four showcase invitations sent</b> from your account to the applicants who signed up after Vol. 4, with touchpoints logged.</div></div>
+  <div class="chk"><span>✓</span><div><b>A follow-up on each, due Sept 30</b> — check whether they filled the form, one nudge before the 10/23 lineup locks. They surface on your Day Board that week.</div></div>
+  <div class="chk"><span>✓</span><div><b>One real test email per new alert</b> delivered and confirmed. The portal test touched no data.</div></div>
+
+  <h2>Two lessons worth keeping</h2>
+  <div class="lesson">
+    <h3>"Invalid OAuth state" is never a broken Google account</h3>
+    <p>
+      It means <b>two <code>workspace-mcp</code> instances</b> are running: one mints the sign-in state, the
+      other catches Google's callback and rejects it. Nothing listening on ports 8000-8010 is the tell. Kill
+      every instance, reload the window, and the cached token refreshes <b>with no sign-in at all</b>. Both
+      your Google accounts are fine, and maxperkins@ can draft, send and read mail from here.
+    </p>
+  </div>
+  <div class="lesson">
+    <h3>Pronouns do not get guessed from names</h3>
+    <p>
+      I wrote "her" into touchpoints and next actions for three applicants based on nothing but their first
+      names, and repaired both rounds. The CRM has <b>no pronouns field</b>, so anything written there is a
+      guess that persists and can leak into outreach copy later. They/them is the default now, in writing,
+      in memory.
+    </p>
+  </div>
+
+  <p class="foot">
+    Sprout Society · CRM Manager<br>
+    Commits 1c260db and a411108 on main · migration sprout_event_portals_alerted_at applied · build passes
+  </p>
+</div>
+
+</body>
+</html>

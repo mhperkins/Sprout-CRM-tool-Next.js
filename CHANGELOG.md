@@ -2,6 +2,25 @@
 
 ---
 
+## 2026-09-23: Every public form now emails Max
+
+App code + one column migration (`sprout_event_portals_alerted_at`, applied). `npm run build` passes. Effort: medium.
+
+### What changed
+- **`/program/<token>` alerts (`1c260db`).** An act sending their bio, photo and links used to tell nobody; it sat on the event's Program tile until someone went looking, usually the night the program gets built. Now staff get an email on a new submission **and** on an edit, subject-lined "Program info" or "Program update", carrying the name, role, bio, the photo inline at 120px, their links as chips, and a button to the event.
+- **`/portal/<token>` alerts (`a411108`).** The host portal was the last silent form. It **autosaves as the host types**, so an alert per save would flood the inbox. Two triggers instead: pressing **"everything I have is in" always emails**, and **edits email at most once per portal per 12 hours**, throttled by a new `alerted_at` column. Worst case is two emails a day per portal however much they edit. The email shows the progress bar, how many required answers are in, exactly which ones are missing, and says so in green when none are.
+- Both follow the established pattern: sent as hello@ through the existing `GMAIL_*` credentials to `BOOKING_NOTIFY_TO` (unset everywhere, so maxperkins@), awaited but caught, so a failed alert can never fail someone's submission.
+- **Follow-ups on the four showcase applicants**, due 2026-09-30, written through the MCP so the flat field and the `next_actions[]` entry stay in sync.
+
+### Verified
+`npm run build` passes. Program link resolution checked against the real module (handles to URLs, custom other-label kept). Portal throttle math checked at never / 1h / 11.9h / 13h, and progress read from the real Vol. 5 portal (12 of 15 answers, 10 of 10 required). One real test email delivered for each. The portal test touched no data, since the throttle stamp is only written inside the route. The only public form left silent is the door kiosk, which writes to its Google Sheet by design.
+
+### Two lessons saved to memory
+- **`workspace-mcp-oauth-state`**: "Invalid or expired OAuth state parameter" means two `workspace-mcp` instances are fighting over the callback, not a broken account. Nothing listening on 8000-8010 is the tell. Kill them all, reload, and the cached token refreshes with no sign-in. Both Google accounts have valid tokens and maxperkins@ can send, draft and read mail.
+- **`no-inferred-pronouns-in-records`**: default to they/them in touchpoints, notes and next actions. I wrote "her" from names alone twice in one session and had to repair both with `jsonb_set`.
+
+---
+
 ## 2026-09-23: First outreach off the showcase form
 
 Email + data only. No app code, schema or migration change. Effort: low.
