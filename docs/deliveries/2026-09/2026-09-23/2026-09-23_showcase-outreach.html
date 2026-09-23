@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivered — Showcase outreach (2026-09-23)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --ink:#030000; --paper:#F7F7F6; --card:#fff;
+    --cyan:#73C4D6; --cyan-dk:#2a8ca0; --fuchsia:#E10098; --acid:#C6C902; --banana:#FAD100;
+    --line:#E5E7EB; --dim:#5f5f5c; --faint:#8a8a86;
+    --ok:#15804A; --ok-bg:#E4F3EA; --warn:#8A6100; --warn-bg:#FAF0D6;
+    --sh:0 4px 14px rgba(0,0,0,.08);
+  }
+  body{font-family:Lato,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .mono{font-family:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+  .wrap{max-width:1020px;margin:0 auto;padding:0 20px 72px}
+
+  .mast{background:var(--ink);padding:26px 20px}
+  .mast-in{max-width:1020px;margin:0 auto;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .mast-t{color:#fff;font-size:15px;font-weight:900;letter-spacing:.07em;text-transform:uppercase}
+  .mast-s{color:#C2C2BF;font-size:12.5px;margin-top:3px}
+  .badge{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:5px 12px;color:#fff;border:1px solid rgba(255,255,255,.25);margin-left:8px}
+  .badge.sent{background:var(--ok);border-color:transparent}
+  .badge.sha{font-family:'JetBrains Mono',monospace;letter-spacing:0;text-transform:none}
+  .rule{height:4px;background:var(--acid)}
+
+  .hero{padding:40px 0 24px}
+  .hero h1{font-size:36px;font-weight:900;line-height:1.12;letter-spacing:-.02em;max-width:22ch}
+  .hero p{font-size:16.5px;line-height:1.6;color:var(--dim);margin-top:14px;max-width:68ch}
+
+  h2{font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:34px 0 14px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+
+  .who{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(215px,1fr))}
+  .p{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--fuchsia);border-radius:0 10px 10px 0;padding:15px 17px;box-shadow:var(--sh)}
+  .p h3{font-size:15.5px;font-weight:900}
+  .p .em{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--cyan-dk);margin-top:4px;word-break:break-all}
+  .p .d{font-size:12.5px;color:var(--faint);margin-top:7px}
+
+  .mail{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--sh);overflow:hidden}
+  .mail-hd{background:#F1F1EC;border-bottom:1px solid var(--line);padding:11px 18px;font-size:12.5px;color:var(--dim)}
+  .mail-hd b{color:var(--ink)}
+  .mail-bd{padding:20px 22px;font-size:14.5px;line-height:1.7;white-space:pre-wrap}
+  .mail-bd a{color:var(--cyan-dk);font-weight:700;word-break:break-all}
+
+  .two{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:17px 19px;box-shadow:var(--sh)}
+  .card.acid{border-left:5px solid var(--acid)}
+  .card.cy{border-left:5px solid var(--cyan)}
+  .card.fu{border-left:5px solid var(--fuchsia)}
+  .card h3{font-size:15px;font-weight:900;margin-bottom:7px}
+  .card p{font-size:13.5px;line-height:1.65;color:var(--dim)}
+  .card b{color:var(--ink)}
+  .card code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#F1F1EC;border-radius:4px;padding:1px 5px}
+
+  .chk{display:flex;gap:10px;align-items:flex-start;background:var(--ok-bg);border-radius:8px;padding:10px 13px;font-size:13.5px;line-height:1.55;margin-bottom:9px}
+  .chk span{color:var(--ok);font-weight:900;flex:0 0 auto}
+  .no{display:flex;gap:10px;align-items:flex-start;background:var(--warn-bg);border-radius:8px;padding:10px 13px;font-size:13.5px;line-height:1.55;margin-bottom:9px}
+  .no span{color:var(--warn);font-weight:900;flex:0 0 auto}
+
+  .steps{counter-reset:s;display:grid;gap:10px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:13px 16px 13px 50px;position:relative;box-shadow:var(--sh);font-size:13.5px;line-height:1.6;color:var(--dim)}
+  .step::before{counter-increment:s;content:counter(s);position:absolute;left:15px;top:13px;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:11.5px;font-weight:900;display:grid;place-items:center}
+  .step b{color:var(--ink)}
+
+  .foot{text-align:center;color:var(--faint);font-size:12px;padding:34px 20px 0;line-height:1.7}
+  @media (max-width:600px){ .hero h1{font-size:27px} }
+</style>
+</head>
+<body>
+
+<div class="mast">
+  <div class="mast-in">
+    <div>
+      <div class="mast-t">Sprout Society · CRM</div>
+      <div class="mast-s">Delivered Wednesday, September 23, 2026</div>
+    </div>
+    <div>
+      <span class="badge sent">4 sent by Max</span>
+      <span class="badge sha mono">main · docs</span>
+      <span class="badge">Effort: low</span>
+    </div>
+  </div>
+</div>
+<div class="rule"></div>
+
+<div class="wrap">
+  <section class="hero">
+    <h1>The new form has its first invitations out.</h1>
+    <p>
+      Four people applied to showcase after Vol. 4. Each one now has an email from you
+      pointing at /showcase, and a CRM record that remembers you sent it.
+    </p>
+  </section>
+
+  <h2>Who got it</h2>
+  <div class="who">
+    <div class="p">
+      <h3>Isabella Paris</h3>
+      <div class="em">isabellaparismusic@gmail.com</div>
+      <div class="d">Applied Sept 14 · folk singer-songwriter, original music</div>
+    </div>
+    <div class="p">
+      <h3>Liara Neja</h3>
+      <div class="em">liaraneja@gmail.com</div>
+      <div class="d">Applied Sept 15 · singer-songwriter and guitarist</div>
+    </div>
+    <div class="p">
+      <h3>Je'Jae Cleo Mizrahi</h3>
+      <div class="em">mx.enigma22@gmail.com</div>
+      <div class="d">Applied Sept 15 · left only an Instagram handle, medium unknown</div>
+    </div>
+    <div class="p">
+      <h3>Andie Mechanic</h3>
+      <div class="em">andiemechanic@gmail.com</div>
+      <div class="d">Applied Sept 19 · queer folk artist, likes the gallery format</div>
+    </div>
+  </div>
+
+  <h2>What you sent</h2>
+  <div class="mail">
+    <div class="mail-hd">
+      <b>From</b> maxperkins@sproutsociety.org &nbsp;·&nbsp; <b>Subject</b> Performing at Sprout N Tell
+    </div>
+    <div class="mail-bd">Hey Isabella,
+
+Thanks for the interest in performing at one of our Sprout N Tells. Fill this form out with as much info as you can. This will help us place you in the right showcase.
+
+<a href="https://sprout-crm-tool-next-js.vercel.app/showcase">https://sprout-crm-tool-next-js.vercel.app/showcase</a>
+
+Our next one is 10/23, but I am still figuring out a lineup that works best.
+
+If we cannot fit you on for 10/23 I will let you know when our next ones are for November and December and see what works best for you. If you have any questions you can reply to this email.
+
+We look forward to you sprouting n telling soon!
+
+Max</div>
+  </div>
+
+  <h2>How it went out</h2>
+  <div class="steps">
+    <div class="step"><b>Drafted, never sent by me.</b> Four separate drafts landed in your maxperkins@ Drafts folder, one per person.</div>
+    <div class="step"><b>You read them and hit send.</b> Every email left from your own account, with your signature.</div>
+    <div class="step"><b>The CRM recorded it.</b> A touchpoint dated today on each contact, written through the CRM's own write path so validation and the merge rules held.</div>
+  </div>
+
+  <h2>Boundaries held</h2>
+  <div class="two">
+    <div class="card fu">
+      <h3>Applicants only, never attendees</h3>
+      <p>The 16 attendees from the Vol. 4 kiosk and the RSVPs were not contacted and were never in the list. Tim Falvey and Brandon Wisecarver were also left out: they applied before Vol. 4 and played it. Nic Black is a hosting lead, so he needs a different note.</p>
+    </div>
+    <div class="card cy">
+      <h3>A correction, before it stuck</h3>
+      <p>My first three touchpoints said <b>"her"</b>, guessed from names alone. Pronouns are not a field in this CRM and nobody told us theirs. All three now read they/them.</p>
+    </div>
+  </div>
+
+  <h2>The Google auth lesson</h2>
+  <div class="card acid">
+    <h3>"Invalid or expired OAuth state parameter" means too many instances, not a broken account</h3>
+    <p>
+      The cached token refused to refresh, a sign-in tab opened, and completing it failed. The cause was
+      <b>two <code>workspace-mcp</code> processes</b>: one minted the OAuth state, a different one caught
+      Google's callback. Nothing was listening on ports 8000-8010, which is the tell. Killing every
+      instance and reloading the window left exactly one, and the cached token then refreshed with
+      <b>no sign-in at all</b>. Both hello@ and maxperkins@ are live, and maxperkins@ can send, draft and
+      read Gmail from here. The old note that this account's auth is broken was wrong about the cause.
+    </p>
+  </div>
+
+  <h2>Where it stands</h2>
+  <div class="chk"><span>✓</span><div><b>Four emails sent</b> from your account, with the CRM updated to match.</div></div>
+  <div class="chk"><span>✓</span><div><b>Their replies come back to you</b>, and their form submissions land in the 🎤 Showcase queue with an alert email.</div></div>
+  <div class="no"><span>!</span><div><b>Nothing will remind you to chase them.</b> No next action is set on any of the four, so they can go quiet the way the Nic Black lead did. Say the word and I will put a follow-up on all four for Sept 30, which also lands them on your Day Board.</div></div>
+  <div class="no"><span>!</span><div><b>Hard-refresh the CRM</b> before editing any of these four if you have it open in an old tab, or the save will overwrite today's touchpoint.</div></div>
+
+  <p class="foot">
+    Sprout Society · CRM Manager<br>
+    No app code, schema or migration change this session · changelog and this slide committed to main
+  </p>
+</div>
+
+</body>
+</html>

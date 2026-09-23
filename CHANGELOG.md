@@ -2,6 +2,26 @@
 
 ---
 
+## 2026-09-23: First outreach off the showcase form
+
+Email + data only. No app code, schema or migration change. Effort: low.
+
+### What changed
+- **Four Gmail drafts from maxperkins@** to the showcase applicants who signed up **after Vol. 4**: Isabella Paris (9/14), Liara Neja (9/15), Je'Jae Cleo Mizrahi (9/15), Andie Mechanic (9/19). Max reviewed and sent them himself.
+- **The message is Max's own copy, identical for all four**, only the first name differs. Subject "Performing at Sprout N Tell", plain text, the /showcase link on its own line, next date 10/23 with November and December offered as alternatives. He rejected a first draft that personalized each email from the applicant's own form answer: one simple message is what he wants.
+- **Four touchpoints dated 2026-09-23**, written through the MCP `add_touchpoint` tool so the merge rules and validation hold. Each contact now carries two: their application and this email.
+
+### Who was deliberately excluded
+Attendees, always. Also Tim Falvey and Brandon Wisecarver, who applied before Vol. 4 and played it, and Nic Black, who is a hosting lead rather than a showcase one. 23 contacts have been created since Sept 1, so "the new Sprout N Tell contacts" needs narrowing every time it comes up.
+
+### Corrected before it stuck
+The first three touchpoints said "her", inferred from names alone. Pronouns are not a field in this CRM and nobody stated them. Rewrote all three to they/them with a targeted `jsonb_set` on the last touchpoint's summary.
+
+### The Google auth lesson
+A cached token refused to refresh, the sign-in tab that opened failed with "Invalid or expired OAuth state parameter", and the cause was **two `workspace-mcp` instances**: one minted the OAuth state, another handled the callback. Nothing was listening on ports 8000-8010, which is the tell. Killing every instance and reloading the window left exactly one, and the cached token then refreshed with **no sign-in at all**. Both hello@ and maxperkins@ tokens are valid, and maxperkins@ carries send, compose and modify scope. The older note that maxperkins@ has no cached token and a broken re-auth is obsolete; it was never the account, it was the collision.
+
+---
+
 ## 2026-09-22: Showcase form replaces the Sprout N Tell Google Form
 
 App code + one applied migration. `npm run build` passes. Committed + pushed (`9fdec49`) and confirmed live. Effort: medium.
