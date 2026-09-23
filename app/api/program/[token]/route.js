@@ -17,6 +17,7 @@ import {
   programEntryForEdit,
   updateProgramEntry,
 } from "@/lib/programDb";
+import { notifyProgramSubmission } from "@/lib/notify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,6 +42,20 @@ async function readBody(req) {
     return await req.json();
   } catch {
     return null;
+  }
+}
+
+/**
+ * Tell staff someone sent (or fixed) their program info. Awaited because serverless
+ * kills the function once the response is sent, but caught: a failed alert must never
+ * fail a participant's submission.
+ */
+async function alertStaff(req, form, data, updated) {
+  try {
+    const event = await programEvent(form.event_id);
+    await notifyProgramSubmission({ data, event, origin: new URL(req.url).origin, updated });
+  } catch (e) {
+    console.error("program — notification email failed:", e?.message || e);
   }
 }
 
@@ -81,6 +96,7 @@ export async function POST(req, { params }) {
     console.error("program POST — insert failed:", out.error);
     return fail("We could not save that. Please try again.", 500);
   }
+  await alertStaff(req, form, data, false);
   return Response.json({ ok: true, entry_id: out.id, key: out.edit_key });
 }
 
@@ -101,5 +117,7 @@ export async function PUT(req, { params }) {
     console.error("program PUT — update failed:", error);
     return fail("We could not save that. Please try again.", 500);
   }
+
+  await alertStaff(req, form, data, true);
   return Response.json({ ok: true });
 }
