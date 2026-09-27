@@ -4319,12 +4319,57 @@ function EventPortalPanel({event,portal,onCreate,onRotate,onRemove,onRefresh,onA
    Large video is deliberately pushed to a link rather than an upload.            */
 function EventMediaPanel({event,onUpdateEvent,showToast}) {
   const media=event.media||[];
+  const folders=event.media_folders||[];
   const [busy,setBusy]=useState(false);
   const [dragOver,setDragOver]=useState(false);
   const [linkOpen,setLinkOpen]=useState(false);
   const [linkLabel,setLinkLabel]=useState("");
   const [linkUrl,setLinkUrl]=useState("");
+  // "all" | "unfiled" | a folder id
+  const [openFolder,setOpenFolder]=useState("all");
+  const [newFolderOpen,setNewFolderOpen]=useState(false);
+  const [folderName,setFolderName]=useState("");
+  const [renaming,setRenaming]=useState(false);
+  const [confirmDel,setConfirmDel]=useState(false);
   const fileRef=useRef(null);
+
+  // A file whose folder was deleted (or never existed) reads as Unfiled.
+  const folderIds=new Set(folders.map(f=>f.id));
+  const folderOf=(m)=>m.folder&&folderIds.has(m.folder)?m.folder:null;
+  const current=folders.find(f=>f.id===openFolder)||null;
+  // New uploads and links land in whatever folder is open.
+  const targetFolder=current?current.id:null;
+  const visible=openFolder==="all"?media
+    :openFolder==="unfiled"?media.filter(m=>!folderOf(m))
+    :media.filter(m=>folderOf(m)===openFolder);
+  const countIn=(id)=>media.filter(m=>folderOf(m)===id).length;
+
+  const pickFolder=(id)=>{setOpenFolder(id);setRenaming(false);setConfirmDel(false);};
+  const createFolder=()=>{
+    const name=folderName.trim();
+    if(!name) return;
+    const f={id:uid(),name};
+    onUpdateEvent({...event,media_folders:[...folders,f]});
+    setFolderName(""); setNewFolderOpen(false); pickFolder(f.id);
+    showToast("Folder created ✓");
+  };
+  const renameFolder=()=>{
+    const name=folderName.trim();
+    if(!name||!current) return;
+    onUpdateEvent({...event,media_folders:folders.map(f=>f.id===current.id?{...f,name}:f)});
+    setRenaming(false); setFolderName("");
+    showToast("Folder renamed ✓");
+  };
+  const deleteFolder=()=>{
+    if(!current) return;
+    // Files are never deleted with their folder; they move to Unfiled.
+    onUpdateEvent({...event,
+      media_folders:folders.filter(f=>f.id!==current.id),
+      media:media.map(m=>m.folder===current.id?{...m,folder:null}:m)});
+    pickFolder("all");
+    showToast("Folder deleted. Its files are in Unfiled.");
+  };
+  const moveItem=(id,folder)=>onUpdateEvent({...event,media:media.map(x=>x.id===id?{...x,folder:folder||null}:x)});
 
   const isImg=(m)=>(m.mime||"").startsWith("image/")||/\.(png|jpe?g|gif|webp|avif)$/i.test(m.url);
   const isVid=(m)=>(m.mime||"").startsWith("video/")||/\.(mp4|mov|webm)$/i.test(m.url);
@@ -4337,7 +4382,7 @@ function EventMediaPanel({event,onUpdateEvent,showToast}) {
     for(const f of files){
       try{
         const meta=await uploadEventMedia(event.id,f);
-        added.push({id:uid(),kind:"file",note:"",addedAt:localTodayISO(),...meta});
+        added.push({id:uid(),kind:"file",note:"",addedAt:localTodayISO(),folder:targetFolder,...meta});
       }catch(e){ failed.push(e?.message||f.name); }
     }
     if(added.length) onUpdateEvent({...event,media:[...media,...added]});
@@ -4352,7 +4397,7 @@ function EventMediaPanel({event,onUpdateEvent,showToast}) {
     if(!url) return;
     onUpdateEvent({...event,media:[...media,{
       id:uid(),kind:"link",url,name:linkLabel.trim()||url,mime:"",size:null,note:"",
-      addedAt:localTodayISO(),
+      addedAt:localTodayISO(),folder:targetFolder,
     }]});
     setLinkLabel(""); setLinkUrl(""); setLinkOpen(false);
     showToast("Link added ✓");
@@ -4381,6 +4426,60 @@ function EventMediaPanel({event,onUpdateEvent,showToast}) {
           </button>
         </div>
       </div>
+
+      {/* Folder chips: pick one to filter, and new uploads/links land in it. */}
+      <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12,alignItems:"center"}}>
+        {[["all","All",media.length],["unfiled","Unfiled",media.filter(m=>!folderOf(m)).length],
+          ...folders.map(f=>[f.id,f.name,countIn(f.id)])].map(([id,label,n])=>(
+          <button key={id} onClick={()=>pickFolder(id)}
+            style={{border:"1.5px solid "+(openFolder===id?"var(--black)":"var(--g200)"),
+              background:openFolder===id?"var(--black)":"#fff",color:openFolder===id?"#fff":"var(--black)",
+              borderRadius:999,padding:"4px 11px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+            {id!=="all"&&id!=="unfiled"?"📁 ":""}{label} <span style={{opacity:0.6,fontWeight:400}}>{n}</span>
+          </button>
+        ))}
+        {newFolderOpen?(
+          <span style={{display:"inline-flex",gap:6,alignItems:"center"}}>
+            <input className="fi" autoFocus style={{fontSize:12,padding:"4px 8px",height:"auto",width:170}} placeholder="Folder name"
+              value={folderName} onChange={e=>setFolderName(e.target.value)}
+              onKeyDown={e=>{if(e.key==="Enter")createFolder();if(e.key==="Escape"){setNewFolderOpen(false);setFolderName("");}}}/>
+            <button className="btn btn-blk btn-sm" onClick={createFolder}>Create</button>
+            <button className="btn btn-ghost btn-sm" onClick={()=>{setNewFolderOpen(false);setFolderName("");}}>Cancel</button>
+          </span>
+        ):(
+          <button className="btn btn-ghost btn-sm" onClick={()=>{setNewFolderOpen(true);setRenaming(false);setFolderName("");}}>+ New folder</button>
+        )}
+      </div>
+
+      {current&&(
+        <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:10,paddingBottom:8,borderBottom:"1.5px solid var(--g200)"}}>
+          {renaming?(
+            <>
+              <input className="fi" autoFocus style={{fontSize:13,padding:"4px 8px",height:"auto",width:220}}
+                value={folderName} onChange={e=>setFolderName(e.target.value)}
+                onKeyDown={e=>{if(e.key==="Enter")renameFolder();if(e.key==="Escape")setRenaming(false);}}/>
+              <button className="btn btn-blk btn-sm" onClick={renameFolder}>Save</button>
+              <button className="btn btn-ghost btn-sm" onClick={()=>setRenaming(false)}>Cancel</button>
+            </>
+          ):(
+            <>
+              <strong style={{fontSize:14}}>📁 {current.name}</strong>
+              <span style={{fontSize:11,color:"var(--g500)"}}>{countIn(current.id)} item{countIn(current.id)===1?"":"s"}</span>
+              <span style={{marginLeft:"auto",display:"flex",gap:6}}>
+                <button className="btn btn-ghost btn-sm" onClick={()=>{setRenaming(true);setConfirmDel(false);setFolderName(current.name);}}>Rename</button>
+                {confirmDel?(
+                  <>
+                    <button className="btn btn-sm" style={{background:"var(--red)",color:"#fff"}} onClick={deleteFolder}>Delete folder, keep files</button>
+                    <button className="btn btn-ghost btn-sm" onClick={()=>setConfirmDel(false)}>Cancel</button>
+                  </>
+                ):(
+                  <button className="btn btn-ghost btn-sm" onClick={()=>setConfirmDel(true)}>Delete folder</button>
+                )}
+              </span>
+            </>
+          )}
+        </div>
+      )}
 
       <input ref={fileRef} type="file" multiple accept="image/*,video/*,application/pdf" style={{display:"none"}}
         onChange={e=>{addFiles(e.target.files); e.target.value="";}}/>
@@ -4414,17 +4513,19 @@ function EventMediaPanel({event,onUpdateEvent,showToast}) {
         onDrop={e=>{e.preventDefault();setDragOver(false);addFiles(e.dataTransfer.files);}}
         style={{
           border:"1.5px dashed "+(dragOver?"var(--cyan)":"var(--g200)"),borderRadius:10,
-          background:dragOver?"var(--cyan-lt)":"transparent",padding:media.length?12:26,marginBottom:14,
+          background:dragOver?"var(--cyan-lt)":"transparent",padding:visible.length?12:26,marginBottom:14,
           transition:"all 0.12s",
         }}>
-        {media.length===0?(
+        {visible.length===0?(
           <div style={{textAlign:"center",color:"var(--g400)",fontSize:12}}>
-            Drag flyers, photos or video here, or use <strong>+ Upload</strong>.<br/>
+            {current?<>This folder is empty. Drag files here or use <strong>+ Upload</strong> to add them to <strong>{current.name}</strong>.</>
+              :openFolder==="unfiled"&&media.length?<>Everything is in a folder.</>
+              :<>Drag flyers, photos or video here, or use <strong>+ Upload</strong>.</>}<br/>
             <span style={{fontSize:11}}>Files over 25MB should be added with <strong>+ Add link</strong> instead.</span>
           </div>
         ):(
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(168px,1fr))",gap:12}}>
-            {media.map(m=>(
+            {visible.map(m=>(
               <div key={m.id} style={{border:"1.5px solid var(--g200)",borderRadius:9,overflow:"hidden",background:"#fff",boxShadow:"var(--sh-sm)",display:"flex",flexDirection:"column"}}>
                 <div onClick={()=>window.open(m.url,"_blank","noreferrer")}
                   style={{height:110,background:"var(--g100)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
@@ -4441,6 +4542,13 @@ function EventMediaPanel({event,onUpdateEvent,showToast}) {
                   <div title={m.name} style={{fontSize:11,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{m.name}</div>
                   <input className="fi" style={{fontSize:10,padding:"3px 6px",height:"auto"}} placeholder="Add a note…"
                     defaultValue={m.note||""} onBlur={e=>{const v=e.target.value;if(v!==(m.note||""))setNote(m.id,v);}}/>
+                  {folders.length>0&&(
+                    <select className="fi" aria-label="Move to folder" style={{fontSize:10,padding:"3px 6px",height:"auto"}}
+                      value={folderOf(m)||""} onChange={e=>moveItem(m.id,e.target.value)}>
+                      <option value="">Unfiled</option>
+                      {folders.map(f=><option key={f.id} value={f.id}>📁 {f.name}</option>)}
+                    </select>
+                  )}
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:"auto"}}>
                     <span style={{fontSize:9,color:"var(--g400)"}}>
                       {m.kind==="file"&&m.size?(m.size/1048576).toFixed(1)+"MB":m.kind==="link"?"linked":""}
