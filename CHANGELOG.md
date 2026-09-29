@@ -2,6 +2,27 @@
 
 ---
 
+## 2026-09-29: Instagram outreach campaign, part 1 (the scrape)
+
+Data + docs only. No app code, no CRM writes. Effort: medium.
+
+### What changed
+- **Scraped @sproutsocietyorg's follow list through Claude in Chrome.** All 1,026 follows came back newest first from the Following popup's own endpoint with `order=date_followed_latest`. The default order is a ranking, not follow date.
+- **Set a ~3-month cutoff (top 170)** from accounts with known dates, since Instagram shows no follow dates.
+- **Deduped against the CRM** by handle and by display name: about 38 already on file.
+- **Triage sheet for Max:** 131 new accounts in hello@'s Drive ("IG Outreach Triage — Follow-backs Jul–Sep 2026", `1smxB08OiOqqqr_sDAlZY7tt6wCKKxcbf11SvHFigeKY`) with a Keep column, best-guess type and profile links.
+- **Open-web research** on the first 7 new accounts.
+- **New guide `docs/guides/instagram-browser-scrape.md`** and a matching CLAUDE.md section + memory playbook, because Claude kept telling Max this couldn't be done. Covers how to connect (`/chrome` → Reconnect, then `@browser`), the endpoint that works, what triggers a 429 (`web_profile_info`), and the cutoff and dedupe method.
+
+### Why
+Max wants a big outreach campaign to the recent wave of follow-backs, and the browser route kept getting refused or fumbled.
+
+### Open
+- Max marks keepers; then profile visits, research and CRM creates.
+- Confirm Robbie/robstanleytunes, Sim/Beth Graybill; add Rachel Emma Ray?
+
+---
+
 ## 2026-09-27 to 09-29: Gallery hang plan, artists into the CRM, media folders
 
 App code (`42c3a16`) + data. No migration (JSONB-only fields). `npm run build` passes. Effort: medium.
