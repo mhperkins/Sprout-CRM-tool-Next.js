@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IG Outreach Scrape</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--muted:#6b6b68}
+*{box-sizing:border-box;margin:0}
+body{font-family:Lato,system-ui,sans-serif;background:var(--ink);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px}
+.slide{width:100%;max-width:1100px;background:var(--paper);color:var(--ink);border-radius:14px;overflow:hidden}
+.top{background:var(--ink);color:#fff;padding:28px 36px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.eyebrow{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--acid);font-weight:700}
+h1{font-size:34px;font-weight:900;margin-top:6px}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.badge{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;background:#1c1c1a;border:1px solid #333}
+.badge.hash{background:var(--acid);color:var(--ink);border:0}
+.rule{height:4px;background:var(--acid)}
+.body{padding:28px 36px 32px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat{background:#fff;border-radius:10px;padding:16px;border-left:6px solid var(--cyan);box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.stat:nth-child(2){border-color:var(--fuchsia)}.stat:nth-child(3){border-color:var(--acid)}.stat:nth-child(4){border-color:var(--banana)}
+.n{font-size:34px;font-weight:900}.l{font-size:13px;color:var(--muted);margin-top:2px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:#fff;border-radius:10px;padding:18px 20px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.card h3{font-size:15px;font-weight:900;margin-bottom:8px}
+.card p,.card li{font-size:14px;line-height:1.5;color:#3a3a38}
+.card ul{padding-left:18px}
+code{font-size:12.5px;background:#ECECEA;padding:1px 5px;border-radius:4px}
+.foot{margin-top:18px;font-size:12px;color:var(--muted)}
+@media(max-width:720px){.stats{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}h1{font-size:26px}.top,.body{padding:22px 16px}}
+</style></head><body>
+<div class="slide">
+ <div class="top">
+  <div><div class="eyebrow">Delivered · 2026-09-29</div><h1>📸 Instagram outreach, part 1: the scrape</h1></div>
+  <div class="badges"><span class="badge hash">6fb5982</span><span class="badge">main · pushed</span><span class="badge">docs + data</span></div>
+ </div>
+ <div class="rule"></div>
+ <div class="body">
+  <div class="stats">
+   <div class="stat"><div class="n">1,026</div><div class="l">follows pulled, newest first</div></div>
+   <div class="stat"><div class="n">170</div><div class="l">follow-backs in the last ~3 months</div></div>
+   <div class="stat"><div class="n">~38</div><div class="l">already in the CRM</div></div>
+   <div class="stat"><div class="n">131</div><div class="l">new accounts on the triage sheet</div></div>
+  </div>
+  <div class="grid">
+   <div class="card"><h3>🧭 How it worked</h3><ul>
+    <li>Claude in Chrome, connected with <code>/chrome</code> → Reconnect, then <code>@browser</code></li>
+    <li>The Following popup's own endpoint with <code>order=date_followed_latest</code></li>
+    <li>Cutoff anchored on accounts with known dates (performers, applicants)</li></ul></div>
+   <div class="card"><h3>📋 Triage sheet (hello@ Drive)</h3><p>IG Outreach Triage — Follow-backs Jul–Sep 2026. Keep column, best-guess type, signals, profile links. Max marks the keepers.</p></div>
+   <div class="card"><h3>📘 Committed</h3><ul>
+    <li><code>docs/guides/instagram-browser-scrape.md</code>: the playbook so this works the first time</li>
+    <li><code>CHANGELOG.md</code> entry</li></ul></div>
+   <div class="card"><h3>⏭️ Next</h3><ul>
+    <li>Visit only the keepers' profiles, research, create as prospects</li>
+    <li>Confirm Robbie / Sim Graybill matches; add Rachel Emma Ray?</li></ul></div>
+  </div>
+  <div class="foot">No CRM records written and no outreach sent this session. Also updated: CLAUDE.md (gitignored) and the memory playbook.</div>
+ </div>
+</div>
+</body></html>
