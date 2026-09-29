@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Delivery · Gallery hang + media folders</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap">
+<style>
+  :root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--fuchsia:#E10098;--cyan:#73C4D6;--cyan-d:#2a8ca0;--banana:#FAD100;--g:#6b6a64}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);font-family:"Lato",system-ui,sans-serif;color:var(--ink);display:grid;place-items:center;min-height:100vh;padding:24px}
+  .slide{width:min(1200px,100%);aspect-ratio:16/9;background:#fff;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.14);overflow:hidden;display:flex;flex-direction:column}
+  .top{background:var(--ink);color:#fff;padding:26px 40px 22px;display:flex;justify-content:space-between;align-items:flex-end;gap:20px;border-bottom:5px solid var(--acid)}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--acid);font-weight:900}
+  h1{margin:6px 0 0;font-size:34px;font-weight:900;line-height:1.1}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .b{font:700 12px/1 ui-monospace,Consolas,monospace;padding:7px 10px;border-radius:6px;background:#222;color:#fff}
+  .b.h{background:var(--acid);color:var(--ink)} .b.br{background:var(--cyan)} .b.e{background:var(--fuchsia)}
+  .body{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:18px;padding:26px 40px}
+  .card{border:1.5px solid #e4e4df;border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:8px;position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px}
+  .c1::before{background:var(--cyan)} .c2::before{background:var(--fuchsia)} .c3::before{background:var(--acid)} .c4::before{background:var(--banana)}
+  .ic{font-size:26px}
+  .card h2{margin:0;font-size:17px;font-weight:900}
+  .big{font-size:40px;font-weight:900;line-height:1}
+  .big small{font-size:14px;color:var(--g);font-weight:700}
+  .card p{margin:0;font-size:13px;line-height:1.5;color:#3a3a38}
+  .foot{padding:14px 40px;border-top:1.5px solid #eee;display:flex;justify-content:space-between;font-size:12px;color:var(--g);gap:16px;flex-wrap:wrap}
+  .foot b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Sprout CRM · Delivered 2026-09-29</div>
+      <h1>Vol. 5 gallery hang plan + event media folders</h1>
+    </div>
+    <div class="badges">
+      <span class="b h">42c3a16</span>
+      <span class="b br">main</span>
+      <span class="b">pushed</span>
+      <span class="b e">effort: medium</span>
+    </div>
+  </div>
+  <div class="body">
+    <div class="card c1">
+      <div class="ic">🖼️</div>
+      <h2>Hang plan</h2>
+      <div class="big">50<small> / 57 pieces</small></div>
+      <p>Without the 40×240 wall. <b>54</b> with it. All 16 hanging artists shown either way. 3″ inside an artist's group, 6″ between artists. Zines go on a table.</p>
+    </div>
+    <div class="card c2">
+      <div class="ic">👤</div>
+      <h2>Artists in the CRM</h2>
+      <div class="big">16<small> new + 1 linked</small></div>
+      <p>Art + Showcase, warm, pieces and bio in notes, dated touchpoint. Pepper Auerbach already existed, so no duplicate. All 17 on Vol. 5 People (4 → 21).</p>
+    </div>
+    <div class="card c3">
+      <div class="ic">📁</div>
+      <h2>Media folders</h2>
+      <div class="big">18<small> folders</small></div>
+      <p>Folder chips filter the Media popup and set where uploads land. New, rename, delete (files move to Unfiled), Move-to on every card. <code>media_folders</code> + <code>folder</code>, JSONB only.</p>
+    </div>
+    <div class="card c4">
+      <div class="ic">🔗</div>
+      <h2>Loaded on Vol. 5</h2>
+      <div class="big">64<small> items</small></div>
+      <p>58 artwork images (1600px) + 4 zine PDFs, a Hang plan folder, and the responses sheet + form links. Checked with <code>validateEvent</code>: nothing stripped.</p>
+    </div>
+  </div>
+  <div class="foot">
+    <span>Files: <b>lib/schemas.js</b> · <b>components/CRMManager.jsx</b> · CHANGELOG.md</span>
+    <span>Open: Rachel showing? · confirm 3 artist names · pick with/without the 40×240</span>
+  </div>
+</div>
+</body>
+</html>

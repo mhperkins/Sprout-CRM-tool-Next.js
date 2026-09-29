@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-09-27 to 09-29: Gallery hang plan, artists into the CRM, media folders
+
+App code (`42c3a16`) + data. No migration (JSONB-only fields). `npm run build` passes. Effort: medium.
+
+### What changed
+- **Gallery hang plan.** Read the Gallery Art Submission Form responses (Max linked a responses sheet, `1WLFHYF_…McI0`; there was none before). 17 real artists + Rachel's "Test" row. Packed every piece onto Max's walls (A 70.5×40, B 101×32, C 103×32, D 44×40, E 196×62, optional F 240×40, all W×H) with 3″ inside an artist's group and 6″ between artists. **50 of 57 pieces fit without F, 54 with it; all 16 hanging artists get at least one piece either way.** Dossa boy's zines go on a table. Orientation came from the uploaded photos (Tristan's two "10x30" hang 30 wide; Samuel, Liv's Hesitation, Glenn's The Interview, one Journey canvas are landscape). Published as a private artifact with each wall to scale, real thumbnails, artist-group outlines with names, and per-wall install measurements: https://claude.ai/artifact/TNShLNgmHrXkb4gwBSm9Za
+- **Artists into the CRM.** 16 new contacts (Art + Showcase, warm, sizes/medium/readiness/short bio in notes, dated touchpoint). Pepper Auerbach already existed (`ind_pepper_auerbach`), so it got a touchpoint instead of a duplicate. All 17 added to Vol. 5 (`evt_sprout_n_tell_sprout_society_x_buzzkill_`) People (4 → 21).
+- **Event media folders (`42c3a16`).** The Media popup was one flat pile. Now: a `media_folders` list on the event (so empty folders can exist) and an optional `folder` id on each media item. Folder chips (All / Unfiled / each folder) filter the grid and set where uploads and links land; + New folder, Rename, Delete folder (files move to Unfiled, never deleted); a Move-to menu on each card. Pushed right away because the live app's old schema would have stripped `folder`/`media_folders` on the next save of the Vol. 5 event.
+- **Vol. 5 media loaded.** 18 folders: "Hang plan" (layout link + the original Drive uploads folder) and one per artist, holding 58 artwork images resized to 1600px + the 4 zine PDFs, uploaded to the `event-media` bucket under `<event>/gallery/`. Links gained the responses sheet and the form's edit link. Verified the stored event against `validateEvent`: all 64 items, 18 folders and every folder assignment survive.
+
+### Open
+- Rachel's "Test" row: is she showing (three 10×12)? They would fit.
+- Names to confirm: Thompson (form says Heisenberg, upload account Ukpebor), Portraits of Hue ("superdaimos guevarra"), Dossa boy ("warren job").
+- Thompson and Ari sizes are guesses; unnamed pieces (Rebecca, Kendrie, Christopher) are matched to thumbnails by upload order.
+
+---
+
 ## 2026-09-23: Every public form now emails Max
 
 App code + one column migration (`sprout_event_portals_alerted_at`, applied). `npm run build` passes. Effort: medium.
