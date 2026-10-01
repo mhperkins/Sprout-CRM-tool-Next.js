@@ -4317,6 +4317,18 @@ function EventPortalPanel({event,portal,onCreate,onRotate,onRemove,onRefresh,onA
    Uploads live in the public event-media bucket; links point anywhere (Drive,
    YouTube). Both share one list so the gallery reads as a single shelf of assets.
    Large video is deliberately pushed to a link rather than an upload.            */
+// The saved filename for a downloaded upload. Labels are often edited into plain
+// titles ("Thompson Ukpebor · Photo 1 · 12x12″") with no extension, and a file saved
+// without one will not open, so the stored object's own extension is put back on.
+// Characters Windows refuses in a filename are swapped out.
+function mediaDownloadName(m) {
+  const ext=((m.url||"").split("?")[0].match(/\.([a-z0-9]{1,5})$/i)||[])[1]||"";
+  const base=(m.name||"file").replace(/″/g,"").replace(/[\\/:*?"<>|]+/g,"-").replace(/\s+/g," ").trim()||"file";
+  // "flyer.jpeg" already has one; a size like "13.5x9.5in" is not one.
+  const hasExt=/\.(jpe?g|png|gif|webp|avif|heic|pdf|mp4|mov|webm|m4v|mp3|wav|m4a)$/i.test(base);
+  return ext&&!hasExt?base+"."+ext.toLowerCase():base;
+}
+
 function EventMediaPanel({event,onUpdateEvent,showToast}) {
   const media=event.media||[];
   const folders=event.media_folders||[];
@@ -4555,7 +4567,7 @@ function EventMediaPanel({event,onUpdateEvent,showToast}) {
                     </span>
                     {/* Cross-origin storage ignores the <a download> attribute, so ask Supabase to
                         send Content-Disposition: attachment via its ?download= param instead. */}
-                    {m.kind==="file"&&<a href={m.url+(m.url.includes("?")?"&":"?")+"download="+encodeURIComponent(m.name||"")}
+                    {m.kind==="file"&&<a href={m.url+(m.url.includes("?")?"&":"?")+"download="+encodeURIComponent(mediaDownloadName(m))}
                       rel="noopener noreferrer" title="Download"
                       style={{marginLeft:"auto",marginRight:6,fontSize:10,fontWeight:700,color:"var(--black)",textDecoration:"none",border:"1.5px solid var(--g200)",borderRadius:5,padding:"2px 7px"}}>⬇ Download</a>}
                     <button onClick={()=>removeItem(m)} title="Remove"
