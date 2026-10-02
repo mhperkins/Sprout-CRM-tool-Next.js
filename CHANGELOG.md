@@ -2,6 +2,25 @@
 
 ---
 
+## 2026-10-01: Event media downloads keep their extension, and Download all
+
+App code (`b85187d`, `e4825b6`, merge `0b354ed`) + new dependency `fflate`. No migration, no data change. `npm run build` passes. Effort: medium.
+
+### What changed
+- **Downloads open now.** The Download button saved each file under its label, and 62 of 68 uploads have plain-title labels with no extension ("Thompson Ukpebor · Photo 1 · 12x12″"), so Windows could not open them. `mediaDownloadName()` puts the stored object's extension back and removes the ″ inch mark and characters Windows rejects.
+- **⬇ Download all (N)** in the Media popup saves the uploads on screen as one zip: the open folder, Unfiled, or All with each folder as a subfolder. Links are left out. Built in the browser with `fflate`, stored uncompressed, named after the event and folder.
+
+### Why
+Max needs the media back out of the CRM, and the Vol. 5 gallery holds 58 artworks across 17 artist folders, too many to download one at a time.
+
+### Verified
+All 68 live files get a filename with an extension, and Supabase answers `?download=` with an attachment header. The zip helper ran against the live Vol. 5 event: 62 files, 17 subfolders, 29.5 MB, none failed. The `event-media` bucket sends `Access-Control-Allow-Origin: *`, which the browser zip needs.
+
+### Same session
+Composer's Compass got per-file Download, Download all, and Sprout's media folders on its concert page (its App Session 134).
+
+---
+
 ## 2026-09-29: Instagram outreach campaign, part 1 (the scrape)
 
 Data + docs only. No app code, no CRM writes. Effort: medium.
