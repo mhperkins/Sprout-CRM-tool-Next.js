@@ -2,6 +2,25 @@
 
 ---
 
+## 2026-10-02: Queer Social series become single recurring events
+
+App code (`12b9e0c`, merge `29e00c7`) + data. No migration. `npm run build` passes. Effort: medium.
+
+### What changed
+- **New repeat option "On specific dates"** (`recurrence.frequency: "dates"` with a `dates` list). Repeats → On specific dates shows date chips to add or remove; the event date follows the earliest one, so the calendar, Upcoming list and auto-complete all work.
+- **Queer Social - Sober Hangout** is one event with 7 dates (8/21 to 12/15) and keeps its portal, links, flyer and comms. **Queer Social Body Wellness Class** is one event with 3 dates (8/13, 9/15, 10/20). The two empty August records were folded in and deleted.
+
+### Why
+Max wants one page per series so links, media and one portal link hold for every date. The dates follow no weekly or monthly pattern, so the existing repeat rules could not express them.
+
+### Verified
+The schema accepts the new shape and existing weekly series still validate. The deploy went live before the data write (the old schema would have dropped the events on save). Max confirmed the Events list shows both series with their next date.
+
+### Open
+11/3 and 12/15 are Tuesdays labelled Sober Hang on the calendar; Max to confirm. Body Wellness needs a portal.
+
+---
+
 ## 2026-10-01: Event media downloads keep their extension, and Download all
 
 App code (`b85187d`, `e4825b6`, merge `0b354ed`) + new dependency `fflate`. No migration, no data change. `npm run build` passes. Effort: medium.
