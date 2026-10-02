@@ -4317,10 +4317,54 @@ function EventPortalPanel({event,portal,onCreate,onRotate,onRemove,onRefresh,onA
    Uploads live in the public event-media bucket; links point anywhere (Drive,
    YouTube). Both share one list so the gallery reads as a single shelf of assets.
    Large video is deliberately pushed to a link rather than an upload.            */
+// The saved filename for a downloaded upload. Labels are often edited into plain
+// titles ("Thompson Ukpebor · Photo 1 · 12x12″") with no extension, and a file saved
+// without one will not open, so the stored object's own extension is put back on.
+// Characters Windows refuses in a filename are swapped out.
+const safeFileName=(s)=>String(s||"").replace(/″/g,"").replace(/[\\/:*?"<>|]+/g,"-").replace(/\s+/g," ").trim();
+function mediaDownloadName(m) {
+  const ext=((m.url||"").split("?")[0].match(/\.([a-z0-9]{1,5})$/i)||[])[1]||"";
+  const base=safeFileName(m.name)||"file";
+  // "flyer.jpeg" already has one; a size like "13.5x9.5in" is not one.
+  const hasExt=/\.(jpe?g|png|gif|webp|avif|heic|pdf|mp4|mov|webm|m4v|mp3|wav|m4a)$/i.test(base);
+  return ext&&!hasExt?base+"."+ext.toLowerCase():base;
+}
+
+// "Download all": fetches each upload (the bucket allows any origin) and saves one
+// zip. folderOf(m) names a subfolder inside the zip, or "" for the top level.
+// Stored uncompressed, since images, video and PDFs are already compressed.
+// Returns the names of any files that could not be fetched.
+async function downloadMediaZip(items,folderOf,zipName,onProgress) {
+  const {zipSync}=await import("fflate");
+  const entries={}; const failed=[];
+  for(let i=0;i<items.length;i++){
+    const m=items[i];
+    onProgress(i+1,items.length);
+    try{
+      const r=await fetch(m.url);
+      if(!r.ok) throw new Error(String(r.status));
+      const dir=safeFileName(folderOf(m));
+      const name=mediaDownloadName(m);
+      // Two labels can clean up to the same filename; number the later one.
+      let path=(dir?dir+"/":"")+name;
+      for(let n=2;entries[path];n++) path=(dir?dir+"/":"")+name.replace(/(\.[^.]+)?$/,"-"+n+"$1");
+      entries[path]=[new Uint8Array(await r.arrayBuffer()),{level:0}];
+    }catch{ failed.push(m.name||"file"); }
+  }
+  if(!Object.keys(entries).length) throw new Error("None of the files could be downloaded.");
+  const href=URL.createObjectURL(new Blob([zipSync(entries)],{type:"application/zip"}));
+  const a=document.createElement("a");
+  a.href=href; a.download=safeFileName(zipName)+".zip";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(href),60000);
+  return failed;
+}
+
 function EventMediaPanel({event,onUpdateEvent,showToast}) {
   const media=event.media||[];
   const folders=event.media_folders||[];
   const [busy,setBusy]=useState(false);
+  const [zipping,setZipping]=useState(null); // "3 of 58" while Download all runs
   const [dragOver,setDragOver]=useState(false);
   const [linkOpen,setLinkOpen]=useState(false);
   const [linkLabel,setLinkLabel]=useState("");
@@ -4410,6 +4454,20 @@ function EventMediaPanel({event,onUpdateEvent,showToast}) {
 
   const setNote=(id,note)=>onUpdateEvent({...event,media:media.map(x=>x.id===id?{...x,note}:x)});
 
+  // Download all takes what is on screen: the open folder, Unfiled, or everything,
+  // with each folder as a subfolder inside the zip when "All" is open.
+  const visibleFiles=visible.filter(m=>m.kind==="file");
+  const downloadAll=async()=>{
+    if(zipping||!visibleFiles.length) return;
+    const nameOf=(id)=>(folders.find(f=>f.id===id)||{}).name||"";
+    const zipName=(event.name||"Event")+" - "+(current?current.name:openFolder==="unfiled"?"Unfiled":"Media");
+    try{
+      const failed=await downloadMediaZip(visibleFiles,m=>openFolder==="all"?nameOf(folderOf(m)):"",zipName,(i,n)=>setZipping(i+" of "+n));
+      showToast(failed.length?"Zip saved, but "+failed.length+" file"+(failed.length>1?"s":"")+" could not be fetched: "+failed.join(", "):"Zip saved ✓");
+    }catch(e){ showToast(e?.message||"Download failed"); }
+    setZipping(null);
+  };
+
   const fileCount=media.filter(m=>m.kind==="file").length;
   const linkCount=media.length-fileCount;
 
@@ -4420,6 +4478,12 @@ function EventMediaPanel({event,onUpdateEvent,showToast}) {
           {media.length===0?"No assets yet":fileCount+" uploaded · "+linkCount+" linked"}
         </div>
         <div style={{display:"flex",gap:8}}>
+          {visibleFiles.length>0&&(
+            <button className="btn btn-ghost btn-sm" disabled={!!zipping} onClick={downloadAll}
+              title="Save every uploaded file shown here as one zip">
+              {zipping?"Zipping "+zipping+"…":"⬇ Download all ("+visibleFiles.length+")"}
+            </button>
+          )}
           <button className="btn btn-ghost btn-sm" onClick={()=>setLinkOpen(v=>!v)}>+ Add link</button>
           <button className="btn btn-blk btn-sm" disabled={busy} onClick={()=>fileRef.current?.click()}>
             {busy?"Uploading…":"+ Upload"}
@@ -4555,7 +4619,7 @@ function EventMediaPanel({event,onUpdateEvent,showToast}) {
                     </span>
                     {/* Cross-origin storage ignores the <a download> attribute, so ask Supabase to
                         send Content-Disposition: attachment via its ?download= param instead. */}
-                    {m.kind==="file"&&<a href={m.url+(m.url.includes("?")?"&":"?")+"download="+encodeURIComponent(m.name||"")}
+                    {m.kind==="file"&&<a href={m.url+(m.url.includes("?")?"&":"?")+"download="+encodeURIComponent(mediaDownloadName(m))}
                       rel="noopener noreferrer" title="Download"
                       style={{marginLeft:"auto",marginRight:6,fontSize:10,fontWeight:700,color:"var(--black)",textDecoration:"none",border:"1.5px solid var(--g200)",borderRadius:5,padding:"2px 7px"}}>⬇ Download</a>}
                     <button onClick={()=>removeItem(m)} title="Remove"
