@@ -527,6 +527,12 @@ const WEEKDAY_LONG = ["Sundays","Mondays","Tuesdays","Wednesdays","Thursdays","F
 function nextOccurrence(ev, fromISO) {
   const r = ev.recurrence;
   if(!r || !r.frequency) return ev.event_date || null;
+  if(r.frequency==="dates") {
+    // Irregular series: the next listed date on/after fromISO.
+    const from = fromISO || todayISO();
+    const next = [...(r.dates||[])].sort().find(d => d >= from);
+    return next && !(r.until && next > r.until) ? next : null;
+  }
   const start = ev.event_date; if(!start) return null;
   const from = fromISO || todayISO();
   const fromEff = from < start ? start : from;   // never before the series start
@@ -565,6 +571,10 @@ function recurrenceSummary(ev) {
   else if(r.frequency==="biweekly") base = `Every 2 weeks on ${WEEKDAY_LONG[r.weekday??0]}`;
   else if(r.frequency==="monthly")  base = `Monthly`;
   else if(r.frequency==="daily")    base = `Daily`;
+  else if(r.frequency==="dates") {
+    const n = (r.dates||[]).length, next = nextOccurrence(ev);
+    base = `On ${n} date${n===1?"":"s"}${next?` · next ${fmtDate(next)}`:" · none left"}`;
+  }
   else                              base = `Repeats`;
   const t = ev.start_time ? ` · ${fmtTime(ev.start_time)}${ev.end_time?`–${fmtTime(ev.end_time)}`:""}` : "";
   const until = r.until ? ` · until ${fmtDate(r.until)}` : "";
@@ -4006,7 +4016,7 @@ function EventEditPage({editing,setEditing,onSave,onCancel,contacts}) {
       {eTab==="overview"&&<>
         <div className="frow">
           <div className="fg"><label className="fl">Event Name</label><input className="fi" value={editing.name||""} onChange={e=>setEditing({...editing,name:e.target.value})} autoFocus/></div>
-          <div className="fg"><label className="fl">{editing.recurrence?"Start date":"Date"}</label><input type="date" className="fi" value={editing.event_date||""} onChange={e=>setEditing({...editing,event_date:e.target.value})}/></div>
+          {editing.recurrence?.frequency!=="dates"&&<div className="fg"><label className="fl">{editing.recurrence?"Start date":"Date"}</label><input type="date" className="fi" value={editing.event_date||""} onChange={e=>setEditing({...editing,event_date:e.target.value})}/></div>}
         </div>
         <div className="frow">
           <div className="fg"><label className="fl">Start time</label><input type="time" className="fi" value={editing.start_time||""} onChange={e=>setEditing({...editing,start_time:e.target.value})}/></div>
@@ -4017,6 +4027,10 @@ function EventEditPage({editing,setEditing,onSave,onCancel,contacts}) {
           <select className="fs" value={editing.recurrence?.frequency||""} onChange={e=>{
             const f=e.target.value;
             if(!f){ setEditing({...editing,recurrence:null}); return; }
+            if(f==="dates"){
+              const seed = editing.recurrence?.dates?.length ? editing.recurrence.dates : (editing.event_date?[editing.event_date]:[]);
+              setEditing({...editing,recurrence:{frequency:"dates",dates:seed,until:null}}); return;
+            }
             const wd = editing.recurrence?.weekday ?? (editing.event_date ? new Date(editing.event_date+"T12:00:00").getDay() : new Date().getDay());
             setEditing({...editing,recurrence:{frequency:f,weekday:wd,until:editing.recurrence?.until??null}});
           }}>
@@ -4025,8 +4039,26 @@ function EventEditPage({editing,setEditing,onSave,onCancel,contacts}) {
             <option value="biweekly">Every 2 weeks</option>
             <option value="monthly">Monthly</option>
             <option value="daily">Daily</option>
+            <option value="dates">On specific dates</option>
           </select>
         </div>
+        {editing.recurrence?.frequency==="dates"&&(()=>{
+          // The event date always tracks the earliest listed date, so sorting and auto-complete keep working.
+          const setDates = list => { const ds=[...new Set(list.filter(Boolean))].sort(); setEditing({...editing,event_date:ds[0]||"",recurrence:{...editing.recurrence,dates:ds}}); };
+          const ds = editing.recurrence.dates||[];
+          return <div className="fg"><label className="fl">Dates</label>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
+              {ds.length===0&&<span style={{fontSize:12,color:"var(--g400)"}}>No dates yet. Pick one below.</span>}
+              {ds.map(d=>(
+                <span key={d} className="type-tag" style={{display:"inline-flex",alignItems:"center",gap:6}}>
+                  {fmtDate(d)}
+                  <button type="button" aria-label={`Remove ${d}`} onClick={()=>setDates(ds.filter(x=>x!==d))} style={{border:0,background:"none",cursor:"pointer",padding:0,fontWeight:700}}>×</button>
+                </span>
+              ))}
+            </div>
+            <input type="date" className="fi" value="" aria-label="Add a date" onChange={e=>{ if(e.target.value) setDates([...ds,e.target.value]); }}/>
+          </div>;
+        })()}
         {editing.recurrence&&(editing.recurrence.frequency==="weekly"||editing.recurrence.frequency==="biweekly")&&
           <div className="fg"><label className="fl">On</label>
             <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
@@ -4036,7 +4068,7 @@ function EventEditPage({editing,setEditing,onSave,onCancel,contacts}) {
               ))}
             </div>
           </div>}
-        {editing.recurrence&&
+        {editing.recurrence&&editing.recurrence.frequency!=="dates"&&
           <div className="fg"><label className="fl">Repeat until <span style={{fontWeight:400,color:"var(--g400)"}}>· optional</span></label>
             <input type="date" className="fi" value={editing.recurrence.until||""} onChange={e=>setEditing({...editing,recurrence:{...editing.recurrence,until:e.target.value||null}})}/></div>}
         {editing.recurrence&&<div style={{fontSize:12,color:"var(--cyan)",fontWeight:700,marginBottom:12,marginTop:-4}}>{recurrenceSummary(editing)}</div>}
