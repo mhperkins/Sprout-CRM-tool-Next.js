@@ -75,14 +75,16 @@ const money = (n) => "$" + Math.round(n || 0).toLocaleString();
 const fmtD = (iso) => new Date(iso + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
 const localToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 const shiftMonths = (iso, n) => { const d = new Date(iso + "T12:00:00"); d.setMonth(d.getMonth() + n); d.setDate(1); return d.toISOString().slice(0, 10); };
-const PARTNER_KEY = "sprout_gm_partners";
+// Partner events count by default. New key so a browser that remembered "off" under the
+// old default starts included; turning the switch off is still remembered.
+const PARTNER_KEY = "sprout_gm_partners_v2";
 
 export default function GrantMetrics({ events = [], contacts = [], orgs = [], onUpdateEvent, profile, openEvent, showToast }) {
   const today = localToday();
   const firstEvent = useMemo(() => events.map(e => e.event_date).filter(Boolean).sort()[0] || today.slice(0, 4) + "-01-01", [events, today]);
   const [range, setRange] = useState("all");
   const [custom, setCustom] = useState({ from: shiftMonths(today, -3), to: today });
-  const [partners, setPartners] = useState(() => { try { return localStorage.getItem(PARTNER_KEY) === "1"; } catch { return false; } });
+  const [partners, setPartners] = useState(() => { try { return localStorage.getItem(PARTNER_KEY) !== "0"; } catch { return true; } });
   const [programIds, setProgramIds] = useState([]);
   const [apps, setApps] = useState([]);
   const [loaded, setLoaded] = useState(false);
