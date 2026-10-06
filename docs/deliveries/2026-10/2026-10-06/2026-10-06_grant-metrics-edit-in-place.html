@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grant Metrics Edits</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--dim:#5F5F57;--line:#E3E3DD;--card:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink:#F7F7F6;--paper:#111110;--dim:#B5B5AD;--line:#2c2c29;--card:#1b1b19}}
+:root[data-theme="dark"]{--ink:#F7F7F6;--paper:#111110;--dim:#B5B5AD;--line:#2c2c29;--card:#1b1b19}
+*{box-sizing:border-box;margin:0}
+body{background:var(--paper);color:var(--ink);font-family:Lato,system-ui,sans-serif;padding:32px 16px}
+.slide{max-width:1040px;margin:0 auto}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:3px solid var(--ink);padding-bottom:14px}
+h1{font-size:34px;font-weight:900;letter-spacing:-.02em;line-height:1.05}
+.sub{color:var(--dim);font-size:14px;margin-top:6px}
+.badges{display:flex;gap:6px;flex-wrap:wrap;max-width:420px;justify-content:flex-end}
+.b{font-size:12px;font-weight:900;padding:4px 10px;border-radius:999px;background:var(--ink);color:var(--paper);font-family:ui-monospace,Consolas,monospace}
+.b.acid{background:var(--acid);color:#030000}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-top:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;border-left:6px solid var(--cyan)}
+.card.f{border-left-color:var(--fuchsia)}.card.a{border-left-color:var(--acid)}.card.y{border-left-color:var(--banana)}
+.card h2{font-size:17px;font-weight:900;margin-bottom:8px}
+.card p,.card li{font-size:14px;line-height:1.5;color:var(--dim)}
+.card ul{padding-left:18px;display:grid;gap:3px}
+.foot{margin-top:18px;font-size:12.5px;color:var(--dim);display:flex;gap:14px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div>
+      <h1>Type the numbers where you read them</h1>
+      <div class="sub">Grant Metrics part 4 · Sprout CRM · 2026-10-06</div>
+    </div>
+    <div class="badges"><span class="b">main</span><span class="b acid">2a962c0</span><span class="b">b7c2244</span><span class="b">5c1e0e4</span><span class="b">52bfd40</span></div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <h2>✏️ Every event-row box is editable</h2>
+      <ul>
+        <li>Host, attendance, first-timers, artists</li>
+        <li>Members who came, dues collected</li>
+        <li>Rental checkbox + rental fee (a fee marks it Rental)</li>
+        <li>Saves to the event's Outcomes tile, so both match</li>
+      </ul>
+    </div>
+    <div class="card f">
+      <h2>🤝 Partner events count by default</h2>
+      <p>The switch starts on; turning it off is remembered per browser.</p>
+    </div>
+    <div class="card y">
+      <h2>🌙 Dark-mode bug fixed</h2>
+      <p>Typed numbers were white on white on a dark-mode Mac, so a retype saved 181818. Inputs now set their own color, the bad value is cleared, and first-timers can't exceed attendance.</p>
+    </div>
+    <div class="card a">
+      <h2>✅ Verified</h2>
+      <p>Build passes. 17 logic checks against live data; all 19 events still validate. No migration: new fields are JSONB.</p>
+    </div>
+  </div>
+  <div class="foot"><span>components/GrantMetrics.jsx</span><span>lib/grantMetrics.js</span><span>lib/schemas.js</span><span>components/CRMManager.jsx</span></div>
+</div>
+</body>
+</html>

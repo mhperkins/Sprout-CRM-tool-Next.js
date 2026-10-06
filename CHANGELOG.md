@@ -2,6 +2,24 @@
 
 ---
 
+## 2026-10-06: Grant Metrics numbers typed in place; partner events by default; dark-mode input fix
+
+App code (`e3172bd`, `eed7ea5`, `2a6f22d`, `dd6659d`, `25c77e4`; merges `52bfd40`, `5c1e0e4`, `b7c2244`, `2a962c0`). No migration (JSONB-only fields). `npm run build` passes. Effort: medium.
+
+### What changed
+- **Edit on the page.** Every event row in the By month dropdowns is editable: host (Sprout / Partner / Rental), attendance, first-timers, artists, members who came, dues collected, rental and rental fee. Each edit saves to that event's Outcomes, so the event page matches.
+- **New outcome fields:** `artists` (typed wins over Program submissions), `members_attended`, `dues_collected` (adds to Dues). Typing a rental fee marks the event a Rental.
+- **Partner-hosted events count by default.**
+- **Dark-mode fix.** Typed numbers were invisible on a dark-mode Mac (white on white), and retyping saved Show n Tell first-timers as 181818. Inputs now set their own text color, the bad value was cleared, and first-timers or members can't exceed attendance.
+
+### Why
+Max wanted to enter numbers right where he reads them instead of opening each event.
+
+### Verified
+17 logic checks across the rounds against live data (schema round-trips, totals, fallbacks, rentals); all 19 live events still validate. UI not clicked through by Claude (login wall).
+
+---
+
 ## 2026-10-06: Grant Metrics reads every sign-in sheet; per-event dropdowns by month
 
 App code (`a1b9344`, merge `e8c1cdd`). No migration. `npm run build` passes. Effort: medium.
