@@ -2,6 +2,25 @@
 
 ---
 
+## 2026-10-06: Grant Metrics reads door sign-ins; organizations can be members
+
+App code (`15f71c6`, merge `cd04c00`). No migration (JSONB-only fields). `npm run build` passes. Effort: medium.
+
+### What changed
+- **Attendance from the front-door kiosk sheet.** A new staff-only route reads the Sign-ins sheet as hello@. GMT timestamps convert to New York time, sign-ins before 6am count toward the night before, and a person signing in twice counts once. A headcount typed in an event's Outcomes tile still wins; a blank one fills from that night's sign-ins when exactly one event falls on that date.
+- **Organizations can be members.** Orgs get the same Membership section as contacts (plan, dates, payments), a ★ Member badge, and a ★ Members tab on the Orgs page. Grant Metrics counts member orgs in members and dues.
+
+### Why
+Max: the sign-ins on event nights are tracked in that sheet, so attendance should come from it instead of retyping. Member organizations need to count too.
+
+### Verified
+9 logic checks against live data (read-only): night rules, dedupe, typed-wins, two-events-one-night, org membership validation, member/dues totals. Live: Sprout n Tell 6/26 = 17, Vol. 3 = 28, Vol. 4 = 12; attendance 0 → 57. All 19 live orgs still validate. UI not clicked through by Claude (login wall).
+
+### Open
+Max enters headcounts by hand for the 9 events with no kiosk sign-ins.
+
+---
+
 ## 2026-10-06: Grant Metrics: event outcomes, membership tracking, proof-of-concept page
 
 App code (`ebfb437`, merge `181d8d3`). No migration (JSONB-only fields). `npm run build` passes. Effort: medium.

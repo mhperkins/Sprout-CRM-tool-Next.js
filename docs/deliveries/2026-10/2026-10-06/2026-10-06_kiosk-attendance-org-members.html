@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Door Sign-ins + Org Members</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--dim:#5F5F57;--line:#E3E3DD;--card:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink:#F7F7F6;--paper:#111110;--dim:#B5B5AD;--line:#2c2c29;--card:#1b1b19}}
+:root[data-theme="dark"]{--ink:#F7F7F6;--paper:#111110;--dim:#B5B5AD;--line:#2c2c29;--card:#1b1b19}
+*{box-sizing:border-box;margin:0}
+body{background:var(--paper);color:var(--ink);font-family:Lato,system-ui,sans-serif;padding:32px 16px}
+.slide{max-width:1040px;margin:0 auto}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:3px solid var(--ink);padding-bottom:14px}
+h1{font-size:34px;font-weight:900;letter-spacing:-.02em;line-height:1.05}
+.sub{color:var(--dim);font-size:14px;margin-top:6px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.b{font-size:12px;font-weight:900;padding:4px 10px;border-radius:999px;background:var(--ink);color:var(--paper);font-family:ui-monospace,Consolas,monospace}
+.b.acid{background:var(--acid);color:#030000}.b.cyan{background:var(--cyan);color:#030000}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-top:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;border-left:6px solid var(--cyan)}
+.card.f{border-left-color:var(--fuchsia)}.card.a{border-left-color:var(--acid)}.card.y{border-left-color:var(--banana)}
+.card h2{font-size:17px;font-weight:900;margin-bottom:8px}
+.card p,.card li{font-size:14px;line-height:1.5;color:var(--dim)}
+.card ul{padding-left:18px;display:grid;gap:3px}
+.nums{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.n{flex:1;min-width:80px;background:var(--paper);border-radius:8px;padding:8px 10px}
+.n b{display:block;font-size:24px;font-weight:900;color:var(--ink)}
+.n span{font-size:11.5px;color:var(--dim)}
+.foot{margin-top:18px;font-size:12.5px;color:var(--dim);display:flex;gap:14px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div>
+      <h1>Attendance from the door, members that are orgs</h1>
+      <div class="sub">Grant Metrics part 2 · Sprout CRM · 2026-10-06</div>
+    </div>
+    <div class="badges"><span class="b">main</span><span class="b acid">15f71c6</span><span class="b cyan">merge cd04c00</span></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>🚪 Door sign-ins fill attendance</h2>
+      <ul>
+        <li>Reads the kiosk Sign-ins sheet as hello@, staff only</li>
+        <li>GMT times → New York; before 6am counts as the night before</li>
+        <li>Same person twice on a night counts once</li>
+        <li>A typed headcount always wins</li>
+      </ul>
+      <div class="nums">
+        <div class="n"><b>17</b><span>SnT 6/26</span></div>
+        <div class="n"><b>28</b><span>Vol. 3</span></div>
+        <div class="n"><b>12</b><span>Vol. 4</span></div>
+      </div>
+    </div>
+    <div class="card f">
+      <h2>🏢 Organizations can be members</h2>
+      <ul>
+        <li>Same Membership section as people: plan, dates, payments</li>
+        <li>★ Member badge + an additive ★ Members tab on Orgs</li>
+        <li>Counted in Grant Metrics members and dues</li>
+        <li>JSONB-only, no migration; all 19 orgs still validate</li>
+      </ul>
+    </div>
+    <div class="card a">
+      <h2>✅ Verified</h2>
+      <p>Build passes. 9 logic checks against live data: night rules, dedupe, typed-wins, two events on one night, org validation, member totals. Attendance 0 → 57.</p>
+    </div>
+    <div class="card y">
+      <h2>✍️ Still yours</h2>
+      <p>9 events had no kiosk sign-ins (Show n Tell 5/19, Game Night, the happy hours, Sing Easy, Pat's Industry Day, and others). Type their headcounts into each Outcomes tile.</p>
+    </div>
+  </div>
+  <div class="foot"><span>lib/kioskSignins.js</span><span>app/api/grant-metrics/signins</span><span>lib/grantMetrics.js</span><span>components/GrantMetrics.jsx</span><span>lib/schemas.js</span><span>components/CRMManager.jsx</span><span>lib/services.js</span></div>
+</div>
+</body>
+</html>
