@@ -441,7 +441,7 @@ const SEGMENTS   = { community:"Community", member:"Members", donor:"Donors", pr
 const SEGMENT_OPTS = [{value:"community",label:"Community"},{value:"donor",label:"Donor"},{value:"prospect",label:"Prospect"}];
 // Tab row / send-list buckets: the three base buckets PLUS the additive Members flag.
 const BUCKET_OPTS = [{value:"community",label:"Community"},{value:"member",label:"Members"},{value:"donor",label:"Donor"},{value:"prospect",label:"Prospect"}];
-const ORG_SEGMENTS   = { active:"Active", prospect:"Prospects" };
+const ORG_SEGMENTS   = { active:"Active", prospect:"Prospects", member:"Members" };
 const ORG_SEGMENT_OPTS = [{value:"active",label:"Active"},{value:"prospect",label:"Prospect"}];
 // Givebutter campaigns — synced via the givebutter MCP (list_campaigns). Refresh when campaigns change.
 // `id` is the stable Givebutter campaign id, stored hidden alongside the title (survives a rename).
@@ -1312,10 +1312,12 @@ function OrgDetail({org,contacts,onClose,onUpdate,onEdit,showToast}) {
           <div className="dp-row" style={{display:"flex",alignItems:"center",gap:8}}>
             <span style={{fontSize:11,fontWeight:700,color:"var(--g600)"}}>Bucket:</span>
             <span style={{fontSize:12,fontWeight:700,background:"var(--g100)",color:"var(--g800)",padding:"3px 10px",borderRadius:12}}>{ORG_SEGMENTS[curSegment]}</span>
+            {org.is_member&&<span style={{fontSize:12,fontWeight:700,background:"var(--acid)",color:"var(--black)",padding:"3px 10px",borderRadius:12}}>★ Member</span>}
             {ORG_SEGMENT_OPTS.filter(o=>o.value!==curSegment).map(o=>(
               <button key={o.value} className={o.value==="active"?"btn btn-blk btn-xs":"btn btn-ghost btn-xs"} onClick={()=>moveSegment(o.value)}>→ Move to {ORG_SEGMENTS[o.value]}</button>
             ))}
           </div>
+          <MembershipSection key={org.id} contact={org} onUpdate={onUpdate} showToast={showToast}/>
           {linked.length>0&&<div className="dp-section"><div className="dp-sect-lbl">People ({linked.length})</div>{linked.map(c=><div key={c.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}><div style={{flex:1}}><div style={{fontSize:13,fontWeight:700}}>{c.first_name} {c.last_name}</div></div><RelTag status={c.relationship_status}/></div>)}</div>}
           <div className="dp-section">
             <div className="dp-sect-lbl">Contact Details</div>
@@ -2232,10 +2234,11 @@ const blank={name:"",category:"funder",segment:"active",website:"",instagram_han
   const [no,setNo]=useState(blank);
   const [noDrawer,setNoDrawer]=useState(false);
 
-  const segCounts=useMemo(()=>{const c={};orgs.forEach(o=>{const s=o.segment||"active";c[s]=(c[s]||0)+1;});return c;},[orgs]);
+  // Members is additive (is_member), like contacts: a member org also stays in its Active/Prospects bucket.
+  const segCounts=useMemo(()=>{const c={member:0};orgs.forEach(o=>{const s=o.segment||"active";c[s]=(c[s]||0)+1;if(o.is_member)c.member++;});return c;},[orgs]);
 
 const filtered=useMemo(()=>orgs.filter(o=>{
-    if ((o.segment||"active")!==segment) return false;
+    if (segment==="member" ? !o.is_member : (o.segment||"active")!==segment) return false;
     if (search&&!o.name.toLowerCase().includes(search.toLowerCase())) return false;
     if (fCat!=="all"&&o.category!==fCat) return false;
     if (fStatus!=="all"&&o.relationship_status!==fStatus) return false;
@@ -2260,13 +2263,16 @@ const [editingOrg,setEditingOrg]=useState(null);
 
   return (
     <div className="page">
-      <div className="pg-hd"><div><div className="pg-ttl">Organizations</div><div className="pg-sub">{orgs.length} organizations tracked</div></div><button className="btn btn-blk" onClick={()=>{setNo({...blank,segment});setAdding(true);}}>+ Add to {ORG_SEGMENTS[segment]}</button></div>
+      <div className="pg-hd"><div><div className="pg-ttl">Organizations</div><div className="pg-sub">{orgs.length} organizations tracked</div></div><button className="btn btn-blk" onClick={()=>{setNo(segment==="member"?{...blank,segment:"active",is_member:true}:{...blank,segment});setAdding(true);}}>+ Add to {ORG_SEGMENTS[segment]}</button></div>
       <div className="tabs">
         {ORG_SEGMENT_OPTS.map(o=>(
           <button key={o.value} className={`tab ${segment===o.value?"on":""}`} onClick={()=>{setSegment(o.value);setSelected(null);}}>
             {ORG_SEGMENTS[o.value]} <span style={{opacity:0.55}}>({segCounts[o.value]||0})</span>
           </button>
         ))}
+        <button className={`tab ${segment==="member"?"on":""}`} onClick={()=>{setSegment("member");setSelected(null);}}>
+          ★ Members <span style={{opacity:0.55}}>({segCounts.member||0})</span>
+        </button>
       </div>
       <div className="filter-bar">
         <input className="fi" placeholder="Search organizations…" value={search} onChange={e=>setSearch(e.target.value)}/>
@@ -2312,7 +2318,7 @@ const [editingOrg,setEditingOrg]=useState(null);
         : <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Organization</th><th>Category</th><th>Type</th><th>Status</th><th>Next Action</th><th>Given</th><th></th></tr></thead><tbody>
             {filtered.map(o=>{
               return <tr key={o.id} onClick={()=>setSelected(o.id)}>
-                <td><div style={{fontWeight:700}}>{o.name}</div><div style={{fontSize:11,color:"var(--g400)"}}>{o.website||""}</div></td>
+                <td><div style={{fontWeight:700}}>{o.name}{o.is_member&&<span title="Member" style={{marginLeft:6,fontSize:10,fontWeight:700,background:"var(--acid)",color:"var(--black)",padding:"1px 6px",borderRadius:8}}>★ Member</span>}</div><div style={{fontSize:11,color:"var(--g400)"}}>{o.website||""}</div></td>
                 <td><span className="type-tag">{ORG_CATS[o.category]||o.category}</span></td>
                 <td><div style={{display:"flex",flexWrap:"wrap",gap:3}}>{(o.tags||[]).filter(t=>REL_TYPES[t]).map(t=><span key={t} className="type-tag">{REL_TYPES[t]}</span>)}</div></td>
                 <td><RelTag status={o.relationship_status}/></td>
@@ -6309,7 +6315,7 @@ if (dbError) return (
 {view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail} setView={setView}/>}
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
 {view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))} pendingEvent={pendingEvent} onPendingEventConsumed={clearPendingEvent} portals={portals} onCreatePortal={makePortal} onRotatePortal={rotatePortal} onRemovePortal={removePortal} onRefreshPortals={refreshPortals} onSavePortalAnswer={savePortalAnswer}/>}
-        {view==="grants"&&<GrantMetrics events={events} contacts={contacts} profile={profile} openEvent={openEvent} showToast={showToast}/>}
+        {view==="grants"&&<GrantMetrics events={events} contacts={contacts} orgs={orgs} profile={profile} openEvent={openEvent} showToast={showToast}/>}
         {view==="showcase"&&<ShowcaseApplications contacts={contacts} events={events} onSaveContact={saveOneContact} onCreateContact={createOneContact} onUpdateEvent={saveOneEvent} openContact={openContact} showToast={showToast}/>}
         {view==="newsletter"&&<NewsletterView newsletters={newsletters} events={events} contacts={contacts} profile={profile} onUpdate={saveNewsletter} onDelete={deleteNewsletter} showToast={showToast}/>}
         {view==="outreach"&&<OutreachView contacts={contacts} orgs={orgs} events={events}/>}
