@@ -5533,7 +5533,9 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
                               onChange={e=>setO({rental_paid_date:e.target.value})}/>}
                           </div></div>
                       </>}
-                      <div>{lbl("Artists featured")}<div style={{fontSize:12.5}}>{program.entries.length} <span style={{color:"var(--g500)"}}>from Program</span></div></div>
+                      <div>{lbl("Artists featured")}
+                        <input key={event.id+"ar"+(o.artists??"")} className="fi" style={{fontSize:12}} inputMode="numeric"
+                          placeholder={`${program.entries.length} from Program`} defaultValue={o.artists??""} onBlur={numBlur("artists")}/></div>
                       <div>{lbl("Linked in CRM")}<div style={{fontSize:12.5}}>{linked.length} people · {confirmedN} checked in</div></div>
                     </div>
                     <div>{lbl("A quote from the night (optional)")}
