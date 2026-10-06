@@ -48,6 +48,7 @@ import { validateContact, validateOrg } from "../lib/schemas";
 import { blocksOf, firstHeading, parseTableBlock, serializeTable, renderInline } from "../lib/md";
 import DayBoard from "./DayBoard";
 import ShowcaseApplications from "./ShowcaseApplications";
+import GrantMetrics from "./GrantMetrics";
 
 /* ─── Styles ───────────────────────────────────────────────────────────────── */
 const STYLES = `
@@ -961,6 +962,84 @@ function AddActionModal({onSave,onClose}) {
   );
 }
 
+/* ─── Membership (manual entry; feeds Grant Metrics) ─────────────────────────── */
+const MEMBER_PLANS = { day:{label:"Day pass",price:17}, monthly:{label:"Monthly",price:55}, annual:{label:"Annual",price:495} };
+const MEMBER_STATUS = { active:{label:"Active",bg:"var(--acid-lt)",fg:"#3a3d00"}, lapsed:{label:"Lapsed",bg:"var(--banana-lt)",fg:"#7a5c00"}, cancelled:{label:"Cancelled",bg:"var(--g100)",fg:"var(--g600)"} };
+// A monthly or annual plan that is active is what makes someone a Member. A day pass never does.
+const memberFlag = (m) => !!m && m.plan !== "day" && (m.status||"active") === "active";
+
+function MembershipSection({contact,onUpdate,showToast}) {
+  const m = contact.membership;
+  const [pay, setPay] = useState(null); // {date,amount,method} while logging a payment
+  const save = (next, msg) => { onUpdate({...contact, membership:next, is_member: next ? memberFlag(next) : false}); if (msg) showToast(msg); };
+  const setM = (patch, msg) => save({...m, ...patch}, msg);
+  const fs = {fontSize:12};
+  if (!m) return (
+    <div className="dp-section">
+      <div className="dp-sect-lbl">Membership</div>
+      <div style={{fontSize:12,color:"var(--g600)",marginBottom:8}}>Not a member. Add a plan when they join.</div>
+      <button className="btn btn-blk btn-sm" onClick={()=>save({plan:"monthly",start:localTodayISO(),end:"",status:"active",paid_via:"",payments:[]},"Membership added ✓")}>+ Add membership</button>
+    </div>
+  );
+  const st = MEMBER_STATUS[m.status||"active"];
+  const pays = [...(m.payments||[])].sort((a,b)=>b.date.localeCompare(a.date));
+  const total = pays.reduce((s,p)=>s+(Number(p.amount)||0),0);
+  const addPay = () => {
+    const amount = Number(pay.amount);
+    if (!pay.date || !Number.isFinite(amount) || amount<0) { showToast("Add a date and an amount","err"); return; }
+    setM({payments:[...(m.payments||[]),{id:"pay_"+uid(),date:pay.date,amount,method:pay.method||""}]},"Payment logged ✓");
+    setPay(null);
+  };
+  return (
+    <div className="dp-section">
+      <div className="dp-sect-lbl" style={{display:"flex",alignItems:"center",gap:8}}>
+        Membership <span style={{fontSize:10.5,fontWeight:700,background:st.bg,color:st.fg,padding:"2px 8px",borderRadius:10,textTransform:"none",letterSpacing:0}}>{m.plan==="day"?"Day pass":st.label}</span>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:8}}>
+        <label style={fs}><div className="evd-lbl">Plan</div>
+          <select className="fi" style={fs} value={m.plan} onChange={e=>setM({plan:e.target.value},"Saved ✓")}>
+            {Object.entries(MEMBER_PLANS).map(([k,p])=><option key={k} value={k}>{p.label} · ${p.price}</option>)}
+          </select></label>
+        <label style={fs}><div className="evd-lbl">{m.plan==="day"?"Date":"Member since"}</div>
+          <input type="date" className="fi" style={fs} value={m.start||""} onChange={e=>setM({start:e.target.value})}/></label>
+        {m.plan!=="day"&&<>
+          <label style={fs}><div className="evd-lbl">Status</div>
+            <select className="fi" style={fs} value={m.status||"active"} onChange={e=>{const v=e.target.value;setM({status:v,end:v==="active"?"":(m.end||localTodayISO())},"Saved ✓");}}>
+              {Object.entries(MEMBER_STATUS).map(([k,s])=><option key={k} value={k}>{s.label}</option>)}
+            </select></label>
+          {(m.status||"active")!=="active"&&<label style={fs}><div className="evd-lbl">Ended</div>
+            <input type="date" className="fi" style={fs} value={m.end||""} onChange={e=>setM({end:e.target.value})}/></label>}
+        </>}
+        <label style={fs}><div className="evd-lbl">Usually pays by</div>
+          <input key={contact.id+"pv"} className="fi" style={fs} placeholder="Givebutter, Venmo, cash…" defaultValue={m.paid_via||""}
+            onBlur={e=>{if(e.target.value!==(m.paid_via||""))setM({paid_via:e.target.value},"Saved ✓");}}/></label>
+      </div>
+      <div style={{marginTop:10}}>
+        <div className="evd-lbl">Payments {pays.length>0&&<span style={{textTransform:"none",letterSpacing:0,fontWeight:400}}>· {fmtMoney(total)} total</span>}</div>
+        {pays.length===0&&!pay&&<div style={{fontSize:12,color:"var(--g500)"}}>No payments logged yet.</div>}
+        {pays.map(p=>(
+          <div key={p.id} style={{display:"flex",gap:10,alignItems:"center",fontSize:12,padding:"3px 0",fontVariantNumeric:"tabular-nums"}}>
+            <span style={{width:90}}>{fmtDate(p.date)}</span><b style={{width:60}}>{fmtMoney(p.amount)}</b>
+            <span style={{flex:1,color:"var(--g500)"}}>{p.method}</span>
+            <button className="evd-x" title="Remove payment" onClick={()=>setM({payments:(m.payments||[]).filter(x=>x.id!==p.id)},"Payment removed")}>×</button>
+          </div>
+        ))}
+        {pay
+          ? <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center",marginTop:6}}>
+              <input type="date" className="fi" style={{...fs,width:"auto"}} value={pay.date} onChange={e=>setPay({...pay,date:e.target.value})}/>
+              <input className="fi" style={{...fs,width:80}} inputMode="decimal" placeholder="$" value={pay.amount} onChange={e=>setPay({...pay,amount:e.target.value})}/>
+              <input className="fi" style={{...fs,width:110}} placeholder="How" value={pay.method} onChange={e=>setPay({...pay,method:e.target.value})}
+                onKeyDown={e=>{if(e.key==="Enter")addPay();}}/>
+              <button className="btn btn-blk btn-sm" onClick={addPay}>Add</button>
+              <button className="btn btn-ghost btn-sm" onClick={()=>setPay(null)}>Cancel</button>
+            </div>
+          : <button className="btn btn-ghost btn-xs" style={{marginTop:6}} onClick={()=>setPay({date:localTodayISO(),amount:String(MEMBER_PLANS[m.plan]?.price||""),method:m.paid_via||""})}>+ Log payment</button>}
+      </div>
+      <button className="btn btn-ghost btn-xs" style={{marginTop:10,color:"var(--g500)"}} onClick={()=>save(null,"Membership removed")}>Remove membership</button>
+    </div>
+  );
+}
+
 /* ─── Contact Detail Panel ───────────────────────────────────────────────────── */
 function ContactDetail({contact,orgs,events,onClose,onUpdate,onEdit,showToast}) {
   const mouseDownTarget = useRef(null);
@@ -1088,6 +1167,7 @@ function ContactDetail({contact,orgs,events,onClose,onUpdate,onEdit,showToast}) 
             {contact.website&&<div className="dp-field"><strong>Website:</strong> <a href={contact.website} target="_blank" rel="noreferrer" style={{color:"var(--cyan)"}}>{contact.website}</a></div>}
             {contact.how_heard&&<div className="dp-field"><strong>How they heard:</strong> {contact.how_heard}</div>}
           </div>
+          <MembershipSection key={contact.id} contact={contact} onUpdate={onUpdate} showToast={showToast}/>
           {curSegment==="donor"&&contact.campaign&&<div className="dp-section">
             <div className="dp-sect-lbl">Campaign <span style={{fontSize:10,color:"var(--g400)",fontWeight:400}}>(Givebutter)</span></div>
             <span style={{display:"inline-flex",alignItems:"center",gap:4,background:"var(--banana-lt,#fff7d6)",color:"#8a6d00",fontSize:11,fontWeight:700,padding:"3px 9px",borderRadius:12}}>🎗 {contact.campaign}</span>
@@ -1458,6 +1538,7 @@ function Sidebar({view,setView,contacts,events,profile,onQuickLog,onCollapse}) {
     {id:"showcase",label:"Showcase",icon:"🎤"},
     {id:"newsletter",label:"Newsletter",icon:"📰"},
     {id:"outreach",label:"Outreach",icon:"📣"},
+    {id:"grants",label:"Grant Metrics",icon:"📈"},
     {section:"Tools"},
     {id:"import",label:"Import JSON",icon:"⬇"},
     {id:"settings",label:"Settings",icon:"⚙"},
@@ -5399,6 +5480,64 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
                     })
               ),comms.length?"Log a message · see all "+comms.length:"Log a message",true)}
 
+              {/* OUTCOMES: filled in after the event; feeds the Grant Metrics page. */}
+              {(()=>{
+                const o=event.outcomes||{};
+                const kind=o.hosted_by||"sprout";
+                const upcoming=event.event_date&&event.event_date>localTodayISO();
+                const filled=o.headcount!=null&&o.headcount!=="";
+                const setO=patch=>onUpdateEvent({...event,outcomes:{hosted_by:"sprout",...o,...patch}});
+                const numBlur=key=>e=>{
+                  const raw=e.target.value.trim();
+                  const v=raw===""?null:Math.max(0,Math.round(Number(raw)));
+                  if(raw!==""&&!Number.isFinite(v)){showToast("Enter a number","err");return;}
+                  if(v!==(o[key]??null)){setO({[key]:v});showToast("Saved ✓");}
+                };
+                const txtBlur=key=>e=>{const v=e.target.value;if(v!==(o[key]||"")){setO({[key]:v});showToast("Saved ✓");}};
+                const lbl=t=><div className="evd-lbl">{t}</div>;
+                const count=upcoming?"":filled?o.headcount+" came":"Not filled in";
+                return tile("outcomes","Outcomes",count,(
+                  <>
+                    {upcoming&&<div className="evd-empty">Fill this in after {fmtDate(event.event_date)}. It feeds the Grant Metrics page.</div>}
+                    {!upcoming&&!filled&&<div style={{fontSize:12.5,fontWeight:700,color:"#8b5a00"}}>How many people came? Add a headcount so this event counts toward the grant numbers.</div>}
+                    <div className="evd-host-grid">
+                      <div>{lbl("Hosted by")}
+                        <select className="fi" style={{fontSize:12}} value={kind} onChange={e=>{setO({hosted_by:e.target.value});showToast("Saved ✓");}}>
+                          <option value="sprout">Sprout</option><option value="partner">Partner</option><option value="rental">Rental</option>
+                        </select></div>
+                      <div>{lbl("Headcount")}
+                        <input key={event.id+"hc"+(o.headcount??"")} className="fi" style={{fontSize:12}} inputMode="numeric" placeholder="e.g. 46"
+                          defaultValue={o.headcount??""} onBlur={numBlur("headcount")}/></div>
+                      <div>{lbl("First-timers")}
+                        <input key={event.id+"ft"+(o.first_timers??"")} className="fi" style={{fontSize:12}} inputMode="numeric" placeholder="optional"
+                          defaultValue={o.first_timers??""} onBlur={numBlur("first_timers")}/></div>
+                      <div>{lbl("Counted from")}
+                        <input key={event.id+"cs"} className="fi" style={{fontSize:12}} placeholder="Kiosk sign-ins, door count…"
+                          defaultValue={o.count_source||""} onBlur={txtBlur("count_source")}/></div>
+                      {kind==="rental"&&<>
+                        <div>{lbl("Rental fee ($)")}
+                          <input key={event.id+"rf"+(o.rental_fee??"")} className="fi" style={{fontSize:12}} inputMode="numeric" placeholder="e.g. 450"
+                            defaultValue={o.rental_fee??""} onBlur={numBlur("rental_fee")}/></div>
+                        <div>{lbl("Payment")}
+                          <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+                            <label style={{fontSize:12,display:"flex",gap:5,alignItems:"center",cursor:"pointer"}}>
+                              <input type="checkbox" checked={!!o.rental_paid} style={{accentColor:"var(--cyan)"}}
+                                onChange={e=>{const p=e.target.checked;setO({rental_paid:p,rental_paid_date:p?(o.rental_paid_date||localTodayISO()):""});showToast(p?"Marked paid ✓":"Marked unpaid");}}/>Paid</label>
+                            {o.rental_paid&&<input type="date" className="fi" style={{fontSize:12,width:"auto"}} value={o.rental_paid_date||""}
+                              onChange={e=>setO({rental_paid_date:e.target.value})}/>}
+                          </div></div>
+                      </>}
+                      <div>{lbl("Artists featured")}<div style={{fontSize:12.5}}>{program.entries.length} <span style={{color:"var(--g500)"}}>from Program</span></div></div>
+                      <div>{lbl("Linked in CRM")}<div style={{fontSize:12.5}}>{linked.length} people · {confirmedN} checked in</div></div>
+                    </div>
+                    <div>{lbl("A quote from the night (optional)")}
+                      <textarea key={event.id+"q"} className="fi" style={{fontSize:12,minHeight:54,resize:"vertical",lineHeight:1.6}}
+                        placeholder="Something someone said about the night…"
+                        defaultValue={o.quote||""} onBlur={txtBlur("quote")}/></div>
+                  </>
+                ),null,true);
+              })()}
+
               {tile("details","Details","",(
                 <>
                   {event.description&&<div><div className="evd-lbl">Description</div><p className="evd-p">{event.description}</p></div>}
@@ -6170,6 +6309,7 @@ if (dbError) return (
 {view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail} setView={setView}/>}
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
 {view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))} pendingEvent={pendingEvent} onPendingEventConsumed={clearPendingEvent} portals={portals} onCreatePortal={makePortal} onRotatePortal={rotatePortal} onRemovePortal={removePortal} onRefreshPortals={refreshPortals} onSavePortalAnswer={savePortalAnswer}/>}
+        {view==="grants"&&<GrantMetrics events={events} contacts={contacts} profile={profile} openEvent={openEvent} showToast={showToast}/>}
         {view==="showcase"&&<ShowcaseApplications contacts={contacts} events={events} onSaveContact={saveOneContact} onCreateContact={createOneContact} onUpdateEvent={saveOneEvent} openContact={openContact} showToast={showToast}/>}
         {view==="newsletter"&&<NewsletterView newsletters={newsletters} events={events} contacts={contacts} profile={profile} onUpdate={saveNewsletter} onDelete={deleteNewsletter} showToast={showToast}/>}
         {view==="outreach"&&<OutreachView contacts={contacts} orgs={orgs} events={events}/>}
