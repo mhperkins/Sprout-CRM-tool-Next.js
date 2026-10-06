@@ -6,6 +6,9 @@
  * Reads only: events (Outcomes tile), contacts + orgs (Membership section), program
  * submissions, showcase applications and every sign-in sheet in the SPROUT N TELL
  * Drive folder (attendance for any event whose headcount is blank). The math lives in lib/grantMetrics.js.
+ * Writes one thing: the per-event rows in the By month dropdowns edit that event's
+ * Outcomes (hosted by, headcount, first-timers) through the same single-event save the
+ * event page uses, so the event page shows the same numbers.
  * Every gap is shown, never hidden: an event with no headcount is listed so the
  * attendance figure is never quietly understated.
  */
@@ -62,6 +65,10 @@ const GM_STYLES = `
 .gm-src{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:5px;background:var(--g100);color:var(--dim)}
 .gm-src.door{background:#E2F3F7;color:#1d6878}
 .gm-src.miss{background:var(--warn-bg);color:var(--warn)}
+.gm-in{font:inherit;font-size:12.5px;width:64px;text-align:right;border:1px solid var(--line);border-radius:5px;padding:3px 6px;background:#fff;font-variant-numeric:tabular-nums}
+.gm-in:focus{outline:2px solid var(--cyan);outline-offset:0;border-color:var(--cyan)}
+.gm-in::placeholder{color:#1d6878;opacity:.75}
+.gm-sel{font:inherit;font-size:12px;border:1px solid var(--line);border-radius:5px;padding:2px 4px;background:#fff}
 `;
 
 const money = (n) => "$" + Math.round(n || 0).toLocaleString();
@@ -70,7 +77,7 @@ const localToday = () => { const d = new Date(); return `${d.getFullYear()}-${St
 const shiftMonths = (iso, n) => { const d = new Date(iso + "T12:00:00"); d.setMonth(d.getMonth() + n); d.setDate(1); return d.toISOString().slice(0, 10); };
 const PARTNER_KEY = "sprout_gm_partners";
 
-export default function GrantMetrics({ events = [], contacts = [], orgs = [], profile, openEvent, showToast }) {
+export default function GrantMetrics({ events = [], contacts = [], orgs = [], onUpdateEvent, profile, openEvent, showToast }) {
   const today = localToday();
   const firstEvent = useMemo(() => events.map(e => e.event_date).filter(Boolean).sort()[0] || today.slice(0, 4) + "-01-01", [events, today]);
   const [range, setRange] = useState("all");
@@ -81,6 +88,20 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], pr
   const [loaded, setLoaded] = useState(false);
   const [kiosk, setKiosk] = useState({ nights: {}, sheets: [], folderUrl: null, error: null, loading: true });
   const [openMonths, setOpenMonths] = useState(() => new Set());
+  // Edits from the dropdown rows land on the event itself (its Outcomes tile).
+  const setOutcome = (id, patch, msg) => {
+    const ev = events.find(e => e.id === id);
+    if (!ev || !onUpdateEvent) return;
+    onUpdateEvent({ ...ev, outcomes: { hosted_by: "sprout", ...(ev.outcomes || {}), ...patch } });
+    showToast?.(msg || "Saved to the event ✓");
+  };
+  const numBlur = (id, key, current) => (e) => {
+    const raw = e.target.value.trim();
+    const v = raw === "" ? null : Math.max(0, Math.round(Number(raw)));
+    if (raw !== "" && !Number.isFinite(v)) { showToast?.("Enter a number", "err"); e.target.value = current ?? ""; return; }
+    if (v !== (current ?? null)) setOutcome(id, { [key]: v });
+  };
+  const numKey = (e) => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") { e.currentTarget.value = e.currentTarget.defaultValue; e.currentTarget.blur(); } };
   const toggleMonth = (key) => setOpenMonths(prev => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; });
 
   useEffect(() => {
@@ -149,6 +170,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], pr
         <div className="gm-warn">
           <b>{m.missing.length} event{m.missing.length === 1 ? " has" : "s have"} no headcount.</b> No sign-in sheet covers {m.missing.length === 1 ? "it" : "them"} either, so attendance below undercounts until they are filled in. Open one and fill in its Outcomes tile:
           <ul>{m.missing.map(ev => <li key={ev.id}><button onClick={() => openEvent?.({ id: ev.id })}>{ev.name || "(unnamed)"}</button> · {fmtD(ev.date)}</li>)}</ul>
+          <div style={{ marginTop: 6 }}>Or type them right here: <button onClick={() => setOpenMonths(new Set(m.months.filter(r => r.missing > 0).map(r => r.key)))}>open those months below</button>.</div>
         </div>
       )}
 
@@ -185,14 +207,28 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], pr
                 ...(open ? r.list.map(ev => (
                   <tr key={r.key + ev.id} className="gm-sub">
                     <td><button onClick={() => openEvent?.({ id: ev.id })}>{ev.name || "(unnamed)"}</button> · {fmtD(ev.date)}</td>
-                    <td>{ev.hosted === "sprout" ? "Sprout" : ev.hosted === "partner" ? "Partner" : "Rental"}</td>
-                    <td>{ev.attendance != null ? ev.attendance : "—"}
+                    <td><select className="gm-sel" aria-label={`Hosted by, ${ev.name}`} value={ev.hosted}
+                      onChange={e => setOutcome(ev.id, { hosted_by: e.target.value },
+                        e.target.value === "partner" && !partners ? "Marked Partner ✓ (hidden until partner events are included)"
+                        : e.target.value === "rental" ? "Marked Rental ✓ (now on the rentals line)" : "Saved to the event ✓")}>
+                      <option value="sprout">Sprout</option><option value="partner">Partner</option><option value="rental">Rental</option>
+                    </select></td>
+                    <td>
+                      <input key={ev.id + "hc" + (ev.typed ?? "")} className="gm-in" inputMode="numeric" aria-label={`Headcount, ${ev.name}`}
+                        defaultValue={ev.typed ?? ""} placeholder={ev.signins != null && ev.source === "kiosk" ? String(ev.signins) : "—"}
+                        title={ev.source === "kiosk" ? "From the sign-in sheets. Type a number to replace it; clear it to go back to sign-ins." : "Type how many people came"}
+                        onBlur={numBlur(ev.id, "headcount", ev.typed)} onKeyDown={numKey}/>
                       {ev.source === "kiosk" && <span className="gm-src door">sign-ins</span>}
                       {ev.source === "typed" && <span className="gm-src">typed</span>}
                       {ev.attendance == null && <span className="gm-src miss">missing</span>}</td>
-                    <td>{ev.firstTimers ?? "—"}</td><td>{ev.artists || "—"}</td>
+                    <td><input key={ev.id + "ft" + (ev.firstTimers ?? "")} className="gm-in" inputMode="numeric" aria-label={`First-timers, ${ev.name}`}
+                      defaultValue={ev.firstTimers ?? ""} placeholder="—" onBlur={numBlur(ev.id, "first_timers", ev.firstTimers)} onKeyDown={numKey}/></td><td>{ev.artists || "—"}</td>
                     <td>—</td>
-                    <td>—</td><td>{ev.hosted === "rental" ? "1" : "—"}</td><td>{ev.rentalFee != null ? money(ev.rentalFee) : "—"}</td>
+                    <td>—</td><td>{ev.hosted === "rental" ? "1" : "—"}</td>
+                    <td>{ev.hosted === "rental"
+                      ? <input key={ev.id + "rf" + (ev.rentalFee ?? "")} className="gm-in" inputMode="decimal" aria-label={`Rental fee, ${ev.name}`}
+                          defaultValue={ev.rentalFee ?? ""} placeholder="$" onBlur={numBlur(ev.id, "rental_fee", ev.rentalFee)} onKeyDown={numKey}/>
+                      : "—"}</td>
                   </tr>)) : []),
               ];
             })}</tbody>
