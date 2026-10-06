@@ -65,10 +65,12 @@ const GM_STYLES = `
 .gm-src{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:5px;background:var(--g100);color:var(--dim)}
 .gm-src.door{background:#E2F3F7;color:#1d6878}
 .gm-src.miss{background:var(--warn-bg);color:var(--warn)}
-.gm-in{font:inherit;font-size:12.5px;width:64px;text-align:right;border:1px solid var(--line);border-radius:5px;padding:3px 6px;background:#fff;font-variant-numeric:tabular-nums}
+/* Explicit text color + light scheme: globals.css flips form fields to dark mode on a
+   dark-mode Mac, which made typed numbers white on these white boxes. */
+.gm-in{color:#030000;color-scheme:light;font:inherit;font-size:12.5px;width:64px;text-align:right;border:1px solid var(--line);border-radius:5px;padding:3px 6px;background:#fff;font-variant-numeric:tabular-nums}
 .gm-in:focus{outline:2px solid var(--cyan);outline-offset:0;border-color:var(--cyan)}
 .gm-in::placeholder{color:#1d6878;opacity:.75}
-.gm-sel{font:inherit;font-size:12px;border:1px solid var(--line);border-radius:5px;padding:2px 4px;background:#fff}
+.gm-sel{color:#030000;color-scheme:light;font:inherit;font-size:12px;border:1px solid var(--line);border-radius:5px;padding:2px 4px;background:#fff}
 `;
 
 const money = (n) => "$" + Math.round(n || 0).toLocaleString();
@@ -97,10 +99,12 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
     onUpdateEvent({ ...ev, outcomes: { hosted_by: "sprout", ...(ev.outcomes || {}), ...patch } });
     showToast?.(msg || "Saved to the event ✓");
   };
-  const numBlur = (id, key, current) => (e) => {
+  const numBlur = (id, key, current, max) => (e) => {
     const raw = e.target.value.trim();
     const v = raw === "" ? null : Math.max(0, Math.round(Number(raw)));
     if (raw !== "" && !Number.isFinite(v)) { showToast?.("Enter a number", "err"); e.target.value = current ?? ""; return; }
+    // Catches a typo before it lands (e.g. 181818): first-timers can't outnumber the room.
+    if (v != null && max != null && v > max) { showToast?.(`First-timers can't be more than attendance (${max})`, "err"); e.target.value = current ?? ""; return; }
     if (v !== (current ?? null)) setOutcome(id, { [key]: v });
   };
   const numKey = (e) => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") { e.currentTarget.value = e.currentTarget.defaultValue; e.currentTarget.blur(); } };
@@ -224,7 +228,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
                       {ev.source === "typed" && <span className="gm-src">typed</span>}
                       {ev.attendance == null && <span className="gm-src miss">missing</span>}</td>
                     <td><input key={ev.id + "ft" + (ev.firstTimers ?? "")} className="gm-in" inputMode="numeric" aria-label={`First-timers, ${ev.name}`}
-                      defaultValue={ev.firstTimers ?? ""} placeholder="—" onBlur={numBlur(ev.id, "first_timers", ev.firstTimers)} onKeyDown={numKey}/></td><td>{ev.artists || "—"}</td>
+                      defaultValue={ev.firstTimers ?? ""} placeholder="—" onBlur={numBlur(ev.id, "first_timers", ev.firstTimers, ev.attendance)} onKeyDown={numKey}/></td><td>{ev.artists || "—"}</td>
                     <td>—</td>
                     <td>—</td><td>{ev.hosted === "rental" ? "1" : "—"}</td>
                     <td>{ev.hosted === "rental"
