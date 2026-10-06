@@ -7,7 +7,8 @@
  * submissions, showcase applications and every sign-in sheet in the SPROUT N TELL
  * Drive folder (attendance for any event whose headcount is blank). The math lives in lib/grantMetrics.js.
  * Writes one thing: the per-event rows in the By month dropdowns edit that event's
- * Outcomes (hosted by, headcount, first-timers, artists, rental, rental fee) through the same single-event save the
+ * Outcomes (hosted by, headcount, first-timers, artists, members who came, dues collected,
+ * rental, rental fee) through the same single-event save the
  * event page uses, so the event page shows the same numbers.
  * Every gap is shown, never hidden: an event with no headcount is listed so the
  * attendance figure is never quietly understated.
@@ -100,13 +101,13 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
     onUpdateEvent({ ...ev, outcomes: { hosted_by: "sprout", ...(ev.outcomes || {}), ...patch } });
     showToast?.(msg || "Saved to the event ✓");
   };
-  const numBlur = (id, key, current, max) => (e) => {
+  const numBlur = (id, key, current, max, extra) => (e) => {
     const raw = e.target.value.trim();
     const v = raw === "" ? null : Math.max(0, Math.round(Number(raw)));
     if (raw !== "" && !Number.isFinite(v)) { showToast?.("Enter a number", "err"); e.target.value = current ?? ""; return; }
     // Catches a typo before it lands (e.g. 181818): first-timers can't outnumber the room.
     if (v != null && max != null && v > max) { showToast?.(`First-timers can't be more than attendance (${max})`, "err"); e.target.value = current ?? ""; return; }
-    if (v !== (current ?? null)) setOutcome(id, { [key]: v });
+    if (v !== (current ?? null)) { const more = extra?.(v); setOutcome(id, { [key]: v, ...(more || {}) }, more ? "Marked Rental ✓ and saved the fee" : undefined); }
   };
   const numKey = (e) => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") { e.currentTarget.value = e.currentTarget.defaultValue; e.currentTarget.blur(); } };
   const toggleMonth = (key) => setOpenMonths(prev => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; });
@@ -233,14 +234,18 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
                       defaultValue={ev.artistsTyped ?? ""} placeholder={String(ev.artistsProgram || "—")}
                       title="Blank uses Program submissions. Type a number to replace it."
                       onBlur={numBlur(ev.id, "artists", ev.artistsTyped)} onKeyDown={numKey}/></td>
-                    <td>—</td>
-                    <td>—</td><td><input type="checkbox" className="gm-ck" aria-label={`Rental, ${ev.name}`} checked={ev.hosted === "rental"}
+                    <td><input key={ev.id + "ma" + (ev.membersAttended ?? "")} className="gm-in" inputMode="numeric" aria-label={`Members who came, ${ev.name}`}
+                      defaultValue={ev.membersAttended ?? ""} placeholder="—" title="Members who came that night"
+                      onBlur={numBlur(ev.id, "members_attended", ev.membersAttended, ev.attendance)} onKeyDown={numKey}/></td>
+                    <td><input key={ev.id + "dc" + (ev.duesCollected ?? "")} className="gm-in" inputMode="decimal" aria-label={`Dues collected, ${ev.name}`}
+                      defaultValue={ev.duesCollected ?? ""} placeholder="$" title="Membership dues taken at the event. Adds to the month's Dues."
+                      onBlur={numBlur(ev.id, "dues_collected", ev.duesCollected)} onKeyDown={numKey}/></td>
+                    <td><input type="checkbox" className="gm-ck" aria-label={`Rental, ${ev.name}`} checked={ev.hosted === "rental"}
                       onChange={e => setOutcome(ev.id, { hosted_by: e.target.checked ? "rental" : "sprout" },
                         e.target.checked ? "Marked Rental ✓ (add the fee)" : "Marked Sprout ✓")}/></td>
-                    <td>{ev.hosted === "rental"
-                      ? <input key={ev.id + "rf" + (ev.rentalFee ?? "")} className="gm-in" inputMode="decimal" aria-label={`Rental fee, ${ev.name}`}
-                          defaultValue={ev.rentalFee ?? ""} placeholder="$" onBlur={numBlur(ev.id, "rental_fee", ev.rentalFee)} onKeyDown={numKey}/>
-                      : "—"}</td>
+                    <td><input key={ev.id + "rf" + (ev.rentalFeeAny ?? "")} className="gm-in" inputMode="decimal" aria-label={`Rental fee, ${ev.name}`}
+                      defaultValue={ev.rentalFeeAny ?? ""} placeholder="$" title="Typing a fee marks the event as a Rental"
+                      onBlur={numBlur(ev.id, "rental_fee", ev.rentalFeeAny, null, v => (v > 0 && ev.hosted !== "rental" ? { hosted_by: "rental" } : null))} onKeyDown={numKey}/></td>
                   </tr>)) : []),
               ];
             })}</tbody>

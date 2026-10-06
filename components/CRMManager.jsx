@@ -5533,6 +5533,12 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
                               onChange={e=>setO({rental_paid_date:e.target.value})}/>}
                           </div></div>
                       </>}
+                      <div>{lbl("Members who came")}
+                        <input key={event.id+"ma"+(o.members_attended??"")} className="fi" style={{fontSize:12}} inputMode="numeric" placeholder="optional"
+                          defaultValue={o.members_attended??""} onBlur={numBlur("members_attended")}/></div>
+                      <div>{lbl("Dues collected ($)")}
+                        <input key={event.id+"dc"+(o.dues_collected??"")} className="fi" style={{fontSize:12}} inputMode="numeric" placeholder="optional"
+                          defaultValue={o.dues_collected??""} onBlur={numBlur("dues_collected")}/></div>
                       <div>{lbl("Artists featured")}
                         <input key={event.id+"ar"+(o.artists??"")} className="fi" style={{fontSize:12}} inputMode="numeric"
                           placeholder={`${program.entries.length} from Program`} defaultValue={o.artists??""} onBlur={numBlur("artists")}/></div>
