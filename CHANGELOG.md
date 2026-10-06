@@ -2,6 +2,27 @@
 
 ---
 
+## 2026-10-06: Grant Metrics: event outcomes, membership tracking, proof-of-concept page
+
+App code (`ebfb437`, merge `181d8d3`). No migration (JSONB-only fields). `npm run build` passes. Effort: medium.
+
+### What changed
+- **Outcomes tile on every event:** hosted by (Sprout / Partner / Rental), headcount, first-timers, where the count came from, rental fee and paid date (rentals only), and a quote from the night. Artists featured and people linked fill in on their own. Past events with no headcount show a prompt.
+- **Membership section on every contact:** plan (day $17 / monthly $55 / annual $495), start, status (active / lapsed / cancelled), end date, how they usually pay, and a payments log. An active monthly or annual plan turns on ★ Member; a day pass does not.
+- **Grant Metrics page** (📈 in the sidebar): events held, total attendance, unique people, repeat rate, first-timers, artists featured, showcase applications, active members and dues, rentals and fees, a table by month, quotes, and how people heard. Range chips (all time / this year / last 3 months / custom), a switch for partner-hosted events (off by default), a list of events missing a headcount, and "Copy numbers for an application".
+- **Supabase auth:** removed a stray grant-tool URL from the CRM's redirect list. Confirmed Danielle's invite went out today against the live Vercel URL.
+
+### Why
+Danielle is applying for grants that want proof of concept (people come, come back, and help make the programming) more than revenue. Bar sales are negligible and untracked, so they are left out. Membership and rental fees start as manual entry.
+
+### Verified
+18 logic checks pass, run against live data read-only: schema coercion, legacy records, membership dating, partner toggle, and every live event and contact still validates. Live today (May 1 to Oct 6): 12 Sprout events, 74 unique people, 14% came back, 15 artists, 4 showcase applications. All 12 events lack a headcount, so attendance reads 0 until backfilled. UI not clicked through by Claude (login wall).
+
+### Open
+Backfill headcounts for the 12 past events; mark partner events (Bar Nun, Queer Social) and rentals; enter current members.
+
+---
+
 ## 2026-10-02: Queer Social series become single recurring events
 
 App code (`12b9e0c`, merge `29e00c7`) + data. No migration. `npm run build` passes. Effort: medium.
