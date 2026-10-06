@@ -15,7 +15,8 @@
  */
 
 import { useState, useEffect, useMemo } from "react";
-import { fetchProgramEntryEventIds, fetchShowcaseApplications, fetchKioskSignins } from "../lib/services";
+import { fetchProgramEntryEventIds, fetchShowcaseApplications, fetchKioskSignins, fetchStripeMemberInvoices } from "../lib/services";
+import { withStripeInvoices } from "../lib/memberBilling";
 import { computeGrantMetrics, metricsToText } from "../lib/grantMetrics";
 
 const GM_STYLES = `
@@ -83,7 +84,7 @@ const shiftMonths = (iso, n) => { const d = new Date(iso + "T12:00:00"); d.setMo
 // old default starts included; turning the switch off is still remembered.
 const PARTNER_KEY = "sprout_gm_partners_v2";
 
-export default function GrantMetrics({ events = [], contacts = [], orgs = [], onUpdateEvent, profile, openEvent, showToast }) {
+export default function GrantMetrics({ events = [], contacts = [], orgs = [], onUpdateEvent, profile, openEvent, showToast, setView }) {
   const today = localToday();
   const firstEvent = useMemo(() => events.map(e => e.event_date).filter(Boolean).sort()[0] || today.slice(0, 4) + "-01-01", [events, today]);
   const [range, setRange] = useState("all");
@@ -93,6 +94,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
   const [apps, setApps] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [kiosk, setKiosk] = useState({ nights: {}, sheets: [], folderUrl: null, error: null, loading: true });
+  const [stripe, setStripe] = useState({ invoices: [], error: null, loading: true });
   const [openMonths, setOpenMonths] = useState(() => new Set());
   // Edits from the dropdown rows land on the event itself (its Outcomes tile).
   const setOutcome = (id, patch, msg) => {
@@ -119,6 +121,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
       setProgramIds(ids); setApps(a); setLoaded(true);
     });
     fetchKioskSignins().then(k => { if (live) setKiosk({ ...k, loading: false }); });
+    fetchStripeMemberInvoices().then(st => { if (live) setStripe({ ...st, loading: false }); });
     return () => { live = false; };
   }, []);
 
@@ -127,9 +130,16 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
     : range === "year" ? { from: today.slice(0, 4) + "-01-01", to: today }
     : custom;
 
+  // Paid Stripe membership invoices count as dues, merged in memory like the sign-in sheets.
+  const billed = useMemo(() => {
+    const c = withStripeInvoices(contacts, stripe.invoices);
+    const o = withStripeInvoices(orgs, c.unmatched);
+    return { contacts: c.records, orgs: o.records, unmatched: o.unmatched };
+  }, [contacts, orgs, stripe.invoices]);
+
   const m = useMemo(() => computeGrantMetrics({
-    events, contacts, orgs, programEventIds: programIds, applications: apps, signins: kiosk.nights, from, to, today, includePartners: partners,
-  }), [events, contacts, orgs, programIds, apps, kiosk.nights, from, to, today, partners]);
+    events, contacts: billed.contacts, orgs: billed.orgs, programEventIds: programIds, applications: apps, signins: kiosk.nights, from, to, today, includePartners: partners,
+  }), [events, billed, programIds, apps, kiosk.nights, from, to, today, partners]);
 
   const togglePartners = () => {
     const next = !partners; setPartners(next);
@@ -172,6 +182,8 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
         </button>
       </div>
 
+      {stripe.error && <div className="gm-warn"><b>Couldn't read Stripe.</b> Dues below leave out Stripe membership invoices. ({stripe.error})</div>}
+      {billed.unmatched.length > 0 && <div className="gm-warn"><b>{billed.unmatched.length} Stripe membership invoice{billed.unmatched.length === 1 ? " isn't" : "s aren't"} tied to a member,</b> so {billed.unmatched.length === 1 ? "it doesn't" : "they don't"} count yet. Add {billed.unmatched.length === 1 ? "that person or org" : "them"} on the <button onClick={() => setView?.("members")}>Members page</button>.</div>}
       {kiosk.error && <div className="gm-warn"><b>Couldn't read the sign-in sheets.</b> Attendance below uses typed headcounts only. ({kiosk.error})</div>}
 
       {m.missing.length > 0 && (
