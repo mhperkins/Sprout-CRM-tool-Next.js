@@ -3,14 +3,15 @@
 /**
  * GrantMetrics.jsx — proof-of-concept numbers for grant applications.
  *
- * Reads only: events (Outcomes tile), contacts (Membership section), program
- * submissions and showcase applications. The math lives in lib/grantMetrics.js.
+ * Reads only: events (Outcomes tile), contacts + orgs (Membership section), program
+ * submissions, showcase applications and the front-door kiosk sign-in sheet
+ * (attendance for any event whose headcount is blank). The math lives in lib/grantMetrics.js.
  * Every gap is shown, never hidden: an event with no headcount is listed so the
  * attendance figure is never quietly understated.
  */
 
 import { useState, useEffect, useMemo } from "react";
-import { fetchProgramEntryEventIds, fetchShowcaseApplications } from "../lib/services";
+import { fetchProgramEntryEventIds, fetchShowcaseApplications, fetchKioskSignins } from "../lib/services";
 import { computeGrantMetrics, metricsToText } from "../lib/grantMetrics";
 
 const GM_STYLES = `
@@ -58,7 +59,7 @@ const localToday = () => { const d = new Date(); return `${d.getFullYear()}-${St
 const shiftMonths = (iso, n) => { const d = new Date(iso + "T12:00:00"); d.setMonth(d.getMonth() + n); d.setDate(1); return d.toISOString().slice(0, 10); };
 const PARTNER_KEY = "sprout_gm_partners";
 
-export default function GrantMetrics({ events = [], contacts = [], profile, openEvent, showToast }) {
+export default function GrantMetrics({ events = [], contacts = [], orgs = [], profile, openEvent, showToast }) {
   const today = localToday();
   const firstEvent = useMemo(() => events.map(e => e.event_date).filter(Boolean).sort()[0] || today.slice(0, 4) + "-01-01", [events, today]);
   const [range, setRange] = useState("all");
@@ -67,6 +68,7 @@ export default function GrantMetrics({ events = [], contacts = [], profile, open
   const [programIds, setProgramIds] = useState([]);
   const [apps, setApps] = useState([]);
   const [loaded, setLoaded] = useState(false);
+  const [kiosk, setKiosk] = useState({ nights: {}, sheetUrl: null, error: null, loading: true });
 
   useEffect(() => {
     let live = true;
@@ -74,6 +76,7 @@ export default function GrantMetrics({ events = [], contacts = [], profile, open
       if (!live) return;
       setProgramIds(ids); setApps(a); setLoaded(true);
     });
+    fetchKioskSignins().then(k => { if (live) setKiosk({ ...k, loading: false }); });
     return () => { live = false; };
   }, []);
 
@@ -83,8 +86,8 @@ export default function GrantMetrics({ events = [], contacts = [], profile, open
     : custom;
 
   const m = useMemo(() => computeGrantMetrics({
-    events, contacts, programEventIds: programIds, applications: apps, from, to, today, includePartners: partners,
-  }), [events, contacts, programIds, apps, from, to, today, partners]);
+    events, contacts, orgs, programEventIds: programIds, applications: apps, signins: kiosk.nights, from, to, today, includePartners: partners,
+  }), [events, contacts, orgs, programIds, apps, kiosk.nights, from, to, today, partners]);
 
   const togglePartners = () => {
     const next = !partners; setPartners(next);
@@ -127,9 +130,11 @@ export default function GrantMetrics({ events = [], contacts = [], profile, open
         </button>
       </div>
 
+      {kiosk.error && <div className="gm-warn"><b>Couldn't read the sign-in sheet.</b> Attendance below uses typed headcounts only. ({kiosk.error})</div>}
+
       {m.missing.length > 0 && (
         <div className="gm-warn">
-          <b>{m.missing.length} event{m.missing.length === 1 ? " has" : "s have"} no headcount.</b> Attendance below undercounts until they are filled in. Open one and fill in its Outcomes tile:
+          <b>{m.missing.length} event{m.missing.length === 1 ? " has" : "s have"} no headcount.</b> No door sign-ins match {m.missing.length === 1 ? "it" : "them"} either, so attendance below undercounts until they are filled in. Open one and fill in its Outcomes tile:
           <ul>{m.missing.map(ev => <li key={ev.id}><button onClick={() => openEvent?.({ id: ev.id })}>{ev.name || "(unnamed)"}</button> · {fmtD(ev.date)}</li>)}</ul>
         </div>
       )}
@@ -139,13 +144,13 @@ export default function GrantMetrics({ events = [], contacts = [], profile, open
       ) : <>
         <div className="gm-kpis">
           <div className="gm-kpi"><b>{m.events}</b><span>Events held</span><small>{partners ? "Sprout + partner" : "Run by Sprout"}</small></div>
-          <div className="gm-kpi"><b>{m.attendance.toLocaleString()}</b><span>Total attendance</span><small>{m.missing.length ? `${m.missing.length} events not counted yet` : "Every event counted"}</small></div>
+          <div className="gm-kpi"><b>{m.attendance.toLocaleString()}</b><span>Total attendance</span><small>{kiosk.loading ? "Reading the sign-in sheet…" : m.missing.length ? `${m.missing.length} events not counted yet` : "Every event counted"}{m.fromSheet.length > 0 && <> · {m.fromSheet.length} from {kiosk.sheetUrl ? <a href={kiosk.sheetUrl} target="_blank" rel="noopener noreferrer">door sign-ins</a> : "door sign-ins"}</>}</small></div>
           <div className="gm-kpi"><b>{m.unique}</b><span>Unique people</span><small>On event lists in the CRM</small></div>
           <div className="gm-kpi"><b>{m.repeatRate}%</b><span>Came back</span><small>{m.repeat} of {m.unique} at 2+ events</small></div>
           <div className="gm-kpi"><b>{m.firstTimers}</b><span>First-timers</span><small>From Outcomes tiles</small></div>
           <div className="gm-kpi"><b>{loaded ? m.artists : "…"}</b><span>Artists featured</span><small>From Program submissions</small></div>
           <div className="gm-kpi"><b>{loaded ? m.applications : "…"}</b><span>Showcase applications</span><small>Through /showcase</small></div>
-          <div className="gm-kpi"><b>{m.activeMembers}</b><span>Active members</span><small>{m.newMembers} joined · {money(m.dues)} dues logged</small></div>
+          <div className="gm-kpi"><b>{m.activeMembers}</b><span>Active members</span><small>{m.activeOrgMembers > 0 && `${m.activeMembers - m.activeOrgMembers} people · ${m.activeOrgMembers} orgs · `}{m.newMembers} joined · {money(m.dues)} dues logged</small></div>
           <div className="gm-kpi"><b>{m.rentals}</b><span>Space rentals</span><small>{money(m.rentalFees)} in fees{m.rentalsUnpaid ? ` · ${m.rentalsUnpaid} unpaid` : ""}</small></div>
         </div>
 
@@ -179,6 +184,9 @@ export default function GrantMetrics({ events = [], contacts = [], profile, open
                 ))}<div className="gm-empty" style={{ fontSize: 11.5, marginTop: 6 }}>{m.heardTotal} of {m.unique} people answered.</div></>}
           </div>
         </div>
+        {m.fromSheet.length > 0 && <p className="gm-empty" style={{ fontSize: 11.5, marginTop: 14 }}>
+          Door sign-ins filled in attendance for {m.fromSheet.map(ev => `${ev.name} (${ev.n})`).join(", ")}. A headcount typed in an event's Outcomes tile always wins, so type one in if more people came than signed in.
+        </p>}
         {m.skippedSeries > 0 && <p className="gm-empty" style={{ fontSize: 11.5, marginTop: 14 }}>{m.skippedSeries} repeating series are left out: one record covers many nights, so it cannot carry one headcount.</p>}
       </>}
     </div>
