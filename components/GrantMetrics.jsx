@@ -7,7 +7,7 @@
  * submissions, showcase applications and every sign-in sheet in the SPROUT N TELL
  * Drive folder (attendance for any event whose headcount is blank). The math lives in lib/grantMetrics.js.
  * Writes one thing: the per-event rows in the By month dropdowns edit that event's
- * Outcomes (hosted by, headcount, first-timers) through the same single-event save the
+ * Outcomes (hosted by, headcount, first-timers, artists, rental, rental fee) through the same single-event save the
  * event page uses, so the event page shows the same numbers.
  * Every gap is shown, never hidden: an event with no headcount is listed so the
  * attendance figure is never quietly understated.
@@ -70,6 +70,7 @@ const GM_STYLES = `
 .gm-in{color:#030000;color-scheme:light;font:inherit;font-size:12.5px;width:64px;text-align:right;border:1px solid var(--line);border-radius:5px;padding:3px 6px;background:#fff;font-variant-numeric:tabular-nums}
 .gm-in:focus{outline:2px solid var(--cyan);outline-offset:0;border-color:var(--cyan)}
 .gm-in::placeholder{color:#1d6878;opacity:.75}
+.gm-ck{width:16px;height:16px;accent-color:#2a8ca0;cursor:pointer;vertical-align:middle;color-scheme:light}
 .gm-sel{color:#030000;color-scheme:light;font:inherit;font-size:12px;border:1px solid var(--line);border-radius:5px;padding:2px 4px;background:#fff}
 `;
 
@@ -228,9 +229,14 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
                       {ev.source === "typed" && <span className="gm-src">typed</span>}
                       {ev.attendance == null && <span className="gm-src miss">missing</span>}</td>
                     <td><input key={ev.id + "ft" + (ev.firstTimers ?? "")} className="gm-in" inputMode="numeric" aria-label={`First-timers, ${ev.name}`}
-                      defaultValue={ev.firstTimers ?? ""} placeholder="—" onBlur={numBlur(ev.id, "first_timers", ev.firstTimers, ev.attendance)} onKeyDown={numKey}/></td><td>{ev.artists || "—"}</td>
+                      defaultValue={ev.firstTimers ?? ""} placeholder="—" onBlur={numBlur(ev.id, "first_timers", ev.firstTimers, ev.attendance)} onKeyDown={numKey}/></td><td><input key={ev.id + "ar" + (ev.artistsTyped ?? "")} className="gm-in" inputMode="numeric" aria-label={`Artists featured, ${ev.name}`}
+                      defaultValue={ev.artistsTyped ?? ""} placeholder={String(ev.artistsProgram || "—")}
+                      title="Blank uses Program submissions. Type a number to replace it."
+                      onBlur={numBlur(ev.id, "artists", ev.artistsTyped)} onKeyDown={numKey}/></td>
                     <td>—</td>
-                    <td>—</td><td>{ev.hosted === "rental" ? "1" : "—"}</td>
+                    <td>—</td><td><input type="checkbox" className="gm-ck" aria-label={`Rental, ${ev.name}`} checked={ev.hosted === "rental"}
+                      onChange={e => setOutcome(ev.id, { hosted_by: e.target.checked ? "rental" : "sprout" },
+                        e.target.checked ? "Marked Rental ✓ (add the fee)" : "Marked Sprout ✓")}/></td>
                     <td>{ev.hosted === "rental"
                       ? <input key={ev.id + "rf" + (ev.rentalFee ?? "")} className="gm-in" inputMode="decimal" aria-label={`Rental fee, ${ev.name}`}
                           defaultValue={ev.rentalFee ?? ""} placeholder="$" onBlur={numBlur(ev.id, "rental_fee", ev.rentalFee)} onKeyDown={numKey}/>
