@@ -2,6 +2,25 @@
 
 ---
 
+## 2026-10-06: Members page; Stripe membership invoices feed Grant Metrics
+
+App code (`8f53bb0`, merge `5b0610d`) + data. No migration (JSONB-only fields). `npm run build` passes. Effort: medium, high for the contact writes.
+
+### What changed
+- **★ Members page** in the sidebar: every member (people and orgs) with plan, rate, billed through, last paid, next due (red when overdue) and status, plus a staff **+ Add member** form (person or org, plan, custom rate, Stripe / Givebutter / other, Stripe billing email). The form never creates or sends an invoice.
+- **Stripe feeds dues like the sign-in sheets feed attendance.** `/api/members/stripe` reads invoices with a read-only restricted key and keeps only lines that say "membership" (the account also holds old gala and sponsor invoices). Invoices match a member by billing email and merge in memory on each load, so nothing from Stripe is copied into records or counted twice. Unmatched invoices are listed with an Add as member button.
+- **Membership fields:** `rate`, `billing`, `billing_email`; payments gain `source` and `ref`. The contact and org Membership sections got the same fields.
+- **Data:** backfilled Givebutter memberships for Queer Social (org, $55/mo), Pat Hopkins ($495/yr), Jess McAvoy (now billed in Stripe) and Brooke Feingold ($50/mo, cancelled 10/2, paid by Bryce Reynolds). Merged a duplicate Jess McAvoy record into `ind_jess_mcavoy` and repointed the Sing Easy 7/14 event.
+- **Env:** fixed the misspelled `STRIPE_SECTRET_KEY` in `.env.local`; added `STRIPE_SECRET_KEY` to Vercel Production.
+
+### Why
+Sprout invoices members through Stripe from now on, and grant applications need membership proof that comes from payments rather than typing.
+
+### Verified
+12 logic checks against live Stripe and CRM data (all 3,852 contacts and 19 orgs still validate, old memberships still validate, case-insensitive matching, no double counting); the route returns 401 without a valid sign-in; writes dry-run first, then confirmed by query. Live Grant Metrics: 3 active members, $910 dues since May. UI not clicked through by Claude (login wall).
+
+---
+
 ## 2026-10-06: Grant Metrics numbers typed in place; partner events by default; dark-mode input fix
 
 App code (`e3172bd`, `eed7ea5`, `2a6f22d`, `dd6659d`, `25c77e4`; merges `52bfd40`, `5c1e0e4`, `b7c2244`, `2a962c0`). No migration (JSONB-only fields). `npm run build` passes. Effort: medium.
