@@ -4,8 +4,8 @@
  * GrantMetrics.jsx — proof-of-concept numbers for grant applications.
  *
  * Reads only: events (Outcomes tile), contacts + orgs (Membership section), program
- * submissions, showcase applications and the front-door kiosk sign-in sheet
- * (attendance for any event whose headcount is blank). The math lives in lib/grantMetrics.js.
+ * submissions, showcase applications and every sign-in sheet in the SPROUT N TELL
+ * Drive folder (attendance for any event whose headcount is blank). The math lives in lib/grantMetrics.js.
  * Every gap is shown, never hidden: an event with no headcount is listed so the
  * attendance figure is never quietly understated.
  */
@@ -51,6 +51,17 @@ const GM_STYLES = `
 .gm-hr .tr i{display:block;height:100%;background:var(--cyan)}
 .gm-hr b{text-align:right;font-variant-numeric:tabular-nums}
 .gm-empty{color:var(--dim);font-size:13px}
+.gm-mtog{appearance:none;background:none;border:none;padding:0;font:inherit;font-weight:700;cursor:pointer;color:inherit;display:inline-flex;gap:6px;align-items:center}
+.gm-mtog i{font-style:normal;display:inline-block;width:10px;color:var(--dim);transition:transform .15s}
+.gm-mtog[aria-expanded="true"] i{transform:rotate(90deg)}
+.gm-mtog:focus-visible{outline:2px solid var(--fuchsia);outline-offset:2px}
+.gm-sub td{background:#FAFAF8;font-size:12.5px;color:var(--dim)}
+.gm-sub td:first-child{padding-left:30px;white-space:normal;min-width:200px}
+.gm-sub button{appearance:none;background:none;border:none;padding:0;font:inherit;color:var(--black);font-weight:700;cursor:pointer;text-align:left}
+.gm-sub button:hover{text-decoration:underline}
+.gm-src{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:5px;background:var(--g100);color:var(--dim)}
+.gm-src.door{background:#E2F3F7;color:#1d6878}
+.gm-src.miss{background:var(--warn-bg);color:var(--warn)}
 `;
 
 const money = (n) => "$" + Math.round(n || 0).toLocaleString();
@@ -68,7 +79,9 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], pr
   const [programIds, setProgramIds] = useState([]);
   const [apps, setApps] = useState([]);
   const [loaded, setLoaded] = useState(false);
-  const [kiosk, setKiosk] = useState({ nights: {}, sheetUrl: null, error: null, loading: true });
+  const [kiosk, setKiosk] = useState({ nights: {}, sheets: [], folderUrl: null, error: null, loading: true });
+  const [openMonths, setOpenMonths] = useState(() => new Set());
+  const toggleMonth = (key) => setOpenMonths(prev => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; });
 
   useEffect(() => {
     let live = true;
@@ -130,11 +143,11 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], pr
         </button>
       </div>
 
-      {kiosk.error && <div className="gm-warn"><b>Couldn't read the sign-in sheet.</b> Attendance below uses typed headcounts only. ({kiosk.error})</div>}
+      {kiosk.error && <div className="gm-warn"><b>Couldn't read the sign-in sheets.</b> Attendance below uses typed headcounts only. ({kiosk.error})</div>}
 
       {m.missing.length > 0 && (
         <div className="gm-warn">
-          <b>{m.missing.length} event{m.missing.length === 1 ? " has" : "s have"} no headcount.</b> No door sign-ins match {m.missing.length === 1 ? "it" : "them"} either, so attendance below undercounts until they are filled in. Open one and fill in its Outcomes tile:
+          <b>{m.missing.length} event{m.missing.length === 1 ? " has" : "s have"} no headcount.</b> No sign-in sheet covers {m.missing.length === 1 ? "it" : "them"} either, so attendance below undercounts until they are filled in. Open one and fill in its Outcomes tile:
           <ul>{m.missing.map(ev => <li key={ev.id}><button onClick={() => openEvent?.({ id: ev.id })}>{ev.name || "(unnamed)"}</button> · {fmtD(ev.date)}</li>)}</ul>
         </div>
       )}
@@ -144,7 +157,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], pr
       ) : <>
         <div className="gm-kpis">
           <div className="gm-kpi"><b>{m.events}</b><span>Events held</span><small>{partners ? "Sprout + partner" : "Run by Sprout"}</small></div>
-          <div className="gm-kpi"><b>{m.attendance.toLocaleString()}</b><span>Total attendance</span><small>{kiosk.loading ? "Reading the sign-in sheet…" : m.missing.length ? `${m.missing.length} events not counted yet` : "Every event counted"}{m.fromSheet.length > 0 && <> · {m.fromSheet.length} from {kiosk.sheetUrl ? <a href={kiosk.sheetUrl} target="_blank" rel="noopener noreferrer">door sign-ins</a> : "door sign-ins"}</>}</small></div>
+          <div className="gm-kpi"><b>{m.attendance.toLocaleString()}</b><span>Total attendance</span><small>{kiosk.loading ? "Reading the sign-in sheets…" : m.missing.length ? `${m.missing.length} events not counted yet` : "Every event counted"}{m.fromSheet.length > 0 && <> · {m.fromSheet.length} from {kiosk.folderUrl ? <a href={kiosk.folderUrl} target="_blank" rel="noopener noreferrer">sign-in sheets</a> : "sign-in sheets"}</>}</small></div>
           <div className="gm-kpi"><b>{m.unique}</b><span>Unique people</span><small>On event lists in the CRM</small></div>
           <div className="gm-kpi"><b>{m.repeatRate}%</b><span>Came back</span><small>{m.repeat} of {m.unique} at 2+ events</small></div>
           <div className="gm-kpi"><b>{m.firstTimers}</b><span>First-timers</span><small>From Outcomes tiles</small></div>
@@ -154,16 +167,35 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], pr
           <div className="gm-kpi"><b>{m.rentals}</b><span>Space rentals</span><small>{money(m.rentalFees)} in fees{m.rentalsUnpaid ? ` · ${m.rentalsUnpaid} unpaid` : ""}</small></div>
         </div>
 
-        <div className="gm-h">By month</div>
+        <div className="gm-h">By month <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400 }}>· open a month to see its events</span></div>
         <div className="gm-tw">
           <table className="gm-t">
             <thead><tr><th>Month</th><th>Events</th><th>Attendance</th><th>First-timers</th><th>Artists</th><th>Members</th><th>Dues</th><th>Rentals</th><th>Rental fees</th></tr></thead>
-            <tbody>{m.months.map(r => (
-              <tr key={r.key}>
-                <td>{r.label}</td><td>{r.events}</td>
-                <td>{r.attendance}{r.missing > 0 && <span className="gm-miss">· {r.missing} missing</span>}</td>
-                <td>{r.firstTimers}</td><td>{r.artists}</td><td>{r.members}</td><td>{money(r.dues)}</td><td>{r.rentals}</td><td>{money(r.rentalFees)}</td>
-              </tr>))}</tbody>
+            <tbody>{m.months.map(r => {
+              const open = openMonths.has(r.key);
+              return [
+                <tr key={r.key}>
+                  <td>{r.list.length > 0
+                    ? <button className="gm-mtog" aria-expanded={open} onClick={() => toggleMonth(r.key)}><i>▸</i>{r.label}</button>
+                    : <span style={{ paddingLeft: 16 }}>{r.label}</span>}</td>
+                  <td>{r.events}</td>
+                  <td>{r.attendance}{r.missing > 0 && <span className="gm-miss">· {r.missing} missing</span>}</td>
+                  <td>{r.firstTimers}</td><td>{r.artists}</td><td>{r.members}</td><td>{money(r.dues)}</td><td>{r.rentals}</td><td>{money(r.rentalFees)}</td>
+                </tr>,
+                ...(open ? r.list.map(ev => (
+                  <tr key={r.key + ev.id} className="gm-sub">
+                    <td><button onClick={() => openEvent?.({ id: ev.id })}>{ev.name || "(unnamed)"}</button> · {fmtD(ev.date)}</td>
+                    <td>{ev.hosted === "sprout" ? "Sprout" : ev.hosted === "partner" ? "Partner" : "Rental"}</td>
+                    <td>{ev.attendance != null ? ev.attendance : "—"}
+                      {ev.source === "kiosk" && <span className="gm-src door">sign-ins</span>}
+                      {ev.source === "typed" && <span className="gm-src">typed</span>}
+                      {ev.attendance == null && <span className="gm-src miss">missing</span>}</td>
+                    <td>{ev.firstTimers ?? "—"}</td><td>{ev.artists || "—"}</td>
+                    <td>—</td>
+                    <td>—</td><td>{ev.hosted === "rental" ? "1" : "—"}</td><td>{ev.rentalFee != null ? money(ev.rentalFee) : "—"}</td>
+                  </tr>)) : []),
+              ];
+            })}</tbody>
             <tfoot><tr><td>Total</td><td>{totals.events}</td><td>{totals.attendance}</td><td>{totals.firstTimers}</td><td>{totals.artists}</td><td>{m.activeMembers}</td><td>{money(totals.dues)}</td><td>{totals.rentals}</td><td>{money(totals.rentalFees)}</td></tr></tfoot>
           </table>
         </div>
@@ -185,7 +217,8 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], pr
           </div>
         </div>
         {m.fromSheet.length > 0 && <p className="gm-empty" style={{ fontSize: 11.5, marginTop: 14 }}>
-          Door sign-ins filled in attendance for {m.fromSheet.map(ev => `${ev.name} (${ev.n})`).join(", ")}. A headcount typed in an event's Outcomes tile always wins, so type one in if more people came than signed in.
+          Sign-in sheets filled in attendance for {m.fromSheet.map(ev => `${ev.name} (${ev.n})`).join(", ")}. A headcount typed in an event's Outcomes tile always wins, so type one in if more people came than signed in.
+          {kiosk.sheets.length > 0 && <> Read from: {kiosk.sheets.map((s, i) => <span key={s.url}>{i > 0 && ", "}<a href={s.url} target="_blank" rel="noopener noreferrer">{s.name}</a></span>)}.</>}
         </p>}
         {m.skippedSeries > 0 && <p className="gm-empty" style={{ fontSize: 11.5, marginTop: 14 }}>{m.skippedSeries} repeating series are left out: one record covers many nights, so it cannot carry one headcount.</p>}
       </>}
