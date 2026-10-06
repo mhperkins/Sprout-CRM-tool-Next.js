@@ -2,6 +2,25 @@
 
 ---
 
+## 2026-10-06: Grant Metrics reads every sign-in sheet; per-event dropdowns by month
+
+App code (`a1b9344`, merge `e8c1cdd`). No migration. `npm run build` passes. Effort: medium.
+
+### What changed
+- **Attendance reads the whole sign-in folder.** Every spreadsheet in the SPROUT N TELL Drive folder and its subfolders whose tab starts with a Timestamp column counts. RSVP, interest and master sheets are skipped. Each sheet's own time zone is converted to New York nights, and a person on two sheets the same night counts once. New sign-in sheets dropped in the folder count on their own.
+- **By-month dropdowns.** Each month row opens to list its events with host, attendance (tagged sign-ins / typed / missing), first-timers, artists and rental fee.
+
+### Why
+Max suspected missing sign-ins. The MASTER CHECK INS sheet matched the kiosk nights exactly; the gap was the archived 5/19 check-in form, which the app did not read. Show n Tell now reads 18.
+
+### Verified
+9 logic checks against the live Drive folder and live events: per-sheet time zones, 6am night boundary, typed-vs-login email column, cross-sheet dedupe, skip rules, counts match the master (18 / 17 / 28 / 12). Attendance 57 → 78. UI not clicked through by Claude (login wall).
+
+### Open
+Max types real headcounts for Game Night (2) and Sprout Happy Hour (1) and the 6 events with no sign-ins.
+
+---
+
 ## 2026-10-06: Grant Metrics reads door sign-ins; organizations can be members
 
 App code (`15f71c6`, merge `cd04c00`). No migration (JSONB-only fields). `npm run build` passes. Effort: medium.
