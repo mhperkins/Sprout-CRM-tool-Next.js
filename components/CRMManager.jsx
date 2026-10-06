@@ -49,6 +49,7 @@ import { blocksOf, firstHeading, parseTableBlock, serializeTable, renderInline }
 import DayBoard from "./DayBoard";
 import ShowcaseApplications from "./ShowcaseApplications";
 import GrantMetrics from "./GrantMetrics";
+import MembersView from "./MembersView";
 
 /* ─── Styles ───────────────────────────────────────────────────────────────── */
 const STYLES = `
@@ -964,6 +965,7 @@ function AddActionModal({onSave,onClose}) {
 
 /* ─── Membership (manual entry; feeds Grant Metrics) ─────────────────────────── */
 const MEMBER_PLANS = { day:{label:"Day pass",price:17}, monthly:{label:"Monthly",price:55}, annual:{label:"Annual",price:495} };
+const MEMBER_BILLING = { stripe:"Stripe", givebutter:"Givebutter", other:"Cash / other" };
 const MEMBER_STATUS = { active:{label:"Active",bg:"var(--acid-lt)",fg:"#3a3d00"}, lapsed:{label:"Lapsed",bg:"var(--banana-lt)",fg:"#7a5c00"}, cancelled:{label:"Cancelled",bg:"var(--g100)",fg:"var(--g600)"} };
 // A monthly or annual plan that is active is what makes someone a Member. A day pass never does.
 const memberFlag = (m) => !!m && m.plan !== "day" && (m.status||"active") === "active";
@@ -978,7 +980,7 @@ function MembershipSection({contact,onUpdate,showToast}) {
     <div className="dp-section">
       <div className="dp-sect-lbl">Membership</div>
       <div style={{fontSize:12,color:"var(--g600)",marginBottom:8}}>Not a member. Add a plan when they join.</div>
-      <button className="btn btn-blk btn-sm" onClick={()=>save({plan:"monthly",start:localTodayISO(),end:"",status:"active",paid_via:"",payments:[]},"Membership added ✓")}>+ Add membership</button>
+      <button className="btn btn-blk btn-sm" onClick={()=>save({plan:"monthly",start:localTodayISO(),end:"",status:"active",paid_via:"Stripe",billing:"stripe",billing_email:"",rate:null,payments:[]},"Membership added ✓")}>+ Add membership</button>
     </div>
   );
   const st = MEMBER_STATUS[m.status||"active"];
@@ -1010,10 +1012,18 @@ function MembershipSection({contact,onUpdate,showToast}) {
           {(m.status||"active")!=="active"&&<label style={fs}><div className="evd-lbl">Ended</div>
             <input type="date" className="fi" style={fs} value={m.end||""} onChange={e=>setM({end:e.target.value})}/></label>}
         </>}
-        <label style={fs}><div className="evd-lbl">Usually pays by</div>
-          <input key={contact.id+"pv"} className="fi" style={fs} placeholder="Givebutter, Venmo, cash…" defaultValue={m.paid_via||""}
-            onBlur={e=>{if(e.target.value!==(m.paid_via||""))setM({paid_via:e.target.value},"Saved ✓");}}/></label>
+        <label style={fs}><div className="evd-lbl">Rate ($)</div>
+          <input key={contact.id+"rt"+(m.rate??"")} className="fi" style={fs} inputMode="decimal" placeholder={String(MEMBER_PLANS[m.plan]?.price??"")} defaultValue={m.rate??""}
+            onBlur={e=>{const t=e.target.value.trim();const v=t===""?null:Number(t);if(t!==""&&(!Number.isFinite(v)||v<0)){showToast("Enter a number","err");e.target.value=m.rate??"";return;}if(v!==(m.rate??null))setM({rate:v},"Saved ✓");}}/></label>
+        <label style={fs}><div className="evd-lbl">Billed through</div>
+          <select className="fi" style={fs} value={m.billing||"other"} onChange={e=>setM({billing:e.target.value,paid_via:MEMBER_BILLING[e.target.value]},"Saved ✓")}>
+            {Object.entries(MEMBER_BILLING).map(([k,l])=><option key={k} value={k}>{l}</option>)}
+          </select></label>
+        {m.billing==="stripe"&&<label style={fs}><div className="evd-lbl">Stripe billing email</div>
+          <input key={contact.id+"be"} className="fi" style={fs} type="email" placeholder={contact.email||"invoice email"} defaultValue={m.billing_email||""}
+            onBlur={e=>{const v=e.target.value.trim();if(v!==(m.billing_email||""))setM({billing_email:v},"Saved ✓");}}/></label>}
       </div>
+      {m.billing==="stripe"&&<div style={{fontSize:11.5,color:"var(--g500)",marginTop:8}}>Stripe payments are read live and show on the Members page. Log only payments made outside Stripe here.</div>}
       <div style={{marginTop:10}}>
         <div className="evd-lbl">Payments {pays.length>0&&<span style={{textTransform:"none",letterSpacing:0,fontWeight:400}}>· {fmtMoney(total)} total</span>}</div>
         {pays.length===0&&!pay&&<div style={{fontSize:12,color:"var(--g500)"}}>No payments logged yet.</div>}
@@ -1033,7 +1043,7 @@ function MembershipSection({contact,onUpdate,showToast}) {
               <button className="btn btn-blk btn-sm" onClick={addPay}>Add</button>
               <button className="btn btn-ghost btn-sm" onClick={()=>setPay(null)}>Cancel</button>
             </div>
-          : <button className="btn btn-ghost btn-xs" style={{marginTop:6}} onClick={()=>setPay({date:localTodayISO(),amount:String(MEMBER_PLANS[m.plan]?.price||""),method:m.paid_via||""})}>+ Log payment</button>}
+          : <button className="btn btn-ghost btn-xs" style={{marginTop:6}} onClick={()=>setPay({date:localTodayISO(),amount:String(m.rate??MEMBER_PLANS[m.plan]?.price??""),method:m.paid_via||""})}>+ Log payment</button>}
       </div>
       <button className="btn btn-ghost btn-xs" style={{marginTop:10,color:"var(--g500)"}} onClick={()=>save(null,"Membership removed")}>Remove membership</button>
     </div>
@@ -1540,6 +1550,7 @@ function Sidebar({view,setView,contacts,events,profile,onQuickLog,onCollapse}) {
     {id:"showcase",label:"Showcase",icon:"🎤"},
     {id:"newsletter",label:"Newsletter",icon:"📰"},
     {id:"outreach",label:"Outreach",icon:"📣"},
+    {id:"members",label:"Members",icon:"★"},
     {id:"grants",label:"Grant Metrics",icon:"📈"},
     {section:"Tools"},
     {id:"import",label:"Import JSON",icon:"⬇"},
@@ -6323,7 +6334,8 @@ if (dbError) return (
 {view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail} setView={setView}/>}
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
 {view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))} pendingEvent={pendingEvent} onPendingEventConsumed={clearPendingEvent} portals={portals} onCreatePortal={makePortal} onRotatePortal={rotatePortal} onRemovePortal={removePortal} onRefreshPortals={refreshPortals} onSavePortalAnswer={savePortalAnswer}/>}
-        {view==="grants"&&<GrantMetrics events={events} contacts={contacts} orgs={orgs} onUpdateEvent={saveOneEvent} profile={profile} openEvent={openEvent} showToast={showToast}/>}
+        {view==="grants"&&<GrantMetrics events={events} contacts={contacts} orgs={orgs} onUpdateEvent={saveOneEvent} profile={profile} openEvent={openEvent} showToast={showToast} setView={setView}/>}
+        {view==="members"&&<MembersView contacts={contacts} orgs={orgs} onSaveContact={saveOneContact} onSaveOrg={saveOneOrg} openContact={openContact} showToast={showToast}/>}
         {view==="showcase"&&<ShowcaseApplications contacts={contacts} events={events} onSaveContact={saveOneContact} onCreateContact={createOneContact} onUpdateEvent={saveOneEvent} openContact={openContact} showToast={showToast}/>}
         {view==="newsletter"&&<NewsletterView newsletters={newsletters} events={events} contacts={contacts} profile={profile} onUpdate={saveNewsletter} onDelete={deleteNewsletter} showToast={showToast}/>}
         {view==="outreach"&&<OutreachView contacts={contacts} orgs={orgs} events={events}/>}
