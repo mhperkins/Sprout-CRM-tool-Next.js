@@ -15,7 +15,8 @@
  */
 
 import { useState, useEffect, useMemo } from "react";
-import { fetchProgramEntryEventIds, fetchShowcaseApplications, fetchKioskSignins, fetchStripeMemberInvoices } from "../lib/services";
+import { fetchProgramEntryEventIds, fetchShowcaseApplications, fetchKioskSignins, fetchStripeMemberInvoices, fetchSurveyInvites } from "../lib/services";
+import { surveyHeadcounts } from "../lib/surveyForm";
 import { withStripeInvoices } from "../lib/memberBilling";
 import { computeGrantMetrics, metricsToText } from "../lib/grantMetrics";
 
@@ -96,6 +97,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
   const [kiosk, setKiosk] = useState({ nights: {}, sheets: [], folderUrl: null, error: null, loading: true });
   const [stripe, setStripe] = useState({ invoices: [], error: null, loading: true });
   const [openMonths, setOpenMonths] = useState(() => new Set());
+  const [invites, setInvites] = useState([]);
   // Edits from the dropdown rows land on the event itself (its Outcomes tile).
   const setOutcome = (id, patch, msg) => {
     const ev = events.find(e => e.id === id);
@@ -122,6 +124,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
     });
     fetchKioskSignins().then(k => { if (live) setKiosk({ ...k, loading: false }); });
     fetchStripeMemberInvoices().then(st => { if (live) setStripe({ ...st, loading: false }); });
+    fetchSurveyInvites().then(i => { if (live) setInvites(i); });
     return () => { live = false; };
   }, []);
 
@@ -137,9 +140,23 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
     return { contacts: c.records, orgs: o.records, unmatched: o.unmatched };
   }, [contacts, orgs, stripe.invoices]);
 
+  // Impact survey: host attendance answers and the testimonials people said we can share.
+  const survey = useMemo(() => {
+    const evById = new Map(events.map(e => [e.id, e]));
+    const quotes = [];
+    invites.filter(i => i.replied_at).forEach(inv => (inv.questions || []).filter(q => q.type === "testimonial").forEach(q => {
+      const t = inv.answers?.[q.id];
+      if (!t?.text || !["name", "anon"].includes(t.share)) return;
+      const evs = (inv.event_ids || []).map(id => evById.get(id)).filter(Boolean).sort((a, b) => b.event_date.localeCompare(a.event_date));
+      quotes.push({ text: t.text, event: t.share === "name" ? (t.credit || inv.name) : "Anonymous", date: evs[0]?.event_date || inv.replied_at.slice(0, 10), survey: true });
+    }));
+    return { counts: surveyHeadcounts(invites), quotes };
+  }, [invites, events]);
+
   const m = useMemo(() => computeGrantMetrics({
-    events, contacts: billed.contacts, orgs: billed.orgs, programEventIds: programIds, applications: apps, signins: kiosk.nights, from, to, today, includePartners: partners,
-  }), [events, billed, programIds, apps, kiosk.nights, from, to, today, partners]);
+    events, contacts: billed.contacts, orgs: billed.orgs, programEventIds: programIds, applications: apps, signins: kiosk.nights,
+    surveyCounts: survey.counts, surveyQuotes: survey.quotes, from, to, today, includePartners: partners,
+  }), [events, billed, programIds, apps, kiosk.nights, survey, from, to, today, partners]);
 
   const togglePartners = () => {
     const next = !partners; setPartners(next);
@@ -235,10 +252,11 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
                     </select></td>
                     <td>
                       <input key={ev.id + "hc" + (ev.typed ?? "")} className="gm-in" inputMode="numeric" aria-label={`Headcount, ${ev.name}`}
-                        defaultValue={ev.typed ?? ""} placeholder={ev.signins != null && ev.source === "kiosk" ? String(ev.signins) : "—"}
-                        title={ev.source === "kiosk" ? "From the sign-in sheets. Type a number to replace it; clear it to go back to sign-ins." : "Type how many people came"}
+                        defaultValue={ev.typed ?? ""} placeholder={ev.source === "kiosk" || ev.source === "survey" ? String(ev.attendance) : "—"}
+                        title={ev.source === "kiosk" ? "From the sign-in sheets. Type a number to replace it; clear it to go back to sign-ins." : ev.source === "survey" ? "From the host's impact survey. Type a number to replace it." : "Type how many people came"}
                         onBlur={numBlur(ev.id, "headcount", ev.typed)} onKeyDown={numKey}/>
                       {ev.source === "kiosk" && <span className="gm-src door">sign-ins</span>}
+                      {ev.source === "survey" && <span className="gm-src door">host survey</span>}
                       {ev.source === "typed" && <span className="gm-src">typed</span>}
                       {ev.attendance == null && <span className="gm-src miss">missing</span>}</td>
                     <td><input key={ev.id + "ft" + (ev.firstTimers ?? "")} className="gm-in" inputMode="numeric" aria-label={`First-timers, ${ev.name}`}
@@ -269,8 +287,8 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
           <div className="gm-card">
             <div className="gm-h">In their words</div>
             {m.quotes.length === 0
-              ? <div className="gm-empty">No quotes yet. Add one in an event's Outcomes tile when someone says something about the night.</div>
-              : m.quotes.map((q, i) => <div key={i} className="gm-q">"{q.text}"<small>{q.event} · {fmtD(q.date)}</small></div>)}
+              ? <div className="gm-empty">No quotes yet. Add one in an event's Outcomes tile, or send the Impact Survey.</div>
+              : m.quotes.map((q, i) => <div key={i} className="gm-q">"{q.text}"<small>{q.survey ? `${q.event} · impact survey` : `${q.event} · ${fmtD(q.date)}`}</small></div>)}
           </div>
           <div className="gm-card">
             <div className="gm-h">How people heard about us</div>

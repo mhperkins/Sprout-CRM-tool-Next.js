@@ -50,6 +50,7 @@ import DayBoard from "./DayBoard";
 import ShowcaseApplications from "./ShowcaseApplications";
 import GrantMetrics from "./GrantMetrics";
 import MembersView from "./MembersView";
+import SurveyView from "./SurveyView";
 
 /* ─── Styles ───────────────────────────────────────────────────────────────── */
 const STYLES = `
@@ -1552,6 +1553,7 @@ function Sidebar({view,setView,contacts,events,profile,onQuickLog,onCollapse}) {
     {id:"outreach",label:"Outreach",icon:"📣"},
     {id:"members",label:"Members",icon:"★"},
     {id:"grants",label:"Grant Metrics",icon:"📈"},
+    {id:"survey",label:"Impact Survey",icon:"📝"},
     {section:"Tools"},
     {id:"import",label:"Import JSON",icon:"⬇"},
     {id:"settings",label:"Settings",icon:"⚙"},
@@ -6291,8 +6293,8 @@ const saveProfile = useCallback((u) => {
     try{
       const url=new URL(window.location.href);
       const v=url.searchParams.get("view");
-      if(v==="showcase"){
-        setView("showcase");
+      if(v==="showcase"||v==="survey"){
+        setView(v);
         url.searchParams.delete("view");
         window.history.replaceState({},"",url.pathname+(url.searchParams.toString()?`?${url.searchParams}`:"")+url.hash);
       }
@@ -6335,6 +6337,7 @@ if (dbError) return (
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
 {view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))} pendingEvent={pendingEvent} onPendingEventConsumed={clearPendingEvent} portals={portals} onCreatePortal={makePortal} onRotatePortal={rotatePortal} onRemovePortal={removePortal} onRefreshPortals={refreshPortals} onSavePortalAnswer={savePortalAnswer}/>}
         {view==="grants"&&<GrantMetrics events={events} contacts={contacts} orgs={orgs} onUpdateEvent={saveOneEvent} profile={profile} openEvent={openEvent} showToast={showToast} setView={setView}/>}
+        {view==="survey"&&<SurveyView events={events} contacts={contacts} orgs={orgs} openContact={openContact} showToast={showToast}/>}
         {view==="members"&&<MembersView contacts={contacts} orgs={orgs} onSaveContact={saveOneContact} onSaveOrg={saveOneOrg} openContact={openContact} showToast={showToast}/>}
         {view==="showcase"&&<ShowcaseApplications contacts={contacts} events={events} onSaveContact={saveOneContact} onCreateContact={createOneContact} onUpdateEvent={saveOneEvent} openContact={openContact} showToast={showToast}/>}
         {view==="newsletter"&&<NewsletterView newsletters={newsletters} events={events} contacts={contacts} profile={profile} onUpdate={saveNewsletter} onDelete={deleteNewsletter} showToast={showToast}/>}
