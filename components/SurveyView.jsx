@@ -125,6 +125,7 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
   const [addQ, setAddQ] = useState("");
   const [addContact, setAddContact] = useState(null);
   const [addEvents, setAddEvents] = useState([]);
+  const [editRow, setEditRow] = useState(null); // { id, name, email, eventIds } while a link is being edited
   const today = localToday();
 
   useEffect(() => {
@@ -194,8 +195,8 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
     const inv = await ensureInvite(row);
     if (inv) {
       const evs = (inv.event_ids || []).map(id => evById.get(id)).filter(Boolean);
-      const mail = surveyEmail({ firstName: row.contact?.first_name || (inv.name || "").split(" ")[0], audience, events: evs, url: linkFor(inv) });
-      const to = row.contact?.email || inv.email;
+      const mail = surveyEmail({ firstName: (inv.name || "").split(" ")[0] || row.contact?.first_name, audience, events: evs, url: linkFor(inv) });
+      const to = inv.email || row.contact?.email;
       const ok = await copyText(`To: ${to || "(no email on file)"}\nSubject: ${mail.subject}\n\n${mail.body}`);
       showToast?.(ok ? "Email copied ✓ Paste it into Gmail, then mark it sent." : "Copy failed. Use Copy link instead.", ok ? undefined : "err");
     }
@@ -226,6 +227,14 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
     if (error) { showToast?.("Could not delete: " + error, "err"); return; }
     setInvites(list => list.filter(i => i.id !== row.invite.id));
     showToast?.("Link deleted. It no longer works.");
+  };
+
+  const startEdit = (row) => setEditRow({ id: row.invite.id, name: row.invite.name || fullName(row.contact), email: row.invite.email || row.contact?.email || "", eventIds: [...(row.invite.event_ids || [])] });
+  const saveEdit = async () => {
+    if (!editRow.eventIds.length) { showToast?.("Pick at least one night.", "err"); return; }
+    const { invite, error } = await updateSurveyInvite(editRow.id, { name: editRow.name.trim(), email: editRow.email.trim(), event_ids: editRow.eventIds });
+    if (error) { showToast?.("Could not save: " + error, "err"); return; }
+    patchInvite(invite); setEditRow(null); showToast?.("Link updated ✓ The same link now shows these nights.");
   };
 
   const addMatches = useMemo(() => {
@@ -397,12 +406,13 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
               const inv = r.invite;
               const c = r.contact;
               const orgName = c && orgById.get((c.org_ids || [])[0])?.name;
-              const email = c?.email || inv?.email;
+              // The email typed on the link wins; otherwise the contact's own.
+              const email = inv?.email || c?.email;
               const evs = r.eventIds.map(id => evById.get(id)).filter(Boolean);
               const busy = busyRow === r.key;
               return (
-                <tr key={r.key}>
-                  <td><b>{fullName(c) || inv?.name || "Unknown"}</b><small>{[orgName, email || "no email on file"].filter(Boolean).join(" · ")}</small></td>
+                [<tr key={r.key}>
+                  <td><b>{inv?.name || fullName(c) || "Unknown"}</b><small>{[orgName, email || "no email on file"].filter(Boolean).join(" · ")}</small></td>
                   <td>{evs.length === 1 ? eventLabel(evs[0]) : `${evs.length} nights`}{evs.length > 1 && <small>{evs.map(e => e.name).slice(0, 3).join(", ")}{evs.length > 3 ? "…" : ""}</small>}</td>
                   <td>{inv?.replied_at ? <span className="sv-tag ok">Replied {fmtWhen(inv.replied_at)}</span>
                     : inv?.sent_at ? <span className="sv-tag sent">Sent {fmtWhen(inv.sent_at)}</span>
@@ -411,9 +421,28 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
                     {!inv?.replied_at && <button className="sv-btn2" disabled={busy || !email} title={email ? "" : "Add an email to this contact first"} onClick={() => copyEmail(r)}>Copy email</button>}
                     <button className="sv-btn2" disabled={busy} onClick={() => copyLink(r)}>Copy link</button>
                     {!inv?.replied_at && <button className="sv-btn2" disabled={busy} onClick={() => toggleSent(r)}>{inv?.sent_at ? "Unmark sent" : "Mark sent"}</button>}
+                    {inv && !inv.replied_at && <button className="sv-btn2" disabled={busy} onClick={() => (editRow?.id === inv.id ? setEditRow(null) : startEdit(r))}>{editRow?.id === inv.id ? "Close" : "Edit"}</button>}
                     {inv && !inv.replied_at && <button className="sv-btn2" disabled={busy} title="Delete this link" onClick={() => removeInvite(r)}>✕</button>}
                   </div></td>
-                </tr>
+                </tr>,
+                editRow && inv && editRow.id === inv.id && <tr key={r.key + "_edit"}><td colSpan={4} style={{ background: "#FAFAF8" }}>
+                  <div className="sv-add" style={{ margin: 0 }}>
+                    <div className="sv-two">
+                      <div><label className="sv-lbl" htmlFor="sv-ed-name">Name on the survey</label>
+                        <input id="sv-ed-name" className="sv-in" value={editRow.name} onChange={e => setEditRow({ ...editRow, name: e.target.value })} /></div>
+                      <div><label className="sv-lbl" htmlFor="sv-ed-email">Send to (email)</label>
+                        <input id="sv-ed-email" className="sv-in" value={editRow.email} placeholder="name@example.com" onChange={e => setEditRow({ ...editRow, email: e.target.value })} /></div>
+                    </div>
+                    <div>
+                      <span className="sv-lbl">Nights this link covers ({editRow.eventIds.length} picked)</span>
+                      <div className="sv-evs">{held.slice(0, 60).map(ev => (
+                        <button key={ev.id} className="sv-chip" aria-pressed={editRow.eventIds.includes(ev.id)}
+                          onClick={() => setEditRow({ ...editRow, eventIds: editRow.eventIds.includes(ev.id) ? editRow.eventIds.filter(x => x !== ev.id) : [...editRow.eventIds, ev.id] })}>{eventLabel(ev)}</button>
+                      ))}</div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}><button className="sv-btn" onClick={saveEdit}>Save</button><button className="sv-btn2" onClick={() => setEditRow(null)}>Cancel</button></div>
+                  </div>
+                </td></tr>]
               );
             })}</tbody>
           </table></div>}
