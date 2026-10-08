@@ -1,0 +1,417 @@
+<title>Sprout Impact Survey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: wireframe chrome bar → four tabs (Host form · Artist form · Sending · In the CRM), each a row of frames at 390px phone width plus one desktop frame. */
+:root{
+  --paper:#F4F4F0; --card:#FFFFFF; --sunk:#EDEDE6;
+  --line:#DFDFD6; --line-soft:#ECECE4;
+  --text:#171713; --ink2:#3A3A33; --dim:#6C6C61; --faint:#9B9B8F;
+  --btn:#171713; --btn-ink:#F4F4F0;
+  --accent:#C4007F; --cyan:#2A8CA0; --acid:#8D8F00;
+  --crit:#B3005F; --crit-bg:#FBE6F1;
+  --warn:#9A6B00; --warn-bg:#FAF0D6; --ok:#15804A; --ok-bg:#E4F3EA;
+  --shadow:0 1px 2px rgba(20,20,10,.06), 0 8px 24px -14px rgba(20,20,10,.2);
+  --f-body:Lato,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E0E0B; --card:#1A1A16; --sunk:#131310;
+    --line:#2F2F27; --line-soft:#232320;
+    --text:#F1F1E9; --ink2:#D0D0C6; --dim:#9C9C90; --faint:#6F6F65;
+    --btn:#F1F1E9; --btn-ink:#0E0E0B;
+    --accent:#FF4FAE; --cyan:#5FC9DE; --acid:#C6C902;
+    --crit:#FF57A8; --crit-bg:#2E0F22;
+    --warn:#F0C244; --warn-bg:#2B2412; --ok:#43C98A; --ok-bg:#12291F;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 30px -14px rgba(0,0,0,.8);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E0E0B; --card:#1A1A16; --sunk:#131310;
+  --line:#2F2F27; --line-soft:#232320;
+  --text:#F1F1E9; --ink2:#D0D0C6; --dim:#9C9C90; --faint:#6F6F65;
+  --btn:#F1F1E9; --btn-ink:#0E0E0B;
+  --accent:#FF4FAE; --cyan:#5FC9DE; --acid:#C6C902;
+  --crit:#FF57A8; --crit-bg:#2E0F22;
+  --warn:#F0C244; --warn-bg:#2B2412; --ok:#43C98A; --ok-bg:#12291F;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 30px -14px rgba(0,0,0,.8);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--text);font-family:var(--f-body);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;text-wrap:balance}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.sub{color:var(--dim);font-size:13px;margin:0}
+
+.wire{background:var(--btn);color:var(--btn-ink);padding:9px 20px;display:flex;gap:10px 18px;align-items:center;flex-wrap:wrap;font-size:12px;position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.wire b{letter-spacing:.11em;text-transform:uppercase;font-size:10px}
+.wire .note{opacity:.75;flex:1 1 300px}
+.seg{display:inline-flex;border:1px solid color-mix(in srgb,var(--btn-ink) 35%,transparent);border-radius:999px;padding:2px;flex-wrap:wrap}
+.seg button{appearance:none;border:0;background:none;cursor:pointer;padding:3px 11px;border-radius:999px;font-size:12px;color:var(--btn-ink);opacity:.72}
+.seg button[aria-pressed="true"]{background:var(--btn-ink);color:var(--btn);opacity:1;font-weight:700}
+
+.page{padding-block:22px 70px;padding-inline:20px;max-width:1240px;margin:0 auto}
+.caption{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin:0 0 14px}
+.caption h2{font-size:17px;font-weight:900}
+.caption .sub{flex:1 1 260px}
+.calls{background:var(--card);border:1px dashed var(--line);border-radius:10px;padding:12px 16px;margin:0 0 20px;font-size:13px;color:var(--ink2)}
+.calls b{color:var(--text)}
+.calls ul{margin:6px 0 0;padding-left:18px;display:grid;gap:3px}
+
+.frames{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+.frame{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;flex:1 1 460px;min-width:0}
+.frame.phone{flex:0 1 390px;max-width:100%}
+.frame-hd{background:var(--sunk);border-bottom:1px solid var(--line);padding:7px 13px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);font-weight:700;display:flex;gap:8px;justify-content:space-between}
+.frame-bd{padding:18px}
+
+/* the mock form */
+.brand{display:flex;gap:10px;align-items:center}
+.flower{width:28px;height:28px;border-radius:50%;background:var(--acid);display:grid;place-items:center;color:var(--btn);font-weight:900;font-size:12px;flex:0 0 auto}
+.brand h3{font-size:18px;font-weight:900}
+.who{margin:12px 0 0;padding:9px 11px;background:var(--sunk);border-radius:8px;font-size:13px;color:var(--ink2)}
+.who b{color:var(--text)}
+.lede{color:var(--ink2);font-size:14px;margin:10px 0 0}
+.hd-rule{height:3px;background:var(--acid);margin:14px 0 18px;border-radius:2px}
+.q{display:grid;gap:7px;padding:0 0 16px;margin:0 0 16px;border-bottom:1px solid var(--line-soft)}
+.q:last-of-type{border-bottom:0}
+.q label.ql,.q .ql{font-weight:700;font-size:14px}
+.q .hint{color:var(--dim);font-size:12px;margin-top:-3px}
+.in{width:100%;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:9px 11px}
+.in.num{width:90px;text-align:right}
+textarea.in{min-height:84px;resize:vertical}
+.rows{display:grid;gap:6px}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.row span{flex:1 1 150px;min-width:0;font-size:13px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{appearance:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);border-color:var(--btn);font-weight:700}
+.scale{display:grid;gap:8px}
+.scale .row span{flex-basis:130px}
+.chip.sm{padding:4px 10px;font-size:12px}
+.primary{appearance:none;border:0;background:var(--btn);color:var(--btn-ink);border-radius:8px;padding:12px 16px;font-weight:900;width:100%;cursor:pointer}
+.foot{color:var(--faint);font-size:11px;text-align:center;margin-top:10px}
+.err{color:var(--crit);background:var(--crit-bg);border-radius:6px;padding:7px 10px;font-size:12px}
+.done{text-align:center;padding:30px 6px}
+.done .big{font-size:22px;font-weight:900;margin:12px 0 6px}
+.ok{color:var(--ok);background:var(--ok-bg);border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;display:inline-block}
+.warn{color:var(--warn);background:var(--warn-bg);border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;display:inline-block}
+.tag{color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:11px;display:inline-block}
+.ann{display:block;margin-top:4px;color:var(--accent);font-size:11px;font-weight:700}
+
+/* CRM mocks */
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:520px}
+th{text-align:left;color:var(--dim);font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.card-in{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px}
+.card-in h4{margin:0;font-size:14px;font-weight:900}
+.stat{display:flex;gap:14px;flex-wrap:wrap}
+.stat div{flex:1 1 120px;background:var(--sunk);border-radius:8px;padding:10px}
+.stat .n{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
+.stat .l{font-size:12px;color:var(--dim)}
+.quote{border-left:3px solid var(--cyan);padding:2px 0 2px 12px;display:grid;gap:4px}
+.quote p{margin:0;font-style:italic;color:var(--ink2)}
+.quote .by{font-size:12px;color:var(--dim);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn2{appearance:none;border:1px solid var(--line);background:var(--card);border-radius:7px;padding:5px 10px;font-size:12px;cursor:pointer}
+.stack{display:grid;gap:14px}
+</style>
+
+<div class="wire">
+  <b>Wireframe</b>
+  <span class="note">Grey-box structure only, built on the CRM's existing styles. Names are real CRM people; their answers are invented examples.</span>
+  <div class="seg" role="group" aria-label="Screen">
+    <button type="button" data-tab="host" aria-pressed="true">Host form</button>
+    <button type="button" data-tab="artist" aria-pressed="false">Artist form</button>
+    <button type="button" data-tab="send" aria-pressed="false">Sending</button>
+    <button type="button" data-tab="crm" aria-pressed="false">In the CRM</button>
+  </div>
+</div>
+
+<main class="page">
+
+<!-- ═══════════════ HOST ═══════════════ -->
+<section data-panel="host">
+  <div class="caption"><h2>Host survey</h2><p class="sub">/survey/&lt;token&gt;: one private link per host, opened on a phone, about 2 minutes. Nothing is required except the permission answer when they write a quote.</p></div>
+  <div class="calls"><b>Calls for Max</b>
+    <ul>
+      <li>One link covers <b>every night</b> that host held since May, so a series host fills one form, not seven.</li>
+      <li>Q1 headcounts go straight into each event's Outcomes. A number you already typed is shown and wins.</li>
+      <li>Lean version: 6 questions. Cut or add before build.</li>
+    </ul>
+  </div>
+  <div class="frames">
+    <article class="frame phone">
+      <div class="frame-hd"><span>Typical · series host</span><span>390px</span></div>
+      <div class="frame-bd">
+        <div class="brand"><div class="flower">S</div><h3>How did hosting go?</h3></div>
+        <div class="who">For <b>Jonathan Winkles</b> · Queer Social</div>
+        <p class="lede">Your answers help us show funders that spaces like ours matter. Six quick questions.</p>
+        <div class="hd-rule"></div>
+
+        <div class="q">
+          <span class="ql">1. About how many people came?</span>
+          <div class="rows">
+            <div class="row"><span>Sober Hangout · Aug 21</span><input class="in num mono" id="h1a" value="22"></div>
+            <div class="row"><span>Sober Hangout · Sep 25</span><input class="in num mono" id="h1b" value="30"></div>
+            <div class="row"><span>Body Wellness · Sep 15</span><input class="in num mono" id="h1c" placeholder="—"></div>
+          </div>
+          <span class="hint">A guess is fine. Leave blank if you don't know.</span>
+        </div>
+
+        <div class="q">
+          <span class="ql">2. Roughly how many were new to your community?</span>
+          <div class="chips"><button class="chip">Almost none</button><button class="chip">A few</button><button class="chip" aria-pressed="true">About half</button><button class="chip">Most</button></div>
+        </div>
+
+        <div class="q">
+          <span class="ql">3. Without Sprout's space, would these have happened?</span>
+          <div class="chips"><button class="chip">Yes, the same</button><button class="chip">Yes, but smaller</button><button class="chip" aria-pressed="true">Probably not</button></div>
+        </div>
+
+        <div class="q">
+          <span class="ql">4. Did Sprout help you reach people you wouldn't have otherwise?</span>
+          <div class="chips"><button class="chip" aria-pressed="true">Yes</button><button class="chip">A little</button><button class="chip">No</button></div>
+        </div>
+
+        <div class="q">
+          <span class="ql">5. How true is this?</span>
+          <div class="scale">
+            <div class="row"><span>People made new connections</span><div class="chips"><button class="chip sm" aria-pressed="true">Very</button><button class="chip sm">Somewhat</button><button class="chip sm">Not really</button></div></div>
+            <div class="row"><span>People felt welcome</span><div class="chips"><button class="chip sm" aria-pressed="true">Very</button><button class="chip sm">Somewhat</button><button class="chip sm">Not really</button></div></div>
+            <div class="row"><span>I'd host here again</span><div class="chips"><button class="chip sm" aria-pressed="true">Very</button><button class="chip sm">Somewhat</button><button class="chip sm">Not really</button></div></div>
+          </div>
+        </div>
+
+        <div class="q">
+          <label class="ql" for="h6">6. What did hosting at Sprout make possible for you?</label>
+          <textarea class="in" id="h6">We'd been running sober hangouts in bars, which never felt right. Having a real room with couches and no pressure to drink changed who shows up. People come back every month and now they plan their own meetups between ours.</textarea>
+          <span class="ql" style="font-size:13px">Can we share what you wrote?</span>
+          <div class="chips"><button class="chip" aria-pressed="true">Yes, with my name</button><button class="chip">Yes, anonymously</button><button class="chip">No</button></div>
+          <label class="hint" for="h6c" style="margin-top:2px">Credit me as</label>
+          <input class="in" id="h6c" value="Jonathan Winkles, Queer Social">
+        </div>
+
+        <button class="primary" type="button">Send my answers</button>
+        <p class="foot">Sprout Society · 26 Scott Ave, Brooklyn</p>
+      </div>
+    </article>
+
+    <article class="frame phone">
+      <div class="frame-hd"><span>Just opened · one-night host</span><span>390px</span></div>
+      <div class="frame-bd">
+        <div class="brand"><div class="flower">S</div><h3>How did hosting go?</h3></div>
+        <div class="who">For <b>Pat Hopkins</b> · Pat's Industry Day</div>
+        <p class="lede">Your answers help us show funders that spaces like ours matter. Six quick questions.</p>
+        <div class="hd-rule"></div>
+        <div class="q">
+          <span class="ql">1. About how many people came?</span>
+          <div class="rows"><div class="row"><span>Pat's Industry Day · Aug 9</span><input class="in num mono" id="p1" placeholder="—"></div></div>
+          <span class="hint">A guess is fine. Leave blank if you don't know.</span>
+        </div>
+        <div class="q"><span class="ql">2. Roughly how many were new to your community?</span>
+          <div class="chips"><button class="chip">Almost none</button><button class="chip">A few</button><button class="chip">About half</button><button class="chip">Most</button></div></div>
+        <div class="q"><span class="ql">3 to 5 …</span><span class="hint">same as the typical frame, nothing selected</span></div>
+        <div class="q">
+          <label class="ql" for="p6">6. What did hosting at Sprout make possible for you?</label>
+          <textarea class="in" id="p6" placeholder="A sentence or two is plenty."></textarea>
+        </div>
+        <div class="err">Pick whether we can share your words, or clear the box above.</div>
+        <span class="ann">Shown only if they wrote a quote and skipped the share question.</span>
+        <div style="height:12px"></div>
+        <button class="primary" type="button">Send my answers</button>
+      </div>
+    </article>
+
+    <article class="frame phone">
+      <div class="frame-hd"><span>After sending</span><span>390px</span></div>
+      <div class="frame-bd">
+        <div class="done">
+          <div class="flower" style="margin:0 auto;width:44px;height:44px;font-size:18px">S</div>
+          <div class="big">Thank you, Jonathan.</div>
+          <p class="sub">This goes straight into our grant applications. You can reopen this link to change your answers any time.</p>
+        </div>
+        <span class="ann">Same link reopens their answers to edit (like the program form).</span>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════ ARTIST ═══════════════ -->
+<section data-panel="artist" hidden>
+  <div class="caption"><h2>Showcase artist survey</h2><p class="sub">Same page and link pattern, different questions. Covers Sprout N Tell performers and gallery artists.</p></div>
+  <div class="calls"><b>Calls for Max</b>
+    <ul>
+      <li>Q2 is the economic-opportunity proof: a sale, tips, a booking or a collaboration that came out of the night.</li>
+      <li>Artists who played more than one volume get one form that names every night they did.</li>
+    </ul>
+  </div>
+  <div class="frames">
+    <article class="frame phone">
+      <div class="frame-hd"><span>Typical</span><span>390px</span></div>
+      <div class="frame-bd">
+        <div class="brand"><div class="flower">S</div><h3>How was Sprout N Tell?</h3></div>
+        <div class="who">For <b>Tim Falvey</b> · Vol. 4, Sep 11</div>
+        <p class="lede">Five quick questions. Your answers help us keep the series free.</p>
+        <div class="hd-rule"></div>
+        <div class="q">
+          <span class="ql">1. Did you make a new connection? <span class="hint" style="font-weight:400">Tap all that fit</span></span>
+          <div class="chips"><button class="chip" aria-pressed="true">Another artist</button><button class="chip" aria-pressed="true">A collaborator</button><button class="chip" aria-pressed="true">New fans or followers</button><button class="chip">A gig lead</button><button class="chip">None yet</button></div>
+        </div>
+        <div class="q">
+          <span class="ql">2. Did anything come from it?</span>
+          <div class="chips"><button class="chip">A sale</button><button class="chip" aria-pressed="true">Tips</button><button class="chip" aria-pressed="true">A booking</button><button class="chip">A collaboration</button><button class="chip">Nothing yet</button></div>
+        </div>
+        <div class="q">
+          <span class="ql">3. How welcome did you feel?</span>
+          <div class="chips"><button class="chip">1</button><button class="chip">2</button><button class="chip">3</button><button class="chip">4</button><button class="chip" aria-pressed="true">5</button></div>
+        </div>
+        <div class="q">
+          <span class="ql">4. Would you showcase again, or send a friend?</span>
+          <div class="chips"><button class="chip" aria-pressed="true">Yes</button><button class="chip">Maybe</button><button class="chip">No</button></div>
+        </div>
+        <div class="q">
+          <label class="ql" for="a5">5. What did Sprout N Tell mean to you?</label>
+          <textarea class="in" id="a5">First time playing these songs for strangers who actually listened.</textarea>
+          <span class="ql" style="font-size:13px">Can we share what you wrote?</span>
+          <div class="chips"><button class="chip">Yes, with my name</button><button class="chip" aria-pressed="true">Yes, anonymously</button><button class="chip">No</button></div>
+        </div>
+        <button class="primary" type="button">Send my answers</button>
+      </div>
+    </article>
+
+    <article class="frame phone">
+      <div class="frame-hd"><span>Played two volumes</span><span>390px</span></div>
+      <div class="frame-bd">
+        <div class="brand"><div class="flower">S</div><h3>How was Sprout N Tell?</h3></div>
+        <div class="who">For <b>Greg Smith</b> · Vol. 3, Jul 24 and Vol. 4, Sep 11</div>
+        <p class="lede">Five quick questions. Think about both nights together.</p>
+        <div class="hd-rule"></div>
+        <div class="q"><span class="ql">1 to 5 …</span><span class="hint">same questions, answered once for both nights</span></div>
+        <span class="ann">Answers attach to both events.</span>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════ SENDING ═══════════════ -->
+<section data-panel="send" hidden>
+  <div class="caption"><h2>Sending the surveys</h2><p class="sub">A new "Impact survey" page in the CRM sidebar, next to Grant Metrics. It lists who should get one and where each stands.</p></div>
+  <div class="calls"><b>Calls for Max</b>
+    <ul>
+      <li>The CRM never emails on its own. "Draft emails" stages one plain Gmail draft per person from maxperkins@; you send them.</li>
+      <li>Who's listed comes from the CRM: event hosts on Partner or Rental nights, and people in an event's program or gallery.</li>
+      <li>After this catch-up round, a new row appears 2 days after each event.</li>
+    </ul>
+  </div>
+  <div class="frames">
+    <article class="frame">
+      <div class="frame-hd"><span>Typical · catch-up round</span><span>desktop</span></div>
+      <div class="frame-bd stack">
+        <div class="row"><span><b style="font-size:16px">Impact survey</b> <span class="sub">· 4 replied of 23 sent</span></span>
+          <div class="chips"><button class="chip" aria-pressed="true">Hosts (6)</button><button class="chip">Artists (31)</button></div></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th><input type="checkbox" id="all" aria-label="Select all"></th><th>Person</th><th>Nights</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><input type="checkbox" id="r1" aria-label="Select"></td><td><b>Jonathan Winkles</b><br><span class="sub">Queer Social</span></td><td>7 nights</td><td><span class="ok">Replied Oct 9</span></td><td><button class="btn2">View</button></td></tr>
+            <tr><td><input type="checkbox" id="r2" aria-label="Select"></td><td><b>Cullie Poseria</b><br><span class="sub">Bar Nun</span></td><td>3 nights</td><td><span class="warn">Sent Oct 8</span></td><td><button class="btn2">Copy link</button></td></tr>
+            <tr><td><input type="checkbox" id="r3" aria-label="Select" checked></td><td><b>Jess McAvoy</b><br><span class="sub">Sing Easy</span></td><td>2 nights</td><td><span class="tag">Not sent</span></td><td><button class="btn2">Copy link</button></td></tr>
+            <tr><td><input type="checkbox" id="r4" aria-label="Select" checked></td><td><b>Pat Hopkins</b><br><span class="sub">Pat's Industry Day</span></td><td>1 night</td><td><span class="tag">Not sent</span></td><td><button class="btn2">Copy link</button></td></tr>
+            <tr><td><input type="checkbox" id="r5" aria-label="Select" checked></td><td><b>Rachel</b><br><span class="sub">Buzzkill NYC · no email on file</span></td><td>1 night</td><td><span class="tag">Needs email</span></td><td><button class="btn2">Add email</button></td></tr>
+          </tbody>
+        </table></div>
+        <div class="row"><span class="sub">2 selected with an email</span><button class="primary" type="button" style="width:auto">Draft 2 emails</button></div>
+        <span class="ann">After drafting: "2 drafts in maxperkins@ Gmail. Review and send them there."</span>
+      </div>
+    </article>
+    <article class="frame phone">
+      <div class="frame-hd"><span>The email (same for everyone)</span><span>draft</span></div>
+      <div class="frame-bd" style="font-size:13px;display:grid;gap:10px">
+        <div><span class="sub">Subject</span><br><b>A quick favor for Sprout</b></div>
+        <p style="margin:0">Hi Jess,</p>
+        <p style="margin:0">Thanks for bringing Sing Easy to Sprout. We're applying for grants to keep the space open and free, and your experience is the best proof we have. Could you answer six quick questions? It takes about two minutes.</p>
+        <p style="margin:0" class="mono">sprout-crm-tool-next-js.vercel.app/survey/k3…</p>
+        <p style="margin:0">Thank you,<br>Max</p>
+        <span class="ann">Max edits the copy before the build; one message, no per-person versions.</span>
+      </div>
+    </article>
+  </div>
+  <div class="rule" style="height:1px;background:var(--line);margin:28px 0 18px"></div>
+  <div class="frames">
+    <article class="frame">
+      <div class="frame-hd"><span>Empty</span><span>desktop</span></div>
+      <div class="frame-bd" style="text-align:center;padding:34px">
+        <b>No one to survey yet.</b>
+        <p class="sub" style="margin-top:6px">Mark an event as Partner or Rental, or add people to its program, and they'll show up here 2 days after the night.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════ CRM ═══════════════ -->
+<section data-panel="crm" hidden>
+  <div class="caption"><h2>Where the answers land</h2><p class="sub">Answers live in their own table (like showcase applications), so no event save can wipe them. Grant Metrics reads them.</p></div>
+  <div class="frames">
+    <article class="frame">
+      <div class="frame-hd"><span>Grant Metrics · new "What hosts and artists told us" card</span><span>desktop</span></div>
+      <div class="frame-bd stack">
+        <div class="stat">
+          <div><div class="n">3 of 4</div><div class="l">hosts say it probably wouldn't have happened without Sprout</div></div>
+          <div><div class="n">7 of 9</div><div class="l">artists made a new connection</div></div>
+          <div><div class="n">4</div><div class="l">artists got a sale, tips or a booking</div></div>
+          <div><div class="n">4.8 / 5</div><div class="l">how welcome artists felt</div></div>
+        </div>
+        <div class="card-in">
+          <div class="row"><h4>Quotes you can use (5)</h4><button class="btn2">Copy all for a grant</button></div>
+          <div class="quote"><p>“Having a real room with couches and no pressure to drink changed who shows up. People come back every month.”</p>
+            <div class="by">Jonathan Winkles, Queer Social <span class="ok">OK with name</span> <button class="btn2">Copy</button></div></div>
+          <div class="quote"><p>“First time playing these songs for strangers who actually listened.”</p>
+            <div class="by">A Sprout N Tell musician <span class="warn">Anonymous only</span> <button class="btn2">Copy</button></div></div>
+          <span class="ann">"No" answers never appear here; staff see them only on the person's reply.</span>
+        </div>
+        <p class="sub">Copy numbers (existing button) adds these lines to its summary, and only when at least one reply exists.</p>
+      </div>
+    </article>
+    <article class="frame">
+      <div class="frame-hd"><span>Event page · Outcomes tile</span><span>desktop</span></div>
+      <div class="frame-bd stack">
+        <div class="row"><span><b>Queer Social: Sober Hangout</b> <span class="sub">· Sep 25</span></span><span class="tag">Partner</span></div>
+        <div class="tbl-wrap"><table style="min-width:0">
+          <tbody>
+            <tr><td>Attendance</td><td class="mono">30</td><td><span class="tag">from host survey</span></td></tr>
+            <tr><td>New to their community</td><td>About half</td><td><span class="tag">from host survey</span></td></tr>
+            <tr><td>Quote</td><td colspan="2">“Having a real room with couches…” · Jonathan Winkles</td></tr>
+          </tbody>
+        </table></div>
+        <span class="ann">A survey number fills a blank box only. A number staff typed always wins (same rule as sign-in sheets).</span>
+      </div>
+    </article>
+  </div>
+</section>
+</main>
+
+<script>
+(function(){
+  var tabs=document.querySelectorAll('[data-tab]'), panels=document.querySelectorAll('[data-panel]');
+  function show(name){
+    tabs.forEach(function(t){t.setAttribute('aria-pressed', String(t.dataset.tab===name));});
+    panels.forEach(function(p){p.hidden = p.dataset.panel!==name;});
+  }
+  tabs.forEach(function(t){t.addEventListener('click',function(){show(t.dataset.tab);});});
+  var h=(location.hash||'').slice(1); if(['host','artist','send','crm'].indexOf(h)>-1) show(h);
+  document.querySelectorAll('.chip').forEach(function(c){
+    c.type='button';
+    c.addEventListener('click',function(){
+      var group=c.parentElement, multi=group.closest('.q') && /Tap all/.test(group.closest('.q').textContent);
+      if(!multi) group.querySelectorAll('.chip').forEach(function(o){ if(o!==c) o.setAttribute('aria-pressed','false'); });
+      c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed')!=='true'));
+    });
+  });
+})();
+</script>

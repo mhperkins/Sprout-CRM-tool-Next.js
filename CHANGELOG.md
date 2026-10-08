@@ -2,6 +2,26 @@
 
 ---
 
+## 2026-10-08: Impact survey for hosts and showcase artists, editable in the CRM
+
+App code (`af0e266`, merge `7f6903d`) + migration `sprout_impact_surveys` (applied) + org profile copy. `npm run build` passes. Effort: high (new tables, a public write path, Grant Metrics inputs). Ran on Opus 5.5.
+
+### What changed
+- **📝 Impact Survey page** (sidebar, after Grant Metrics), one survey each for Hosts and Showcase artists. **Edit questions** works like a Google Form: add, reorder, retype, options, rating rows, intro and thank-you text, live preview. Seven types: attendance per night, choose one, choose any, rating rows, 1 to 5, text, and testimonial (with "can we share this?" and "credit me as"). **Send** lists who should get a link (hosts on past Partner/Rental events; Showcase-tagged contacts on past events) with Copy email, Copy link, Mark sent and + Add someone. The CRM never emails anyone. **Replies** shows tallies, shareable quotes and every reply.
+- **Public `/survey/<token>`**: one private link per person; reopening it edits their answers. Each reply stores the questions it answered, so editing the survey never rewrites old replies. Staff get an alert email per reply.
+- **Grant Metrics**: a host's attendance answer fills a blank headcount (typed wins, then survey, then sign-in sheets), tagged "host survey"; shareable testimonials join "In their words".
+- **Tables**: `sprout_surveys` (questions; a missing row means the built-in defaults) and `sprout_survey_invites` (one link + answers per person). Authenticated-only RLS, verified in `pg_policies`.
+- **Org profile (Settings)**: mission, programs, population and main contact rewritten from the new website copy doc (social health, Bushwick HQ, the Directory, The Stoop, the Seed Fund). Contact = Danielle Efros Kastenbaum, Co-Founder & CEO.
+- **Wireframe**: `docs/wireframes/2026-10-08_impact-survey-wireframe.html`.
+
+### Why
+Grant applications need proof the space does what it says: that people gather, connect and get support. Hosts and artists are the best witnesses, and the survey has to stay short and easy to iterate.
+
+### Verified
+18 logic checks on the answer rules and headcount precedence; 9 checks against a local production build (bad link 404, reply saved, unknown nights dropped, quote without share answer rejected, edit keeps the reply date, reopen shows answers, page renders); test rows deleted. Public page at 390px: no sideways scroll. CRM page not clicked through by Claude (login wall).
+
+---
+
 ## 2026-10-06: Members page; Stripe membership invoices feed Grant Metrics
 
 App code (`8f53bb0`, merge `5b0610d`) + data. No migration (JSONB-only fields). `npm run build` passes. Effort: medium, high for the contact writes.

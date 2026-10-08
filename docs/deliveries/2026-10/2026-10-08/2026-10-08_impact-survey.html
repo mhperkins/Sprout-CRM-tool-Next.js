@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Impact Survey Delivery</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--ink:#030000;--paper:#F7F7F6;--white:#fff;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--cyan-d:#2a8ca0;--dim:#5f5f5c;--line:#e3e3dd}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Lato,Helvetica,Arial,sans-serif;padding:32px 16px}
+.slide{max-width:1180px;margin:0 auto;background:var(--white);border-radius:14px;overflow:hidden;box-shadow:0 10px 40px -18px rgba(0,0,0,.35)}
+.mast{background:var(--ink);color:#fff;padding:26px 34px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.mast h1{margin:0;font-size:34px;font-weight:900;letter-spacing:-.02em}
+.mast p{margin:6px 0 0;color:#cfcfc8;font-size:15px;max-width:60ch}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.b{font-family:"JetBrains Mono",monospace;font-size:12.5px;padding:5px 11px;border-radius:999px;font-weight:500}
+.b.acid{background:var(--acid);color:var(--ink)}.b.f{background:var(--fuchsia);color:#fff}.b.c{background:var(--cyan);color:var(--ink)}
+.rule{height:5px;background:var(--acid)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;padding:26px 34px}
+.card{border:1px solid var(--line);border-radius:10px;padding:18px;border-top:5px solid var(--cyan)}
+.card.f{border-top-color:var(--fuchsia)}.card.a{border-top-color:var(--acid)}.card.y{border-top-color:var(--banana)}
+.ic{font-size:24px}
+.card h3{margin:6px 0 8px;font-size:17px;font-weight:900}
+.card ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.55;color:#2c2c29}
+.foot{padding:0 34px 24px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--dim)}
+.mono{font-family:"JetBrains Mono",monospace}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="mast">
+    <div>
+      <h1>📝 Impact Survey</h1>
+      <p>A short survey for hosts and showcase artists that proves the space works, editable in the CRM like a Google Form and feeding Grant Metrics.</p>
+    </div>
+    <div class="badges"><span class="b acid">main</span><span class="b f">merge 7f6903d</span><span class="b c">af0e266</span></div>
+  </div>
+  <div class="rule"></div>
+  <div class="grid">
+    <div class="card"><div class="ic">✏️</div><h3>Edit like a Google Form</h3><ul>
+      <li>Add, reorder, retype and delete questions</li>
+      <li>7 types, incl. attendance per night and testimonial with share permission</li>
+      <li>Live preview; old replies keep the questions they answered</li></ul></div>
+    <div class="card f"><div class="ic">🔗</div><h3>One link per person</h3><ul>
+      <li>Public page at <span class="mono">/survey/&lt;token&gt;</span>, phone-first</li>
+      <li>Reopen the link to change answers</li>
+      <li>Alert email to Max on each reply</li></ul></div>
+    <div class="card a"><div class="ic">📬</div><h3>Send without auto-email</h3><ul>
+      <li>Suggests hosts of Partner/Rental nights and Showcase artists</li>
+      <li>Copy email, Copy link, Mark sent, + Add someone</li>
+      <li>Replies tab: tallies, shareable quotes, every reply</li></ul></div>
+    <div class="card y"><div class="ic">📈</div><h3>Grant Metrics</h3><ul>
+      <li>Host attendance fills blank headcounts (typed still wins)</li>
+      <li>Shareable testimonials join "In their words"</li>
+      <li>Org profile rewritten in the new social-health copy</li></ul></div>
+  </div>
+  <div class="foot">
+    <span>New tables <span class="mono">sprout_surveys</span> + <span class="mono">sprout_survey_invites</span> · logged-in-only access · 18 logic + 9 live checks passed</span>
+    <span>2026-10-08 · Effort: high · Opus 5.5</span>
+  </div>
+</div>
+</body>
+</html>
