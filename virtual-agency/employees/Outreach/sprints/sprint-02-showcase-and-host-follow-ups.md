@@ -32,8 +32,8 @@ They raised a hand for Sprout N Tell but have not been on a lineup. Invite each 
 ## 3. Decisions and open items
 
 - **Ethan Smestad:** not hosting. The Spread Love for Palestine benefit was too politically focused. Next action: let Ethan know kindly, due 2026-10-23.
-- **12-Step Group:** Bryce Reynolds leads it; Brooke Feingold facilitated the membership. Bryce isn't in the CRM yet. Get Bryce's contact info, then send the host impact survey.
-- **Community Game Night (5/26):** "Jesse's Community Week activity." Jesse gets the host impact survey once we confirm which Jesse it is.
+- **12-Step Group:** Bryce Reynolds leads it; Brooke Feingold facilitated the membership. Bryce is left off the survey for now.
+- **Community Game Night (5/26):** hosted by Jesse Rauch (`ind_jesse_rauch`, jesse.rauch@gmail.com). Marked Partner, so Jesse appears in the host impact survey's Send list.
 - **Society Sobriety (7/25):** left out of host follow-ups.
 
 ## 4. Rules
