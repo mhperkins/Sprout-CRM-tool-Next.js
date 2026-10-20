@@ -31,11 +31,6 @@ export async function POST(req) {
     return Response.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  // Honeypot: a hidden field real people never fill in.
-  if (!isBlank(body?.company_website)) {
-    return Response.json({ error: "Something went wrong. Please try again." }, { status: 400 });
-  }
-
   const answers = {};
   for (const [k, v] of Object.entries(body?.answers || {})) {
     if (ALLOWED.has(k) && !isBlank(v)) answers[k] = clean(v);
