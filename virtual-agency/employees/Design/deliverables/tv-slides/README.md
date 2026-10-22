@@ -129,3 +129,8 @@ dates come from the CRM (`sprout-crm` MCP `list_events`).
   `lineup-1-artists.html` (Tristan Baker, Arina Andrle, Liv Tyler), `lineup-2-artists.html`
   (Pepper Auerbach, Stephanie (Izile) Wade, Glenn Dungan), `lineup-3-music.html` (Andie Mechanic,
   Isabella Paris, Sean Jeffers). `lineup-2-music.html` removed. Welcome slide lost "(postponed from 8/28)".
+- **2026-10-22 (later):** Eyebrows now read "Sprout N Tell Vol. 5 x Buzzkill NYC"; Welcome got a
+  "Vol. 5 x Buzzkill NYC" line. New `04-birthday.html` (Russell's 34th birthday fundraiser for the
+  Seed Fund, Givebutter campaign 769178, opens Nov 1, $100,000 goal), placed after Our story. No QR
+  yet: the campaign is unpublished until Nov 1. Deck is 7 slides:
+  welcome, lineup x3, story, birthday, host.

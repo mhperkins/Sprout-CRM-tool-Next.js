@@ -14,7 +14,7 @@ import pillow_heif
 
 pillow_heif.register_heif_opener()
 HERE = Path(__file__).parent
-VOL = "Sprout N Tell Vol. 5"
+VOL = "Sprout N Tell Vol. 5 x Buzzkill NYC"
 
 # Bios are trimmed for reading across the room; full bios live in the program.
 SLIDES = [
