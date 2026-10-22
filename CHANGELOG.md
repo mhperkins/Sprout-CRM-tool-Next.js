@@ -2,6 +2,22 @@
 
 ---
 
+## 2026-10-22: Coming-soon page signed off on Mission; `/book` spam trap removed
+
+App code (`fd657c4`, merge `c83e77b`) + wireframe. No migration. `npm run build` passes. Effort: low.
+
+### What changed
+- **Coming-soon landing page** (`docs/wireframes/2026-10-13_coming-soon-options.html`): Mission summary chosen; Name + Email capture; Russell's section moved under the sign-up and turned into the birthday fundraiser CTA (launching 11/1/2026, starts the Sprout Fund) with a Donate button; Funders card removed; "Join the Sprout Community" card links to the Discord invite; Host button goes to `/book`; Oxford commas.
+- **`/book`**: removed the hidden "Company website" honeypot from the form, the route, and its CSS.
+
+### Why
+Max signed off on the page copy. The honeypot could be filled by Chrome autofill and silently reject real hosts, and the new page sends hosts straight to `/book`.
+
+### Verified
+Local production build: a request carrying the old honeypot field now gets the normal missing-fields reply; the field no longer renders on `/book`.
+
+---
+
 ## 2026-10-08: Impact survey for hosts and showcase artists, editable in the CRM
 
 App code (`af0e266`, merge `7f6903d`) + migration `sprout_impact_surveys` (applied) + org profile copy. `npm run build` passes. Effort: high (new tables, a public write path, Grant Metrics inputs). Ran on Opus 5.5.
