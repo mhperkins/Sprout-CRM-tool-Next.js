@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-10-22: Coming-soon page live at /coming-soon, with a launch-list sign-up
+
+Merge `5acfc47` (commit `76479de`), pushed and live (200). Built on a `coming-soon` worktree, merged and removed. Migration `sprout_site_signups` applied. Effort: medium.
+
+- **Public page `/coming-soon`** (`app/coming-soon/page.js`, `components/ComingSoon.jsx`): the Mission design Max signed off (Summary A, Middle layout): hero, "Get a note when it launches" sign-up, Russell's birthday fundraiser card (Donate), Discord + Host at Sprout cards, footer. Scoped `.cs-` styles, Lato. Checked at 390px and 1280px: no sideways scroll, no page errors.
+- **Sign-ups land in a new `sprout_site_signups` table**, never in contacts (authenticated-only RLS, explicit grants, unique on email). `app/api/coming-soon/route.js` validates name + email, caps 60/hour, answers a repeat email as "already on the list", and emails maxperkins@ on each sign-up (`notifySiteSignup`, running total included). A failed alert never fails a sign-up.
+- **Why a table, not contacts:** Max had not decided where sign-ups land; a separate list keeps junk out of the CRM and can be imported at launch.
+- **Tested** on a local production build; one test alert went to maxperkins@ and the test row was deleted.
+- **Next:** point sproutsociety.org at it, a tracked QR for the birthday slide, and the 11/1 Donate link swap.
+
 ## 2026-10-22: No fixed Sprout N Tell cadence; Buzzkill NYC logo on the TV title slide
 
 Merge `96b69dc` (commits `8c238e0`, `4feec81`), pushed. Built on a `drop-fourth-friday` worktree, merged and removed. No migration. Effort: low.

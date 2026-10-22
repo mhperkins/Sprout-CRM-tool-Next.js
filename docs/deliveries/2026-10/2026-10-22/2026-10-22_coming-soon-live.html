@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coming Soon Live</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap">
+<style>
+:root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--muted:#5f5f5b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Lato,Arial,sans-serif;padding:32px 16px}
+.slide{max-width:1100px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+.top{background:var(--ink);color:#fff;padding:26px 32px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center}
+.top h1{margin:0;font-size:28px;font-weight:900}
+.top p{margin:4px 0 0;color:#cfcfca}
+.badges{display:flex;flex-wrap:wrap;gap:8px}
+.b{font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;padding:6px 12px;background:var(--acid);color:var(--ink)}
+.b.f{background:var(--fuchsia);color:#fff}.b.c{background:var(--cyan)}
+.rule{height:5px;background:var(--acid)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;padding:28px 32px}
+.card{border-radius:10px;padding:20px;border-left:6px solid var(--ink);background:var(--paper)}
+.card .i{font-size:26px}
+.card h2{margin:6px 0 8px;font-size:18px;font-weight:900}
+.card p,.card li{margin:0;font-size:14.5px;line-height:1.55}
+.card ul{margin:0;padding-left:18px}
+.c1{border-color:var(--fuchsia)}.c2{border-color:var(--cyan)}.c3{border-color:var(--banana)}.c4{border-color:var(--acid)}
+code{font-size:13px;background:#ececea;padding:1px 5px;border-radius:4px}
+.foot{border-top:1px solid #ececea;padding:18px 32px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}
+.foot b{color:var(--ink)}
+</style></head><body>
+<div class="slide">
+  <div class="top">
+    <div><h1>🌱 Coming-soon page is live</h1><p>sprout-crm-tool-next-js.vercel.app/coming-soon · 2026-10-22</p></div>
+    <div class="badges"><span class="b">Merged + pushed</span><span class="b c">Live 200</span><span class="b f">Effort: medium</span></div>
+  </div>
+  <div class="rule"></div>
+  <div class="grid">
+    <div class="card c1"><div class="i">🖥</div><h2>The page</h2>
+      <p>The Mission design Max signed off: hero, launch sign-up, Russell's birthday fundraiser, Discord + Host cards, footer. Works at 390px and desktop.</p></div>
+    <div class="card c2"><div class="i">✉️</div><h2>Sign-ups</h2>
+      <p>Name + email save to the new <code>sprout_site_signups</code> table, never to contacts. Each one emails maxperkins@ with the running total. Repeat emails don't make a second row.</p></div>
+    <div class="card c3"><div class="i">🔒</div><h2>Safe by default</h2>
+      <ul><li>Staff-only read access (RLS + grants)</li><li>60 sign-ups/hour cap</li><li>A failed alert never fails a sign-up</li></ul></div>
+    <div class="card c4"><div class="i">➡️</div><h2>Next</h2>
+      <ul><li>Point sproutsociety.org at it</li><li>Tracked QR on the birthday slide</li><li>11/1: birthday Donate link, fundraiser on top</li></ul></div>
+  </div>
+  <div class="foot">
+    <span><b>Branch</b> main · <b>Merge</b> 5acfc47 · <b>Commit</b> 76479de</span>
+    <span>Files: app/coming-soon/page.js · components/ComingSoon.jsx · app/api/coming-soon/route.js · lib/notify.js · migration sprout_site_signups</span>
+  </div>
+</div>
+</body></html>
