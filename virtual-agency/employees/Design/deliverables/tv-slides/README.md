@@ -124,3 +124,8 @@ dates come from the CRM (`sprout-crm` MCP `list_events`).
   fill the screen. Replaces `02-lineup.html` + `03-lineup-2.html`; story and host are now `05`/`06`.
   Each lineup header carries the tracked program QR `industry-2026-digital-program`
   (-> `/industry-program.html`). Christina added to that program page.
+- **2026-10-22 (Sprout N Tell Vol. 5 x Buzzkill NYC):** Lineup slides rebuilt with `build_lineup.py`
+  (edit its `VOL` and `SLIDES` list, run it, then re-embed into `public/sprout-tv.html`).
+  `lineup-1-artists.html` (Tristan Baker, Arina Andrle, Liv Tyler), `lineup-2-artists.html`
+  (Pepper Auerbach, Stephanie (Izile) Wade, Glenn Dungan), `lineup-3-music.html` (Andie Mechanic,
+  Isabella Paris, Sean Jeffers). `lineup-2-music.html` removed. Welcome slide lost "(postponed from 8/28)".
