@@ -9,6 +9,9 @@ Merge `96b69dc` (commits `8c238e0`, `4feec81`), pushed. Built on a `drop-fourth-
 - **"Fourth Friday of every month" removed** (Max: that cadence is over) from the TV welcome slide and the public `/showcase` form (intro + thank-you). Old wireframes, tutorials and the Comms work log keep it as history.
 - **Buzzkill NYC wordmark on slide 01**, beside the Sprout logo with a "×". No original file exists in the repo, storage, hello@ Drive or Rachel's emails, so it was cut from a 374×213 screenshot Max supplied: tagline dropped, orange keyed to transparent, mint kept (~575px wide). Rendered at 1920×1080 and 951×877. Swap in an original file if Rachel sends one.
 - Also fixed a pronoun in the entry below: Pepper Auerbach signs as they/them.
+- **Birthday slide:** "Seed Fund: grants for the community builders and initiatives bringing people together" highlighted in banana (`8eb1266`, committed direct to main per Max).
+- **Host QR codes → `/book`:** the three "Host Interest Form" codes in `qr_codes` (inside/outside/social) now redirect to the CRM's hosting form instead of the Google Form; verified on both tracker hosts. Test requests added 4 scans to the inside code (not removed).
+- **Birthday QR deferred:** the coming-soon page is not live yet; building it is next.
 
 ## 2026-10-22: Vol. 5 x Buzzkill NYC show prep: program, TV deck, birthday slide
 
