@@ -98,8 +98,7 @@ export default function ShowcaseForm() {
           <div className="pt-hero">
             <h1 className="pt-h1">Got it, {d.name.split(" ")[0] || "thanks"}.</h1>
             <p className="pt-lead">
-              We read every application before each showcase and write back either way. Sprout N Tell
-              usually runs the fourth Friday of the month, and we will come back to you with date options.
+              We read every application before each showcase and write back either way. We will come back to you with date options.
             </p>
           </div>
           <div className="pt-note pt-good">
@@ -116,7 +115,7 @@ export default function ShowcaseForm() {
         <div className="pt-hero">
           <h1 className="pt-h1">Showcase at Sprout N Tell</h1>
           <p className="pt-lead">
-            A music and art showcase in Bushwick, usually the fourth Friday of every month. Tell us what
+            A music and art showcase in Bushwick. Tell us what
             you would share and how to hear or see your work. We will write back with date options.
           </p>
         </div>
