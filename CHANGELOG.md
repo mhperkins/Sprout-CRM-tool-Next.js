@@ -2,13 +2,21 @@
 
 ---
 
+## 2026-10-22: No fixed Sprout N Tell cadence; Buzzkill NYC logo on the TV title slide
+
+Merge `96b69dc` (commits `8c238e0`, `4feec81`), pushed. Built on a `drop-fourth-friday` worktree, merged and removed. No migration. Effort: low.
+
+- **"Fourth Friday of every month" removed** (Max: that cadence is over) from the TV welcome slide and the public `/showcase` form (intro + thank-you). Old wireframes, tutorials and the Comms work log keep it as history.
+- **Buzzkill NYC wordmark on slide 01**, beside the Sprout logo with a "×". No original file exists in the repo, storage, hello@ Drive or Rachel's emails, so it was cut from a 374×213 screenshot Max supplied: tagline dropped, orange keyed to transparent, mint kept (~575px wide). Rendered at 1920×1080 and 951×877. Swap in an original file if Rachel sends one.
+- Also fixed a pronoun in the entry below: Pepper Auerbach signs as they/them.
+
 ## 2026-10-22: Vol. 5 x Buzzkill NYC show prep: program, TV deck, birthday slide
 
 Merges `020b5dd`, `80d96bb`, `3258dc0` (pushed, confirmed live) + program entry data. No migration. Effort: medium.
 
 ### What changed
 - **Program bios checked** against the "You're in" emails: 9 of 12 performers in (Sean Jeffers' Vol. 4 entry copied over). Missing: Emily De Lima, Warren Carrington, Liara Neja (reminder drafted in Gmail for Max). Journey C. and Christopher Brisita dropped out.
-- **Program entries cleaned:** Pepper Auerbach's 7 submissions merged into one; his HEIC photo converted to JPG. Stephanie Wade's Instagram corrected to `@wadesinpaint`.
+- **Program entries cleaned:** Pepper Auerbach's 7 submissions merged into one; their HEIC photo converted to JPG. Stephanie Wade's Instagram corrected to `@wadesinpaint`.
 - **Digital program** (`public/sprout-sign-in.html?welcome`) rebuilt for "Sprout N Tell Vol. 5 x Buzzkill NYC" from the program entries.
 - **TV deck** (`public/sprout-tv.html`) now 7 slides: Vol. 5 titles, three new lineup slides, and a new **Russell's 34th birthday fundraiser** slide (Seed Fund, $100,000 goal, opens Nov 1; no QR until the Givebutter page is published). New `tv-slides/build_lineup.py` rebuilds lineup slides from a list.
 - Vol. 5 event got a **TV Slide Show** link.
