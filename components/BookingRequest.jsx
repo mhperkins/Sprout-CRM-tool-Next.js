@@ -17,7 +17,6 @@ const REQUIRED = FIELDS.filter((f) => f.required);
 
 export default function BookingRequest() {
   const [data, setData] = useState({});
-  const [hp, setHp] = useState("");         // honeypot
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [done, setDone] = useState(null);   // { token, url }
@@ -35,7 +34,7 @@ export default function BookingRequest() {
       const res = await fetch("/api/portal/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers: data, company_website: hp }),
+        body: JSON.stringify({ answers: data }),
       });
       const json = await res.json();
       if (!res.ok) { setErr(json?.error || "Something went wrong. Please try again."); setBusy(false); return; }
@@ -97,9 +96,6 @@ export default function BookingRequest() {
 
         <div className="pt-card pt-open">
           <FieldList fields={FIELDS} data={data} setField={setField} scope="request" />
-          <label className="pt-hp" aria-hidden="true">
-            Company website<input tabIndex={-1} autoComplete="off" value={hp} onChange={(e) => setHp(e.target.value)} />
-          </label>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>

@@ -113,7 +113,6 @@ export const PORTAL_CSS = `
   .pt-err { background:#fff; border-left:5px solid var(--fuchsia); border-radius:0 8px 8px 0; padding:14px 16px; font-size:14px; color:var(--ink); margin-bottom:16px; }
 
   .pt-foot { text-align:center; font-size:12px; color:var(--g500); padding:34px 20px; line-height:1.7; }
-  .pt-hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
 
   @media (max-width:600px) {
     .pt-h1 { font-size:26px; }
