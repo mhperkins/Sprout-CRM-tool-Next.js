@@ -2,6 +2,25 @@
 
 ---
 
+## 2026-10-22: Vol. 5 x Buzzkill NYC show prep: program, TV deck, birthday slide
+
+Merges `020b5dd`, `80d96bb`, `3258dc0` (pushed, confirmed live) + program entry data. No migration. Effort: medium.
+
+### What changed
+- **Program bios checked** against the "You're in" emails: 9 of 12 performers in (Sean Jeffers' Vol. 4 entry copied over). Missing: Emily De Lima, Warren Carrington, Liara Neja (reminder drafted in Gmail for Max). Journey C. and Christopher Brisita dropped out.
+- **Program entries cleaned:** Pepper Auerbach's 7 submissions merged into one; his HEIC photo converted to JPG. Stephanie Wade's Instagram corrected to `@wadesinpaint`.
+- **Digital program** (`public/sprout-sign-in.html?welcome`) rebuilt for "Sprout N Tell Vol. 5 x Buzzkill NYC" from the program entries.
+- **TV deck** (`public/sprout-tv.html`) now 7 slides: Vol. 5 titles, three new lineup slides, and a new **Russell's 34th birthday fundraiser** slide (Seed Fund, $100,000 goal, opens Nov 1; no QR until the Givebutter page is published). New `tv-slides/build_lineup.py` rebuilds lineup slides from a list.
+- Vol. 5 event got a **TV Slide Show** link.
+
+### Why
+The show is 10/23; the program page and TV still showed Vol. 4.
+
+### Verified
+Slides rendered at 1920×1080 and 951×877 with no overflow; program page at 390px with all photos loading and no sideways scroll; both URLs polled live after each push.
+
+---
+
 ## 2026-10-22: Coming-soon page signed off on Mission; `/book` spam trap removed
 
 App code (`fd657c4`, merge `c83e77b`) + wireframe. No migration. `npm run build` passes. Effort: low.

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vol. 5 Show Prep</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--cyan-deep:#2a8ca0;--muted:#6b6b68;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',Arial,sans-serif;background:var(--paper);color:var(--ink);padding:28px 16px}
+  .slide{max-width:1100px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.12)}
+  .top{background:var(--ink);color:#fff;padding:28px 32px;border-bottom:6px solid var(--acid)}
+  .eyebrow{font-size:12px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:var(--acid)}
+  h1{font-size:clamp(26px,4vw,38px);font-weight:900;line-height:1.1;margin-top:8px}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .b{font-size:12px;font-weight:900;padding:6px 12px;border-radius:999px;background:#222;color:#fff;font-family:ui-monospace,Consolas,monospace}
+  .b.acid{background:var(--acid);color:var(--ink)} .b.fu{background:var(--fuchsia)} .b.cy{background:var(--cyan);color:var(--ink)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;padding:24px 32px}
+  .card{border-radius:10px;padding:18px;background:var(--paper);border-left:6px solid var(--cyan)}
+  .card.f{border-color:var(--fuchsia)} .card.b2{border-color:var(--banana)} .card.a{border-color:var(--acid)}
+  .card .ic{font-size:24px}
+  .card h3{font-size:17px;font-weight:900;margin:6px 0}
+  .card p,.card li{font-size:14px;line-height:1.5;color:#2b2b29}
+  .card ul{padding-left:18px}
+  .foot{padding:16px 32px 24px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 20px}
+  .foot code{font-family:ui-monospace,Consolas,monospace;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div class="eyebrow">Delivered · 2026-10-22 · Sprout CRM</div>
+    <h1>Sprout N Tell Vol. 5 x Buzzkill NYC: program, TV deck, birthday slide</h1>
+    <div class="badges">
+      <span class="b acid">main</span>
+      <span class="b">020b5dd</span><span class="b">80d96bb</span><span class="b">3258dc0</span>
+      <span class="b fu">pushed + live</span><span class="b cy">effort: medium</span>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card"><div class="ic">📋</div><h3>Bios checked</h3>
+      <p>9 of 12 performers in. Sean's Vol. 4 entry reused. Missing: Emily De Lima, Warren Carrington, Liara Neja (reminder drafted). Journey and Christopher dropped out.</p></div>
+    <div class="card a"><div class="ic">🧹</div><h3>Entries cleaned</h3>
+      <ul><li>Pepper: 7 submissions merged into 1</li><li>Pepper's HEIC photo now JPG</li><li>Stephanie: <b>@wadesinpaint</b></li></ul></div>
+    <div class="card f"><div class="ic">📱</div><h3>Digital program</h3>
+      <p>"Welcome to Sprout N Tell Vol. 5 x Buzzkill NYC": 6 artists, 3 musicians, full bios and tip links. Checked at 390px.</p></div>
+    <div class="card"><div class="ic">📺</div><h3>TV deck, 7 slides</h3>
+      <p>Welcome · Artists ×2 · Music · Our story · Birthday · Host. New <code>build_lineup.py</code> rebuilds lineups from a list.</p></div>
+    <div class="card b2"><div class="ic">🎂</div><h3>Russell's birthday slide</h3>
+      <p>Happy 34th Birthday, Russell. Seed Fund, $100,000 goal, opens Nov 1. No QR until the Givebutter page is published.</p></div>
+    <div class="card f"><div class="ic">🔗</div><h3>Links</h3>
+      <p>Vol. 5 event: TV Slide Show link. QR targets: <code>/sprout-sign-in.html</code> and <code>?welcome</code>.</p></div>
+  </div>
+  <div class="foot">
+    <span>Live: <code>sprout-crm-tool-next-js.vercel.app/sprout-tv.html</code></span>
+    <span>Next: Squarespace coming-soon snippet on Max's go</span>
+  </div>
+</div>
+</body>
+</html>
