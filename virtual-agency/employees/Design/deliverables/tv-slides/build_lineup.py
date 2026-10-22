@@ -29,7 +29,7 @@ SLIDES = [
     ("lineup-2-artists.html", "Tonight's Artists", "a-fuchsia", [
         ("Pepper Auerbach", "@iwasateenagepepper", "center 30%", "1792602464009_q6bw5m.heic",
          "Pieces tonight: “Blessed (with) Memories”, “Spirit in the Sky”, “NightVisionary” and “MY BRAIN ITCHES!”"),
-        ("Stephanie (Izile) Wade", "@wadesinpaimt", "center 30%", "1792605165547_hr7cxh.jpg",
+        ("Stephanie (Izile) Wade", "@wadesinpaint", "center 30%", "1792605165547_hr7cxh.jpg",
          "Raised in the woods of the rural South, but moved to Brooklyn 20 years ago chasing her phoenix from ashes. Exploring various media including acrylic, watercolor, and oil, always with a mind towards the playful and fantastical."),
         ("Glenn Dungan", "@whereisglennnow", "center 30%", "1792605685346_1os51y.jpg",
          "Glenn Dungan is a 3D artist and writer based in Brooklyn, NYC. His work explores the architecture of dreams: the impossible spaces our minds construct while we sleep and the hidden logic that makes them feel real."),
