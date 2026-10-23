@@ -43,6 +43,7 @@ const CSS = `
 .sb-done{background:#fff;border-radius:10px;padding:26px 22px;border-left:6px solid var(--acid)}
 .sb-done h2{margin:0 0 8px;font-size:24px;font-weight:900}
 .sb-done p{margin:0;font-size:16px;line-height:1.55}
+.sb-link{display:inline-block;margin-top:16px;text-decoration:none}
 .sb-foot{font-size:13px;color:#6b6b67;margin-top:22px;line-height:1.6}
 .sb-foot a{color:var(--ink)}
 `;
@@ -67,7 +68,7 @@ export default function SubmitList() {
       });
       const out = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(out.error || "Something went wrong. Please try again.");
-      setState({ kind: "done", already: !!out.already });
+      setState({ kind: "done", already: !!out.already, sent: !!out.form_sent, url: out.form_url || "" });
     } catch (err) {
       setState({ kind: "err", text: err.message });
     }
@@ -82,13 +83,20 @@ export default function SubmitList() {
         <p className="sb-eyebrow">Sprout N Tell · Call for submissions</p>
         <h1>Show your work at Sprout N Tell.</h1>
         <p className="sb-lede">
-          Artists and musicians: leave your email and we'll send you the submission form for an upcoming show.
+          Artists and musicians: leave your email and we'll send you the submission form right away.
         </p>
 
         {state.kind === "done" ? (
           <div className="sb-done" aria-live="polite">
-            <h2>{state.already ? "You're already on the list." : "You're on the list!"}</h2>
-            <p>Watch your inbox: we'll email you the submission form soon.</p>
+            <h2>{state.already ? "You're already on the list." : "Check your inbox!"}</h2>
+            <p>
+              {state.sent
+                ? "We just emailed you the submission form. You can also open it right now:"
+                : state.url
+                  ? "Here is the submission form:"
+                  : "We'll email you the submission form soon."}
+            </p>
+            {state.url && <a className="sb-go sb-link" href={state.url}>Open the submission form</a>}
           </div>
         ) : (
           <form onSubmit={submit} noValidate>

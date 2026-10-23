@@ -17,6 +17,7 @@ import {
   deleteShowcaseApplication,
 } from "../lib/services";
 import { showcaseLinks, showcaseInstagramUrl, showcaseToText, splitName } from "../lib/showcaseForm";
+import { OpenCallGallery } from "./GalleryEntries";
 
 const SA_STYLES = `
 .sa{--line:#E3E3DD;--sunk:#F1F1EC;--dim:#5F5F57;--faint:#9A9A90;--ok:#15804A;--ok-bg:#E4F3EA;--crit:#B3005F;--crit-bg:#FBE6F1;--warn:#8A6100;--warn-bg:#FAF0D6;}
@@ -69,6 +70,7 @@ const TABS = [
   { id: "new", label: "New" },
   { id: "accepted", label: "Accepted" },
   { id: "passed", label: "Passed" },
+  { id: "gallery", label: "Gallery (open call)" },
 ];
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -353,12 +355,14 @@ export default function ShowcaseApplications({
       <div className="sa-tabs">
         {TABS.map((t) => (
           <button key={t.id} className="sa-tab" aria-pressed={tab === t.id} onClick={() => setTab(t.id)}>
-            {t.label}<span className="n">{counts[t.id]}</span>
+            {t.label}{counts[t.id] != null && <span className="n">{counts[t.id]}</span>}
           </button>
         ))}
       </div>
 
-      {loading ? (
+      {tab === "gallery" ? (
+        <OpenCallGallery events={events} showToast={showToast} />
+      ) : loading ? (
         <div className="sa-empty"><b>Loading…</b></div>
       ) : shown.length === 0 ? (
         <div className="sa-empty">
