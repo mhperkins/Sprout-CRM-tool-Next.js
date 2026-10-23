@@ -65,7 +65,7 @@ html = f"""<!DOCTYPE html>
   .body{{flex:1; min-height:0; display:grid; grid-template-columns:min(34vw,60vh) minmax(0,1fr); gap:min(2vw,3.5vh);}}
   .host{{display:flex; flex-direction:column; min-height:0;}}
   .art{{flex:1 1 0; min-height:0; display:flex; align-items:flex-start; justify-content:flex-start;}}
-  .art img{{width:100%; height:auto; max-height:100%; object-fit:contain; display:block; border-radius:min(1vw,1.8vh);}}
+  .art img{{height:100%; width:auto; max-width:100%; object-fit:contain; display:block; border-radius:min(1vw,1.8vh);}}
   .host .name{{font-size:min(2.2vw,3.9vh); font-weight:900; margin-top:min(.8vw,1.4vh);}}
   .host .handle{{font-size:min(1.5vw,2.7vh); font-weight:900; color:var(--banana);}}
   .host p{{font-size:min(1.55vw,2.75vh); line-height:1.35; color:#e8e8e4; margin-top:min(.4vw,.7vh);}}
@@ -93,7 +93,7 @@ html = f"""<!DOCTYPE html>
     <div class="host">
       <div class="art"><img src="{photo}" alt="Buzzkill NYC" /></div>
       <div class="name">Buzzkill NYC <span class="handle">@buzzkillnyc</span></div>
-      <p>Free and low-cost art gatherings and workshops for the sober and sober-curious community.</p>
+      <p>Hey! This shindig is co-hosted by Buzzkill NYC! We organize free and low-cost art gatherings and workshops for people in the sober / sober-curious community. You don’t have to be sober to come, just be open to socializing without substances. Check us out at our links to stay tuned for future events!</p>
     </div>
     <div class="qrs">
       <div class="qcard learn">
