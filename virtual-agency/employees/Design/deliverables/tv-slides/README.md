@@ -143,3 +143,7 @@ dates come from the CRM (`sprout-crm` MCP `list_events`).
   (built by `build_call.py`): co-host card + a call for submissions with the tracked QR
   `new-sprout-sign-in-2026-call-for-submissions` -> `/submit` (sign-ups in `sprout_submission_list`).
   Deck: welcome, buzzkill-call, lineup x6, story, birthday, host (11 slides).
+- **2026-10-23 (evening):** `buzzkill-call.html` redesigned per Max: full uncropped logo; right side
+  = two compact QR cards at the bottom: "Learn more about Buzzkill" (tracked
+  `new-sprout-sign-in-2026-buzzkill-linktree` -> linktr.ee/buzzkillnyc) above "Submit your work to
+  showcase in future Buzzkill x Sprout Society shows." (tracked call-for-submissions -> /submit).
