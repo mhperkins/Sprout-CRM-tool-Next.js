@@ -2,6 +2,13 @@
 
 ---
 
+## 2026-10-23 (night): Buzzkill slide uses their program bio; Instagram list on the event
+
+Merge `e960817` (commit `381120c`), pushed and live. One `sprout_events` notes write. Effort: low.
+
+- The Buzzkill TV slide now shows the full bio Buzzkill sent through the program form; the logo shrinks to the height the bio leaves.
+- Added an INSTAGRAMS block (artists, music, vendors, co-host; not Sprout Society) to the top of the Vol. 5 event's Notes; the existing notes are kept below it.
+
 ## 2026-10-23 (night): Two more Vol. 5 vendors
 
 Merge `9a212b0` (commit `7a4ae04`), pushed and live. Effort: low.
