@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-10-23 (later): Call-for-submissions list + Buzzkill co-host slide
+
+Merge `dc6163f` (commit `42e317f`), pushed and live. Migration `sprout_submission_list` applied. One `qr_codes` row added. Effort: medium.
+
+- **New public page `/submit`** (`app/submit/page.js`, `components/SubmitList.jsx`, `app/api/submit-list/route.js`): name, email, Music / Art / Something else, optional Instagram. Copy: leave your email and we'll send you the submission form.
+- **Storage (Max's pick): a new `sprout_submission_list` table**, kept out of contacts like the coming-soon list. Columns: name, email, role, instagram, source, `sent_form_at` (to mark who got the form), created_at. Unique on lower(email), authenticated-only RLS, explicit grants. Each sign-up emails maxperkins@ (`notifySubmissionSignup`, Reply-To the person). Hourly cap 60; a repeat email answers "already on the list".
+- **Buzzkill NYC has its own TV slide** (`buzzkill-call.html`, built by `build_call.py`): co-host card + a banana Call for Submissions panel with the tracked QR `new-sprout-sign-in-2026-call-for-submissions` -> `/submit`. It sits right after Welcome. Jillian Howery is alone on the vendors slide. Deck = 11 slides.
+- **Program:** Buzzkill moved from Tonight's Vendors to a new "Co-hosted by" section, with a yellow call-for-submissions link to `/submit`.
+- **Tested:** validation errors, a real insert, duplicate handling (test row deleted; one test alert went to maxperkins@); `/submit` and the program at 390px with no sideways scroll; the slide at 1920x1080 and 951x877 with no overflow; live QR 302s to `/submit`.
+
 ## 2026-10-23: Late Vol. 5 bios on the TV deck and program, plus a vendors section
 
 Merge `7667aec` (commits `216460e`, `3818b98`), pushed and confirmed live. Built on a `vol5-new-bios` worktree, merged and removed. Effort: medium.
