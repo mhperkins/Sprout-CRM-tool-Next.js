@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gallery Form Delivery</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#030000;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Lato,system-ui,sans-serif;background:var(--ink);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px}
+.slide{max-width:1100px;width:100%}
+.eyebrow{color:var(--fuchsia);font-weight:900;letter-spacing:.3em;text-transform:uppercase;font-size:13px}
+h1{font-size:clamp(28px,4.4vw,48px);font-weight:900;margin:8px 0 6px;line-height:1.1}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 28px}
+.badge{border-radius:999px;padding:6px 14px;font-weight:900;font-size:13px}
+.b1{background:var(--acid);color:var(--ink)}.b2{background:#222;border:1px solid #444}.b3{background:var(--fuchsia)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.card{background:#141212;border-radius:14px;padding:20px;border-left:6px solid var(--cyan)}
+.card.f{border-color:var(--fuchsia)}.card.y{border-color:var(--banana)}.card.a{border-color:var(--acid)}
+.card h3{font-size:18px;font-weight:900;margin-bottom:8px}
+.card p{color:#d8d8d4;font-size:15px;line-height:1.5}
+code{background:#262222;border-radius:4px;padding:1px 5px;font-size:13px}
+.icon{font-size:26px;margin-bottom:8px}
+</style></head><body><div class="slide">
+<div class="eyebrow">Sprout CRM · Delivery · 2026-10-23</div>
+<h1>Gallery form in the CRM + Buzzkill slide</h1>
+<div class="meta"><span class="badge b1">main · dfe4feb · 98bde26</span><span class="badge b2">migration sprout_gallery_form_tables</span><span class="badge b3">Live</span></div>
+<div class="grid">
+ <div class="card f"><div class="icon">🖼️</div><h3>/gallery form</h3><p>Replaces the Google Form: 1 to 4 pieces with size, medium, price, photo, plus hang-ready and bio. Artists can edit what they sent.</p></div>
+ <div class="card y"><div class="icon">📬</div><h3>Auto-send</h3><p>"Send me the form" on /submit now emails the open-call gallery link right away and shows it on screen.</p></div>
+ <div class="card"><div class="icon">🗂️</div><h3>In the CRM</h3><p>Gallery tile on every event. Showcase › Gallery (open call) lists waiting submissions and the email list; move each onto a show.</p></div>
+ <div class="card a"><div class="icon">🐝</div><h3>Buzzkill slide</h3><p>Full logo, "Learn more about Buzzkill" Linktree QR, and the new call-for-submissions title. Fixed the looping QR.</p></div>
+</div></div></body></html>

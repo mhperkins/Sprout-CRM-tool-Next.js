@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-10-23 (evening): Gallery submission form in the CRM, auto-sent from /submit; Buzzkill slide redesign
+
+Merges `dfe4feb` (commit `227f03f`) and `98bde26` (commit `45fe4d7`), pushed and live. Migration `sprout_gallery_form_tables` applied; two `qr_codes` writes. Effort: medium.
+
+- **Native gallery form** replaces the Gallery Art Submission Google Form: `/gallery/<token>` (`components/GalleryForm.jsx`, `app/api/gallery/[token]`, `lib/galleryForm.js`, `lib/galleryDb.js`). Same questions as the Google Form, structured: name, email, Instagram, website, 1 to 4 pieces (title, width x height, medium, price, photo), hang-ready, would share more, statement, notes. Private edit key per artist, photos to `event-portal-files`, alert to maxperkins@ on each send/edit.
+- **Two kinds of link:** one per event (new **Gallery** tile + popup on the event page, like Program) and one standing **open-call** link (`glf_open_call`). Max chose the open call because no upcoming Sprout N Tell exists yet.
+- **`/submit` now emails the open-call link automatically** from hello@ (Reply-To Max), stamps `sent_form_at`, and shows an "Open the submission form" button on the thank-you screen. A repeat address is not emailed twice.
+- **Showcase page > Gallery (open call) tab:** the open-call link, submissions waiting for a show (a dropdown puts each on an event's Gallery tile), and the `/submit` email list with who got the form.
+- **Fixed the call-for-submissions QR:** its destination had been set to its own tracking URL (redirect loop); set back to `/submit`.
+- **Buzzkill TV slide redesign (Max's asks):** full uncropped logo; right side = two compact QR cards at the bottom: "Learn more about Buzzkill" (new tracked code `new-sprout-sign-in-2026-buzzkill-linktree` -> linktr.ee/buzzkillnyc) above "Submit your work to showcase in future Buzzkill x Sprout Society shows."
+- **Tested** on a local production build: bad link, missing fields, off-bucket photo dropped, edit-key checks, edit, and the auto-send (to maxperkins+test@). Test rows deleted. Form checked at 390px and 1280px; slide at 1920x1080 and 951x877.
+
 ## 2026-10-23 (later): Call-for-submissions list + Buzzkill co-host slide
 
 Merge `dc6163f` (commit `42e317f`), pushed and live. Migration `sprout_submission_list` applied. One `qr_codes` row added. Effort: medium.
