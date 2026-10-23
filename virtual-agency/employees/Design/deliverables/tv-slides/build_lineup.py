@@ -52,10 +52,8 @@ SLIDES = [
         ("Liara Neja", "@liara_neja", "center 30%", "1792700463469_6rfnzf.jpeg",
          "Liara Neja is a Bronx born singer-songwriter blending folk-inspired guitar with soulful vocals. Currently a student at the Brooklyn College Conservatory of Music, she’s been crafting her songwriting voice since middle school."),
     ]),
-    # "Something else" submissions show as vendors.
+    # "Something else" submissions show as vendors. Buzzkill (co-host) has its own slide: build_call.py.
     ("lineup-6-vendors.html", "Tonight's Vendors", "a-banana", [
-        ("Buzzkill NYC", "@buzzkillnyc", "center", "1792698418502_tamvfr.jpeg",
-         "This shindig is co-hosted by Buzzkill NYC! We organize free and low-cost art gatherings and workshops for people in the sober / sober-curious community."),
         ("Jillian Howery", "@terrafinajewelry", "center", None,
          "Handmade tiny terrarium earrings!"),
     ]),
