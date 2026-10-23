@@ -34,13 +34,30 @@ SLIDES = [
         ("Glenn Dungan", "@whereisglennnow", "center 30%", "1792605685346_1os51y.jpg",
          "Glenn Dungan is a 3D artist and writer based in Brooklyn, NYC. His work explores the architecture of dreams: the impossible spaces our minds construct while we sleep and the hidden logic that makes them feel real."),
     ]),
-    ("lineup-3-music.html", "Tonight's Music", "a-cyan", [
+    ("lineup-3-artists.html", "Tonight's Artists", "a-fuchsia", [
+        ("Emily De Lima", "@emily.delima", "center 30%", "1792689431587_rmempr.jpg",
+         "I am a Brazilian-American artist and designer based in Queens, NYC, working across various mediums. My work draws from mythology, folklore, science, and literature to explore questions of origin, identity, healing, and the ways people make meaning of the world."),
+        ("Max Sibner", "@adventureskept", "center 30%", "1792767143082_s6fqua.jpeg",
+         "I like to capture images of everyday moments around the world, and bring a kind of empathetic curiosity to seemingly mundane scenes!"),
+    ]),
+    ("lineup-4-music.html", "Tonight's Music", "a-cyan", [
         ("Andie Mechanic", "@andiemechanic.music", "center 30%", "1792534210097_opcnzo.jpeg",
          "Drawing inspiration from the great singer-songwriters of the 1960s while embracing a contemporary voice, Andie Mechanic creates genre-blending pop music that explores the beauty, absurdity, and vulnerability of being human."),
         ("Isabella Paris", "@isabellaparismusic", "center 30%", "1792638990834_6uv9p8.png",
          "Isabella Paris is a folk singer-songwriter who writes story-driven, lyric-heavy music that addresses life’s hardships. She is fueled by imagery and detail-oriented visuals to bring her story to life."),
+    ]),
+    ("lineup-5-music.html", "Tonight's Music", "a-cyan", [
         ("Sean Jeffers", "@seanrjeffers", "center 30%", "evt_mrkzhez3qdj3/program/1789084169852_oo30y5.jpeg",
          "Once described by Steve Earle as “Almost like musical theater – except that I like it”, Sean Jeffers’ style is built upon character driven songs with singer-songwriter aesthetics."),
+        ("Liara Neja", "@liara_neja", "center 30%", "1792700463469_6rfnzf.jpeg",
+         "Liara Neja is a Bronx born singer-songwriter blending folk-inspired guitar with soulful vocals. Currently a student at the Brooklyn College Conservatory of Music, she’s been crafting her songwriting voice since middle school."),
+    ]),
+    # "Something else" submissions show as vendors.
+    ("lineup-6-vendors.html", "Tonight's Vendors", "a-banana", [
+        ("Buzzkill NYC", "@buzzkillnyc", "center", "1792698418502_tamvfr.jpeg",
+         "This shindig is co-hosted by Buzzkill NYC! We organize free and low-cost art gatherings and workshops for people in the sober / sober-curious community."),
+        ("Jillian Howery", "@terrafinajewelry", "center", None,
+         "Handmade tiny terrarium earrings!"),
     ]),
 ]
 
@@ -60,9 +77,14 @@ def photo(src):
 
 def card(name, handle, pos, src, bio):
     e = lambda s: html.escape(s, quote=True)
+    if src:
+        pic = f'<img src="{photo(src)}" alt="{e(name)}" style="object-position:{pos};" />'
+    else:
+        initials = "".join(w[0] for w in name.split()[:2]).upper()
+        pic = f'<div class="ph">{e(initials)}</div>'
     return f"""      <div class="card">
         <div class="left">
-          <img src="{photo(src)}" alt="{e(name)}" style="object-position:{pos};" />
+          {pic}
           <div class="name">{e(name)}</div>
           <div class="handle hl">{e(handle)}</div>
         </div>
@@ -70,6 +92,13 @@ def card(name, handle, pos, src, bio):
       </div>
 """
 
+
+EXTRA_CSS = """  .a-banana .eyebrow, .a-banana .hl{color:var(--banana);}
+  .a-banana .rule{background:var(--banana);}
+  .left .ph{flex:1 1 0; min-height:0; width:100%; border-radius:min(1vw,1.8vh); background:#222;
+            display:flex; align-items:center; justify-content:center;
+            font-size:min(6vw,10vh); font-weight:900; color:var(--banana);}
+"""
 
 template = (HERE / "lineup-1-artists.html").read_text(encoding="utf-8")
 head, rest = template.split('    <div class="cards">\n', 1)
@@ -81,6 +110,8 @@ for fname, title, accent, acts in SLIDES:
     h = re.sub(r"<h2>[^<]*</h2>", f"<h2>{html.escape(title, quote=True)}</h2>", h)
     h = re.sub(r"<title>[^<]*</title>", f"<title>Sprout Society: {html.escape(title, quote=True)}</title>", h)
     h = re.sub(r"Sprout N Tell Vol\. \d+ \([0-9-]+\)", f"{VOL} (2026-10-23)", h)
+    if ".left .ph" not in h:
+        h = h.replace("</style>", EXTRA_CSS + "</style>", 1)
     body = "".join(card(*a) for a in acts)
     out = h + '    <div class="cards">\n' + body + "    </div>\n" + tail
     (HERE / fname).write_text(out, encoding="utf-8", newline="\n")
