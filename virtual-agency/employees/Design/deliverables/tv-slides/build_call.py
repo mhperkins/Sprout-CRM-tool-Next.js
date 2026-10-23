@@ -1,7 +1,12 @@
-"""Build buzzkill-call.html: the Buzzkill NYC co-host slide that doubles as the
-call for submissions. The QR is the tracked code
-new-sprout-sign-in-2026-call-for-submissions (-> /submit), so scans are counted
-and the destination can be repointed later without reprinting the deck.
+"""Build buzzkill-call.html: the Buzzkill NYC co-host slide with two QR codes.
+
+  - "Learn more about Buzzkill"  -> tracked code new-sprout-sign-in-2026-buzzkill-linktree
+                                    (-> linktr.ee/buzzkillnyc)
+  - Call for submissions          -> tracked code new-sprout-sign-in-2026-call-for-submissions
+                                    (-> /submit, which emails the gallery form)
+
+Both are tracked, so scans are counted and destinations can change without a new slide.
+The logo art is shown whole (contain), never cropped.
 Run: python build_call.py   (needs pillow + qrcode)
 """
 import base64, io, urllib.request
@@ -11,7 +16,9 @@ import qrcode
 
 HERE = Path(__file__).parent
 VOL = "Sprout N Tell Vol. 5 x Buzzkill NYC"
-QR_URL = "https://qr-tracker-gold.vercel.app/track?qr=new-sprout-sign-in-2026-call-for-submissions"
+TRACK = "https://qr-tracker-gold.vercel.app/track?qr="
+QR_SUBMIT = TRACK + "new-sprout-sign-in-2026-call-for-submissions"
+QR_LINKTREE = TRACK + "new-sprout-sign-in-2026-buzzkill-linktree"
 PHOTO = ("https://ixdnmjchvjzytyhmripc.supabase.co/storage/v1/object/public/event-portal-files/"
          "evt_sprout_n_tell_sprout_society_x_buzzkill_/program/1792698418502_tamvfr.jpeg")
 
@@ -22,24 +29,27 @@ def b64(im, fmt="JPEG"):
     return f"data:image/{fmt.lower()};base64," + base64.b64encode(buf.getvalue()).decode()
 
 
+def qr(url):
+    q = qrcode.QRCode(border=1, box_size=16, error_correction=qrcode.constants.ERROR_CORRECT_M)
+    q.add_data(url)
+    return b64(q.make_image(fill_color="black", back_color="white").get_image().convert("RGB"), "PNG")
+
+
 im = ImageOps.exif_transpose(Image.open(io.BytesIO(urllib.request.urlopen(PHOTO).read()))).convert("RGB")
-im.thumbnail((900, 900))
+im.thumbnail((1000, 1000))
 photo = b64(im)
-q = qrcode.QRCode(border=1, box_size=16, error_correction=qrcode.constants.ERROR_CORRECT_M)
-q.add_data(QR_URL)
-qr = b64(q.make_image(fill_color="black", back_color="white").get_image().convert("RGB"), "PNG")
 
 html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Sprout Society: Buzzkill NYC + Call for submissions</title>
+<title>Sprout Society: Buzzkill NYC</title>
 <!-- ============================================================
      SPROUT SOCIETY TV SLIDE: CO-HOST + CALL FOR SUBMISSIONS
-     {VOL} (2026-10-23). Built by build_call.py. QR -> tracked code
-     new-sprout-sign-in-2026-call-for-submissions -> /submit
-     (sign-ups land in sprout_submission_list).
+     {VOL} (2026-10-23). Built by build_call.py.
+     QRs: new-sprout-sign-in-2026-buzzkill-linktree (Linktree),
+          new-sprout-sign-in-2026-call-for-submissions (/submit).
      ============================================================ -->
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
 <style>
@@ -52,19 +62,26 @@ html = f"""<!DOCTYPE html>
   .eyebrow{{font-size:min(1.1vw,2vh); font-weight:900; letter-spacing:.35em; text-transform:uppercase; color:var(--banana); margin-bottom:min(.5vw,.9vh);}}
   h2{{font-size:min(3vw,5.3vh); font-weight:900; line-height:1.05;}}
   .rule{{height:min(.4vw,.7vh); width:min(8vw,14vh); border-radius:.3vw; background:var(--banana); margin:min(.9vw,1.6vh) 0 min(1.6vw,2.8vh); flex-shrink:0;}}
-  .body{{flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); gap:min(4vw,7vh);}}
+  .body{{flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); gap:min(4vw,7vh);}}
   .host{{display:flex; flex-direction:column; min-height:0;}}
-  .host img{{flex:1 1 0; min-height:0; width:100%; object-fit:cover; border-radius:min(1vw,1.8vh); display:block;}}
+  .art{{flex:1 1 0; min-height:0; display:flex; align-items:center; justify-content:flex-start;}}
+  .art img{{max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; display:block; border-radius:min(1vw,1.8vh);}}
   .host .name{{font-size:min(2.2vw,3.9vh); font-weight:900; margin-top:min(.8vw,1.4vh);}}
   .host .handle{{font-size:min(1.5vw,2.7vh); font-weight:900; color:var(--banana);}}
-  .host p{{font-size:min(1.55vw,2.75vh); line-height:1.35; color:#e8e8e4; margin-top:min(.6vw,1vh);}}
-  .call{{background:var(--banana); color:var(--ink); border-radius:min(1.4vw,2.4vh);
-        padding:min(2.4vw,4.2vh); display:flex; flex-direction:column; justify-content:space-between; min-height:0;}}
-  .call .k{{font-size:min(1.2vw,2.1vh); font-weight:900; letter-spacing:.3em; text-transform:uppercase; color:var(--fuchsia);}}
-  .call h3{{font-size:min(3.6vw,6.4vh); font-weight:900; line-height:1.02; margin-top:min(.6vw,1vh); letter-spacing:-.01em;}}
-  .scan{{display:flex; align-items:center; gap:min(2vw,3.5vh); min-height:0;}}
-  .scan img{{width:min(15vw,26.5vh); height:min(15vw,26.5vh); background:#fff; padding:min(.6vw,1vh); border-radius:min(.9vw,1.6vh); flex-shrink:0;}}
-  .scan p{{font-size:min(2vw,3.6vh); font-weight:900; line-height:1.2;}}
+  .host p{{font-size:min(1.55vw,2.75vh); line-height:1.35; color:#e8e8e4; margin-top:min(.4vw,.7vh);}}
+  /* Right side: two compact QR cards stacked at the bottom left. */
+  .qrs{{display:flex; flex-direction:column; justify-content:flex-end; align-items:stretch; gap:min(1.6vw,2.8vh); min-height:0;}}
+  .qcard{{display:flex; align-items:center; gap:min(1.6vw,2.8vh); border-radius:min(1.2vw,2.1vh);
+         padding:min(1.4vw,2.4vh); max-width:100%;}}
+  .qcard img{{width:min(11.5vw,20.5vh); height:min(11.5vw,20.5vh); background:#fff; padding:min(.45vw,.8vh);
+             border-radius:min(.7vw,1.2vh); flex-shrink:0; display:block;}}
+  .qcard .k{{font-size:min(1vw,1.8vh); font-weight:900; letter-spacing:.28em; text-transform:uppercase;}}
+  .qcard .t{{font-size:min(2.2vw,3.9vh); font-weight:900; line-height:1.12; margin-top:min(.4vw,.7vh);}}
+  .qcard .s{{font-size:min(1.3vw,2.3vh); font-weight:700; line-height:1.3; margin-top:min(.5vw,.9vh);}}
+  .learn{{background:#1a1616; border:2px solid #3a3333; color:#fff;}}
+  .learn .k{{color:var(--cyan);}}
+  .submit{{background:var(--banana); color:var(--ink);}}
+  .submit .k{{color:var(--fuchsia);}}
 </style>
 </head>
 <body>
@@ -74,18 +91,25 @@ html = f"""<!DOCTYPE html>
   <div class="rule"></div>
   <div class="body">
     <div class="host">
-      <img src="{photo}" alt="Buzzkill NYC" style="object-position:center;" />
+      <div class="art"><img src="{photo}" alt="Buzzkill NYC" /></div>
       <div class="name">Buzzkill NYC <span class="handle">@buzzkillnyc</span></div>
       <p>Free and low-cost art gatherings and workshops for the sober and sober-curious community.</p>
     </div>
-    <div class="call">
-      <div>
-        <div class="k">Call for submissions</div>
-        <h3>Artists and musicians: show your work at Sprout N Tell.</h3>
+    <div class="qrs">
+      <div class="qcard learn">
+        <img src="{qr(QR_LINKTREE)}" alt="QR code to Buzzkill NYC's links" />
+        <div>
+          <div class="k">Buzzkill NYC</div>
+          <div class="t">Learn more about Buzzkill</div>
+        </div>
       </div>
-      <div class="scan">
-        <img src="{qr}" alt="QR code to the submission sign-up" />
-        <p>Scan, leave your email, and we'll send you the submission form.</p>
+      <div class="qcard submit">
+        <img src="{qr(QR_SUBMIT)}" alt="QR code to the submission sign-up" />
+        <div>
+          <div class="k">Call for submissions</div>
+          <div class="t">Submit your work to showcase in future Buzzkill x Sprout Society shows.</div>
+          <div class="s">Scan, leave your email, and we'll send you the form.</div>
+        </div>
       </div>
     </div>
   </div>
