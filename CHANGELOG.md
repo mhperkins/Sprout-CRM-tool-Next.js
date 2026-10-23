@@ -2,6 +2,12 @@
 
 ---
 
+## 2026-10-23 (night): Buzzkill logo on /submit
+
+Merge `4c63d43` (commit `989476a`), pushed and live. Effort: low.
+
+- The call-for-submissions page header now reads Sprout Society × Buzzkill NYC. The Buzzkill wordmark (the cutout from TV slide 01) is now a file, `public/brand/buzzkill-logo.png`, shown on a small black tile because its mint color is hard to read on white. Checked at 390px and 1280px.
+
 ## 2026-10-23 (night): Buzzkill slide uses their program bio; Instagram list on the event
 
 Merge `e960817` (commit `381120c`), pushed and live. One `sprout_events` notes write. Effort: low.
