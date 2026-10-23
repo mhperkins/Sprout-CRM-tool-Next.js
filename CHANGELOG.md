@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-10-23: Late Vol. 5 bios on the TV deck and program, plus a vendors section
+
+Merge `7667aec` (commits `216460e`, `3818b98`), pushed and confirmed live. Built on a `vol5-new-bios` worktree, merged and removed. Effort: medium.
+
+- **New program submissions added:** Emily De Lima and Max Sibner (art), Liara Neja (music).
+- **"Something else" submissions = Tonight's Vendors (Max's rule):** Buzzkill NYC and Jillian Howery get their own section in the program and their own banana-accent slide. Jillian sent no photo, so she shows an initials tile.
+- **TV deck now 10 slides:** welcome, artists x3, music x2 (Andie + Isabella, Sean + Liara), vendors, story, birthday, host. `build_lineup.py` gained the new slides, the banana accent and the no-photo fallback; `lineup-3-music.html` replaced by `lineup-4-music.html` + `lineup-5-music.html`.
+- **Checked:** every new slide renders with no overflow at 1920x1080 and 951x877; program has 14 acts and no sideways scroll at 390px.
+
 ## 2026-10-22: Coming-soon page live at /coming-soon, with a launch-list sign-up
 
 Merge `5acfc47` (commit `76479de`), pushed and live (200). Built on a `coming-soon` worktree, merged and removed. Migration `sprout_site_signups` applied. Effort: medium.
