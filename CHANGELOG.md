@@ -2,6 +2,13 @@
 
 ---
 
+## 2026-10-23 (night): Two more Vol. 5 vendors
+
+Merge `9a212b0` (commit `7a4ae04`), pushed and live. Effort: low.
+
+- **Saint Vintage** (@k4ti333_, Depop) and **Modern Mystic Studios** (@modernmysticstudios) sent program info as "Something else", so both joined Tonight's Vendors in the program and on the vendors slide (now 3 vendors with Jillian Howery).
+- `build_lineup.py`: transparent images are flattened onto white (Modern Mystic's dark logo vanished on black), and a `"contain"` position shows a logo whole instead of cropping it.
+
 ## 2026-10-23 (night): Buzzkill slide, QR tiles fill the space
 
 Merge `2a43f15` (commit `b5b9eeb`), pushed and live. Effort: low.
