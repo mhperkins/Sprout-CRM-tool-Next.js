@@ -7,7 +7,8 @@
 
 import { randomBytes } from "crypto";
 import { svc, hasServiceKey } from "@/lib/portalDb";
-import { notifySubmissionSignup } from "@/lib/notify";
+import { notifySubmissionSignup, sendGalleryFormLink } from "@/lib/notify";
+import { openCallForm } from "@/lib/galleryDb";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,6 +17,17 @@ const HOURLY_CAP = 60;
 const ROLES = ["music", "art", "other"];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const fail = (error, status = 400) => Response.json({ error }, { status });
+
+/** The open-call gallery link on this host, or "" if it can't be read. */
+async function formUrl(req) {
+  try {
+    const form = await openCallForm();
+    return form ? `${new URL(req.url).origin}/gallery/${form.token}` : "";
+  } catch (e) {
+    console.error("submit-list — open-call lookup failed:", e?.message || e);
+    return "";
+  }
+}
 
 export async function POST(req) {
   if (!hasServiceKey()) return fail("Sign-up is not set up yet.", 503);
@@ -47,7 +59,9 @@ export async function POST(req) {
     const { data: existing, error: dupErr } = await db
       .from("sprout_submission_list").select("id").ilike("email", email).limit(1);
     if (dupErr) throw dupErr;
-    if (existing?.length) return Response.json({ ok: true, already: true });
+    // A repeat address is not emailed again (no spamming an inbox from this form),
+    // but the thank-you screen still shows the link.
+    if (existing?.length) return Response.json({ ok: true, already: true, form_url: await formUrl(req) });
   } catch (e) {
     console.error("submit-list POST — lookup failed:", e?.message || e);
     return fail("Sign-up is temporarily unavailable. Please try again in a few minutes.", 503);
@@ -61,13 +75,29 @@ export async function POST(req) {
     return fail("We could not save that. Please try again.", 500);
   }
 
+  // Email them the gallery form (the standing open-call link). Awaited but caught:
+  // a failed send never fails the sign-up; the alert below tells Max to send it.
+  const url = await formUrl(req);
+  let formSent = false;
+  if (url) {
+    try {
+      await sendGalleryFormLink({ name, email, url });
+      formSent = true;
+      await db.from("sprout_submission_list")
+        .update({ sent_form_at: new Date().toISOString(), form_token: url.split("/").pop() })
+        .eq("id", id);
+    } catch (e) {
+      console.error("submit-list POST — form email failed:", e?.message || e);
+    }
+  }
+
   // Awaited (serverless) but caught: a failed alert never fails a sign-up.
   try {
     const { count } = await db.from("sprout_submission_list").select("id", { count: "exact", head: true });
-    await notifySubmissionSignup({ name, email, role, instagram, total: count });
+    await notifySubmissionSignup({ name, email, role, instagram, total: count, formSent });
   } catch (e) {
     console.error("submit-list POST — notification email failed:", e?.message || e);
   }
 
-  return Response.json({ ok: true });
+  return Response.json({ ok: true, form_sent: formSent, form_url: url });
 }

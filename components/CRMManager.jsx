@@ -38,6 +38,11 @@ import {
   updatePortalAnswer,
   fetchEventProgram,
   createProgramForm,
+  fetchEventGallery,
+  createGalleryForm,
+  regenerateGalleryFormToken,
+  assignGalleryEntry,
+  deleteGalleryEntry,
   regenerateProgramFormToken,
   deleteProgramEntry,
 } from "../lib/services";
@@ -48,6 +53,8 @@ import { validateContact, validateOrg } from "../lib/schemas";
 import { blocksOf, firstHeading, parseTableBlock, serializeTable, renderInline } from "../lib/md";
 import DayBoard from "./DayBoard";
 import ShowcaseApplications from "./ShowcaseApplications";
+import { EventGalleryPanel } from "./GalleryEntries";
+import { pieceLine } from "../lib/galleryForm";
 import GrantMetrics from "./GrantMetrics";
 import MembersView from "./MembersView";
 import SurveyView from "./SurveyView";
@@ -5059,7 +5066,7 @@ function EventProgramPanel({program,onCreate,onRotate,onDeleteEntry,onRefresh,sh
   );
 }
 
-function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,onUpdateContacts,onContactClick,portal,onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals,onSavePortalAnswer,showToast}) {
+function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpdateEvent,onUpdateContacts,onContactClick,portal,onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals,onSavePortalAnswer,showToast}) {
   const linked = contacts.filter(c=>(event.contact_ids||[]).includes(c.id));
 
   // Program form: the tile and its popup share one copy, loaded per event.
@@ -5086,6 +5093,39 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
     const {error}=await deleteProgramEntry(entry.id);
     if(error){ showToast("Could not delete that","err"); return; }
     setProgram(p=>({...p,entries:p.entries.filter(e=>e.id!==entry.id)}));
+    showToast("Submission deleted");
+  };
+  // Gallery submission form: same pattern as the program form.
+  const [gallery,setGallery]=useState({form:null,entries:[],loaded:false});
+  const loadGallery=useCallback(async()=>{
+    const {data,error}=await fetchEventGallery(event.id);
+    if(error) console.error("fetchEventGallery:",error);
+    setGallery({...data,loaded:true});
+  },[event.id]);
+  useEffect(()=>{ loadGallery(); },[loadGallery]);
+  const makeGalleryForm=async()=>{
+    const {data,error}=await createGalleryForm(event.id);
+    if(error){ console.error("createGalleryForm:",error); showToast("Could not create the gallery link","err"); return; }
+    setGallery(g=>({...g,form:data}));
+    showToast("Gallery link created ✓");
+  };
+  const rotateGalleryForm=async()=>{
+    const {data,error}=await regenerateGalleryFormToken(gallery.form.id);
+    if(error||!data){ showToast("Could not create a new link","err"); return; }
+    setGallery(g=>({...g,form:data}));
+    showToast("New link created ✓");
+  };
+  const moveGalleryEntry=async(entry,eventId)=>{
+    if((eventId||null)===event.id) return;
+    const {error}=await assignGalleryEntry(entry.id,eventId);
+    if(error){ showToast("Could not move that","err"); return; }
+    setGallery(g=>({...g,entries:g.entries.filter(e=>e.id!==entry.id)}));
+    showToast(eventId?"Moved to that show ✓":"Moved back to the open call ✓");
+  };
+  const removeGalleryEntry=async(entry)=>{
+    const {error}=await deleteGalleryEntry(entry.id);
+    if(error){ showToast("Could not delete that","err"); return; }
+    setGallery(g=>({...g,entries:g.entries.filter(e=>e.id!==entry.id)}));
     showToast("Submission deleted");
   };
   const today=new Date().toISOString().slice(0,10);
@@ -5367,6 +5407,44 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
                       </div>
                     </>
               ),portal?"Portal link & all answers":null,true)}
+              {/* GALLERY: artists' pieces from the gallery submission form. */}
+              {tile("gallery","Gallery",gallery.entries.length?gallery.entries.length+" sent":"",(
+                !gallery.form&&gallery.entries.length===0
+                  ? <div>
+                      <div className="evd-empty">{gallery.loaded?"No gallery link yet. Create one to collect artists' pieces, sizes, and photos.":"Loading…"}</div>
+                      {gallery.loaded&&<button className="btn btn-blk btn-sm" style={{marginTop:8}} onClick={makeGalleryForm}>+ Create gallery link</button>}
+                    </div>
+                  : <>
+                      {gallery.form
+                        ? <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                            <button className="btn btn-blk btn-sm" onClick={()=>{
+                              const url=window.location.origin+"/gallery/"+gallery.form.token;
+                              try{ navigator.clipboard.writeText(url); showToast("Link copied ✓"); }catch{ showToast("Copy failed","err"); }
+                            }}>Copy gallery link</button>
+                            <a className="btn btn-ghost btn-sm" href={"/gallery/"+gallery.form.token} target="_blank" rel="noopener noreferrer">Open ↗</a>
+                          </div>
+                        : <button className="btn btn-blk btn-sm" onClick={makeGalleryForm}>+ Create gallery link</button>}
+                      {gallery.entries.length===0
+                        ? <div className="evd-empty">Nobody has sent anything yet.</div>
+                        : <div style={{display:"flex",flexDirection:"column",gap:6,marginTop:8}}>
+                            {gallery.entries.slice(0,5).map(en=>{
+                              const ps=en.data?.pieces||[];
+                              const thumb=ps.find(p=>p.photo_url)?.photo_url;
+                              return (
+                                <div key={en.id} style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
+                                  {thumb
+                                    ? <img src={thumb} alt="" style={{width:30,height:30,borderRadius:6,objectFit:"cover",flexShrink:0}}/>
+                                    : <div style={{width:30,height:30,borderRadius:6,background:"var(--g100)",flexShrink:0}}/>}
+                                  <div style={{minWidth:0}}>
+                                    <div style={{fontSize:12.5,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{en.data?.name||"(no name)"}</div>
+                                    <div style={{fontSize:10.5,color:"var(--g500)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{ps.length} piece{ps.length===1?"":"s"}{ps[0]?" · "+pieceLine(ps[0],0):""}</div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>}
+                    </>
+              ),"All submissions & link")}
               {/* PROGRAM: what artists and musicians sent through the participant form. */}
               {tile("program","Program",program.entries.length?program.entries.length+" sent":"",(
                 !program.form
@@ -5719,6 +5797,20 @@ function EventDetailPage({event,contacts,onBack,onEdit,onDelete,onUpdateEvent,on
           <EventMediaPanel event={event} onUpdateEvent={onUpdateEvent} showToast={showToast}/>
         </Modal>
       )}
+      {openTile==="gallery"&&(
+        <Modal wide title={"Gallery · "+(event.name||"Event")} onClose={()=>setOpenTile(null)}>
+          <EventGalleryPanel
+            gallery={gallery}
+            events={allEvents||[]}
+            onCreate={makeGalleryForm}
+            onRotate={rotateGalleryForm}
+            onAssign={moveGalleryEntry}
+            onDeleteEntry={removeGalleryEntry}
+            onRefresh={loadGallery}
+            showToast={showToast}
+          />
+        </Modal>
+      )}
       {openTile==="program"&&(
         <Modal wide title={"Program · "+(event.name||"Event")} onClose={()=>setOpenTile(null)}>
           <EventProgramPanel
@@ -5853,6 +5945,7 @@ function EventsView({events,contacts,orgs,onUpdate,onDelete,showToast,onUpdateCo
     <EventDetailPage
       onUpdateContacts={onUpdateContacts}
       event={selectedEvent}
+      allEvents={events}
       contacts={contacts}
       onBack={()=>{setEvtPage("list");setSelectedId(null);}}
       onEdit={()=>{setEditDraft({...selectedEvent});setEvtPage("edit");}}
