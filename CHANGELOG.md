@@ -2,6 +2,12 @@
 
 ---
 
+## 2026-10-23 (night): Buzzkill slide, QR tiles fill the space
+
+Merge `2a43f15` (commit `b5b9eeb`), pushed and live. Effort: low.
+
+- The photo column is now the logo's width, and the two QR tiles stretch to fill everything beside it, top to bottom, with bigger QRs and text. The logo sits at the top on near-square screens. Checked at 1920x1080 and 951x877 with no overflow.
+
 ## 2026-10-23 (evening): Gallery submission form in the CRM, auto-sent from /submit; Buzzkill slide redesign
 
 Merges `dfe4feb` (commit `227f03f`) and `98bde26` (commit `45fe4d7`), pushed and live. Migration `sprout_gallery_form_tables` applied; two `qr_codes` writes. Effort: medium.
