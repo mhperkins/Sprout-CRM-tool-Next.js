@@ -139,3 +139,7 @@ dates come from the CRM (`sprout-crm` MCP `list_events`).
   Jeffers, Liara Neja), new `lineup-6-vendors.html` (Buzzkill NYC, Jillian Howery: program-form role
   "Something else" = vendor, banana accent; no photo = initials tile). `lineup-3-music.html` removed.
   Deck: welcome, lineup x6, story, birthday, host (10 slides).
+- **2026-10-23 (later):** Buzzkill NYC moved off the vendors slide onto its own `buzzkill-call.html`
+  (built by `build_call.py`): co-host card + a call for submissions with the tracked QR
+  `new-sprout-sign-in-2026-call-for-submissions` -> `/submit` (sign-ups in `sprout_submission_list`).
+  Deck: welcome, buzzkill-call, lineup x6, story, birthday, host (11 slides).
