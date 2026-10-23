@@ -8,6 +8,7 @@ import { useState } from "react";
 
 const BRAND = "https://ixdnmjchvjzytyhmripc.supabase.co/storage/v1/object/public/newsletter-images/brand";
 const LOGO_DARK = `${BRAND}/sprout-logo-blackheart.png`;
+const LOGO_BUZZKILL = "/brand/buzzkill-logo.png";
 
 const ROLES = [
   { id: "music", label: "Music" },
@@ -22,7 +23,10 @@ const CSS = `
 .sb *{box-sizing:border-box}
 .sb-head{background:#fff;border-bottom:4px solid var(--banana)}
 .sb-head div{max-width:640px;margin:0 auto;padding:18px 20px}
+.sb-logos{display:flex;align-items:center;gap:16px}
 .sb-head img{width:130px;height:auto;display:block}
+.sb-head .sb-x{font-size:18px;font-weight:900;color:#8a8a86}
+.sb-head img.sb-bk{width:auto;height:58px;background:#030000;border-radius:8px;padding:6px 10px;box-sizing:content-box}
 .sb-main{max-width:640px;margin:0 auto;padding:36px 20px 56px}
 .sb-eyebrow{font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--fuchsia);margin:0 0 12px}
 .sb h1{font-size:clamp(30px,7vw,46px);line-height:1.05;font-weight:900;margin:0;letter-spacing:-.01em;text-wrap:balance}
@@ -77,7 +81,11 @@ export default function SubmitList() {
   return (
     <div className="sb">
       <style>{CSS}</style>
-      <header className="sb-head"><div><img src={LOGO_DARK} alt="Sprout Society" /></div></header>
+      <header className="sb-head"><div className="sb-logos">
+        <img src={LOGO_DARK} alt="Sprout Society" />
+        <span className="sb-x" aria-hidden="true">×</span>
+        <img className="sb-bk" src={LOGO_BUZZKILL} alt="Buzzkill NYC" />
+      </div></header>
 
       <main className="sb-main">
         <p className="sb-eyebrow">Sprout N Tell · Call for submissions</p>
