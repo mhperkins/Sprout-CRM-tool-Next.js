@@ -56,6 +56,10 @@ SLIDES = [
     ("lineup-6-vendors.html", "Tonight's Vendors", "a-banana", [
         ("Jillian Howery", "@terrafinajewelry", "center", None,
          "Handmade tiny terrarium earrings!"),
+        ("Saint Vintage", "@k4ti333_", "center", "1792772666761_8e99tm.jpeg",
+         "Selling a curated selection of second hand/vintage clothing and accessories."),
+        ("Modern Mystic Studios", "@modernmysticstudios", "contain", "1792773366075_1xq58m.png",
+         "Modern Mystic Studios is where art, ritual and craft meet: handmade soaps and ritual oils from The Alchemist's Shelf, plus original art."),
     ]),
 ]
 
@@ -66,7 +70,14 @@ EVENT = "evt_sprout_n_tell_sprout_society_x_buzzkill_/program/"
 def photo(src):
     url = BASE + (src if "/" in src else EVENT + src)
     raw = urllib.request.urlopen(url).read()
-    im = ImageOps.exif_transpose(Image.open(io.BytesIO(raw))).convert("RGB")
+    im = ImageOps.exif_transpose(Image.open(io.BytesIO(raw)))
+    if im.mode in ("RGBA", "LA", "P"):
+        # Transparent logos: flatten onto white so dark artwork stays visible on the black slide.
+        im = im.convert("RGBA")
+        bg = Image.new("RGB", im.size, (255, 255, 255))
+        bg.paste(im, mask=im.split()[3])
+        im = bg
+    im = im.convert("RGB")
     im.thumbnail((720, 720))
     buf = io.BytesIO()
     im.save(buf, "JPEG", quality=82)
@@ -76,7 +87,9 @@ def photo(src):
 def card(name, handle, pos, src, bio):
     e = lambda s: html.escape(s, quote=True)
     if src:
-        pic = f'<img src="{photo(src)}" alt="{e(name)}" style="object-position:{pos};" />'
+        # pos "contain" shows a logo whole on white instead of cropping it.
+        style = "object-fit:contain;background:#fff;" if pos == "contain" else f"object-position:{pos};"
+        pic = f'<img src="{photo(src)}" alt="{e(name)}" style="{style}" />'
     else:
         initials = "".join(w[0] for w in name.split()[:2]).upper()
         pic = f'<div class="ph">{e(initials)}</div>'
