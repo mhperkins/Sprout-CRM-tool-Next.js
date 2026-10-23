@@ -134,3 +134,8 @@ dates come from the CRM (`sprout-crm` MCP `list_events`).
   Seed Fund, Givebutter campaign 769178, opens Nov 1, $100,000 goal), placed after Our story. No QR
   yet: the campaign is unpublished until Nov 1. Deck is 7 slides:
   welcome, lineup x3, story, birthday, host.
+- **2026-10-23 (Vol. 5, show day):** Late submissions added. `lineup-3-artists.html` (Emily De Lima,
+  Max Sibner), `lineup-4-music.html` (Andie Mechanic, Isabella Paris), `lineup-5-music.html` (Sean
+  Jeffers, Liara Neja), new `lineup-6-vendors.html` (Buzzkill NYC, Jillian Howery: program-form role
+  "Something else" = vendor, banana accent; no photo = initials tile). `lineup-3-music.html` removed.
+  Deck: welcome, lineup x6, story, birthday, host (10 slides).
