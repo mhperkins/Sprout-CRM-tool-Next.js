@@ -2,6 +2,12 @@
 
 ---
 
+## 2026-10-23 (night): "Leave your email" link in the program
+
+Merge `026bdc8` (commit `97e7f15`), pushed and live. Effort: low.
+
+- The call-for-submissions box at the bottom of the digital program is no longer one big link; "Leave your email" is now an underlined fuchsia hyperlink to `/submit`.
+
 ## 2026-10-23 (night): Buzzkill logo on /submit
 
 Merge `4c63d43` (commit `989476a`), pushed and live. Effort: low.
