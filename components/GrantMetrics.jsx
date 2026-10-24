@@ -220,6 +220,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
           <div className="gm-kpi"><b>{m.unique}</b><span>Unique people</span><small>On event lists in the CRM</small></div>
           <div className="gm-kpi"><b>{m.repeatRate}%</b><span>Came back</span><small>{m.repeat} of {m.unique} at 2+ events</small></div>
           <div className="gm-kpi"><b>{m.firstTimers}</b><span>First-timers</span><small>From Outcomes tiles</small></div>
+          <div className="gm-kpi"><b>{m.emails}</b><span>Emails collected</span><small>From Outcomes tiles</small></div>
           <div className="gm-kpi"><b>{loaded ? m.artists : "…"}</b><span>Artists featured</span><small>From Program submissions</small></div>
           <div className="gm-kpi"><b>{loaded ? m.applications : "…"}</b><span>Showcase applications</span><small>Through /showcase</small></div>
           <div className="gm-kpi"><b>{m.activeMembers}</b><span>Active members</span><small>{m.activeOrgMembers > 0 && `${m.activeMembers - m.activeOrgMembers} people · ${m.activeOrgMembers} orgs · `}{m.newMembers} joined · {money(m.dues)} dues logged</small></div>

@@ -5608,6 +5608,9 @@ function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpda
                       <div>{lbl("First-timers")}
                         <input key={event.id+"ft"+(o.first_timers??"")} className="fi" style={{fontSize:12}} inputMode="numeric" placeholder="optional"
                           defaultValue={o.first_timers??""} onBlur={numBlur("first_timers")}/></div>
+                      <div>{lbl("Emails collected")}
+                        <input key={event.id+"em"+(o.emails_collected??"")} className="fi" style={{fontSize:12}} inputMode="numeric" placeholder="from sign-ins"
+                          defaultValue={o.emails_collected??""} onBlur={numBlur("emails_collected")}/></div>
                       <div>{lbl("Counted from")}
                         <input key={event.id+"cs"} className="fi" style={{fontSize:12}} placeholder="Kiosk sign-ins, door count…"
                           defaultValue={o.count_source||""} onBlur={txtBlur("count_source")}/></div>
