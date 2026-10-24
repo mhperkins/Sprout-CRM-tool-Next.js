@@ -39,6 +39,8 @@ SLIDES = [
          "I am a Brazilian-American artist and designer based in Queens, NYC, working across various mediums. My work draws from mythology, folklore, science, and literature to explore questions of origin, identity, healing, and the ways people make meaning of the world."),
         ("Max Sibner", "@adventureskept", "center 30%", "1792767143082_s6fqua.jpeg",
          "I like to capture images of everyday moments around the world, and bring a kind of empathetic curiosity to seemingly mundane scenes!"),
+        ("Kali Winkler", "@kaliwink.art.nyc", "center 30%", "1792794983254_sb6zd9.jpeg",
+         "Collage artist with inspiration of flowers, love, fashion, and the messy beautiful life of NYC."),
     ]),
     ("lineup-4-music.html", "Tonight's Music", "a-cyan", [
         ("Andie Mechanic", "@andiemechanic.music", "center 30%", "1792534210097_opcnzo.jpeg",
@@ -60,6 +62,14 @@ SLIDES = [
          "Selling a curated selection of second hand/vintage clothing and accessories."),
         ("Modern Mystic Studios", "@modernmysticstudios", "contain", "1792773366075_1xq58m.png",
          "Modern Mystic Studios is where art, ritual and craft meet: handmade soaps and ritual oils from The Alchemist's Shelf, plus original art."),
+    ]),
+    ("lineup-7-vendors.html", "Tonight's Vendors", "a-banana", [
+        ("Girlypop(up)", "@girlypop.up", "center", "1792779648691_x5x9sf.jpeg",
+         "A community-driven pop-up series bringing people together through art, creativity, and feel-good experiences. Come get creative, shop, & yap with us!"),
+        ("Ali Joy Jewelry", "@alijoyjewelry", "center", "1792787317919_gx20fz.jpeg",
+         "Handmade jewelry and custom permanent jewelry based in Brooklyn."),
+        ("The Bar Nun Life", "@barnun.life", "center", "1792792835374_uhklqq.jpg",
+         "Complimentary non-alcoholic beverages poured by Cullie, founder of The Bar Nun Life: alcohol-free community pop-ups, with a bar coming soon to NYC."),
     ]),
 ]
 

@@ -147,3 +147,4 @@ dates come from the CRM (`sprout-crm` MCP `list_events`).
   = two compact QR cards at the bottom: "Learn more about Buzzkill" (tracked
   `new-sprout-sign-in-2026-buzzkill-linktree` -> linktr.ee/buzzkillnyc) above "Submit your work to
   showcase in future Buzzkill x Sprout Society shows." (tracked call-for-submissions -> /submit).
+- **2026-10-24:** Late submissions: Kali Winkler on `lineup-3-artists.html`; new `lineup-7-vendors.html` (Girlypop(up), Ali Joy Jewelry, The Bar Nun Life). Deck: 12 slides.
