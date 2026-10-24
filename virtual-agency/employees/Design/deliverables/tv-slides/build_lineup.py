@@ -39,7 +39,7 @@ SLIDES = [
          "I am a Brazilian-American artist and designer based in Queens, NYC, working across various mediums. My work draws from mythology, folklore, science, and literature to explore questions of origin, identity, healing, and the ways people make meaning of the world."),
         ("Max Sibner", "@adventureskept", "center 30%", "1792767143082_s6fqua.jpeg",
          "I like to capture images of everyday moments around the world, and bring a kind of empathetic curiosity to seemingly mundane scenes!"),
-        ("Kali Winkler", "@kaliwink.art.nyc", "center 30%", "1792794983254_sb6zd9.jpeg",
+        ("Kali Winkler", "@kaliwink", "center 30%", "1792794983254_sb6zd9.jpeg",
          "Collage artist with inspiration of flowers, love, fashion, and the messy beautiful life of NYC."),
     ]),
     ("lineup-4-music.html", "Tonight's Music", "a-cyan", [
