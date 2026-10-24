@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-10-24: Vol. 5 night stats, Emails collected on Outcomes
+
+Merge `aaec755` (commit `543f6b1`), pushed and live. Effort: low.
+
+- **New Outcomes field `emails_collected`** (JSONB-only, no migration): an "Emails collected" box on the event Outcomes tile, an "Emails collected" KPI on Grant Metrics, and a line in Copy numbers. Max: first-timers next to a ~50 headcount read as "35 came back", so emails get their own stat.
+- **Vol. 5 outcomes filled:** headcount 50 (Max's estimate), emails collected 16 (17 door sign-ins, Kate J twice; 15 not yet in the CRM), first-timers cleared, artists 20 from the program (9 art, 4 music, 7 vendors).
+- **QR scans 10/23 to 10/24:** door 28 (~23 after tests), program notes 9 (~4), Buzzkill Linktree 2. Call for submissions read 109, inflated by the self-pointing redirect loop; 2 real sign-ups on /submit.
+- Door sign-ins sheet added to the Vol. 5 Links tile (`lnk_door_signins`).
+
 ## 2026-10-24: Four more Vol. 5 submissions on the TV deck and program
 
 Merge `9d970e7` (commit `f0ef1f2`), pushed and live. Effort: low.

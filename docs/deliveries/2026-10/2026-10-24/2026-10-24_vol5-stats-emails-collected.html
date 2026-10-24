@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vol. 5 Night Stats</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;}
+*{box-sizing:border-box}body{margin:0;background:var(--ink);color:#fff;font-family:Lato,system-ui,sans-serif;padding:32px 16px}
+.slide{max-width:1100px;margin:0 auto}
+.eyebrow{color:var(--acid);font-weight:900;letter-spacing:3px;text-transform:uppercase;font-size:13px}
+h1{font-size:40px;font-weight:900;margin:8px 0 6px;line-height:1.1}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 26px}
+.badge{border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;background:#1a1717;border:1px solid #333}
+.badge b{color:var(--banana)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{background:#141111;border-radius:12px;padding:18px;border-left:6px solid var(--cyan)}
+.card.f{border-color:var(--fuchsia)}.card.a{border-color:var(--acid)}.card.b{border-color:var(--banana)}
+.card h3{margin:0 0 8px;font-size:15px;text-transform:uppercase;letter-spacing:1.5px}
+.big{font-size:44px;font-weight:900;line-height:1}
+.card p,.card li{font-size:14px;line-height:1.55;color:#ddd;margin:6px 0}
+ul{padding-left:18px;margin:6px 0}
+code{background:#222;padding:1px 5px;border-radius:4px;font-size:12.5px}
+</style></head><body><div class="slide">
+<div class="eyebrow">Sprout CRM · Delivery · 2026-10-24</div>
+<h1>Vol. 5 night stats + an "Emails collected" stat</h1>
+<div class="meta"><span class="badge">Branch <b>main</b></span><span class="badge">Merge <b>aaec755</b></span><span class="badge">Commit <b>543f6b1</b></span><span class="badge">Effort <b>low</b></span><span class="badge">✓ Pushed + live</span></div>
+<div class="grid">
+<div class="card f"><h3>👥 Headcount</h3><div class="big">~50</div><p>Max's estimate for the night, now on the Vol. 5 Outcomes.</p></div>
+<div class="card"><h3>✉️ Emails collected</h3><div class="big">16</div><p>Door sign-ins (Kate J twice). 15 aren't in the CRM yet. The sign-ins sheet is linked on the event.</p></div>
+<div class="card a"><h3>🎨 Program</h3><div class="big">20</div><p>9 art · 4 music · 7 vendors. Saved as artists featured.</p></div>
+<div class="card b"><h3>📱 QR scans</h3><ul><li>Door 28 → ~23 after tests</li><li>Program notes 9 → ~4</li><li>Buzzkill Linktree 2</li><li>Call for submissions 109 is inflated by the old redirect loop; 2 real sign-ups</li></ul></div>
+<div class="card"><h3>🛠 What shipped</h3><ul><li>New <code>emails_collected</code> field on Outcomes (no migration)</li><li>Box on the event Outcomes tile</li><li>Grant Metrics KPI + Copy numbers line</li></ul></div>
+<div class="card f"><h3>✂️ First-timers cleared</h3><p>15 first-timers next to 50 people read as "35 came back". Emails collected now carries that number instead.</p></div>
+</div></div></body></html>
