@@ -2,6 +2,14 @@
 
 ---
 
+## 2026-10-24: Four more Vol. 5 submissions on the TV deck and program
+
+Merge `9d970e7` (commit `f0ef1f2`), pushed and live. Effort: low.
+
+- **Kali Winkler** (art, @kaliwink.art.nyc) joins the third artists slide and the program's Artists section.
+- **Girlypop(up)**, **Ali Joy Jewelry** and **The Bar Nun Life** sent "Something else", so they are vendors: a second vendors slide (`lineup-7-vendors.html`) and three more cards under Tonight's Vendors. Deck is now 12 slides; the program lists 20 acts.
+- Kali typed `@kaliwink` as a website, so no Website pill; Venmo kept as Tip. Long vendor bios trimmed for the TV only; full bios are in the program.
+
 ## 2026-10-23 (night): "Leave your email" link in the program
 
 Merge `026bdc8` (commit `97e7f15`), pushed and live. Effort: low.
