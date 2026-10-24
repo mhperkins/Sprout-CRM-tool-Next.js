@@ -11,6 +11,12 @@ Merge `aaec755` (commit `543f6b1`), pushed and live. Effort: low.
 - **QR scans 10/23 to 10/24:** door 28 (~23 after tests), program notes 9 (~4), Buzzkill Linktree 2. Call for submissions read 109, inflated by the self-pointing redirect loop; 2 real sign-ups on /submit.
 - Door sign-ins sheet added to the Vol. 5 Links tile (`lnk_door_signins`).
 
+## 2026-10-24: Kali Winkler's Instagram fixed to @kaliwink
+
+Merge `54cc742` (commit `edfcfc0`), pushed and live. One `sprout_program_entries` write. Effort: low.
+
+- Max confirmed @kaliwink is Kali's Instagram (they had typed it in the website box, and `kaliwink.art.nyc` in the Instagram box, which is not a live site). Fixed on the artists slide, the program's Instagram button, and their saved submission (website cleared).
+
 ## 2026-10-24: Four more Vol. 5 submissions on the TV deck and program
 
 Merge `9d970e7` (commit `f0ef1f2`), pushed and live. Effort: low.
