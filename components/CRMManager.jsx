@@ -6168,6 +6168,7 @@ export default function CRMApp() {
   const [dbError,setDbError]=useState(null);
   const [pendingDetail,setPendingDetail]=useState(null);
   const [pendingEvent,setPendingEvent]=useState(null);
+  const [surveyStart,setSurveyStart]=useState(null); // {audience,tab} when another page opens the survey
   const [globalQuickLog,setGlobalQuickLog]=useState(false);
   const [sbCollapsed,setSbCollapsed]=useState(()=>{ try{ return localStorage.getItem("sprout_sb_collapsed")==="1"; }catch{ return false; } });
   const toggleSidebar=()=>setSbCollapsed(v=>{ const n=!v; try{ localStorage.setItem("sprout_sb_collapsed",n?"1":"0"); }catch{} return n; });
@@ -6427,7 +6428,7 @@ if (dbError) return (
   return (
     <><style>{STYLES}</style>
     <div className={`app ${sbCollapsed?"app-sb-collapsed":""}`}>
-<Sidebar view={view} setView={(v)=>{setPendingDetail(null);setPendingEvent(null);setView(v);}} contacts={contacts} events={events} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)} onCollapse={toggleSidebar}/>
+<Sidebar view={view} setView={(v)=>{setPendingDetail(null);setPendingEvent(null);setSurveyStart(null);setView(v);}} contacts={contacts} events={events} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)} onCollapse={toggleSidebar}/>
       {sbCollapsed&&<button className="sb-reopen" onClick={toggleSidebar} title="Show sidebar">☰</button>}
       <main className="main">
         {view==="dashboard"&&<DayBoard contacts={contacts} orgs={orgs} onSaveContact={saveOneContact} onSaveOrg={saveOneOrg} openContact={openContact} setView={setView} showToast={showToast}/>}
@@ -6435,10 +6436,10 @@ if (dbError) return (
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
 {view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))} pendingEvent={pendingEvent} onPendingEventConsumed={clearPendingEvent} portals={portals} onCreatePortal={makePortal} onRotatePortal={rotatePortal} onRemovePortal={removePortal} onRefreshPortals={refreshPortals} onSavePortalAnswer={savePortalAnswer}/>}
         {view==="grants"&&<GrantMetrics events={events} contacts={contacts} orgs={orgs} onUpdateEvent={saveOneEvent} profile={profile} openEvent={openEvent} showToast={showToast} setView={setView}/>}
-        {view==="survey"&&<SurveyView events={events} contacts={contacts} orgs={orgs} openContact={openContact} showToast={showToast}/>}
+        {view==="survey"&&<SurveyView events={events} contacts={contacts} orgs={orgs} openContact={openContact} showToast={showToast} start={surveyStart}/>}
         {view==="members"&&<MembersView contacts={contacts} orgs={orgs} onSaveContact={saveOneContact} onSaveOrg={saveOneOrg} openContact={openContact} showToast={showToast}/>}
         {view==="interest"&&<GetInvolvedView contacts={contacts} onCreateContact={createOneContact} openContact={openContact} showToast={showToast}/>}
-        {view==="showcase"&&<ShowcaseApplications contacts={contacts} events={events} onSaveContact={saveOneContact} onCreateContact={createOneContact} onUpdateEvent={saveOneEvent} openContact={openContact} showToast={showToast}/>}
+        {view==="showcase"&&<ShowcaseApplications contacts={contacts} events={events} onSaveContact={saveOneContact} onCreateContact={createOneContact} onUpdateEvent={saveOneEvent} openContact={openContact} openSurvey={()=>{setSurveyStart({audience:"artist",tab:"send"});setView("survey");}} showToast={showToast}/>}
         {view==="newsletter"&&<NewsletterView newsletters={newsletters} events={events} contacts={contacts} profile={profile} onUpdate={saveNewsletter} onDelete={deleteNewsletter} showToast={showToast}/>}
         {view==="outreach"&&<OutreachView contacts={contacts} orgs={orgs} events={events}/>}
         {view==="import"&&<ImportView contacts={contacts} orgs={orgs} onImportContact={importContact} onImportOrg={importOrg} showToast={showToast}/>}

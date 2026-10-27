@@ -4,7 +4,7 @@
 // everyone who sent a program form for any event. Read-only.
 
 import { useMemo, useState } from "react";
-import { buildPastParticipants, showLabel } from "../lib/pastParticipants";
+import { buildPastParticipants, showLabel, inviteFor } from "../lib/pastParticipants";
 
 const PP_STYLES = `
 .pp-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
@@ -19,6 +19,10 @@ const PP_STYLES = `
 .pp-nm a{font-weight:700;font-size:12.5px;color:#2a8ca0;text-decoration:none}
 .pp-sub{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;align-items:center;font-size:12px;color:var(--dim)}
 .pp-show{font-size:11.5px;font-weight:700;border-radius:4px;padding:2px 7px;background:var(--sunk);color:#2c2c26}
+.pp-sv{appearance:none;font:inherit;font-size:11.5px;font-weight:700;cursor:pointer;border-radius:999px;padding:3px 10px;border:1px solid var(--line);background:#fff;color:var(--dim)}
+.pp-sv.sent{background:var(--banana-lt);color:var(--warn);border-color:transparent}
+.pp-sv.ok{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+.pp-sv:hover{border-color:var(--dim)}
 .pp-r{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 @media (max-width:620px){.pp-row{grid-template-columns:44px 1fr}.pp-r{grid-column:1/-1;justify-content:flex-start}}
 `;
@@ -37,7 +41,13 @@ const fmtDate = (d) => {
   catch { return d; }
 };
 
-export default function PastParticipants({ contacts, events, entries, loading, openContact, showToast }) {
+const surveyChip = (inv) =>
+  inv?.replied_at ? { cls: "ok", text: "Survey replied" }
+  : inv?.sent_at ? { cls: "sent", text: "Survey sent" }
+  : inv ? { cls: "", text: "Survey link ready" }
+  : { cls: "", text: "Survey not sent" };
+
+export default function PastParticipants({ contacts, events, entries, invites = [], loading, openContact, openSurvey, showToast }) {
   const [q, setQ] = useState("");
   const [role, setRole] = useState("all");
 
@@ -101,6 +111,10 @@ export default function PastParticipants({ contacts, events, entries, loading, o
                 </div>
               </div>
               <div className="pp-r">
+                {p.shows.length > 0 && (() => {
+                  const chip = surveyChip(inviteFor(p, invites));
+                  return <button className={`pp-sv ${chip.cls}`} title="Open the artist survey's Send tab" onClick={() => openSurvey?.()}>{chip.text}</button>;
+                })()}
                 {p.contact
                   ? <button className="sa-act" onClick={() => openContact(p.contact)}>Open contact</button>
                   : <span className="sa-tag known">Not in CRM</span>}

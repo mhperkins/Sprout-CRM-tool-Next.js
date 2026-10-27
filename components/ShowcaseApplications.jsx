@@ -16,6 +16,7 @@ import {
   updateShowcaseApplication,
   deleteShowcaseApplication,
   fetchAllProgramEntries,
+  fetchSurveyInvites,
 } from "../lib/services";
 import { showcaseLinks, showcaseInstagramUrl, showcaseToText, splitName } from "../lib/showcaseForm";
 import { OpenCallGallery } from "./GalleryEntries";
@@ -94,7 +95,7 @@ const lc = (s) => String(s || "").trim().toLowerCase();
 const emailsOf = (c) => [c.email, ...(Array.isArray(c.alt_emails) ? c.alt_emails : [])].map(lc).filter(Boolean);
 
 export default function ShowcaseApplications({
-  contacts, events, onSaveContact, onCreateContact, onUpdateEvent, openContact, showToast,
+  contacts, events, onSaveContact, onCreateContact, onUpdateEvent, openContact, openSurvey, showToast,
 }) {
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -104,12 +105,14 @@ export default function ShowcaseApplications({
   const [busy, setBusy] = useState(false);
 
   const [entries, setEntries] = useState([]);
+  const [invites, setInvites] = useState([]);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [a, e] = await Promise.all([fetchShowcaseApplications(), fetchAllProgramEntries()]);
+    const [a, e, i] = await Promise.all([fetchShowcaseApplications(), fetchAllProgramEntries(), fetchSurveyInvites()]);
     setApps(a);
     setEntries(e);
+    setInvites(i);
     setLoading(false);
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -372,7 +375,7 @@ export default function ShowcaseApplications({
       {tab === "gallery" ? (
         <OpenCallGallery events={events} showToast={showToast} />
       ) : tab === "past" ? (
-        <PastParticipants contacts={contacts} events={events} entries={entries} loading={loading} openContact={openContact} showToast={showToast} />
+        <PastParticipants contacts={contacts} events={events} entries={entries} invites={invites} loading={loading} openContact={openContact} openSurvey={openSurvey} showToast={showToast} />
       ) : loading ? (
         <div className="sa-empty"><b>Loading…</b></div>
       ) : shown.length === 0 ? (
