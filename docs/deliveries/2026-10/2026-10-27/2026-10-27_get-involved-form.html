@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get Involved Form</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--muted:#5f5f5b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Lato,"Helvetica Neue",Arial,sans-serif;padding:32px 16px}
+.slide{max-width:1100px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.12)}
+.top{background:var(--ink);color:#fff;padding:28px 32px;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-end;border-bottom:6px solid var(--cyan)}
+.eyebrow{font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--acid);margin:0 0 8px}
+h1{margin:0;font-size:clamp(28px,5vw,44px);font-weight:900;line-height:1.05}
+.badges{display:flex;flex-wrap:wrap;gap:8px}
+.b{font-size:13px;font-weight:900;padding:7px 12px;border-radius:999px;background:#fff;color:var(--ink)}
+.b.live{background:var(--acid)}.b.hash{background:var(--banana)}.b.eff{background:var(--cyan)}
+.body{padding:28px 32px 32px}
+.lede{font-size:18px;line-height:1.5;margin:0 0 24px;color:#2b2b29}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.card{border:2px solid var(--ink);border-radius:10px;padding:18px;border-left-width:8px}
+.card.c1{border-left-color:var(--fuchsia)}.card.c2{border-left-color:var(--cyan)}.card.c3{border-left-color:var(--acid)}.card.c4{border-left-color:var(--banana)}
+.card .ic{font-size:26px}
+.card h2{font-size:18px;font-weight:900;margin:8px 0 8px}
+.card p,.card li{font-size:14px;line-height:1.5;margin:0;color:#2b2b29}
+.card ul{margin:0;padding-left:18px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font-size:12px;font-weight:900;border:2px solid var(--ink);border-radius:999px;padding:4px 10px}
+.next{margin-top:24px;background:var(--paper);border-radius:10px;padding:16px 18px;font-size:15px;line-height:1.5}
+.next b{color:var(--fuchsia)}
+.foot{font-size:13px;color:var(--muted);margin-top:18px}
+code{font-size:13px;background:var(--paper);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div>
+      <p class="eyebrow">Sprout CRM · Delivery · 2026-10-27</p>
+      <h1>A way in for everyone who isn't a host</h1>
+    </div>
+    <div class="badges">
+      <span class="b live">● Live</span>
+      <span class="b hash">main · 933794c</span>
+      <span class="b eff">Effort: medium</span>
+    </div>
+  </div>
+  <div class="body">
+    <p class="lede">New public form <code>/get-involved</code> plus a 🙋 Get Involved page in the CRM. People ask for info, events, or a way into the community, and nothing lands in Contacts until staff say so.</p>
+    <div class="grid">
+      <div class="card c1">
+        <div class="ic">📝</div>
+        <h2>The public form</h2>
+        <p>Name, email, what they're interested in, a message, Instagram, how they heard.</p>
+        <div class="chips"><span class="chip">Events</span><span class="chip">Showcasing</span><span class="chip">Hosting</span><span class="chip">Membership</span><span class="chip">Volunteering</span><span class="chip">Partnering</span><span class="chip">Question</span></div>
+      </div>
+      <div class="card c2">
+        <div class="ic">🙋</div>
+        <h2>The CRM page</h2>
+        <ul><li>New / Followed up tabs, interest filter</li><li>Add as contact, create-only</li><li>Already in the CRM shows "In CRM" + Open</li><li>Copy email, Delete</li></ul>
+      </div>
+      <div class="card c3">
+        <div class="ic">📬</div>
+        <h2>Alerts + safety</h2>
+        <ul><li>Every send emails maxperkins@, Reply-To the person</li><li>Repeat within an hour adds no second row</li><li>Cap of 60 an hour</li><li>Own table <code>sprout_interest</code>, staff-only access</li></ul>
+      </div>
+      <div class="card c4">
+        <div class="ic">➡️</div>
+        <h2>After they send</h2>
+        <p>Hosting points to /book. Showcasing points to /submit. Everyone gets the Discord and @sproutsocietyorg.</p>
+      </div>
+    </div>
+    <div class="next"><b>Next:</b> draft the two Vol. 5 thank-you emails (attendees, artists) in maxperkins@ Gmail. Max reviews and sends.</div>
+    <p class="foot">Verified live: page returns 200 and the API rejects an empty form. Checked at 390px and 1280px with no sideways scroll. CRM page not clicked through (login wall).</p>
+  </div>
+</div>
+</body>
+</html>

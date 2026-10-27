@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-10-27: Get involved form + CRM page
+
+Merge `933794c` (commit `d4ed76d`), pushed and live. Migration `sprout_interest` (applied). Effort: medium.
+
+- **Public `/get-involved`** for people who aren't hosts: name, email, interest chips (Upcoming events, Showcasing, Hosting, Membership, Volunteering, Partnering, Just a question; no coworking, Max's call), message, Instagram, how they heard. The sent screen points to /book, /submit, the Discord, and @sproutsocietyorg.
+- **New table `sprout_interest`** (authenticated-only RLS + explicit grants). Sends never write to contacts. Each send emails maxperkins@ with Reply-To the person; a repeat within an hour adds no second row; hourly cap 60.
+- **🙋 Get Involved sidebar page:** New / Followed up tabs, interest filter, Add as contact (create-only; an email already in the CRM shows "In CRM" + Open), Copy email, Delete.
+- Why: the Vol. 5 thank-you emails need a general "get involved" CTA. Next: draft those two emails in maxperkins@ Gmail for Max to send.
+
 ## 2026-10-24: Vol. 5 night stats, Emails collected on Outcomes
 
 Merge `aaec755` (commit `543f6b1`), pushed and live. Effort: low.
