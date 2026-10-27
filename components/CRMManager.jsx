@@ -53,6 +53,7 @@ import { validateContact, validateOrg } from "../lib/schemas";
 import { blocksOf, firstHeading, parseTableBlock, serializeTable, renderInline } from "../lib/md";
 import DayBoard from "./DayBoard";
 import ShowcaseApplications from "./ShowcaseApplications";
+import GetInvolvedView from "./GetInvolvedView";
 import { EventGalleryPanel } from "./GalleryEntries";
 import { pieceLine } from "../lib/galleryForm";
 import GrantMetrics from "./GrantMetrics";
@@ -1556,6 +1557,7 @@ function Sidebar({view,setView,contacts,events,profile,onQuickLog,onCollapse}) {
     {id:"orgs",label:"Organizations",icon:"🏢"},
     {id:"events",label:"Events",icon:"🗓"},
     {id:"showcase",label:"Showcase",icon:"🎤"},
+    {id:"interest",label:"Get Involved",icon:"🙋"},
     {id:"newsletter",label:"Newsletter",icon:"📰"},
     {id:"outreach",label:"Outreach",icon:"📣"},
     {id:"members",label:"Members",icon:"★"},
@@ -6389,7 +6391,7 @@ const saveProfile = useCallback((u) => {
     try{
       const url=new URL(window.location.href);
       const v=url.searchParams.get("view");
-      if(v==="showcase"||v==="survey"){
+      if(v==="showcase"||v==="survey"||v==="interest"){
         setView(v);
         url.searchParams.delete("view");
         window.history.replaceState({},"",url.pathname+(url.searchParams.toString()?`?${url.searchParams}`:"")+url.hash);
@@ -6435,6 +6437,7 @@ if (dbError) return (
         {view==="grants"&&<GrantMetrics events={events} contacts={contacts} orgs={orgs} onUpdateEvent={saveOneEvent} profile={profile} openEvent={openEvent} showToast={showToast} setView={setView}/>}
         {view==="survey"&&<SurveyView events={events} contacts={contacts} orgs={orgs} openContact={openContact} showToast={showToast}/>}
         {view==="members"&&<MembersView contacts={contacts} orgs={orgs} onSaveContact={saveOneContact} onSaveOrg={saveOneOrg} openContact={openContact} showToast={showToast}/>}
+        {view==="interest"&&<GetInvolvedView contacts={contacts} onCreateContact={createOneContact} openContact={openContact} showToast={showToast}/>}
         {view==="showcase"&&<ShowcaseApplications contacts={contacts} events={events} onSaveContact={saveOneContact} onCreateContact={createOneContact} onUpdateEvent={saveOneEvent} openContact={openContact} showToast={showToast}/>}
         {view==="newsletter"&&<NewsletterView newsletters={newsletters} events={events} contacts={contacts} profile={profile} onUpdate={saveNewsletter} onDelete={deleteNewsletter} showToast={showToast}/>}
         {view==="outreach"&&<OutreachView contacts={contacts} orgs={orgs} events={events}/>}
