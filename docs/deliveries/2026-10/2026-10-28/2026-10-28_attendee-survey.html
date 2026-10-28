@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Attendee survey</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#030000;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--paper:#F7F7F6}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);font-family:Lato,system-ui,sans-serif;color:var(--ink)}
+.slide{max-width:1100px;margin:32px auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.12)}
+.hd{background:var(--ink);color:#fff;padding:28px 36px;border-bottom:5px solid var(--acid)}
+.eb{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acid);font-weight:900}
+h1{margin:6px 0 10px;font-size:32px;font-weight:900}
+.b{font-size:12px;font-weight:900;padding:5px 10px;border-radius:999px;background:#fff;color:var(--ink);margin-right:6px}.b.c{background:var(--cyan)}.b.y{background:var(--banana)}.b.f{background:var(--fuchsia);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;padding:28px 36px}
+.card{border-radius:10px;padding:18px 20px;background:var(--paper);border-left:6px solid var(--cyan);font-size:14px;line-height:1.5}
+.card.f{border-color:var(--fuchsia)}.card.y{border-color:var(--banana)}.card.a{border-color:var(--acid)}
+.card h3{margin:0 0 8px;font-size:17px}.card ul{margin:0;padding-left:18px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}td{padding:4px 0;border-bottom:1px solid #e3e3e0}td+td{text-align:right;font-weight:900}
+.ft{padding:0 36px 24px;font-size:12px;color:#6b6b68}
+</style></head><body>
+<div class="slide">
+ <div class="hd"><div class="eb">Delivered · 2026-10-28</div><h1>🙌 Attendee survey + thank-you drafts</h1>
+  <span class="b">main</span><span class="b c">merge 11794c4</span><span class="b y">no migration</span><span class="b f">Max sends</span></div>
+ <div class="grid">
+  <div class="card"><h3>🔗 One shared link per night</h3>Fits a BCC email. Each answer becomes its own reply with its own private link, so people can come back and edit. Name and email optional.</div>
+  <div class="card a"><h3>📝 Five questions</h3><ul><li>First time at Sprout?</li><li>Met someone new? (+ Something else)</li><li>How welcome, 1 to 5</li><li>Come back or bring a friend?</li><li>What did tonight mean to you? → Google review</li></ul></div>
+  <div class="card y"><h3>✉️ Drafts in maxperkins@</h3><table>
+   <tr><td>Show n Tell (May)</td><td>16</td></tr><tr><td>Community Game Night</td><td>1</td></tr><tr><td>Sprout Happy Hour</td><td>1</td></tr>
+   <tr><td>Sprout N Tell Vol. 2</td><td>15</td></tr><tr><td>Vol. 3</td><td>26</td></tr><tr><td>Vol. 4</td><td>12</td></tr><tr><td>Vol. 5 (survey added)</td><td>15</td></tr></table></div>
+  <div class="card f"><h3>🚫 Left out</h3>6 artists who signed in at the door, plus staff and test rows. One email per person.</div>
+ </div>
+ <div class="ft">lib/surveyForm.js · lib/surveyDb.js · app/api/survey/[token] · SurveyForm.jsx · SurveyView.jsx · Sprout CRM Next</div>
+</div>
+</body></html>

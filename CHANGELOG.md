@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-10-28: Attendee survey + attendee thank-you drafts
+
+Merge `11794c4`, pushed. No migration. Effort: medium.
+
+- **New Attendees survey** with one shared link per night, so it fits a BCC thank-you. Each submission is its own reply with its own private link (reopen to edit). Optional name and email. 60 replies per link per hour.
+- Survey page opens on Showcase artists; Attendees > Send lists past nights with Create/Copy shared link.
+- Shared links made for the 7 nights with sign-ins.
+- **Drafts (maxperkins@, Max sends):** six BCC thank-yous by night (May Show n Tell, Game Night, Happy Hour, Vol. 2, Vol. 3, Vol. 4) and the survey paragraph added to the Vol. 5 attendee draft. Artists, staff and test sign-ins left out.
+
+---
+
 ## 2026-10-28: Discord card off the survey thank-you screen
 
 Merge `1c8f787`, pushed. Effort: low. Max's call: the Google review is the most important ask, so it is now the only one on the thank-you screen. Discord stays in the survey emails and the Copy email template.
