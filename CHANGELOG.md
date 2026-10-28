@@ -2,6 +2,12 @@
 
 ---
 
+## 2026-10-28: Discord card off the survey thank-you screen
+
+Merge `1c8f787`, pushed. Effort: low. Max's call: the Google review is the most important ask, so it is now the only one on the thank-you screen. Discord stays in the survey emails and the Copy email template.
+
+---
+
 ## 2026-10-28: Google review steps shown before the tap
 
 Merge `6b616c6`, pushed. No migration. Effort: low.
