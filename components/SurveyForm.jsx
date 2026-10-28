@@ -127,7 +127,7 @@ export default function SurveyForm({ token, preview }) {
                 {words && (
                   <ol className="sv-steps">
                     <li>Tap the button below. <b>We copy your answer for you.</b></li>
-                    <li>Google opens in a new tab. <b>Paste your answer into the review box</b> and post.</li>
+                    <li>Google opens in a new tab. <b>Paste your answer into the review box</b>, or write something else if you like, and post.</li>
                   </ol>
                 )}
                 <a className="pt-btn" href={GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer" onClick={copy}>{words ? "Copy my answer and open Google" : "Post a Google review"}</a>
