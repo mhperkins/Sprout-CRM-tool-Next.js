@@ -34,6 +34,8 @@ const EXTRA_CSS = `
 .sv-review{margin-top:18px}
 .sv-review-q{font-size:14.5px;font-style:italic;color:#3a3a38;border-left:4px solid #FAD100;padding:4px 0 4px 12px;margin:10px 0 14px;white-space:pre-wrap}
 .sv-review .pt-btn{display:block;text-align:center;text-decoration:none}
+.sv-steps{margin:0 0 14px;padding:12px 14px 12px 32px;background:#FFF6CC;border-radius:8px;font-size:15px;line-height:1.5;color:#030000}
+.sv-steps li+li{margin-top:6px}
 `;
 
 export default function SurveyForm({ token, preview }) {
@@ -120,9 +122,15 @@ export default function SurveyForm({ token, preview }) {
             return (
               <div className="pt-card sv-review">
                 <div className="pt-lbl" style={{ textTransform: "none", letterSpacing: 0, fontSize: 15.5 }}>Would you post this on Google?</div>
-                <div className="pt-help">A Google review helps people find Sprout. {words ? "We copied your words, so just paste them in." : "A sentence or two is plenty."}</div>
+                <div className="pt-help">A Google review helps people find Sprout. {words ? "" : "A sentence or two is plenty."}</div>
                 {words && <div className="sv-review-q">{words}</div>}
-                <a className="pt-btn" href={GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer" onClick={copy}>Post a Google review</a>
+                {words && (
+                  <ol className="sv-steps">
+                    <li>Tap the button below. <b>We copy your answer for you.</b></li>
+                    <li>Google opens in a new tab. <b>Paste your answer into the review box</b> and post.</li>
+                  </ol>
+                )}
+                <a className="pt-btn" href={GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer" onClick={copy}>{words ? "Copy my answer and open Google" : "Post a Google review"}</a>
                 {copied && <div className="pt-help" style={{ marginTop: 8 }}>Copied. Paste it into the review box.</div>}
               </div>
             );
