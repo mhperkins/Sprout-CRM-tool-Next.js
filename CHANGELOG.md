@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-10-28: Personal attendee links, logo in form header, neighborhood question everywhere
+
+Merges `aabdd04`, `0b8b584`, pushed. No migration. Effort: medium.
+
+- **Personal attendee links:** each of the 86 attendee drafts now carries that person's own link, so the survey greets them by name and Replies shows who answered. The form no longer asks name or email. A shared link is now an attendee link with no email.
+- **Logo:** the white Sprout Society logo sits in the shared form header (all surveys, /book, host portal, program form, /showcase).
+- **"Where are you coming from?"** added as the first question on the artist and host surveys.
+
+---
+
 ## 2026-10-28: Attendee survey asks where people come from; personal attendee drafts
 
 Merge `322d404`, pushed. No migration. Effort: low.
