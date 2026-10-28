@@ -54,7 +54,6 @@ export default function SurveyForm({ token, preview }) {
   // from then on the page saves to that reply's private link instead.
   const [open, setOpen] = useState(false);
   const [activeToken, setActiveToken] = useState(token);
-  const [who, setWho] = useState({ name: "", email: "" });
 
   useEffect(() => {
     if (preview) { setSurvey(preview.survey); setName(preview.name || ""); setEvents(preview.events || []); return; }
@@ -88,12 +87,12 @@ export default function SurveyForm({ token, preview }) {
     try {
       const res = await fetch(`/api/survey/${activeToken}`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(open ? { answers, name: who.name, email: who.email } : { answers }),
+        body: JSON.stringify({ answers }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Something went wrong. Please try again.");
       if (json.token) {
-        setActiveToken(json.token); setOpen(false); setName(who.name.trim());
+        setActiveToken(json.token); setOpen(false);
         try { window.history.replaceState(null, "", `/survey/${json.token}`); } catch { /* the page still works */ }
       }
       setReplied(true); setDone(true); top();
@@ -246,17 +245,6 @@ export default function SurveyForm({ token, preview }) {
         </div>
 
         {replied && <div className="pt-note">You already sent answers. Change anything below and send again.</div>}
-
-        {open && <div className="pt-card"><div className="sv-body">
-          <div className="sv-q">
-            <label className="pt-lbl" htmlFor="sv_who_name" style={{ textTransform: "none", letterSpacing: 0, fontSize: 15.5, color: "#030000" }}>Your name <span style={{ fontWeight: 400, color: "#8a8a86" }}>(optional)</span></label>
-            <input id="sv_who_name" className="pt-in" maxLength={120} autoComplete="name" value={who.name} onChange={(e) => setWho((w) => ({ ...w, name: e.target.value }))} />
-          </div>
-          <div className="sv-q">
-            <label className="pt-lbl" htmlFor="sv_who_email" style={{ textTransform: "none", letterSpacing: 0, fontSize: 15.5, color: "#030000" }}>Email <span style={{ fontWeight: 400, color: "#8a8a86" }}>(optional)</span></label>
-            <input id="sv_who_email" className="pt-in" type="email" maxLength={200} autoComplete="email" value={who.email} onChange={(e) => setWho((w) => ({ ...w, email: e.target.value }))} />
-          </div>
-        </div></div>}
 
         <div className="pt-card"><div className="sv-body">{survey.questions.map(field)}</div></div>
 
