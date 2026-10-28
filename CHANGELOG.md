@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-10-28: Google review steps shown before the tap
+
+Merge `6b616c6`, pushed. No migration. Effort: low.
+
+- Max missed the "Copied" note because Google opens in a new tab. The steps now sit above the button in a yellow box: we copy your answer; Google opens in a new tab; paste it, or write something else, and post.
+- Button reads "Copy my answer and open Google" when Q5 has an answer.
+- Google's review link has no way to prefill text, so copy-and-paste stays.
+
+---
+
 ## 2026-10-28: Survey copy pass (intro, answer options, Discord, email template)
 
 Merge `d226cfa`, pushed. No migration. Effort: low.
