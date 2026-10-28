@@ -14,6 +14,10 @@ import { SHARE_OPTS, eventLabel } from "../lib/surveyForm";
 
 const FOOT = "Questions about this survey? Email us and a human will answer.";
 
+// Sprout's Google Business Profile "write a review" box. Shown to everyone who sends,
+// whatever they answered: asking only happy people breaks Google's review rules.
+const GOOGLE_REVIEW_URL = "https://search.google.com/local/writereview?placeid=ChIJbV1ZHABfwokRXwYabmZeNyQ";
+
 const EXTRA_CSS = `
 .sv-q{margin-bottom:24px}
 .sv-body{margin:0;padding:0;border:0}
@@ -27,6 +31,9 @@ const EXTRA_CSS = `
 .sv-rate-row{display:grid;gap:6px}
 .sv-rate-row span{font-size:14px}
 .sv-sub{font-size:13.5px;font-weight:700;margin:12px 0 6px}
+.sv-review{margin-top:18px}
+.sv-review-q{font-size:14.5px;font-style:italic;color:#3a3a38;border-left:4px solid #FAD100;padding:4px 0 4px 12px;margin:10px 0 14px;white-space:pre-wrap}
+.sv-review .pt-btn{display:block;text-align:center;text-decoration:none}
 `;
 
 export default function SurveyForm({ token, preview }) {
@@ -40,6 +47,7 @@ export default function SurveyForm({ token, preview }) {
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (preview) { setSurvey(preview.survey); setName(preview.name || ""); setEvents(preview.events || []); return; }
@@ -99,9 +107,27 @@ export default function SurveyForm({ token, preview }) {
   if (done) {
     return (
       <PortalShell subtitle="A few questions" footNote={FOOT}>
+        <style>{EXTRA_CSS}</style>
         <div className="pt-wrap">
           <div className="pt-hero"><div className="pt-h1">Thank you{first ? `, ${first}` : ""}.</div><p className="pt-lead">{survey.thanks}</p></div>
-          <button className="pt-btn pt-btn-2" onClick={() => { setDone(false); top(); }}>Change my answers</button>
+          {(() => {
+            const tq = survey.questions.find((q) => q.type === "testimonial");
+            const words = ((tq && answers[tq.id]?.text) || "").trim();
+            const copy = async () => {
+              if (!words) return;
+              try { await navigator.clipboard.writeText(words); setCopied(true); } catch { /* the link still opens */ }
+            };
+            return (
+              <div className="pt-card sv-review">
+                <div className="pt-lbl" style={{ textTransform: "none", letterSpacing: 0, fontSize: 15.5 }}>Would you post this on Google?</div>
+                <div className="pt-help">A Google review helps people find Sprout. {words ? "We copied your words, so just paste them in." : "A sentence or two is plenty."}</div>
+                {words && <div className="sv-review-q">{words}</div>}
+                <a className="pt-btn" href={GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer" onClick={copy}>Post a Google review</a>
+                {copied && <div className="pt-help" style={{ marginTop: 8 }}>Copied. Paste it into the review box.</div>}
+              </div>
+            );
+          })()}
+          <button className="pt-btn pt-btn-2" style={{ marginTop: 14 }} onClick={() => { setDone(false); setCopied(false); top(); }}>Change my answers</button>
         </div>
       </PortalShell>
     );
