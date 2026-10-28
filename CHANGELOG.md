@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-10-28: Survey copy pass (intro, answer options, Discord, email template)
+
+Merge `d226cfa`, pushed. No migration. Effort: low.
+
+- **Intro** on both surveys: "Thank you for being a part of the Sprout Community, {name}! A few quick questions." with the first name filled in.
+- **Artist answers.** Q1: A collaborator, A friend, New fans or followers, A gig lead, Something else, None yet. Q2: Sale/Tips, A booking, A collaboration, Something else, Nothing yet. "Something else" opens an optional text box; Replies show the words.
+- **Discord card** on the survey thank-you screen, under the Google review card.
+- **Copy email** uses Max's template with clickable "here" and "Discord" links (rich-text copy); hosts point to /book.
+- **Gmail:** the 32 drafts rebuilt with links; Discord paragraph added to the 20 participant drafts without touching Max's personal edits.
+- Test invite `sinv_test_max_review` created for Max to try the Google review live.
+
+---
+
 ## 2026-10-28: Vol. 5 thank-yous + survey drafts, Google review button
 
 Merge `e8f85ab` (commit `d258fd3`), pushed. No migration. Effort: medium.
