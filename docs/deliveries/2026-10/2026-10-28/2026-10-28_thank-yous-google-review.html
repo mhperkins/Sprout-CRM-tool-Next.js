@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thank-yous and Google review</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#030000;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--paper:#F7F7F6}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);font-family:Lato,system-ui,sans-serif;color:var(--ink)}
+.slide{max-width:1100px;margin:32px auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.12)}
+.hd{background:var(--ink);color:#fff;padding:28px 36px;border-bottom:5px solid var(--acid)}
+.eb{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acid);font-weight:900}
+h1{margin:6px 0 10px;font-size:34px;font-weight:900}
+.badges{display:flex;gap:8px;flex-wrap:wrap}.b{font-size:12px;font-weight:900;padding:5px 10px;border-radius:999px;background:#fff;color:var(--ink)}
+.b.c{background:var(--cyan)}.b.f{background:var(--fuchsia);color:#fff}.b.y{background:var(--banana)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;padding:28px 36px}
+.card{border-radius:10px;padding:18px 20px;background:var(--paper);border-left:6px solid var(--cyan)}
+.card.f{border-color:var(--fuchsia)}.card.y{border-color:var(--banana)}.card.a{border-color:var(--acid)}
+.card h3{margin:0 0 8px;font-size:17px;font-weight:900}.card p,.card li{font-size:14px;line-height:1.5;margin:0}
+.card ul{margin:0;padding-left:18px}.n{font-size:30px;font-weight:900}
+code{background:#fff;padding:1px 5px;border-radius:4px;font-size:12.5px}
+.ft{padding:14px 36px 24px;font-size:12px;color:#6b6b68}
+</style></head><body>
+<div class="slide">
+ <div class="hd"><div class="eb">Delivered · 2026-10-28</div><h1>Vol. 5 thank-yous + Google review button</h1>
+  <div class="badges"><span class="b">main</span><span class="b c">merge e8f85ab</span><span class="b c">commit d258fd3</span><span class="b y">32 Gmail drafts</span><span class="b f">Max sends</span></div></div>
+ <div class="grid">
+  <div class="card f"><div class="n">1</div><h3>📨 Attendee thank-you</h3><p>One BCC draft to the 15 Vol. 5 door sign-ins: Discord, @sproutsocietyorg, /submit, /get-involved. Next date shared when set.</p></div>
+  <div class="card"><div class="n">11</div><h3>🎤 Vol. 5 artists</h3><p>Personal thank-you with each artist's own survey link inside. One email each, no second ask.</p></div>
+  <div class="card"><div class="n">20</div><h3>🗂 Earlier artists</h3><p>"A quick favor for Sprout": thanks them for their own night (Vols. 1 to 4, Industry Day) and asks for the survey.</p></div>
+  <div class="card a"><h3>🔗 Survey links</h3><ul><li>12 new, 19 reused from 10/8</li><li>Sean's link gained Vol. 5</li><li>Marked sent once Max sends</li></ul></div>
+  <div class="card y"><h3>⭐ Post a Google review</h3><p>After sending, everyone sees their Q5 words with one button: copies them and opens Sprout's review box (<code>placeid=ChIJbV1Z…</code>). Shown to all, never only happy replies.</p></div>
+  <div class="card f"><h3>📱 Still to do</h3><ul><li>DM 20 people with no email</li><li>Decide Rachel Long + Warren Carrington</li><li>Pat's unsent host link</li></ul></div>
+ </div>
+ <div class="ft">components/SurveyForm.jsx · no migration · checked on a local production build · Sprout CRM Next</div>
+</div>
+</body></html>

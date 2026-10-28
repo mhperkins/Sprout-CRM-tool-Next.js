@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-10-28: Vol. 5 thank-yous + survey drafts, Google review button
+
+Merge `e8f85ab` (commit `d258fd3`), pushed. No migration. Effort: medium.
+
+- **32 Gmail drafts in maxperkins@ for Max to send:** 1 BCC thank-you to the 15 Vol. 5 door sign-ins (Discord, @sproutsocietyorg, /submit, /get-involved; "we'll share the next date"); 11 personal thank-yous to Vol. 5 artists with their own survey link; 20 personal survey asks to earlier artists (Vols. 1 to 4, Industry Day) naming their night. Max chose personal over one BCC (the link is per person).
+- **Survey links:** 12 new artist links created, 19 reused from 10/8 (never sent); Sean Jeffers' link gained Vol. 5. All still unsent until Max sends.
+- **Left out:** Journey C. + Christopher Brisita (dropped out), Rachel Long (co-host, personal note), Warren Carrington (unconfirmed he played). 20 past participants have no email and need an Instagram DM.
+- **Google review button** on the survey thank-you screen: copies the person's Q5 testimonial and opens Sprout's Google review box (place ID `ChIJbV1ZHABfwokRXwYabmZeNyQ`, derived from the Maps listing). Shown to everyone, never only happy replies (Google's review-gating rule). Checked on a local production build; one test alert went to maxperkins@.
+
 ## 2026-10-28: Showcase past participants + artist survey list
 
 Merge `0f90c01` (commits `eed080f`, `f4b19ec`), pushed. No migration. Effort: low/medium.
