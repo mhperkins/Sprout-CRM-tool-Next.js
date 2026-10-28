@@ -101,6 +101,18 @@ async function copyText(text) {
   try { await navigator.clipboard.writeText(text); return true; } catch { return false; }
 }
 
+/** Copy rich text with a plain-text fallback, so links stay clickable when pasted into Gmail. */
+async function copyRich(text, html) {
+  try {
+    if (typeof ClipboardItem === "undefined") throw new Error("no ClipboardItem");
+    await navigator.clipboard.write([new ClipboardItem({
+      "text/plain": new Blob([text], { type: "text/plain" }),
+      "text/html": new Blob([html], { type: "text/html" }),
+    })]);
+    return true;
+  } catch { return copyText(text); }
+}
+
 /** Show one answer as plain text, using the questions that reply was given. */
 function answerText(q, v, evById) {
   if (v == null) return "";
@@ -207,8 +219,9 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
       const evs = (inv.event_ids || []).map(id => evById.get(id)).filter(Boolean);
       const mail = surveyEmail({ firstName: (inv.name || "").split(" ")[0] || row.contact?.first_name, audience, events: evs, url: linkFor(inv) });
       const to = inv.email || row.contact?.email;
-      const ok = await copyText(`To: ${to || "(no email on file)"}\nSubject: ${mail.subject}\n\n${mail.body}`);
-      showToast?.(ok ? "Email copied ✓ Paste it into Gmail, then mark it sent." : "Copy failed. Use Copy link instead.", ok ? undefined : "err");
+      // Address and subject go on the toast, so the clipboard holds only the body to paste.
+      const ok = await copyRich(mail.body, mail.html);
+      showToast?.(ok ? `Email copied ✓ To: ${to || "(no email on file)"} · Subject: ${mail.subject}. Paste into Gmail, then mark it sent.` : "Copy failed. Use Copy link instead.", ok ? undefined : "err");
     }
     setBusyRow("");
   };

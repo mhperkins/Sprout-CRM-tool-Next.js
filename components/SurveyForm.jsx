@@ -10,7 +10,7 @@
 
 import { useState, useEffect } from "react";
 import { PortalShell } from "./PortalForm";
-import { SHARE_OPTS, eventLabel } from "../lib/surveyForm";
+import { SHARE_OPTS, eventLabel, fillIntro } from "../lib/surveyForm";
 
 const FOOT = "Questions about this survey? Email us and a human will answer.";
 
@@ -218,7 +218,7 @@ export default function SurveyForm({ token, preview }) {
               {name ? `For ${name}` : ""}{name && events.length ? " · " : ""}{events.length === 1 ? eventLabel(events[0]) : events.length > 1 ? `${events.length} nights at Sprout` : ""}
             </p>
           )}
-          {survey.intro && <p className="pt-lead" style={{ marginTop: 8 }}>{survey.intro}</p>}
+          {survey.intro && <p className="pt-lead" style={{ marginTop: 8 }}>{fillIntro(survey.intro, name)}</p>}
         </div>
 
         {replied && <div className="pt-note">You already sent answers. Change anything below and send again.</div>}
