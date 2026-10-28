@@ -10,7 +10,7 @@
 
 import { useState, useEffect } from "react";
 import { PortalShell } from "./PortalForm";
-import { SHARE_OPTS, eventLabel } from "../lib/surveyForm";
+import { SHARE_OPTS, eventLabel, fillIntro, isOther, otherKey, DISCORD_URL, DISCORD_LINE } from "../lib/surveyForm";
 
 const FOOT = "Questions about this survey? Email us and a human will answer.";
 
@@ -127,6 +127,11 @@ export default function SurveyForm({ token, preview }) {
               </div>
             );
           })()}
+          <div className="pt-card sv-review">
+            <div className="pt-lbl" style={{ textTransform: "none", letterSpacing: 0, fontSize: 15.5 }}>Join us on Discord</div>
+            <div className="pt-help">{DISCORD_LINE.after.replace(/^!\s*/, "")}</div>
+            <a className="pt-btn" style={{ marginTop: 10 }} href={DISCORD_URL} target="_blank" rel="noopener noreferrer">Join the Discord</a>
+          </div>
           <button className="pt-btn pt-btn-2" style={{ marginTop: 14 }} onClick={() => { setDone(false); setCopied(false); top(); }}>Change my answers</button>
         </div>
       </PortalShell>
@@ -164,8 +169,14 @@ export default function SurveyForm({ token, preview }) {
           </div>
         ))}</div>;
     }
-    if (q.type === "single") return <div className="sv-q" key={q.id}>{label}{hint}{chips(q, v, (o, on) => set(q.id, on ? null : o))}</div>;
-    if (q.type === "multi") return <div className="sv-q" key={q.id}>{label}{hint}{chips(q, v, (o, on) => set(q.id, on ? (v || []).filter((x) => x !== o) : [...(v || []), o]), true)}</div>;
+    // "Something else" ticked: an optional box for what it was.
+    const otherBox = () => [].concat(v || []).some(isOther) && (
+      <input className="pt-in" style={{ marginTop: 10 }} maxLength={300} placeholder="What was it? (optional)"
+        aria-label={`${q.label} something else`} value={answers[otherKey(q.id)] || ""}
+        onChange={(e) => set(otherKey(q.id), e.target.value)} />
+    );
+    if (q.type === "single") return <div className="sv-q" key={q.id}>{label}{hint}{chips(q, v, (o, on) => set(q.id, on ? null : o))}{otherBox()}</div>;
+    if (q.type === "multi") return <div className="sv-q" key={q.id}>{label}{hint}{chips(q, v, (o, on) => set(q.id, on ? (v || []).filter((x) => x !== o) : [...(v || []), o]), true)}{otherBox()}</div>;
     if (q.type === "scale") {
       const sq = { ...q, options: ["1", "2", "3", "4", "5"] };
       return <div className="sv-q" key={q.id}>{label}{hint}{chips(sq, v != null ? String(v) : null, (o, on) => set(q.id, on ? null : Number(o)))}</div>;
@@ -218,7 +229,7 @@ export default function SurveyForm({ token, preview }) {
               {name ? `For ${name}` : ""}{name && events.length ? " · " : ""}{events.length === 1 ? eventLabel(events[0]) : events.length > 1 ? `${events.length} nights at Sprout` : ""}
             </p>
           )}
-          {survey.intro && <p className="pt-lead" style={{ marginTop: 8 }}>{survey.intro}</p>}
+          {survey.intro && <p className="pt-lead" style={{ marginTop: 8 }}>{fillIntro(survey.intro, name)}</p>}
         </div>
 
         {replied && <div className="pt-note">You already sent answers. Change anything below and send again.</div>}

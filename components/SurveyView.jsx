@@ -19,7 +19,7 @@ import { fetchSurveys, saveSurvey, fetchSurveyInvites, createSurveyInvite, updat
 import { buildPastParticipants, normName } from "../lib/pastParticipants";
 import {
   SURVEY_TYPES, SURVEY_AUDIENCES, SHARE_OPTS, DEFAULT_SURVEYS, blankQuestion, newQuestionId,
-  sanitizeSurvey, surveyProblems, tallySurvey, surveyEmail, eventLabel,
+  sanitizeSurvey, surveyProblems, tallySurvey, surveyEmail, eventLabel, otherKey,
 } from "../lib/surveyForm";
 import { pickOrganizer } from "../lib/eventPortal";
 import SurveyForm from "./SurveyForm";
@@ -101,9 +101,22 @@ async function copyText(text) {
   try { await navigator.clipboard.writeText(text); return true; } catch { return false; }
 }
 
+/** Copy rich text with a plain-text fallback, so links stay clickable when pasted into Gmail. */
+async function copyRich(text, html) {
+  try {
+    if (typeof ClipboardItem === "undefined") throw new Error("no ClipboardItem");
+    await navigator.clipboard.write([new ClipboardItem({
+      "text/plain": new Blob([text], { type: "text/plain" }),
+      "text/html": new Blob([html], { type: "text/html" }),
+    })]);
+    return true;
+  } catch { return copyText(text); }
+}
+
 /** Show one answer as plain text, using the questions that reply was given. */
-function answerText(q, v, evById) {
+function answerText(q, v, evById, other = "") {
   if (v == null) return "";
+  if (other && ["single", "multi"].includes(q.type)) return `${q.type === "multi" ? v.join(", ") : v} (${other})`;
   if (q.type === "event_count") return Object.entries(v).map(([id, n]) => `${evById.get(id)?.name || "Event"}: ${n}`).join(" · ");
   if (q.type === "multi") return v.join(", ");
   if (q.type === "rating_rows") return (q.rows || []).map((r, i) => (v[i] ? `${r}: ${v[i]}` : "")).filter(Boolean).join(" · ");
@@ -207,8 +220,9 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
       const evs = (inv.event_ids || []).map(id => evById.get(id)).filter(Boolean);
       const mail = surveyEmail({ firstName: (inv.name || "").split(" ")[0] || row.contact?.first_name, audience, events: evs, url: linkFor(inv) });
       const to = inv.email || row.contact?.email;
-      const ok = await copyText(`To: ${to || "(no email on file)"}\nSubject: ${mail.subject}\n\n${mail.body}`);
-      showToast?.(ok ? "Email copied ✓ Paste it into Gmail, then mark it sent." : "Copy failed. Use Copy link instead.", ok ? undefined : "err");
+      // Address and subject go on the toast, so the clipboard holds only the body to paste.
+      const ok = await copyRich(mail.body, mail.html);
+      showToast?.(ok ? `Email copied ✓ To: ${to || "(no email on file)"} · Subject: ${mail.subject}. Paste into Gmail, then mark it sent.` : "Copy failed. Use Copy link instead.", ok ? undefined : "err");
     }
     setBusyRow("");
   };
@@ -361,7 +375,7 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
                     <span className="sv-empty" style={{ fontSize: 12 }}>{(inv.event_ids || []).map(id => evById.get(id)).filter(Boolean).map(eventLabel).join(" · ")} · replied {fmtWhen(inv.replied_at)}</span>
                   </div>
                   <dl>{(inv.questions || []).map(q => {
-                    const t = answerText(q, inv.answers?.[q.id], evById);
+                    const t = answerText(q, inv.answers?.[q.id], evById, inv.answers?.[otherKey(q.id)]);
                     return t ? [<dt key={q.id + "t"}>{q.label}</dt>, <dd key={q.id + "d"}>{t}</dd>] : null;
                   })}</dl>
                 </div>
