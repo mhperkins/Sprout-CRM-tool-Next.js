@@ -10,7 +10,7 @@
 
 import { useState, useEffect } from "react";
 import { PortalShell } from "./PortalForm";
-import { SHARE_OPTS, eventLabel, fillIntro, isOther, otherKey, DISCORD_URL, DISCORD_LINE } from "../lib/surveyForm";
+import { SHARE_OPTS, eventLabel, fillIntro, isOther, otherKey } from "../lib/surveyForm";
 
 const FOOT = "Questions about this survey? Email us and a human will answer.";
 
@@ -135,11 +135,6 @@ export default function SurveyForm({ token, preview }) {
               </div>
             );
           })()}
-          <div className="pt-card sv-review">
-            <div className="pt-lbl" style={{ textTransform: "none", letterSpacing: 0, fontSize: 15.5 }}>Join us on Discord</div>
-            <div className="pt-help">{DISCORD_LINE.after.replace(/^!\s*/, "")}</div>
-            <a className="pt-btn" style={{ marginTop: 10 }} href={DISCORD_URL} target="_blank" rel="noopener noreferrer">Join the Discord</a>
-          </div>
           <button className="pt-btn pt-btn-2" style={{ marginTop: 14 }} onClick={() => { setDone(false); setCopied(false); top(); }}>Change my answers</button>
         </div>
       </PortalShell>
