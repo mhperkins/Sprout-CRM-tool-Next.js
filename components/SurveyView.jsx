@@ -15,7 +15,8 @@
  */
 
 import { useState, useEffect, useMemo } from "react";
-import { fetchSurveys, saveSurvey, fetchSurveyInvites, createSurveyInvite, updateSurveyInvite, deleteSurveyInvite } from "../lib/services";
+import { fetchSurveys, saveSurvey, fetchSurveyInvites, createSurveyInvite, updateSurveyInvite, deleteSurveyInvite, fetchAllProgramEntries } from "../lib/services";
+import { buildPastParticipants, normName } from "../lib/pastParticipants";
 import {
   SURVEY_TYPES, SURVEY_AUDIENCES, SHARE_OPTS, DEFAULT_SURVEYS, blankQuestion, newQuestionId,
   sanitizeSurvey, surveyProblems, tallySurvey, surveyEmail, eventLabel,
@@ -110,9 +111,10 @@ function answerText(q, v, evById) {
   return String(v);
 }
 
-export default function SurveyView({ events = [], contacts = [], orgs = [], showToast, openContact }) {
-  const [audience, setAudience] = useState("host");
-  const [tab, setTab] = useState("replies");
+export default function SurveyView({ events = [], contacts = [], orgs = [], showToast, openContact, start = null }) {
+  const [audience, setAudience] = useState(start?.audience || "host");
+  const [tab, setTab] = useState(start?.tab || "replies");
+  const [entries, setEntries] = useState([]);
   const [surveys, setSurveys] = useState(null);
   const [invites, setInvites] = useState([]);
   const [loadErr, setLoadErr] = useState("");
@@ -130,9 +132,9 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
 
   useEffect(() => {
     let live = true;
-    Promise.all([fetchSurveys(), fetchSurveyInvites()]).then(([s, i]) => {
+    Promise.all([fetchSurveys(), fetchSurveyInvites(), fetchAllProgramEntries()]).then(([s, i, e]) => {
       if (!live) return;
-      setSurveys(s); setInvites(i);
+      setSurveys(s); setInvites(i); setEntries(e);
     }).catch(() => live && setLoadErr("Could not load the surveys. Refresh to try again."));
     return () => { live = false; };
   }, []);
@@ -146,36 +148,44 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
   const held = useMemo(() => events.filter(ev => isHeld(ev, today)).sort((a, b) => b.event_date.localeCompare(a.event_date)), [events, today]);
   const mine = useMemo(() => invites.filter(i => i.survey_id === survey?.id), [invites, survey]);
 
+  // Artists are the Showcase page's Past participants list, so both pages agree on
+  // who played. Someone not in the CRM still gets a link (DM it on Instagram).
+  const participants = useMemo(() => buildPastParticipants({ contacts, events, entries, today }), [contacts, events, entries, today]);
+  const igByName = useMemo(() => new Map(participants.map(p => [normName(p.name), p.ig])), [participants]);
+
   /* ── who should get a link ── */
   const suggestions = useMemo(() => {
+    if (audience !== "host") {
+      const heldIds = new Set(held.map(ev => ev.id));
+      return participants
+        .map(p => ({ key: p.contact ? p.contact.id : p.key, contact: p.contact, name: p.name, ig: p.ig, eventIds: p.shows.map(ev => ev.id).filter(id => heldIds.has(id)) }))
+        .filter(s => s.eventIds.length);
+    }
     const by = new Map();
-    const add = (c, ev) => {
+    held.filter(ev => ["partner", "rental"].includes(ev.outcomes?.hosted_by)).forEach(ev => {
+      const c = pickOrganizer(ev, contacts);
       if (!c) return;
-      const row = by.get(c.id) || { contact: c, eventIds: [] };
+      const row = by.get(c.id) || { key: c.id, contact: c, name: fullName(c), eventIds: [] };
       if (!row.eventIds.includes(ev.id)) row.eventIds.push(ev.id);
       by.set(c.id, row);
-    };
-    if (audience === "host") {
-      held.filter(ev => ["partner", "rental"].includes(ev.outcomes?.hosted_by)).forEach(ev => add(pickOrganizer(ev, contacts), ev));
-    } else {
-      held.forEach(ev => (ev.contact_ids || []).forEach(id => {
-        const c = contactById.get(id);
-        if ((c?.relationship_types || []).includes("showcase")) add(c, ev);
-      }));
-    }
+    });
     return [...by.values()];
-  }, [audience, held, contacts, contactById]);
+  }, [audience, held, contacts, participants]);
 
   const hostsWithoutPerson = useMemo(() => audience !== "host" ? [] :
     held.filter(ev => ["partner", "rental"].includes(ev.outcomes?.hosted_by) && !pickOrganizer(ev, contacts)), [audience, held, contacts]);
 
   const rows = useMemo(() => {
     const invited = new Set(mine.map(i => i.contact_id).filter(Boolean));
-    const out = mine.map(inv => ({ key: inv.id, invite: inv, contact: contactById.get(inv.contact_id), eventIds: inv.event_ids || [] }));
-    suggestions.filter(s => !invited.has(s.contact.id)).forEach(s => out.push({ key: "s_" + s.contact.id, invite: null, contact: s.contact, eventIds: s.eventIds }));
+    const invitedNames = new Set(mine.filter(i => !i.contact_id).map(i => normName(i.name)).filter(Boolean));
+    const out = mine.map(inv => ({ key: inv.id, invite: inv, contact: contactById.get(inv.contact_id), name: inv.name, ig: inv.contact_id ? "" : igByName.get(normName(inv.name)) || "", eventIds: inv.event_ids || [] }));
+    suggestions
+      .filter(s => (s.contact ? !invited.has(s.contact.id) : !invitedNames.has(normName(s.name))))
+      .forEach(s => out.push({ key: "s_" + s.key, invite: null, contact: s.contact, name: s.name, ig: s.ig || "", eventIds: s.eventIds }));
     const rank = (r) => (!r.invite ? 0 : r.invite.replied_at ? 3 : r.invite.sent_at ? 2 : 1);
-    return out.sort((a, b) => rank(a) - rank(b) || (fullName(a.contact) || a.invite?.name || "").localeCompare(fullName(b.contact) || b.invite?.name || ""));
-  }, [mine, suggestions, contactById]);
+    const nm = (r) => r.invite?.name || fullName(r.contact) || r.name || "";
+    return out.sort((a, b) => rank(a) - rank(b) || nm(a).localeCompare(nm(b)));
+  }, [mine, suggestions, contactById, igByName]);
 
   const counts = { sent: mine.filter(i => i.sent_at).length, replied: mine.filter(i => i.replied_at).length };
 
@@ -184,7 +194,7 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
   const ensureInvite = async (row) => {
     if (row.invite) return row.invite;
     const c = row.contact;
-    const { invite, error } = await createSurveyInvite({ survey_id: survey.id, contact_id: c?.id || null, name: fullName(c), email: c?.email || "", event_ids: row.eventIds });
+    const { invite, error } = await createSurveyInvite({ survey_id: survey.id, contact_id: c?.id || null, name: fullName(c) || row.name || "", email: c?.email || "", event_ids: row.eventIds });
     if (error) { showToast?.("Could not create the link: " + error, "err"); return null; }
     patchInvite(invite);
     return invite;
@@ -365,7 +375,7 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
       {tab === "send" && <>
         <div className="sv-note" style={{ background: "#F4F4F0", borderLeftColor: "var(--cyan)" }}>
           The CRM never emails anyone. <b>Copy email</b> copies one plain message with that person's link; paste it into Gmail, send it, then press <b>Mark sent</b>.
-          {audience === "host" ? " Hosts are the linked host on past events marked Partner or Rental." : " Artists are contacts tagged Showcase who are linked to a past event."}
+          {audience === "host" ? " Hosts are the linked host on past events marked Partner or Rental." : " Artists are the Showcase page's Past participants who played a past night. No email? Use Copy link and send it as an Instagram DM."}
         </div>
         {hostsWithoutPerson.length > 0 && <div className="sv-note">
           <b>{hostsWithoutPerson.length} partner or rental event{hostsWithoutPerson.length === 1 ? " has" : "s have"} no host linked:</b> {hostsWithoutPerson.slice(0, 8).map(eventLabel).join(", ")}{hostsWithoutPerson.length > 8 ? "…" : ""}. Tag the host as Event Host on the event's People, or add them below.
@@ -399,7 +409,7 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
         {rows.length === 0
           ? <div className="sv-card sv-empty">{audience === "host"
               ? "No one to survey yet. Mark past events as Partner or Rental (Grant Metrics or the event's Outcomes tile), or add someone above."
-              : "No one to survey yet. Tag performers and artists as Showcase and link them to their event, or add someone above."}</div>
+              : "No one to survey yet. Artists show up here once they are on the Showcase page's Past participants with a past night, or add someone above."}</div>
           : <div className="sv-tw"><table className="sv-t">
             <thead><tr><th>Person</th><th>Nights</th><th>Status</th><th style={{ textAlign: "right" }}>Actions</th></tr></thead>
             <tbody>{rows.map(r => {
@@ -412,13 +422,13 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
               const busy = busyRow === r.key;
               return (
                 [<tr key={r.key}>
-                  <td><b>{inv?.name || fullName(c) || "Unknown"}</b><small>{[orgName, email || "no email on file"].filter(Boolean).join(" · ")}</small></td>
+                  <td><b>{inv?.name || fullName(c) || r.name || "Unknown"}</b><small>{[orgName, email || (r.ig ? <a key="ig" href={`https://instagram.com/${encodeURIComponent(r.ig)}`} target="_blank" rel="noopener noreferrer">@{r.ig} · DM the link</a> : "no email on file")].filter(Boolean).map((x, i) => <span key={i}>{i ? " · " : ""}{x}</span>)}</small></td>
                   <td>{evs.length === 1 ? eventLabel(evs[0]) : `${evs.length} nights`}{evs.length > 1 && <small>{evs.map(e => e.name).slice(0, 3).join(", ")}{evs.length > 3 ? "…" : ""}</small>}</td>
                   <td>{inv?.replied_at ? <span className="sv-tag ok">Replied {fmtWhen(inv.replied_at)}</span>
                     : inv?.sent_at ? <span className="sv-tag sent">Sent {fmtWhen(inv.sent_at)}</span>
                     : <span className="sv-tag">{inv ? "Link ready" : "Not sent"}</span>}</td>
                   <td><div className="sv-acts">
-                    {!inv?.replied_at && <button className="sv-btn2" disabled={busy || !email} title={email ? "" : "Add an email to this contact first"} onClick={() => copyEmail(r)}>Copy email</button>}
+                    {!inv?.replied_at && <button className="sv-btn2" disabled={busy || !email} title={email ? "" : "No email: Copy link and DM it instead"} onClick={() => copyEmail(r)}>Copy email</button>}
                     <button className="sv-btn2" disabled={busy} onClick={() => copyLink(r)}>Copy link</button>
                     {!inv?.replied_at && <button className="sv-btn2" disabled={busy} onClick={() => toggleSent(r)}>{inv?.sent_at ? "Unmark sent" : "Mark sent"}</button>}
                     {inv && !inv.replied_at && <button className="sv-btn2" disabled={busy} onClick={() => (editRow?.id === inv.id ? setEditRow(null) : startEdit(r))}>{editRow?.id === inv.id ? "Close" : "Edit"}</button>}

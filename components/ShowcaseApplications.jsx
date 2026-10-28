@@ -15,9 +15,13 @@ import {
   fetchShowcaseApplications,
   updateShowcaseApplication,
   deleteShowcaseApplication,
+  fetchAllProgramEntries,
+  fetchSurveyInvites,
 } from "../lib/services";
 import { showcaseLinks, showcaseInstagramUrl, showcaseToText, splitName } from "../lib/showcaseForm";
 import { OpenCallGallery } from "./GalleryEntries";
+import PastParticipants from "./PastParticipants";
+import { buildPastParticipants } from "../lib/pastParticipants";
 
 const SA_STYLES = `
 .sa{--line:#E3E3DD;--sunk:#F1F1EC;--dim:#5F5F57;--faint:#9A9A90;--ok:#15804A;--ok-bg:#E4F3EA;--crit:#B3005F;--crit-bg:#FBE6F1;--warn:#8A6100;--warn-bg:#FAF0D6;}
@@ -71,6 +75,7 @@ const TABS = [
   { id: "accepted", label: "Accepted" },
   { id: "passed", label: "Passed" },
   { id: "gallery", label: "Gallery (open call)" },
+  { id: "past", label: "Past participants" },
 ];
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -90,7 +95,7 @@ const lc = (s) => String(s || "").trim().toLowerCase();
 const emailsOf = (c) => [c.email, ...(Array.isArray(c.alt_emails) ? c.alt_emails : [])].map(lc).filter(Boolean);
 
 export default function ShowcaseApplications({
-  contacts, events, onSaveContact, onCreateContact, onUpdateEvent, openContact, showToast,
+  contacts, events, onSaveContact, onCreateContact, onUpdateEvent, openContact, openSurvey, showToast,
 }) {
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -99,9 +104,15 @@ export default function ShowcaseApplications({
   const [eventId, setEventId] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const [entries, setEntries] = useState([]);
+  const [invites, setInvites] = useState([]);
+
   const load = useCallback(async () => {
     setLoading(true);
-    setApps(await fetchShowcaseApplications());
+    const [a, e, i] = await Promise.all([fetchShowcaseApplications(), fetchAllProgramEntries(), fetchSurveyInvites()]);
+    setApps(a);
+    setEntries(e);
+    setInvites(i);
     setLoading(false);
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -109,8 +120,9 @@ export default function ShowcaseApplications({
   const counts = useMemo(() => {
     const c = { new: 0, accepted: 0, passed: 0 };
     apps.forEach((a) => { if (c[a.status] != null) c[a.status] += 1; });
+    c.past = buildPastParticipants({ contacts, events, entries, today: today() }).length;
     return c;
-  }, [apps]);
+  }, [apps, contacts, events, entries]);
 
   const shown = useMemo(() => apps.filter((a) => a.status === tab), [apps, tab]);
 
@@ -362,6 +374,8 @@ export default function ShowcaseApplications({
 
       {tab === "gallery" ? (
         <OpenCallGallery events={events} showToast={showToast} />
+      ) : tab === "past" ? (
+        <PastParticipants contacts={contacts} events={events} entries={entries} invites={invites} loading={loading} openContact={openContact} openSurvey={openSurvey} showToast={showToast} />
       ) : loading ? (
         <div className="sa-empty"><b>Loading…</b></div>
       ) : shown.length === 0 ? (
