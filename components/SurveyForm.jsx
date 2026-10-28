@@ -10,7 +10,7 @@
 
 import { useState, useEffect } from "react";
 import { PortalShell } from "./PortalForm";
-import { SHARE_OPTS, eventLabel, fillIntro } from "../lib/surveyForm";
+import { SHARE_OPTS, eventLabel, fillIntro, isOther, otherKey } from "../lib/surveyForm";
 
 const FOOT = "Questions about this survey? Email us and a human will answer.";
 
@@ -164,8 +164,14 @@ export default function SurveyForm({ token, preview }) {
           </div>
         ))}</div>;
     }
-    if (q.type === "single") return <div className="sv-q" key={q.id}>{label}{hint}{chips(q, v, (o, on) => set(q.id, on ? null : o))}</div>;
-    if (q.type === "multi") return <div className="sv-q" key={q.id}>{label}{hint}{chips(q, v, (o, on) => set(q.id, on ? (v || []).filter((x) => x !== o) : [...(v || []), o]), true)}</div>;
+    // "Something else" ticked: an optional box for what it was.
+    const otherBox = () => [].concat(v || []).some(isOther) && (
+      <input className="pt-in" style={{ marginTop: 10 }} maxLength={300} placeholder="What was it? (optional)"
+        aria-label={`${q.label} something else`} value={answers[otherKey(q.id)] || ""}
+        onChange={(e) => set(otherKey(q.id), e.target.value)} />
+    );
+    if (q.type === "single") return <div className="sv-q" key={q.id}>{label}{hint}{chips(q, v, (o, on) => set(q.id, on ? null : o))}{otherBox()}</div>;
+    if (q.type === "multi") return <div className="sv-q" key={q.id}>{label}{hint}{chips(q, v, (o, on) => set(q.id, on ? (v || []).filter((x) => x !== o) : [...(v || []), o]), true)}{otherBox()}</div>;
     if (q.type === "scale") {
       const sq = { ...q, options: ["1", "2", "3", "4", "5"] };
       return <div className="sv-q" key={q.id}>{label}{hint}{chips(sq, v != null ? String(v) : null, (o, on) => set(q.id, on ? null : Number(o)))}</div>;

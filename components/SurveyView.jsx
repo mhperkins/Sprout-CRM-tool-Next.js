@@ -19,7 +19,7 @@ import { fetchSurveys, saveSurvey, fetchSurveyInvites, createSurveyInvite, updat
 import { buildPastParticipants, normName } from "../lib/pastParticipants";
 import {
   SURVEY_TYPES, SURVEY_AUDIENCES, SHARE_OPTS, DEFAULT_SURVEYS, blankQuestion, newQuestionId,
-  sanitizeSurvey, surveyProblems, tallySurvey, surveyEmail, eventLabel,
+  sanitizeSurvey, surveyProblems, tallySurvey, surveyEmail, eventLabel, otherKey,
 } from "../lib/surveyForm";
 import { pickOrganizer } from "../lib/eventPortal";
 import SurveyForm from "./SurveyForm";
@@ -114,8 +114,9 @@ async function copyRich(text, html) {
 }
 
 /** Show one answer as plain text, using the questions that reply was given. */
-function answerText(q, v, evById) {
+function answerText(q, v, evById, other = "") {
   if (v == null) return "";
+  if (other && ["single", "multi"].includes(q.type)) return `${q.type === "multi" ? v.join(", ") : v} (${other})`;
   if (q.type === "event_count") return Object.entries(v).map(([id, n]) => `${evById.get(id)?.name || "Event"}: ${n}`).join(" · ");
   if (q.type === "multi") return v.join(", ");
   if (q.type === "rating_rows") return (q.rows || []).map((r, i) => (v[i] ? `${r}: ${v[i]}` : "")).filter(Boolean).join(" · ");
@@ -374,7 +375,7 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
                     <span className="sv-empty" style={{ fontSize: 12 }}>{(inv.event_ids || []).map(id => evById.get(id)).filter(Boolean).map(eventLabel).join(" · ")} · replied {fmtWhen(inv.replied_at)}</span>
                   </div>
                   <dl>{(inv.questions || []).map(q => {
-                    const t = answerText(q, inv.answers?.[q.id], evById);
+                    const t = answerText(q, inv.answers?.[q.id], evById, inv.answers?.[otherKey(q.id)]);
                     return t ? [<dt key={q.id + "t"}>{q.label}</dt>, <dd key={q.id + "d"}>{t}</dd>] : null;
                   })}</dl>
                 </div>
