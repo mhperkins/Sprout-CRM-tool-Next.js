@@ -50,6 +50,11 @@ export default function SurveyForm({ token, preview }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [copied, setCopied] = useState(false);
+  // A shared link (attendees): the first send creates this person's own reply, and
+  // from then on the page saves to that reply's private link instead.
+  const [open, setOpen] = useState(false);
+  const [activeToken, setActiveToken] = useState(token);
+  const [who, setWho] = useState({ name: "", email: "" });
 
   useEffect(() => {
     if (preview) { setSurvey(preview.survey); setName(preview.name || ""); setEvents(preview.events || []); return; }
@@ -60,7 +65,7 @@ export default function SurveyForm({ token, preview }) {
         const json = await res.json();
         if (!alive) return;
         if (!res.ok) { setFatal(json?.error || "This link is not valid."); setLoading(false); return; }
-        setSurvey(json.survey); setName(json.name); setEvents(json.events || []);
+        setSurvey(json.survey); setName(json.name); setEvents(json.events || []); setOpen(Boolean(json.open));
         setAnswers(json.answers || {}); setReplied(json.replied); setLoading(false);
       } catch {
         if (alive) { setFatal("We could not load the survey. Please refresh and try again."); setLoading(false); }
@@ -81,11 +86,16 @@ export default function SurveyForm({ token, preview }) {
     if (preview) { setErr("This is a preview, so nothing was sent."); return; }
     setBusy(true);
     try {
-      const res = await fetch(`/api/survey/${token}`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ answers }),
+      const res = await fetch(`/api/survey/${activeToken}`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(open ? { answers, name: who.name, email: who.email } : { answers }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Something went wrong. Please try again.");
+      if (json.token) {
+        setActiveToken(json.token); setOpen(false); setName(who.name.trim());
+        try { window.history.replaceState(null, "", `/survey/${json.token}`); } catch { /* the page still works */ }
+      }
       setReplied(true); setDone(true); top();
     } catch (e) { setErr(e.message); }
     setBusy(false);
@@ -236,6 +246,17 @@ export default function SurveyForm({ token, preview }) {
         </div>
 
         {replied && <div className="pt-note">You already sent answers. Change anything below and send again.</div>}
+
+        {open && <div className="pt-card"><div className="sv-body">
+          <div className="sv-q">
+            <label className="pt-lbl" htmlFor="sv_who_name" style={{ textTransform: "none", letterSpacing: 0, fontSize: 15.5, color: "#030000" }}>Your name <span style={{ fontWeight: 400, color: "#8a8a86" }}>(optional)</span></label>
+            <input id="sv_who_name" className="pt-in" maxLength={120} autoComplete="name" value={who.name} onChange={(e) => setWho((w) => ({ ...w, name: e.target.value }))} />
+          </div>
+          <div className="sv-q">
+            <label className="pt-lbl" htmlFor="sv_who_email" style={{ textTransform: "none", letterSpacing: 0, fontSize: 15.5, color: "#030000" }}>Email <span style={{ fontWeight: 400, color: "#8a8a86" }}>(optional)</span></label>
+            <input id="sv_who_email" className="pt-in" type="email" maxLength={200} autoComplete="email" value={who.email} onChange={(e) => setWho((w) => ({ ...w, email: e.target.value }))} />
+          </div>
+        </div></div>}
 
         <div className="pt-card"><div className="sv-body">{survey.questions.map(field)}</div></div>
 

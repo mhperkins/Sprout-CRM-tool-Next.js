@@ -19,7 +19,7 @@ import { fetchSurveys, saveSurvey, fetchSurveyInvites, createSurveyInvite, updat
 import { buildPastParticipants, normName } from "../lib/pastParticipants";
 import {
   SURVEY_TYPES, SURVEY_AUDIENCES, SHARE_OPTS, DEFAULT_SURVEYS, blankQuestion, newQuestionId,
-  sanitizeSurvey, surveyProblems, tallySurvey, surveyEmail, eventLabel, otherKey,
+  sanitizeSurvey, surveyProblems, tallySurvey, surveyEmail, eventLabel, otherKey, isOpenLink,
 } from "../lib/surveyForm";
 import { pickOrganizer } from "../lib/eventPortal";
 import SurveyForm from "./SurveyForm";
@@ -125,7 +125,7 @@ function answerText(q, v, evById, other = "") {
 }
 
 export default function SurveyView({ events = [], contacts = [], orgs = [], showToast, openContact, start = null }) {
-  const [audience, setAudience] = useState(start?.audience || "host");
+  const [audience, setAudience] = useState(start?.audience || "artist");
   const [tab, setTab] = useState(start?.tab || "replies");
   const [entries, setEntries] = useState([]);
   const [surveys, setSurveys] = useState(null);
@@ -168,7 +168,8 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
 
   /* ── who should get a link ── */
   const suggestions = useMemo(() => {
-    if (audience !== "host") {
+    if (audience === "attendee") return []; // attendees share one link per night (see the Send tab)
+    if (audience === "artist") {
       const heldIds = new Set(held.map(ev => ev.id));
       return participants
         .map(p => ({ key: p.contact ? p.contact.id : p.key, contact: p.contact, name: p.name, ig: p.ig, eventIds: p.shows.map(ev => ev.id).filter(id => heldIds.has(id)) }))
@@ -201,6 +202,25 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
   }, [mine, suggestions, contactById, igByName]);
 
   const counts = { sent: mine.filter(i => i.sent_at).length, replied: mine.filter(i => i.replied_at).length };
+
+  /* ── attendees: one shared link per night ── */
+  const openByEvent = useMemo(() => new Map(mine.filter(isOpenLink).map(i => [(i.event_ids || [])[0], i])), [mine]);
+  const repliesByEvent = useMemo(() => {
+    const m = new Map();
+    mine.filter(i => i.replied_at).forEach(i => (i.event_ids || []).forEach(id => m.set(id, (m.get(id) || 0) + 1)));
+    return m;
+  }, [mine]);
+  const copyShared = async (ev) => {
+    setBusyRow(ev.id);
+    let inv = openByEvent.get(ev.id);
+    if (!inv) {
+      const { invite, error } = await createSurveyInvite({ survey_id: survey.id, name: "Shared link", event_ids: [ev.id] });
+      if (error) { showToast?.("Could not create the link: " + error, "err"); setBusyRow(""); return; }
+      inv = invite; patchInvite(inv);
+    }
+    showToast?.((await copyText(linkFor(inv))) ? "Shared link copied ✓ Paste it into the thank-you." : "Copy failed: " + linkFor(inv), undefined);
+    setBusyRow("");
+  };
 
   const patchInvite = (inv) => setInvites(list => list.some(i => i.id === inv.id) ? list.map(i => (i.id === inv.id ? inv : i)) : [inv, ...list]);
 
@@ -323,7 +343,7 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
       <div className="sv-top">
         <div>
           <h1>Impact survey</h1>
-          <p>Short surveys for hosts and showcase artists. Their answers prove the space works: they feed Grant Metrics attendance and its quotes.</p>
+          <p>Short surveys for showcase artists, attendees and hosts. Their answers prove the space works: they feed Grant Metrics attendance and its quotes.</p>
         </div>
         <div style={{ fontSize: 13, color: "var(--dim)" }}>{counts.replied} replied · {counts.sent} sent · {mine.length} links</div>
       </div>
@@ -387,6 +407,27 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
 
       {/* ═══ SEND ═══ */}
       {tab === "send" && <>
+        {audience === "attendee" ? <>
+        <div className="sv-note" style={{ background: "#F4F4F0", borderLeftColor: "var(--cyan)" }}>
+          Attendees share <b>one link per night</b>, so it fits the BCC thank-you. Press <b>Copy shared link</b> and paste it into the email. Each person who answers shows up under Replies, by name if they give one.
+        </div>
+        {held.length === 0 ? <div className="sv-card sv-empty">No past nights yet.</div>
+          : <div className="sv-tw"><table className="sv-t">
+            <thead><tr><th>Night</th><th>Replies</th><th style={{ textAlign: "right" }}>Shared link</th></tr></thead>
+            <tbody>{held.slice(0, 40).map(ev => {
+              const inv = openByEvent.get(ev.id);
+              return (
+                <tr key={ev.id}>
+                  <td>{eventLabel(ev)}</td>
+                  <td>{repliesByEvent.get(ev.id) || 0}</td>
+                  <td style={{ textAlign: "right" }}>
+                    <button className="sv-btn2" disabled={busyRow === ev.id} onClick={() => copyShared(ev)}>{inv ? "Copy shared link" : "Create + copy shared link"}</button>
+                  </td>
+                </tr>
+              );
+            })}</tbody>
+          </table></div>}
+        </> : <>
         <div className="sv-note" style={{ background: "#F4F4F0", borderLeftColor: "var(--cyan)" }}>
           The CRM never emails anyone. <b>Copy email</b> copies one plain message with that person's link; paste it into Gmail, send it, then press <b>Mark sent</b>.
           {audience === "host" ? " Hosts are the linked host on past events marked Partner or Rental." : " Artists are the Showcase page's Past participants who played a past night. No email? Use Copy link and send it as an Instagram DM."}
@@ -470,6 +511,7 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
               );
             })}</tbody>
           </table></div>}
+        </>}
       </>}
 
       {/* ═══ EDIT ═══ */}
