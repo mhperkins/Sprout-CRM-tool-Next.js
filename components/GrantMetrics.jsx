@@ -16,7 +16,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { fetchProgramEntryEventIds, fetchShowcaseApplications, fetchKioskSignins, fetchStripeMemberInvoices, fetchSurveyInvites } from "../lib/services";
-import { surveyHeadcounts } from "../lib/surveyForm";
+import { surveyHeadcounts, isTestInvite } from "../lib/surveyForm";
 import { withStripeInvoices } from "../lib/memberBilling";
 import { computeGrantMetrics, metricsToText } from "../lib/grantMetrics";
 
@@ -124,7 +124,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
     });
     fetchKioskSignins().then(k => { if (live) setKiosk({ ...k, loading: false }); });
     fetchStripeMemberInvoices().then(st => { if (live) setStripe({ ...st, loading: false }); });
-    fetchSurveyInvites().then(i => { if (live) setInvites(i); });
+    fetchSurveyInvites().then(i => { if (live) setInvites(i.filter(x => !isTestInvite(x))); });
     return () => { live = false; };
   }, []);
 

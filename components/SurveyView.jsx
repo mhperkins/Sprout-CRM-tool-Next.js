@@ -19,7 +19,7 @@ import { fetchSurveys, saveSurvey, fetchSurveyInvites, createSurveyInvite, updat
 import { buildPastParticipants, normName } from "../lib/pastParticipants";
 import {
   SURVEY_TYPES, SURVEY_AUDIENCES, SHARE_OPTS, DEFAULT_SURVEYS, blankQuestion, newQuestionId,
-  sanitizeSurvey, surveyProblems, tallySurvey, surveyEmail, eventLabel, otherKey, isOpenLink,
+  sanitizeSurvey, surveyProblems, tallySurvey, surveyEmail, eventLabel, otherKey, isOpenLink, isTestInvite, TEST_EMAIL,
 } from "../lib/surveyForm";
 import { pickOrganizer } from "../lib/eventPortal";
 import SurveyForm from "./SurveyForm";
@@ -159,7 +159,9 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
   const orgById = useMemo(() => new Map(orgs.map(o => [o.id, o])), [orgs]);
   const evById = useMemo(() => new Map(events.map(e => [e.id, e])), [events]);
   const held = useMemo(() => events.filter(ev => isHeld(ev, today)).sort((a, b) => b.event_date.localeCompare(a.event_date)), [events, today]);
-  const mine = useMemo(() => invites.filter(i => i.survey_id === survey?.id), [invites, survey]);
+  const allMine = useMemo(() => invites.filter(i => i.survey_id === survey?.id), [invites, survey]);
+  const mine = useMemo(() => allMine.filter(i => !isTestInvite(i)), [allMine]); // real links only
+  const testInvite = allMine.find(isTestInvite) || null;
 
   // Artists are the Showcase page's Past participants list, so both pages agree on
   // who played. Someone not in the CRM still gets a link (DM it on Instagram).
@@ -328,9 +330,20 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
   if (loadErr) return <div className="sv"><style>{SV_STYLES}</style><div className="sv-note">{loadErr}</div></div>;
   if (!surveys || !draft) return <div className="sv"><style>{SV_STYLES}</style><div className="sv-empty">Loading surveys…</div></div>;
 
-  const replies = mine.filter(i => i.replied_at).sort((a, b) => b.replied_at.localeCompare(a.replied_at));
+  const replies = allMine.filter(i => i.replied_at).sort((a, b) => b.replied_at.localeCompare(a.replied_at));
   const tallies = tallySurvey(survey, mine);
-  const quotes = replies.flatMap(inv => (inv.questions || []).filter(q => q.type === "testimonial").map(q => ({ inv, t: inv.answers?.[q.id] }))).filter(x => x.t?.text);
+  const quotes = replies.filter(inv => !isTestInvite(inv)).flatMap(inv => (inv.questions || []).filter(q => q.type === "testimonial").map(q => ({ inv, t: inv.answers?.[q.id] }))).filter(x => x.t?.text);
+  // One test link per survey, on the most recent night so every question shows.
+  const openTest = async () => {
+    const w = window.open("about:blank", "_blank"); // opened now, before the await, so it isn't blocked
+    let inv = testInvite;
+    if (!inv) {
+      const { invite, error } = await createSurveyInvite({ survey_id: survey.id, name: "Test survey", email: TEST_EMAIL, event_ids: held[0] ? [held[0].id] : [] });
+      if (error) { w?.close(); showToast?.("Could not create the test link: " + error, "err"); return; }
+      inv = invite; patchInvite(inv);
+    }
+    if (w) w.location.href = linkFor(inv); else showToast?.("Test link: " + linkFor(inv));
+  };
   const switchAudience = (a) => {
     if (a === audience) return;
     if (dirty) { showToast?.("Save the question changes first (or reload to drop them).", "err"); setTab("edit"); return; }
@@ -354,6 +367,8 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
         {[["replies", `Replies (${replies.length})`], ["send", "Send"], ["edit", `Edit questions${dirty ? " •" : ""}`]].map(([k, l]) => (
           <button key={k} className="sv-chip" aria-pressed={tab === k} onClick={() => setTab(k)}>{l}</button>
         ))}
+        <span className="sv-sep" />
+        <button className="sv-btn2" onClick={openTest}>Open test survey ↗</button>
       </div>
 
       {/* ═══ REPLIES ═══ */}
@@ -391,7 +406,7 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
                 <div className="sv-rep" key={inv.id}>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "baseline" }}>
                     {c ? <button className="sv-lnk" style={{ fontSize: 14, fontWeight: 900, color: "#030000", textDecoration: "none" }} onClick={() => openContact?.(c)}>{inv.name || fullName(c)}</button>
-                      : <b>{inv.name || "Someone"}</b>}
+                      : <b>{inv.name || "Someone"}{isTestInvite(inv) && <span className="sv-tag" style={{ marginLeft: 6 }}>Test</span>}</b>}
                     <span className="sv-empty" style={{ fontSize: 12 }}>{(inv.event_ids || []).map(id => evById.get(id)).filter(Boolean).map(eventLabel).join(" · ")} · replied {fmtWhen(inv.replied_at)}</span>
                   </div>
                   <dl>{(inv.questions || []).map(q => {
