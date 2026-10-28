@@ -33,6 +33,7 @@ export const PORTAL_CSS = `
   .pt-mast { background:var(--ink); padding:22px 20px; margin-bottom:0; }
   .pt-mast-in { max-width:760px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
   .pt-mast-ttl { color:#fff; font-size:15px; font-weight:900; letter-spacing:.06em; text-transform:uppercase; }
+  .pt-mast-logo { display:block; height:40px; width:auto; margin-bottom:6px; }
   .pt-mast-sub { color:var(--g300); font-size:12px; margin-top:2px; }
   .pt-rule { height:4px; background:var(--acid); }
 
@@ -131,7 +132,8 @@ export function PortalShell({ title, subtitle, footNote, children }) {
       <div className="pt-mast">
         <div className="pt-mast-in">
           <div>
-            <div className="pt-mast-ttl">Sprout Society</div>
+            {/* White logo on the brand near-black, so its background blends into the header. */}
+            <img className="pt-mast-logo" src="https://ixdnmjchvjzytyhmripc.supabase.co/storage/v1/object/public/newsletter-images/brand/sprout-logo-white.png" alt="Sprout Society" />
             <div className="pt-mast-sub">{subtitle || "Events Portal"}</div>
           </div>
           {title && <div className="pt-mast-sub" style={{ maxWidth: 320, textAlign: "right" }}>{title}</div>}
