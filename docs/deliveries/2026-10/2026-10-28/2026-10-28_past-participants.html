@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Past Participants</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--muted:#5f5f5b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Lato,"Helvetica Neue",Arial,sans-serif;padding:32px 16px}
+.slide{max-width:1100px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.12)}
+.top{background:var(--ink);color:#fff;padding:28px 32px;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-end;border-bottom:6px solid var(--fuchsia)}
+.eyebrow{font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--acid);margin:0 0 8px}
+h1{margin:0;font-size:clamp(28px,5vw,44px);font-weight:900;line-height:1.05}
+.badges{display:flex;flex-wrap:wrap;gap:8px}
+.b{font-size:13px;font-weight:900;padding:7px 12px;border-radius:999px;background:#fff;color:var(--ink)}
+.b.live{background:var(--acid)}.b.hash{background:var(--banana)}.b.eff{background:var(--cyan)}
+.body{padding:28px 32px 32px}
+.lede{font-size:18px;line-height:1.5;margin:0 0 24px;color:#2b2b29}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+.stat{background:var(--paper);border-radius:10px;padding:14px 16px}
+.stat b{display:block;font-size:30px;font-weight:900}
+.stat span{font-size:13px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.card{border:2px solid var(--ink);border-radius:10px;padding:18px;border-left-width:8px}
+.card.c1{border-left-color:var(--fuchsia)}.card.c2{border-left-color:var(--cyan)}.card.c3{border-left-color:var(--acid)}
+.card .ic{font-size:26px}
+.card h2{font-size:18px;font-weight:900;margin:8px 0 8px}
+.card p,.card li{font-size:14px;line-height:1.5;margin:0;color:#2b2b29}
+.card ul{margin:0;padding-left:18px}
+.next{margin-top:24px;background:var(--paper);border-radius:10px;padding:16px 18px;font-size:15px;line-height:1.5}
+.next b{color:var(--fuchsia)}
+.foot{font-size:13px;color:var(--muted);margin-top:18px}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div>
+      <p class="eyebrow">Sprout CRM · Delivery · 2026-10-28</p>
+      <h1>One list of everyone who has shown with us</h1>
+    </div>
+    <div class="badges">
+      <span class="b live">● Pushed</span>
+      <span class="b hash">main · 0f90c01</span>
+      <span class="b eff">Effort: low/medium</span>
+    </div>
+  </div>
+  <div class="body">
+    <p class="lede">The Showcase page has a new Past participants tab, and the artist impact survey now pulls from the same list, so both pages agree on who played.</p>
+    <div class="stats">
+      <div class="stat"><b>58</b><span>past participants</span></div>
+      <div class="stat"><b>42</b><span>already contacts</span></div>
+      <div class="stat"><b>51</b><span>suggested for the survey</span></div>
+      <div class="stat"><b>8</b><span>newly tagged Showcase</span></div>
+    </div>
+    <div class="grid">
+      <div class="card c1">
+        <div class="ic">🎤</div>
+        <h2>Past participants tab</h2>
+        <ul><li>Tagged Showcase, or sent a program form for any event</li><li>Industry Day included</li><li>Nights played, search, Music / Art / Other</li><li>Copy emails, Open contact</li></ul>
+      </div>
+      <div class="card c2">
+        <div class="ic">📝</div>
+        <h2>Impact survey</h2>
+        <ul><li>Artist Send list comes from the same rule</li><li>No email? Copy link and DM it on Instagram</li><li>Status chip on each person opens the Send tab</li></ul>
+      </div>
+      <div class="card c3">
+        <div class="ic">🏷️</div>
+        <h2>Tags added</h2>
+        <p>Beth Graybill, Franklin Speck, Greg Smith, Ian Lavely, Michael Ne Jame, Tim Smith, Pepper Auerbach, and Mara Einson are now tagged Showcase.</p>
+      </div>
+    </div>
+    <div class="next"><b>Still open:</b> two pairs show as separate people (Ari / Arina Andrle, mPATH / Pat Hopkins). No surveys have been sent; the 31 existing links are unsent.</div>
+    <p class="foot">Read-only change, no migration. Build passes and the matching rule was checked against live data. Tab not clicked through (login wall).</p>
+  </div>
+</div>
+</body>
+</html>

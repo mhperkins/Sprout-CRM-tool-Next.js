@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-10-28: Showcase past participants + artist survey list
+
+Merge `0f90c01` (commits `eed080f`, `f4b19ec`), pushed. No migration. Effort: low/medium.
+
+- **New Past participants tab on the Showcase page:** everyone tagged Showcase plus everyone who sent a program form for any event (Industry Day included), matched to their contact by Instagram or name, with the nights they played. Search, Music/Art/Other filter, Copy emails, Open contact. 58 people live.
+- **The artist impact survey's Send list now comes from the same rule** (51 people with a past night), so the two pages agree. People without an email still get a link, shown with their @handle to send it as an Instagram DM. Each past participant shows a survey status chip that opens the survey's Send tab.
+- **Data:** tagged 8 contacts Showcase who had played or sent a program form but weren't tagged (Beth Graybill, Franklin Speck, Greg Smith, Ian Lavely, Michael Ne Jame, Tim Smith, Pepper Auerbach, Mara Einson).
+- No surveys have been sent yet; the 31 existing links are unsent.
+
 ## 2026-10-27: Get involved form + CRM page
 
 Merge `933794c` (commit `d4ed76d`), pushed and live. Migration `sprout_interest` (applied). Effort: medium.
