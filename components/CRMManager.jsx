@@ -41,6 +41,10 @@ import {
   fetchEventGallery,
   createGalleryForm,
   regenerateGalleryFormToken,
+  fetchEventGuestMedia,
+  createMediaForm,
+  regenerateMediaFormToken,
+  deleteGuestMediaUpload,
   assignGalleryEntry,
   deleteGalleryEntry,
   regenerateProgramFormToken,
@@ -55,6 +59,7 @@ import DayBoard from "./DayBoard";
 import ShowcaseApplications from "./ShowcaseApplications";
 import GetInvolvedView from "./GetInvolvedView";
 import { EventGalleryPanel } from "./GalleryEntries";
+import { GuestMediaPanel, groupSends, senderLabel } from "./GuestMediaPanel";
 import { pieceLine } from "../lib/galleryForm";
 import GrantMetrics from "./GrantMetrics";
 import MembersView from "./MembersView";
@@ -5130,6 +5135,32 @@ function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpda
     setGallery(g=>({...g,entries:g.entries.filter(e=>e.id!==entry.id)}));
     showToast("Submission deleted");
   };
+  // Guest media: one public upload link per event; files go to a Drive folder.
+  const [guestMedia,setGuestMedia]=useState({form:null,uploads:[],loaded:false});
+  const loadGuestMedia=useCallback(async()=>{
+    const {data,error}=await fetchEventGuestMedia(event.id);
+    if(error) console.error("fetchEventGuestMedia:",error);
+    setGuestMedia({...data,loaded:true});
+  },[event.id]);
+  useEffect(()=>{ loadGuestMedia(); },[loadGuestMedia]);
+  const makeMediaForm=async()=>{
+    const {data,error}=await createMediaForm(event.id);
+    if(error){ console.error("createMediaForm:",error); showToast("Could not create the upload link","err"); return; }
+    setGuestMedia(g=>({...g,form:data}));
+    showToast("Upload link created ✓");
+  };
+  const rotateMediaForm=async()=>{
+    const {data,error}=await regenerateMediaFormToken(guestMedia.form.id);
+    if(error||!data){ showToast("Could not create a new link","err"); return; }
+    setGuestMedia(g=>({...g,form:data}));
+    showToast("New link created ✓");
+  };
+  const removeGuestUpload=async(u)=>{
+    const {error}=await deleteGuestMediaUpload(u.id);
+    if(error){ showToast("Could not remove that","err"); return; }
+    setGuestMedia(g=>({...g,uploads:g.uploads.filter(x=>x.id!==u.id)}));
+    showToast("Removed from the list (still in Drive)");
+  };
   const today=new Date().toISOString().slice(0,10);
 
   // Dashboard popups: which tile is open in a modal (null = just the dashboard).
@@ -5560,6 +5591,34 @@ function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpda
                     </>
               ),"Upload & manage")}
 
+              {/* GUEST MEDIA: photos and video guests sent through the public upload link. */}
+              {tile("guestmedia","Guest media",guestMedia.uploads.length?guestMedia.uploads.length+" sent":"",(
+                !guestMedia.form
+                  ? <div>
+                      <div className="evd-empty">{guestMedia.loaded?"No upload link yet. Create one so guests can send their photos and video.":"Loading…"}</div>
+                      {guestMedia.loaded&&<button className="btn btn-blk btn-sm" style={{marginTop:8}} onClick={makeMediaForm}>+ Create upload link</button>}
+                    </div>
+                  : <>
+                      <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                        <button className="btn btn-blk btn-sm" onClick={()=>{
+                          const url=window.location.origin+"/media/"+guestMedia.form.token;
+                          try{ navigator.clipboard.writeText(url); showToast("Link copied ✓"); }catch{ showToast("Copy failed","err"); }
+                        }}>Copy upload link</button>
+                        <a className="btn btn-ghost btn-sm" href={"/media/"+guestMedia.form.token} target="_blank" rel="noopener noreferrer">Open ↗</a>
+                      </div>
+                      {guestMedia.uploads.length===0
+                        ? <div className="evd-empty">Nobody has sent anything yet.</div>
+                        : <div style={{display:"flex",flexDirection:"column",gap:5,marginTop:8}}>
+                            {groupSends(guestMedia.uploads).slice(0,4).map(g=>(
+                              <div key={g.batch} style={{fontSize:12.5,display:"flex",gap:6,alignItems:"center",minWidth:0}}>
+                                <span style={{fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{senderLabel(g.sender)}</span>
+                                <span style={{fontSize:10.5,color:"var(--g500)",whiteSpace:"nowrap"}}>{g.items.length} item{g.items.length===1?"":"s"}{g.sender.ok_to_post?" · OK to post":""}</span>
+                              </div>
+                            ))}
+                          </div>}
+                    </>
+              ),"All uploads & link")}
+
               {tile("comms","Communications",comms.length?comms.length+" logged"+(awaiting?" · "+awaiting+" awaiting":""):"",(
                 recentComms.length===0
                   ? <div className="evd-empty">Nothing logged yet.</div>
@@ -5800,6 +5859,18 @@ function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpda
       {openTile==="media"&&(
         <Modal xl title="Media" onClose={()=>setOpenTile(null)}>
           <EventMediaPanel event={event} onUpdateEvent={onUpdateEvent} showToast={showToast}/>
+        </Modal>
+      )}
+      {openTile==="guestmedia"&&(
+        <Modal wide title={"Guest media · "+(event.name||"Event")} onClose={()=>setOpenTile(null)}>
+          <GuestMediaPanel
+            media={guestMedia}
+            onCreate={makeMediaForm}
+            onRotate={rotateMediaForm}
+            onDelete={removeGuestUpload}
+            onRefresh={loadGuestMedia}
+            showToast={showToast}
+          />
         </Modal>
       )}
       {openTile==="gallery"&&(
