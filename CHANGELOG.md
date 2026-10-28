@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-10-28: Host survey about hosting in general; host drafts
+
+Merge `7665c03`, pushed. No migration. Effort: low.
+
+- Host survey drops the per-event attendance question and asks about "your events" in general (Max's call). Grant Metrics attendance still comes from sign-ins and typed numbers.
+- Five host drafts in maxperkins@ ("Thank you for hosting at Sprout"): Jonathan (Queer Social), Cullie (Bar Nun, link now includes Sober October), Jess (Sing Easy), Rachel (Buzzkill, new link), and Pat (Max's draft with the host subject and link). Floorwork held for later.
+
+---
+
 ## 2026-10-28: Open test survey, numbering fix
 
 Merge `3102164`, pushed. No migration. Effort: low.
