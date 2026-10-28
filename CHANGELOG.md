@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-10-28: Open test survey, numbering fix
+
+Merge `3102164`, pushed. No migration. Effort: low.
+
+- **Open test survey ↗** on each Impact Survey tab opens a test link for that survey. Test replies show under Every reply marked Test and stay out of tallies, quotes and Grant Metrics.
+- The form now numbers only questions it shows (a hidden attendance question made the host test skip 2).
+- Max's earlier test links became test links, so they no longer need deleting.
+
+---
+
 ## 2026-10-28: Personal attendee links, logo in form header, neighborhood question everywhere
 
 Merges `aabdd04`, `0b8b584`, pushed. No migration. Effort: medium.
