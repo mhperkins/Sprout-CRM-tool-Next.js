@@ -246,7 +246,10 @@ export default function SurveyForm({ token, preview }) {
 
         {replied && <div className="pt-note">You already sent answers. Change anything below and send again.</div>}
 
-        <div className="pt-card"><div className="sv-body">{survey.questions.map(field)}</div></div>
+        {/* Number only what shows: an attendance question with no nights is hidden. */}
+        <div className="pt-card"><div className="sv-body">{survey.questions
+          .filter((q) => q.type !== "event_count" || events.length)
+          .map(field)}</div></div>
 
         {err && <div className="pt-err">{err}</div>}
         <button className="pt-btn" onClick={send} disabled={busy}>{busy ? "Sending…" : replied ? "Save my changes" : "Send my answers"}</button>
