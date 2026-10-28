@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-10-28: Attendee survey asks where people come from; personal attendee drafts
+
+Merge `322d404`, pushed. No migration. Effort: low.
+
+- Attendee survey Q2: "Where are you coming from?" (one tap: Bushwick, Elsewhere in Brooklyn, Queens, Manhattan, Farther). Max kept the survey short: no loneliness, earnings or ZIP questions.
+- The 7 BCC attendee drafts became 86 personal drafts greeting each person by first name (Max's edits kept). May drafts' subject now says Sprout N Tell.
+
+---
+
 ## 2026-10-28: Attendee survey + attendee thank-you drafts
 
 Merge `11794c4`, pushed. No migration. Effort: medium.
