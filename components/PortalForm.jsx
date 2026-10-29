@@ -13,7 +13,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { getSupabase } from "../lib/supabase";
-import { isBlank } from "../lib/eventPortal";
+import { isBlank, DATE_TBD } from "../lib/eventPortal";
 
 /* ─── Styles ───────────────────────────────────────────────────────────────── */
 
@@ -305,7 +305,20 @@ export function PortalField({ field, value, onChange, scope }) {
       control = <input type="number" min="0" {...common} />;
       break;
     case "date":
-      control = <input type="date" {...common} />;
+      if (field.tbdOption) {
+        const tbd = value === DATE_TBD;
+        control = (
+          <>
+            <input type="date" {...common} value={tbd ? "" : (value ?? "")} disabled={tbd} />
+            <label className="pt-check" style={{ marginTop: 8 }}>
+              <input type="checkbox" checked={tbd} onChange={(e) => onChange(e.target.checked ? DATE_TBD : "")} />
+              <span>Don't know yet</span>
+            </label>
+          </>
+        );
+      } else {
+        control = <input type="date" {...common} />;
+      }
       break;
     case "time":
       control = <input type="time" {...common} />;
