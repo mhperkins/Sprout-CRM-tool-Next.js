@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-10-29: Host form requires only name, email, type of event, attendance
+
+Merge `a968a8c` (branch `fewer-required`, `1b55e77`), pushed. No migration. Effort: low.
+
+- Phone, event name, public/private, preferred date and start/end times are now optional (Max's call). A request with no event name gets "Event request: <org or person>" as its CRM name and id, and the alert email subject falls back the same way.
+- Tested live on production with only the four fields (date, attendance and admission all "Don't know yet"): 200, pending event `evt_test_request_please_ignore` with no date, portal link loads, alert email sent to maxperkins@. Test event left for Max to delete in the app.
+
+---
+
 ## 2026-10-29: "Ticketed or free?" on the host form; "Don't know yet" on attendance
 
 Merge `1312375` (branch `admission`, `eb88a42`), pushed. No migration. Effort: low.
