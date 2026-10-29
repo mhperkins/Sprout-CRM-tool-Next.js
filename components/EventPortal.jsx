@@ -11,7 +11,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { FIELD_BY_KEY } from "../lib/eventPortal";
-import { portalProgress } from "../lib/eventPortal";
+import { portalProgress, isISODate } from "../lib/eventPortal";
 import { PortalShell, FieldList, useAutosave, uploadPortalFile } from "./PortalForm";
 import { BRAND_ASSETS, BRAND_GUIDELINES } from "../lib/brandAssets";
 
@@ -216,7 +216,7 @@ export default function EventPortal({ token }) {
   const note = STATUS_NOTE[event?.status] || STATUS_NOTE.pending;
   const links = event?.links || [];
   const media = event?.media || [];
-  const date = data.event_date || event?.event_date;
+  const date = isISODate(data.event_date) ? data.event_date : event?.event_date;
   const start = fmtTime(data.start_time || event?.start_time);
   const end = fmtTime(data.end_time || event?.end_time);
   const isImg = (m) => (m.mime || "").startsWith("image/") || /\.(png|jpe?g|gif|webp|avif)$/i.test(m.url || "");
