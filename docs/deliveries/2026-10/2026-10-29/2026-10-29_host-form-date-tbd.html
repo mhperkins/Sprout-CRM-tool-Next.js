@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Host Form Date TBD</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#030000; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6; --paper:#F7F7F6; --g:#5f5f5c; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ink); font-family:Lato,system-ui,sans-serif; color:#fff; display:flex; justify-content:center; padding:40px 16px; }
+  .slide { width:100%; max-width:1100px; background:var(--ink); border:1px solid #222; border-radius:16px; overflow:hidden; }
+  .top { padding:36px 40px 24px; border-bottom:4px solid var(--acid); }
+  .eyebrow { color:var(--acid); font-weight:900; letter-spacing:3px; text-transform:uppercase; font-size:12px; }
+  h1 { margin:10px 0 6px; font-size:clamp(26px,4vw,40px); font-weight:900; }
+  .badges { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+  .b { padding:5px 12px; border-radius:999px; font-size:12px; font-weight:900; }
+  .b1 { background:var(--acid); color:var(--ink); } .b2 { background:var(--cyan); color:var(--ink); } .b3 { background:var(--fuchsia); } .b4 { background:#222; color:#ddd; font-family:monospace; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; padding:28px 40px 36px; }
+  .card { background:#111; border-radius:12px; padding:20px; border-left:6px solid var(--cyan); }
+  .card.f { border-left-color:var(--fuchsia); } .card.y { border-left-color:var(--banana); } .card.a { border-left-color:var(--acid); }
+  .ic { font-size:26px; } .ct { font-weight:900; font-size:17px; margin:8px 0 6px; }
+  .card p { margin:0; color:#cfcfcb; font-size:14.5px; line-height:1.55; }
+  .mock { margin-top:12px; background:#fff; color:var(--ink); border-radius:8px; padding:12px; font-size:13px; }
+  .mock .in { border:1px solid #ccc; border-radius:6px; padding:8px; color:#aaa; background:#f1f1f1; }
+  .mock .ck { margin-top:8px; font-weight:700; } .mock .ck span { display:inline-block; width:14px; height:14px; background:#a0005f; border-radius:3px; vertical-align:-2px; margin-right:6px; }
+  code { color:var(--banana); }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div class="eyebrow">Delivery · 2026-10-29</div>
+    <h1>Hosts can say "Don't know yet" on the date</h1>
+    <div class="badges">
+      <span class="b b1">Merged to main</span><span class="b b2">Pushed</span><span class="b b3">Effort: low</span>
+      <span class="b b4">b951e8e</span><span class="b b4">date-tbd · 517ecd1</span>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="ic">📅</div><div class="ct">New checkbox on the form</div>
+      <p>Under Preferred date on <code>/book</code> and every host portal. Ticking it greys out the date and still lets the request send.</p>
+      <div class="mock"><div class="in">mm/dd/yyyy</div><div class="ck"><span></span>Don't know yet</div></div>
+    </div>
+    <div class="card f">
+      <div class="ic">🛡</div><div class="ct">Never a fake date</div>
+      <p>The answer is stored as <code>tbd</code>. Only real dates reach the event, so the pending event simply has no date until the host picks one.</p>
+    </div>
+    <div class="card y">
+      <div class="ic">👀</div><div class="ct">Shown clearly everywhere</div>
+      <p>Portal header: "Date to be confirmed". CRM Host details: "Don't know yet". Alert email: "Date not set yet".</p>
+    </div>
+    <div class="card a">
+      <div class="ic">🤝</div><div class="ct">Andie Mechanic logged</div>
+      <p>Meeting about Andie running a music/art showcase. Follow-up due 11/12: check the hosting form came in, talk about a January show.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

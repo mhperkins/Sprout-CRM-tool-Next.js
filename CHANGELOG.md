@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-10-29: "Don't know yet" on the host form date; Andie Mechanic meeting
+
+Merge `b951e8e` (branch `date-tbd`, `517ecd1`), pushed. No migration. Effort: low.
+
+- `/book` and the host portal: a "Don't know yet" checkbox under Preferred date. It stores `tbd`, counts as answered, and never reaches the event record (only real dates do). The portal header reads "Date to be confirmed", the CRM shows "Don't know yet", and the alert email says "Date not set yet".
+- Andie Mechanic: logged a meeting about Andie hosting a music/art showcase (hosting form to come, possible January show), with a follow-up due 11/12.
+
+---
+
 ## 2026-10-28: Host survey about hosting in general; host drafts
 
 Merge `7665c03`, pushed. No migration. Effort: low.
