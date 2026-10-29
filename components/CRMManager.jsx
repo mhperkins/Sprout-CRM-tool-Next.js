@@ -5394,7 +5394,7 @@ function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpda
                       )}
                       <div className="evd-host-grid">
                         {[["Host",pdata.contact_name],["Email",pdata.contact_email],["Phone",pdata.contact_phone],["Organization",pdata.org_name],
-                          ["Type",pdata.event_type],["Public or private",pdata.audience],["Attendance",pdata.attendance],["Backup date",pdata.alt_date?fmtDate(pdata.alt_date):""]]
+                          ["Type",pdata.event_type],["Public or private",pdata.audience],["Attendance",pdata.attendance==="tbd"?"Don't know yet":pdata.attendance],["Ticketed or free",pdata.admission],["Backup date",pdata.alt_date?fmtDate(pdata.alt_date):""]]
                           .filter(([,v])=>!pIsBlank(v)).map(([k,v])=>(
                             <div key={k}><div className="evd-lbl">{k}</div><div style={{fontSize:12.5,wordBreak:"break-word"}}>{String(v)}</div></div>
                           ))}
