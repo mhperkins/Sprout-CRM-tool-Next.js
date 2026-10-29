@@ -40,7 +40,7 @@ const STATUS_NOTE = {
 
 const f = (...keys) => keys.map((k) => FIELD_BY_KEY[k]).filter(Boolean);
 const CONTACT_FIELDS = f("contact_name", "contact_email", "contact_phone", "org_name");
-const EVENT_FIELDS = f("event_name", "event_type", "audience", "event_date", "alt_date", "start_time", "end_time", "attendance", "short_desc");
+const EVENT_FIELDS = f("event_name", "event_type", "audience", "event_date", "alt_date", "start_time", "end_time", "attendance", "admission", "short_desc");
 const FOOD_FIELDS = f("food_drink");
 
 /** Download cards for our logos, so hosts can drop them straight onto a flyer. */

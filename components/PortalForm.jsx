@@ -302,14 +302,15 @@ export function PortalField({ field, value, onChange, scope }) {
       control = <RepeatField field={field} value={value} onChange={onChange} />;
       break;
     case "number":
-      control = <input type="number" min="0" {...common} />;
-      break;
-    case "date":
+    case "date": {
+      const input = field.type === "number"
+        ? (props) => <input type="number" min="0" {...common} {...props} />
+        : (props) => <input type="date" {...common} {...props} />;
       if (field.tbdOption) {
         const tbd = value === DATE_TBD;
         control = (
           <>
-            <input type="date" {...common} value={tbd ? "" : (value ?? "")} disabled={tbd} />
+            {input({ value: tbd ? "" : (value ?? ""), disabled: tbd })}
             <label className="pt-check" style={{ marginTop: 8 }}>
               <input type="checkbox" checked={tbd} onChange={(e) => onChange(e.target.checked ? DATE_TBD : "")} />
               <span>Don't know yet</span>
@@ -317,9 +318,10 @@ export function PortalField({ field, value, onChange, scope }) {
           </>
         );
       } else {
-        control = <input type="date" {...common} />;
+        control = input({});
       }
       break;
+    }
     case "time":
       control = <input type="time" {...common} />;
       break;
