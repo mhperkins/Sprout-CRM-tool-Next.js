@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-10-29: "Ticketed or free?" on the host form; "Don't know yet" on attendance
+
+Merge `1312375` (branch `admission`, `eb88a42`), pushed. No migration. Effort: low.
+
+- New optional question **Ticketed or free?** (Ticketed / donation, Free, Don't know yet) beside Expected attendance on `/book` and the host portal; shown in the alert email and the CRM Host details tile. Kept separate from Type of event, and optional so existing portals don't gain a missing answer.
+- **Expected attendance** gets the same "Don't know yet" checkbox as the date (stores `tbd`, shown as "Don't know yet").
+
+---
+
 ## 2026-10-29: "Don't know yet" on the host form date; Andie Mechanic meeting
 
 Merge `b951e8e` (branch `date-tbd`, `517ecd1`), pushed. No migration. Effort: low.
