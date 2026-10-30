@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-10-30: Thank-you drafts finalized and every recipient in the CRM
+
+Gmail drafts and CRM data only; no app code or migration. Effort: medium.
+
+- **Vol. 5 drafts:** the 11 artist and 15 attendee thank-yous now use the quick favor ending, with no bullets. Attendee drafts say "on October 23" instead of "on Friday", so they read correctly on any send date. Max chose this because many attendees are artists.
+- **Contacts:** created 15 Vol. 5 attendees (Attendee tag, on the Vol. 5 event as confirmed) and Cullie Poseria (Event Host, linked to Bar Nun, on three Bar Nun events). Every survey link now has a contact.
+- **Events:** added 48 existing people to the events they attended or hosted, so People lists match the survey records. Tagged Pat Hopkins as Event Host.
+- **Tooling:** the claude.ai Gmail `update_draft` tool rewrites links into expiring redirects, so drafts with links must be rebuilt with the workspace draft tool.
+- **Send plan:** Claude sends all 121 on Max's command, Monday 11/2 around 10am ET. One test send first, then paced batches, then mark links sent. Nothing has been sent.
+
+---
+
 ## 2026-10-29: Host form requires only name, email, type of event, attendance
 
 Merge `a968a8c` (branch `fewer-required`, `1b55e77`), pushed. No migration. Effort: low.
