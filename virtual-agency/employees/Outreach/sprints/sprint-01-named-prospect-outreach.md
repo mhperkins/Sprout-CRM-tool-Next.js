@@ -1,4 +1,5 @@
 # Sprint 01: Named Prospect Outreach — First-Touch Copy
+
 **Agent:** Outreach Manager
 **Campaign:** Opening the warm and institutional prospect pipeline (from `briefs/Prospect_Outreach_Plan_July2026.md`)
 **Sprint date:** 2026-07-06
@@ -31,20 +32,22 @@ The plan sorts 213 named prospects into three tracks. This sprint drafts the cop
 ## 2. Tier A messages (send first)
 
 ### Jonathan Puente — email to info@jonathanpuente.com
+
 **CRM id:** `ind_jonathan_puente` · **Was due:** 2026-06-10
 **Subject:** Photographing a Sprout Society event
 
 > Hi Jonathan,
 >
-> I'm with Sprout Society, a Brooklyn nonprofit using the arts to fight the loneliness epidemic in creative communities. Your work keeps circling back to presence and human connection, and that's the whole reason we exist.
+> I'm with Sprout Society, a Brooklyn nonprofit using the arts to fight the loneliness epidemic in creative communities. 
 >
-> We run community events in Bushwick most months, and I'd love to talk about you photographing one. [one line on the specific upcoming event + date]
+> We run a monthly Music and Art Showcase, and we'd love to have you come check one out, and maybe we can feature your photography at a future Sprout N Tell. 
 >
 > Would you be open to a quick call this week?
 >
 > Max
 
 ### Kyra Bowie — email to kyrabowie@gmail.com
+
 **CRM id:** `ind_kyra_bowie` · **Was due:** 2026-06-16
 **Subject:** Sprout Society + the sober-social / theatre worlds
 
@@ -59,12 +62,15 @@ The plan sorts 213 named prospects into three tracks. This sprint drafts the cop
 > Max
 
 ### Haley Sumner — Instagram @haley_sumner
+
 **CRM id:** `ind_haley_sumner` · **Was due:** 2026-06-16
 
 **Comment (on a recent music post):**
+
 > [specific reaction to the song or performance in the post]. This is exactly the kind of joy we try to build rooms around.
 
 **DM (after the comment lands):**
+
 > Hi Haley, I'm with Sprout Society, a Brooklyn nonprofit using the arts to fight loneliness in creative communities. Your music and the spirit behind it are so aligned with what we're doing. We host community nights with live performance, and I'd love to learn more about your work and see if there's a fit. No pressure either way.
 
 ---
@@ -72,48 +78,63 @@ The plan sorts 213 named prospects into three tracks. This sprint drafts the cop
 ## 3. Tier B messages (Instagram, comment first)
 
 ### Jesse Staton — @goldenarmyfitness_j
+
 **CRM id:** `ind_jesse_goldenarmy` · **Was due:** 2026-06-18
 
 **Comment (on a Soul Aligned / community post):**
+
 > [specific reaction to the post's message]. The community you're building around this really resonates with what we do.
 
 **DM:**
+
 > Hey Jesse, I run outreach for Sprout Society, a Brooklyn nonprofit using the arts to end loneliness in creative communities. The way you've built Soul Aligned around purpose and connection caught my eye. I'd love to hear how you think about community, and swap notes. Open to it?
 
 ### Fabian Guhl — @fabianatlantis
+
 **CRM id:** `ind_fabian_guhl` · **Was due:** 2026-06-20
 
 **DM (light, no ask):**
+
 > Hi Fabian, I'm with Sprout Society (Brooklyn nonprofit, arts + community against loneliness). I think we run in some of the same circles here. I appreciate how intentional your work around presence and community is. Just wanted to say hello and connect.
 
 ### Havi Tatu — @havi_tatu
+
 **CRM id:** `ind_havi_tatu` · **Was due:** 2026-06-18
 
 **Comment only (engage before any ask):**
+
 > [specific reaction to the mural or canvas in the post]. Real Bushwick energy.
 
 ### Rsri — @melodysri21
+
 **CRM id:** `ind_rsri` · **Was due:** 2026-06-18
 
 **Comment (on a painting / animation post):**
+
 > [specific reaction to the piece]. Love following the visual diary.
 
 **DM (after engagement is established):**
+
 > Hi, I'm with Sprout Society, a Brooklyn nonprofit that builds community through the arts. Your work has such a distinct voice. We put on creative programming around here and I'd love to learn more about what you make. No agenda, just genuinely into it.
 
 ### Polo Bear — @poloirpcu
+
 **CRM id:** `ind_polo_bear` · **Was due:** 2026-06-18
 
 **Comment only (peer engagement, no ask):**
+
 > [specific reaction to the piece or the LO-LIFE Bushwick work]. This is the good stuff.
 
 ### Lauren Wax — warm intro via Danielle (preferred)
+
 **CRM id:** `ind_lauren_wax` · **Was due:** 2026-06-23
 
 **Note to Danielle Kastenbaum:**
+
 > Hi Danielle, I saw you're connected with Lauren Wax (@laurenamandawax), who runs the PR shop etc.pr. She could be a great amplification partner for Sprout. Would you be up for a quick intro, or okay if I mention you when I reach out?
 
 **Direct DM (fallback, if no intro):**
+
 > Hi Lauren, I'm with Sprout Society, a Brooklyn nonprofit using the arts to fight loneliness in creative communities. I've been following what you've built with etc.pr. As we grow our events and programs, I'd love to learn how you think about getting stories like ours in front of the right people. Open to a chat?
 
 ---

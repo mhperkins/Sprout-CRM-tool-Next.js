@@ -1,10 +1,10 @@
 // POST /api/cron/summaries — called every 15 minutes by pg_cron (job
-// sprout-day-board-summaries). Decides whether the daily recap or the weekly summary is
-// due in New York time, claims it so it sends once, sends it, and gives the claim back
-// if the send fails so the next check retries.
+// sprout-day-board-summaries). Decides whether a Sprout calendar email is due in New York
+// time, claims it so it sends once, sends it, and gives the claim back if the send fails so
+// the next check retries.
 //
-// Daily recap: 9pm, or 30 minutes after the day's last calendar item if that is later.
-// Weekly summary: Sunday from 6pm.
+// Monday overview: Monday from 8am. Tomorrow reminder: every day from 9am, skipped when the
+// next day has nothing on the Sprout calendar.
 //
 // Auth: pg_cron sends the Vault secret as a Bearer token; the route compares its sha256
 // with sprout_cron_keys. The plaintext never leaves the database.
@@ -13,9 +13,9 @@ import { NextResponse } from "next/server";
 import { createHash, randomBytes, timingSafeEqual } from "crypto";
 import { svc, hasServiceKey } from "@/lib/portalDb";
 import { sendEmail } from "@/lib/notify";
-import { fetchCalendarEvents } from "@/lib/googleCalendar";
-import { buildDailyRecap, buildWeeklySummary, lastEventEnd, DAY_BOARD_TO } from "@/lib/dayBoardSummary";
-import { etParts, addDays, weekStartOf, weekdayIndex, clock } from "@/lib/dayBoard";
+import { fetchSproutEvents } from "@/lib/googleCalendar";
+import { buildMondayOverview, buildTomorrowReminder, DAY_BOARD_TO } from "@/lib/dayBoardSummary";
+import { etParts, addDays, weekdayIndex } from "@/lib/dayBoard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -52,6 +52,11 @@ async function claimSend(kind, period) {
   return claim;
 }
 
+const alreadySent = async (kind, period) => {
+  const { data } = await svc().from("sprout_summary_sends").select("sent_at").eq("kind", kind).eq("period", period).maybeSingle();
+  return Boolean(data?.sent_at);
+};
+
 async function sendOnce(kind, period, build) {
   const claim = await claimSend(kind, period);
   if (!claim) return "already sent";
@@ -63,7 +68,7 @@ async function sendOnce(kind, period, build) {
     return "sent";
   } catch (e) {
     await svc().from("sprout_summary_sends").delete().eq("kind", kind).eq("period", period).eq("claim_token", claim);
-    console.error(`day-board ${kind} ${period} failed:`, e?.message || e);
+    console.error(`calendar email ${kind} ${period} failed:`, e?.message || e);
     return "failed, will retry";
   }
 }
@@ -76,29 +81,26 @@ export async function POST(req) {
   const out = {};
 
   try {
-    // Daily recap. Before 4am the recap still belongs to yesterday.
-    const afterMidnight = now.minutes < 4 * 60;
-    if (now.minutes >= 21 * 60 || afterMidnight) {
-      const day = afterMidnight ? addDays(now.date, -1) : now.date;
-      const events = await fetchCalendarEvents(day, addDays(day, 1));
-      const dueAt = Math.max(21 * 60, lastEventEnd(events, day) + 30);
-      const elapsed = afterMidnight ? now.minutes + 24 * 60 : now.minutes;
-      out.daily = elapsed >= dueAt
-        ? await sendOnce("daily", day, () => buildDailyRecap(day, events))
-        : `not yet, due ${clock(dueAt % (24 * 60))}`;
+    if (weekdayIndex(now.date) === 0 && now.minutes >= 8 * 60) {
+      out.monday = await sendOnce("monday", now.date, async () =>
+        buildMondayOverview(now.date, await fetchSproutEvents(now.date, addDays(now.date, 6))));
     } else {
-      out.daily = "not due";
+      out.monday = "not due";
     }
 
-    // Weekly summary, Sunday evening.
-    if (weekdayIndex(now.date) === 6 && now.minutes >= 18 * 60) {
-      const ws = weekStartOf(now.date);
-      out.weekly = await sendOnce("weekly", ws, () => buildWeeklySummary(ws));
+    if (now.minutes >= 9 * 60) {
+      const day = addDays(now.date, 1);
+      if (await alreadySent("tomorrow", day)) {
+        out.tomorrow = "already sent";
+      } else {
+        const events = await fetchSproutEvents(day, day);
+        out.tomorrow = events.length ? await sendOnce("tomorrow", day, () => buildTomorrowReminder(day, events)) : "nothing tomorrow";
+      }
     } else {
-      out.weekly = "not due";
+      out.tomorrow = "not due";
     }
   } catch (e) {
-    console.error("day-board summaries:", e?.message || e);
+    console.error("calendar emails:", e?.message || e);
     return NextResponse.json({ error: "check failed" }, { status: 500 });
   }
 

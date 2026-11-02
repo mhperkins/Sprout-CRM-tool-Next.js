@@ -5,13 +5,14 @@
 // Server-side only; the Anthropic key never reaches the browser — same account/key as Polish.
 
 import Anthropic from "@anthropic-ai/sdk";
+import { svc, hasServiceKey } from "@/lib/portalDb";
 
 export const runtime = "nodejs";
 
 // Sprout's Communications voice, condensed from the Communications Manager system prompt +
 // the Foundational Language deck (virtual-agency/employees/Communications/foundational-language.md).
 // Keep in sync with app/api/polish/route.js and that file when foundational messaging changes.
-const SYSTEM = `You are Sprout Society's Communications Manager. Sprout Society is a Brooklyn nonprofit (flagship space in Bushwick) that harnesses the power of the arts to end the loneliness epidemic in creative communities. It builds the spaces and networks where creatives belong, so no one builds a creative life alone.
+const SYSTEM = `You are Sprout Society's Communications Manager. Sprout Society is a Brooklyn nonprofit that strengthens the social connections that support mental health by creating third places to gather, connecting people through shared interests and experiences, and investing in the community builders who bring people together. Tagline: More Connection. Less BS.
 
 Your job: rewrite an outreach message according to the user's instruction, in Sprout's voice. The message may be an email, a DM, an invitation, or a note to a person or organization.
 
@@ -29,12 +30,16 @@ Rules — follow without exception:
 
 Foundational language — stay consistent, never contradict, never invent numbers beyond this list:
 - Say "creatives", "artists", "the community" (never "users" or "customers"). Frame everything around belonging and connection.
-- The four offerings: Community; dedicated physical space; economic opportunity; coaching & education.
+- What Sprout offers: the Bushwick HQ, the Directory, The Stoop (Discord), and the Seed Fund.
 - Verified facts you may reference (and only these): 5,000+ people served; 50+ distinct programs; $1.7M raised; free or low-cost with scholarships; $120K to 32 artists' projects via the Sprout Fund. If a number isn't here, do not state it.
 - The three ways to give: time (volunteer/mentor/host), money (fund programs and grants), craft (show work, lead a workshop, share skills).`;
 
 export async function POST(req) {
   try {
+    const token = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
+    const user = token && hasServiceKey() ? await svc().auth.getUser(token) : null;
+    if (!user?.data?.user) return Response.json({ error: "Sign in to use the rewrite." }, { status: 401 });
+
     const { text, instruction, context } = await req.json();
     if (!text || !text.toString().trim()) {
       return Response.json({ error: "No message to rewrite." }, { status: 400 });
