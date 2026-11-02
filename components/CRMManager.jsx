@@ -5923,6 +5923,11 @@ const saveOrgs = useCallback((u) => {
     });
   }, [showToast]);
 
+  // A contact another page already saved: update this page's copy without writing again.
+  const contactChanged = useCallback((rec) => {
+    setContacts(prev => prev.some(c => c.id === rec.id) ? prev.map(c => c.id === rec.id ? rec : c) : [...prev, rec]);
+  }, []);
+
   const saveOneEvent = useCallback((rec) => {
     setEvents(prev => prev.map(e => e.id === rec.id ? rec : e));
     svcSaveEvents([rec]).then(({ error }) => {
@@ -6094,7 +6099,7 @@ if (dbError) return (
         {view==="interest"&&<GetInvolvedView contacts={contacts} onCreateContact={createOneContact} openContact={openContact} showToast={showToast}/>}
         {view==="showcase"&&<ShowcaseApplications contacts={contacts} events={events} onSaveContact={saveOneContact} onCreateContact={createOneContact} onUpdateEvent={saveOneEvent} openContact={openContact} openSurvey={()=>{setSurveyStart({audience:"artist",tab:"send"});setView("survey");}} showToast={showToast}/>}
         {view==="newsletter"&&<NewsletterView newsletters={newsletters} events={events} contacts={contacts} profile={profile} onUpdate={saveNewsletter} onDelete={deleteNewsletter} showToast={showToast}/>}
-        {view==="outreach"&&<OutreachPage contacts={contacts} orgs={orgs} showToast={showToast} openContact={openContact} onSaveContact={saveOneContact} onCreateContact={createOneContact}/>}
+        {view==="outreach"&&<OutreachPage contacts={contacts} orgs={orgs} events={events} showToast={showToast} openContact={openContact} onContactChanged={contactChanged}/>}
         {view==="import"&&<ImportView contacts={contacts} orgs={orgs} onImportContact={importContact} onImportOrg={importOrg} showToast={showToast}/>}
         {view==="settings"&&<SettingsView profile={profile} onUpdate={saveProfile} showToast={showToast}/>}
       </main>

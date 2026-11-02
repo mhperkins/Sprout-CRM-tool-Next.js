@@ -16,7 +16,7 @@ import { useState, useEffect, useMemo } from "react";
 import {
   fetchOutreachAccounts, createOutreachAccount, updateOutreachAccount,
   fetchOutreachMessages, saveOutreachMessage, deleteOutreachMessage,
-  fetchCrmRecordsByIds, rewriteOutreachMessage,
+  fetchCrmRecordsByIds, findContactByHandle, saveContacts, rewriteOutreachMessage,
 } from "../lib/services";
 import {
   OUTREACH_STATUS, STATUS_ORDER, REACHED, RESPONDED, LOG, cleanHandle, profileUrl, matchHandle,
@@ -83,7 +83,7 @@ const PAGE = 25;
 const fmtWhen = (iso) => (iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "");
 const contactName = (c) => [c?.first_name, c?.last_name].filter(Boolean).join(" ").trim();
 
-export default function OutreachPage({ contacts = [], orgs = [], showToast, openContact, onSaveContact, onCreateContact }) {
+export default function OutreachPage({ contacts = [], orgs = [], events = [], showToast, openContact, onContactChanged }) {
   const [tab, setTab] = useState("send");
   const [rows, setRows] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -97,6 +97,7 @@ export default function OutreachPage({ contacts = [], orgs = [], showToast, open
   const [adding, setAdding] = useState(null); // { handle, name, type, batch }
   const [activeMsg, setActiveMsg] = useState(null);
   const [narrow, setNarrow] = useState(false);
+  const [msgDirty, setMsgDirty] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -143,6 +144,28 @@ export default function OutreachPage({ contacts = [], orgs = [], showToast, open
     return r.contacts[0] || null;
   };
 
+  // Awaited, and checked first, so no button reports success on a write that didn't happen.
+  const writeContact = async (rec) => {
+    const { error: bad } = validateContact(rec);
+    if (bad) return "That record has a problem and was not saved.";
+    const { error } = await saveContacts([rec]);
+    if (error) return error;
+    onContactChanged?.(rec);
+    return null;
+  };
+
+  // An id that is free in the database, not only on this page.
+  const freeContactId = async (row) => {
+    const taken = new Set(contacts.map((c) => c.id));
+    for (;;) {
+      const id = contactIdFor(row, taken);
+      const r = await fetchCrmRecordsByIds({ contactIds: [id] });
+      if (r.error) return { error: r.error };
+      if (!r.contacts.length) return { id };
+      taken.add(id);
+    }
+  };
+
   // One button press: update the row, its history, and the linked comm log.
   const act = async (row, patch, logText) => {
     setBusy(row.id);
@@ -151,17 +174,26 @@ export default function OutreachPage({ contacts = [], orgs = [], showToast, open
     const { row: saved, error } = await updateOutreachAccount(row.id, { ...patch, history });
     if (error) { showToast?.("Could not save: " + error, "err"); setBusy(""); return null; }
     patchRow(saved);
+    let logged = true;
     if (row.contact_id) {
       const rec = await freshContact(row.contact_id);
-      if (rec) onSaveContact({ ...rec, touchpoints: [...(rec.touchpoints || []), { date, summary: logText }] });
-      else showToast?.("Saved here, but the comm log could not be updated.", "err");
+      if (rec) {
+        const err = await writeContact({ ...rec, touchpoints: [...(rec.touchpoints || []), { date, summary: logText }] });
+        if (err) { logged = false; showToast?.("Saved here, but their comm log did not update: " + err, "err"); }
+      } else {
+        // Their record was merged or deleted: drop the link so the row keeps working.
+        logged = false;
+        const cleared = await updateOutreachAccount(row.id, { contact_id: null });
+        if (!cleared.error) patchRow(cleared.row);
+        showToast?.("Saved here. Their CRM record no longer exists, so this row is unlinked.", "err");
+      }
     }
     setBusy("");
-    return saved;
+    return logged ? saved : null;
   };
 
   const copyMessage = async () => {
-    if (!message) { showToast?.("Add a message first, on the Messages tab.", "err"); return; }
+    if (!message?.body?.trim()) { showToast?.("That message is blank. Write it on the Messages tab first.", "err"); return; }
     try {
       await navigator.clipboard.writeText(message.body);
       showToast?.("Message copied ✓ Paste it into Instagram, then press Mark sent.");
@@ -185,18 +217,26 @@ export default function OutreachPage({ contacts = [], orgs = [], showToast, open
     const row = all.find((r) => r.id === panel.id);
     setBusy(row.id);
     const date = todayET();
-    let contactId = row.contact_id;
-    if (contactId) {
-      const rec = await freshContact(contactId);
-      if (!rec) { showToast?.("Could not read their record. Nothing changed.", "err"); setBusy(""); return; }
-      onSaveContact(promoteContact(rec, date));
-    } else {
-      const id = contactIdFor(row, new Set(contacts.map((c) => c.id)));
-      const check = validateContact(contactFromAccount(row, id, date));
-      if (!check.data) { showToast?.("Could not create the contact. Nothing changed.", "err"); setBusy(""); return; }
-      onCreateContact(check.data);
-      contactId = id;
+    // Always look in the database: they may have joined the CRM since this row was added,
+    // and a retried press must find the contact the first press created.
+    let rec = row.contact_id ? await freshContact(row.contact_id) : null;
+    if (!rec) {
+      const found = await findContactByHandle(row.handle);
+      if (found.error) { showToast?.("Could not check the CRM. Nothing changed.", "err"); setBusy(""); return; }
+      rec = found.contact;
     }
+    let contactId, err;
+    if (rec) {
+      contactId = rec.id;
+      err = await writeContact(promoteContact(rec, date));
+    } else {
+      const { id, error: idErr } = await freeContactId(row);
+      if (idErr) { showToast?.("Could not check the CRM. Nothing changed.", "err"); setBusy(""); return; }
+      contactId = id;
+      const check = validateContact(contactFromAccount(row, id, date));
+      err = check.data ? await writeContact(check.data) : "That record has a problem and was not saved.";
+    }
+    if (err) { showToast?.("Could not save the contact. Nothing changed: " + err, "err"); setBusy(""); return; }
     const { row: saved, error } = await updateOutreachAccount(row.id, {
       status: "added", contact_id: contactId, history: [...(row.history || []), { date, text: LOG.added }],
     });
@@ -216,6 +256,7 @@ export default function OutreachPage({ contacts = [], orgs = [], showToast, open
     const { row, error } = await createOutreachAccount({
       handle, name: adding.name.trim() || contactName(known), type: adding.type.trim() || "Unknown",
       batch: Number(adding.batch) || 1, follows_us: adding.follows === "" ? null : adding.follows === "yes", contact_id: known?.id || null,
+      ...(adding.follows === "no" ? { status: "skip", skip_reason: "Not following us" } : {}),
     });
     if (error) { showToast?.("Could not add the account: " + error, "err"); return; }
     patchRow(row); setAdding(null);
@@ -334,7 +375,7 @@ export default function OutreachPage({ contacts = [], orgs = [], showToast, open
       </div>
 
       <div className="ot-bar">
-        {[["send", "Send"], ["results", "Results"], ["messages", "Messages"]].map(([k, l]) => (
+        {[["send", "Send"], ["results", "Results"], ["messages", `Messages${msgDirty ? " •" : ""}`]].map(([k, l]) => (
           <button key={k} className="ot-chip" aria-pressed={tab === k} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
@@ -356,7 +397,7 @@ export default function OutreachPage({ contacts = [], orgs = [], showToast, open
             <button className="ot-btn2" onClick={() => setAdding({ handle: "", name: "", type: "", batch: batch === "all" ? 1 : batch, follows: "yes" })}>+ Add account</button>
           </div>
           {messages.length > 1 && <div className="ot-bar"><label className="ot-lab" htmlFor="ot-active">Message to copy</label>
-            <select id="ot-active" className="ot-sel" style={{ maxWidth: 320 }} value={message?.id || ""} onChange={(e) => setActiveMsg(e.target.value)}>
+            <select id="ot-active" className="ot-sel" style={{ maxWidth: 320 }} disabled={msgDirty} title={msgDirty ? "Save your message edits first" : ""} value={message?.id || ""} onChange={(e) => setActiveMsg(e.target.value)}>
               {messages.map((m) => <option key={m.id} value={m.id}>{m.name || "Untitled message"}</option>)}
             </select></div>}
           {adding && <div className="ot-panel">
@@ -380,7 +421,7 @@ export default function OutreachPage({ contacts = [], orgs = [], showToast, open
         <div className="ot-tw" style={{ marginBottom: 14 }}><table className="ot-t">
           <thead><tr><th>Batch</th><th>Accounts</th><th>To message</th><th>Messaged</th><th>Replied</th><th>Interested</th><th>Added</th><th>Skipped</th></tr></thead>
           <tbody>{batches.map((b) => (
-            <tr key={b.batch} className="ot-num"><td><b>Outreach {b.batch}</b></td><td>{b.total}</td><td>{b.to_message}</td><td>{b.messaged}</td><td>{b.replied}</td><td>{b.interested}</td><td>{b.added}</td><td>{b.skip}</td></tr>
+            <tr key={b.batch} className="ot-num"><td><b>Outreach {b.batch}</b></td><td>{b.total}</td><td>{b.to_message}</td><td>{b.reached}</td><td>{b.heard}</td><td>{b.interested}</td><td>{b.added}</td><td>{b.skip}</td></tr>
           ))}</tbody>
         </table></div>
         <div className="ot-lab" style={{ marginBottom: 6 }}>Replies</div>
@@ -391,12 +432,15 @@ export default function OutreachPage({ contacts = [], orgs = [], showToast, open
           : <div className="ot-empty"><b>No replies yet</b>Press Log reply on a messaged account in Send, and it shows here.</div>}
       </>}
 
-      {tab === "messages" && <MessagesTab messages={messages} setMessages={setMessages} active={message} setActive={setActiveMsg} showToast={showToast} />}
+      {/* Stays mounted so unsaved edits survive a trip to the Send tab. */}
+      <div hidden={tab !== "messages"}>
+        <MessagesTab messages={messages} setMessages={setMessages} active={message} setActive={setActiveMsg} events={events} onDirty={setMsgDirty} showToast={showToast} />
+      </div>
     </div>
   );
 }
 
-function MessagesTab({ messages, setMessages, active, setActive, showToast }) {
+function MessagesTab({ messages, setMessages, active, setActive, events, onDirty, showToast }) {
   const [draft, setDraft] = useState(active ? { ...active } : null);
   const [ask, setAsk] = useState("");
   const [working, setWorking] = useState(false);
@@ -405,7 +449,23 @@ function MessagesTab({ messages, setMessages, active, setActive, showToast }) {
 
   useEffect(() => { setDraft(active ? { ...active } : null); setPrev(null); }, [active?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const dirty = draft && active && (draft.name !== active.name || draft.body !== active.body);
+  const dirty = Boolean(draft && active && (draft.name !== active.name || draft.body !== active.body));
+  useEffect(() => { onDirty?.(dirty); }, [dirty, onDirty]);
+
+  // Real upcoming dates, so "invite them to the next show" never needs a guess.
+  const context = useMemo(() => {
+    const today = todayET();
+    const next = events
+      .filter((e) => e.event_date && e.event_date >= today && e.status !== "completed" && e.status !== "cancelled")
+      .sort((a, b) => a.event_date.localeCompare(b.event_date)).slice(0, 6)
+      .map((e) => `- ${e.name}, ${new Date(e.event_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}${e.location ? ` at ${e.location}` : ""}`);
+    return next.length ? `Upcoming Sprout Society events (real dates, use only if relevant):\n${next.join("\n")}` : "";
+  }, [events]);
+
+  const pick = (id) => {
+    if (dirty) { showToast?.("Save or undo your edits first.", "err"); return; }
+    setActive(id);
+  };
 
   const save = async () => {
     if (!draft.body.trim()) { showToast?.("Write the message first.", "err"); return; }
@@ -419,6 +479,7 @@ function MessagesTab({ messages, setMessages, active, setActive, showToast }) {
   };
 
   const add = async () => {
+    if (dirty) { showToast?.("Save or undo your edits first.", "err"); return; }
     const { message, error } = await saveOutreachMessage({ name: "New message", body: "", position: messages.length });
     if (error) { showToast?.("Could not add: " + error, "err"); return; }
     setMessages((l) => [...l, message]);
@@ -436,11 +497,11 @@ function MessagesTab({ messages, setMessages, active, setActive, showToast }) {
   const rewrite = async () => {
     if (!ask.trim()) { showToast?.("Tell Claude what to change.", "err"); return; }
     setWorking(true);
-    const { text, error } = await rewriteOutreachMessage(draft.body, ask.trim());
+    const { text, error } = await rewriteOutreachMessage(draft.body, ask.trim(), context);
     setWorking(false);
     if (error) { showToast?.(error, "err"); return; }
     setPrev(draft.body);
-    setDraft({ ...draft, body: text });
+    setDraft((d) => (d?.id === draft.id ? { ...d, body: text } : d));
     setAsk("");
   };
 
@@ -449,7 +510,7 @@ function MessagesTab({ messages, setMessages, active, setActive, showToast }) {
   return (
     <div className="ot-msg">
       <div>
-        {messages.length > 1 && <div className="ot-bar">{messages.map((m) => <button key={m.id} className="ot-chip" aria-pressed={m.id === active?.id} onClick={() => setActive(m.id)}>{m.name || "Untitled"}</button>)}</div>}
+        {messages.length > 1 && <div className="ot-bar">{messages.map((m) => <button key={m.id} className="ot-chip" aria-pressed={m.id === active?.id} onClick={() => pick(m.id)}>{m.name || "Untitled"}</button>)}</div>}
         <label className="ot-lbl" htmlFor="ot-m-name">Message name</label>
         <input id="ot-m-name" className="ot-in" style={{ marginBottom: 10 }} value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
         <label className="ot-lbl" htmlFor="ot-m-body">Message</label>
