@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Outreach and Day Board Delivery</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root { --ink:#030000; --paper:#F7F7F6; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6; --muted:#6c6c61; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ink); color:#fff; font-family:Lato,Helvetica,Arial,sans-serif; min-height:100vh; padding:40px 16px; }
+  .slide { max-width:1040px; margin:0 auto; }
+  .eyebrow { font-size:12px; font-weight:900; letter-spacing:.14em; text-transform:uppercase; color:var(--acid); }
+  h1 { font-size:clamp(30px,5vw,46px); font-weight:900; line-height:1.1; margin:10px 0 14px; }
+  .lead { font-size:17px; line-height:1.5; color:#d8d8d3; max-width:760px; margin:0 0 20px; }
+  .badges { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:26px; }
+  .badge { background:#1d1d1a; border:1px solid #3a3a36; border-radius:999px; padding:6px 13px; font-size:13px; }
+  .badge b { color:var(--acid); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:14px; }
+  .card { background:var(--paper); color:var(--ink); border-radius:10px; padding:18px 20px; border-left:6px solid var(--cyan); }
+  .card.f { border-left-color:var(--fuchsia); }
+  .card.a { border-left-color:var(--acid); }
+  .card.b { border-left-color:var(--banana); }
+  .card h2 { font-size:18px; font-weight:900; margin:0 0 8px; }
+  .card ul { margin:0; padding-left:18px; font-size:14px; line-height:1.5; color:#3a3a38; }
+  .card li { margin-bottom:4px; }
+  code { font-family:Consolas,monospace; font-size:.92em; }
+  .foot { margin-top:18px; font-size:14px; line-height:1.5; color:#d8d8d3; }
+  .foot b { color:var(--banana); }
+</style>
+</head>
+<body>
+<main class="slide">
+  <div class="eyebrow">Sprout CRM · Redesign part 1 · 2026-11-02</div>
+  <h1>Outreach works, and the Day Board is a checklist</h1>
+  <p class="lead">Outreach is now a page for sending DMs and seeing what came back. The Day Board shows what to do and what is on the Sprout calendar.</p>
+  <div class="badges">
+    <span class="badge">Branch <b>main</b></span>
+    <span class="badge">Merge <b>162bc23</b></span>
+    <span class="badge">Effort <b>high</b></span>
+    <span class="badge">Records <b>3,975 contacts, 46 orgs unchanged</b></span>
+  </div>
+  <div class="grid">
+    <section class="card">
+      <h2>📣 Outreach</h2>
+      <ul>
+        <li>Send, Results, and Messages tabs</li>
+        <li>110 people: 92 to message, 4 messaged, 14 skipped</li>
+        <li>Every button writes to the comm log</li>
+        <li>Add to CRM is the only way into Contacts</li>
+      </ul>
+    </section>
+    <section class="card f">
+      <h2>✅ Day Board</h2>
+      <ul>
+        <li>To-do list, oldest first</li>
+        <li>14 days of the Sprout calendar</li>
+        <li>Personal calendar hidden until toggled</li>
+        <li>Finished tasks stay struck through for the day</li>
+      </ul>
+    </section>
+    <section class="card a">
+      <h2>✉️ Emails</h2>
+      <ul>
+        <li>Monday overview from 8am ET</li>
+        <li>Day-before reminder from 9am ET</li>
+        <li>Both list everything on the Sprout calendar</li>
+        <li>Daily recap and Sunday summary stopped</li>
+      </ul>
+    </section>
+    <section class="card b">
+      <h2>🧹 Removed</h2>
+      <ul>
+        <li>Old Outreach page, <code>app/api/outreach</code>, <code>lib/md.js</code></li>
+        <li>Weekly bank, categories, hours, and push</li>
+        <li>Midnight job <code>sprout-tasks-roll-forward</code></li>
+        <li>Edited Sprint 01 saved to the repo</li>
+      </ul>
+    </section>
+  </div>
+  <p class="foot"><b>Still open:</b> Max clicks through both pages. The unused <code>sprout_outreach_docs</code> table remains because a permission check blocked the drop. The Contacts split waits for a backup and Max's OK.</p>
+</main>
+</body>
+</html>

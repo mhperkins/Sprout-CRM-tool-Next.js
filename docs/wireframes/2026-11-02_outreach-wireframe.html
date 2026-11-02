@@ -1,0 +1,449 @@
+<title>Sprout Outreach Wireframe</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap">
+<style>
+/* Layout: wireframe chrome bar → one working Outreach page built from the real DM Plan rows, then the structure calls for Max. Grey boxes on purpose: this settles structure, not styling. */
+:root{
+  --paper:#F4F4F0; --card:#FFFFFF; --sunk:#EDEDE6;
+  --line:#DFDFD6; --line-soft:#ECECE4;
+  --text:#171713; --ink2:#3A3A33; --dim:#6C6C61;
+  --btn:#171713; --btn-ink:#F4F4F0;
+  --accent:#C4007F; --cyan:#2A8CA0;
+  --warn:#9A6B00; --warn-bg:#FAF0D6; --ok:#15804A; --ok-bg:#E4F3EA;
+  --f-body:Lato,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E0E0B; --card:#1A1A16; --sunk:#131310;
+    --line:#2F2F27; --line-soft:#232320;
+    --text:#F1F1E9; --ink2:#D0D0C6; --dim:#9C9C90;
+    --btn:#F1F1E9; --btn-ink:#0E0E0B;
+    --accent:#FF4FAE; --cyan:#5FC9DE;
+    --warn:#F0C244; --warn-bg:#2B2412; --ok:#43C98A; --ok-bg:#12291F;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E0E0B; --card:#1A1A16; --sunk:#131310;
+  --line:#2F2F27; --line-soft:#232320;
+  --text:#F1F1E9; --ink2:#D0D0C6; --dim:#9C9C90;
+  --btn:#F1F1E9; --btn-ink:#0E0E0B;
+  --accent:#FF4FAE; --cyan:#5FC9DE;
+  --warn:#F0C244; --warn-bg:#2B2412; --ok:#43C98A; --ok-bg:#12291F;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--text);font-family:var(--f-body);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--btn)}
+h1,h2,h3{margin:0;text-wrap:balance}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wire{background:var(--btn);color:var(--btn-ink);padding-block:9px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;gap:8px 16px;align-items:center;flex-wrap:wrap;font-size:12px;position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.wire b{letter-spacing:.11em;text-transform:uppercase;font-size:10px}
+.seg{display:inline-flex;border:1px solid color-mix(in srgb,var(--btn-ink) 35%,transparent);border-radius:999px;padding:2px;flex-wrap:wrap}
+.seg button{appearance:none;border:0;background:none;cursor:pointer;padding:3px 11px;border-radius:999px;font-size:12px;color:var(--btn-ink);opacity:.72}
+.seg button[aria-pressed="true"]{background:var(--btn-ink);color:var(--btn);opacity:1;font-weight:700}
+.page{padding-block:20px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1180px;margin:0 auto;display:grid;gap:18px}
+.frame{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+.frame.phone{max-width:390px;margin-inline:auto;width:100%;padding:12px}
+.cap{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.top{display:flex;gap:8px 18px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;padding-bottom:12px;border-bottom:2px solid var(--text);margin-bottom:12px}
+.top h1{font-size:26px;font-weight:900;letter-spacing:-.02em;line-height:1.1}
+.top p{margin:3px 0 0;color:var(--dim);font-size:13px;max-width:60ch}
+.tally{font-size:13px;color:var(--dim);font-variant-numeric:tabular-nums}
+.bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.chip{appearance:none;font-size:12.5px;font-weight:700;cursor:pointer;border:1.5px solid var(--line);background:var(--card);color:var(--dim);border-radius:999px;padding:4px 12px;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--text);color:var(--paper);border-color:var(--text)}
+.sep{width:1px;height:20px;background:var(--line);margin:0 4px}
+.btn{appearance:none;font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--text);background:var(--text);color:var(--paper);border-radius:6px;padding:6px 12px;white-space:nowrap}
+.btn2{appearance:none;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:6px;padding:5px 10px;white-space:nowrap}
+.btn2:hover{border-color:var(--text)}
+.lnk{color:var(--cyan);text-decoration:underline;font-weight:700}
+.in,.ta,.sel{width:100%;min-width:0;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:13px}
+.ta{min-height:64px;resize:vertical}
+.lbl{display:block;font-size:11.5px;font-weight:700;color:var(--dim);margin:0 0 3px}
+.search{flex:1 1 180px;max-width:280px}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:9px 11px;border-bottom:1px solid var(--line-soft);text-align:left;vertical-align:top}
+th{font-size:11.5px;color:var(--dim);font-weight:700;white-space:nowrap}
+td small{display:block;color:var(--dim);font-size:11.5px;margin-top:2px}
+.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--dim);white-space:nowrap}
+.tag.sent{background:var(--warn-bg);color:var(--warn)}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}
+.num{font-variant-numeric:tabular-nums}
+.panel{background:var(--sunk);border-radius:8px;padding:12px;display:grid;gap:10px;margin-bottom:10px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.confirm{border-left:4px solid var(--cyan);padding:6px 10px;font-size:13px;background:var(--card);border-radius:0 6px 6px 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--sunk);border-radius:8px;padding:10px 12px}
+.kpi b{display:block;font-size:24px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi span{font-size:12px;color:var(--dim)}
+.card{border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;gap:8px;margin-bottom:8px;min-width:0}
+.card .head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.card .who{min-width:0;overflow-wrap:anywhere}
+.card small{display:block;color:var(--dim);font-size:12px}
+.empty{text-align:center;padding:30px 14px;color:var(--dim)}
+.empty b{display:block;color:var(--text);font-size:16px;margin-bottom:4px}
+.empty .btn{margin-top:10px}
+.note{background:var(--warn-bg);border-left:4px solid var(--warn);border-radius:0 8px 8px 0;padding:9px 12px;font-size:13px;margin-bottom:12px}
+.rep{border-top:1px solid var(--line-soft);padding:10px 0;font-size:13px}
+.rep:first-child{border-top:0}
+.pager{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:10px;font-size:12.5px;color:var(--dim);flex-wrap:wrap}
+.calls h2{font-size:17px;font-weight:900;margin-bottom:8px}
+.calls ol{margin:0;padding-left:20px;display:grid;gap:7px;max-width:76ch}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--text);color:var(--paper);padding:9px 14px;border-radius:8px;font-size:13px;max-width:calc(100% - 32px);z-index:40}
+</style>
+
+<div class="wire">
+  <b>Wireframe</b>
+  <span>State</span>
+  <span class="seg" id="w-state" role="group" aria-label="Screen state">
+    <button data-state="typical" aria-pressed="true">Typical</button>
+    <button data-state="empty" aria-pressed="false">Empty</button>
+    <button data-state="much" aria-pressed="false">Too much</button>
+    <button data-state="phone" aria-pressed="false">390px</button>
+  </span>
+</div>
+
+<main class="page">
+  <section id="stage" class="frame" aria-live="off"></section>
+  <section class="frame calls">
+    <h2>Decided</h2>
+    <ol>
+      <li><b>Lean:</b> three tabs: Send, Results, Messages.</li>
+      <li><b>Survey DMs:</b> the 17 survey rows stay on Impact Survey. They are participants, not outreach.</li>
+      <li><b>Follows us:</b> a saved Yes/No. Not following shows as Skip with that reason.</li>
+      <li><b>Added:</b> Add to CRM is the only thing that moves someone into Contacts.</li>
+      <li><b>One message for everyone:</b> no first-name slot.</li>
+      <li><b>History:</b> Mark sent, Unmark, Skip, Log reply, and Add to CRM each write a dated entry to that person's comm log. New accounts keep theirs here and carry it over on Add to CRM. The 4 people already messaged get theirs when the list moves in.</li>
+      <li><b>Waiting on your OK:</b> this version leaves out the 35 org accounts, so the list is 110 people. All orgs stay on Organizations.</li>
+    </ol>
+  </section>
+</main>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+/* Real rows from the DM Plan tab, read 2026-11-02. batch|handle|name|type|flag|note. S = sent, N = not following, H = held. */
+const RAW=`1|citynhearts|city & hearts|CRM org|S
+1|mamarecess|Mama Recess|CRM org|S
+1|recessatwork|The Recess Lab|CRM org|S
+1|regulate2elevatellc|Regulate2Elevate|CRM org|N
+1|dear_community|DearCo|CRM org|S
+1|thefieldwetend|the field we tend|CRM org|S
+1|sobersupper|Sober Supper Club|CRM org|N
+1|dancesupportny|Dance Support NYC|CRM org|N
+1|goldenarmyfitness_j|Jesse Staton|CRM prospect|N
+1|melodysri21|Rsri|CRM prospect|S
+1|havi_tatu|Havi Tatu|CRM prospect|S
+1|poloirpcu|Polo Bear|CRM prospect|S
+1|haley_sumner|Haley Sumner|CRM prospect|S
+1|kyrabowie|Kyra Bowie|CRM prospect|
+1|jonathanpuentephoto|Jonathan Puente|CRM prospect|
+2|themiamarlowe|Mia Marlowe|CRM prospect|N
+2|dommycbaby|Cartier Dommy|CRM prospect|N
+2|fabianatlantis|Fabian Guhl|CRM prospect|
+2|alealeonaa|Alea|CRM prospect|N
+2|laurenamandawax|Lauren Wax|CRM prospect|
+2|zinnergy|zinnergy|CRM prospect|
+2|girl.social|Girl Social|Community org|
+2|qommunit|QTs QommuniT|Community org (queer)|
+2|belongwitheli|Eli Walker (Belonging Design)|Community builder|
+2|sobercuriouslive|Sober Curious: A Musical Cabaret|Event / performance||Sober theme fits Sprout
+2|amazingunknownartists|amazing unknown artists|Art community|
+2|murmurationtheatreco|Murmuration Theatre Company|Performing arts org|N
+2|kindredcreative.arttherapy|Dakota Lehman|Wellness (art therapy)|
+2|daniela_starcat|Daniela|Music (DJ) / community|
+2|knzparker|Kenzi Parker|Person||Referred people to Sprout N Tell
+3|brooklynstudiosnyc|Brooklyn Studios|Venue / space|
+3|sparsabrooklyn|SPARŚA|Space / wellness?|
+3|solasstudionyc|Solas Studio|Venue / studio|N
+3|venue.archives_|VENUEARCHIVES|Venue listings|
+3|ankydyn.gallery|Curatorial platform|Art org|
+3|asylumartsnetwork|Asylum Arts|Art org|
+3|dinawindartfoundation|Dina Wind Art Foundation|Art org / funder?|
+3|nooarts_org|Noosphere Arts|Art org|
+3|almaartsny|Alma Arts|Art org|
+3|artyardbklyn|ARTYARDBKLYN|Art venue|
+3|stompinggroundsarthouse|Stomping Grounds Arthouse|Art venue|
+3|prospectartproject|Prospect Art|Art org|
+3|_artsccc|ARTSCCC|Art org|
+3|brooklyn.art.cave|Brooklyn Art Cave|Art venue|
+3|ivyhousestudio|ivyhousestudio|Studio|
+4|scholesstreetstudio||Studio / venue?|N
+4|itsstudioaris|STUDIO ARIS|Art / studio|
+4|artlives.studio|Art Lives Studio|Art|
+4|giannaalessimusic|Gianna Alessi|Music|
+4|chrisbaluyutmusic|Chris Baluyut|Music|
+4|423arts_afro_jazz_collective||Music (collective)|
+4|robstanleytunes|Robbie|Music|H|May be Robbie Donaldson, already in Community
+4|emilybeckmusic|Emily Beck|Music|
+4|dariafortepiano|Daria Tennikova|Music (piano)||Likes our stories
+4|lapisero1|Musician / artist|Music|
+4|aoede.muse|Lisa Sniderman (Aoede)|Music / art|
+4|simsouldon|Sim Graybill|Music?|H|May be Beth Graybill, already in Community
+4|tanabpm|TANA|Music|
+4|lucapasquini.music|Luca Pasquini|Music|
+4|lyrical.libations||Event / drinks|N
+5|joeysherrock|Joey Sherrock|Art (photographer / DP)|
+5|jenncacciolastudio|Jenn Cacciola|Art (studio)|
+5|paperforthepeople|Alexis Viele|Art (paper)|
+5|billo.atelier|billo|Art / design|N
+5|kalasteindesign|Kala Stein|Art|
+5|artistportraits|Maxim Ryazansky|Art|
+5|elham.m.aghili.studio|Elham M. Aghili|Art (fiber)|
+5|vasqfilm|Venus|Art / film|
+5|fleshmap|Jennifer L. Markowitz|Art|
+5|dm_witman_artist|DM Witman|Art|
+5|nichelleriversart|NiRi Art|Art|
+5|salttreeart|Salt Tree Art|Art|
+5|dreyfus.art|Ashley Dreyfus|Art|
+5|artxtiles|Artxtiles|Art|
+5|pambo_art|Pam K|Art|
+6|chanikasvetvilas|Chanika Svetvilas|Art|
+6|loganbabin.art|PSILOVEYOU|Art|
+6|maxblu_art||Art|
+6|wl_pma|Alison S.|Art|
+6|mayluna_art|Aeemay Dabiran|Art|
+6|kiraewong_art|Kira E Wong|Art (collage)|
+6|lamanna_designs_and_art|Mixed media artist / teacher|Art|
+6|k.salem.art|K.Salem|Art|
+6|cennyray|Cenny Ray|Art|
+6|pimc.tat|Pickle Is My Cat Tattoo|Art (tattoo)|
+6|roanephotography|Rob Roane Photography|Art (photo)|
+6|adrienne.moumin|Adrienne Moumin|Person / art|
+6|gadzucks|jules zucker|Person / art|
+6|wildewizardwares|Güs H Wilde|Art / maker|
+6|keristarkerjewelry|Keri Starker Jewelry|Maker / vendor|
+7|made.by.minerva|Made by Minerva|Maker|
+7|kantankerouscouture|Being Kantankerous|Maker / fashion||Private account
+7|everythai.official|EveryThai|Business (food)|
+7|craftingsoulfulstories|Charles R. Bullard|Business (celebrant)|
+7|tinademelboutique|Tina Demel|Business|N
+7|zepvalue|Zep|Business|
+7|yalda.keramati.architecture|Yalda Keramati|Architecture|
+7|hannahginste|hannah|Person|
+7|gustavo_marron__|Gustavo Rivero Marron|Person|
+7|_.salanya._|(Thai display name)|Person|
+7|patygomezpalacio|Paty Gomez-Palacio|Person|N
+7|mishasavage|Misha Savage|Person|
+7|justicejamaljones|Justice Jamal Jones|Person|
+7|dianajpuglisi|Diana Jean Puglisi|Person|
+7|loshap|Lauren Shapiro|Person|
+8|tgibssss|Tyler|Person|
+8|brotherbriansumner|Brian Sumner|Person|N
+8|bribriiii0701|bribri|Person||Engages with our stories
+8|graceccorbett|Grace Corbett|Person|
+8|samarasamad|samara samad|Person|
+8|macklliin|Macklin|Person|N
+8|beckritz|becca|Person|
+8|mlangford723|Mildred Langford|Person|
+8|howyousayhername|DD|Person|
+8|lindseyy.jpeg|Lindsey|Person|
+8|lisle_alex|Alex Lisle|Person|
+8|kendalltracyy|Kendall Tracy|Person|
+8|malacchhi|Malachi|Person|N
+8|kevrothstein||Person|N
+8|lucilovesxo|Luca|Person|
+9|drgary333|Dr. Gary|Person|
+9|rylsahawneh|Ryl Sahawneh|Person|
+9|thefloorismarlava|Marla Alpert|Person|
+9|binster101|Bina Aaron|Person|
+9|michael_d_burke|Michael Burke|Person|
+9|laikamichelle|Laika Michelle|Person|
+9|hferraioli|H|Person|
+9|carlanudel|Carla Nudel|Person|
+9|devseefeldt|Devon Seefeldt|Person|
+9|alexhays|Alex Hays|Person|
+9|najaihlafrance|Najaih Lafrance|Person|
+9|rachel.kutner|Rachel Kutner|Person|
+9|cayenavarrete|Caye Navarrete|Person|
+9|mdmk|Madelena Mak|Person|N
+9|andersnils|Anders Nils|Person|
+10|beaucurl|Danielle Cooper|Person|
+10|morganmccombs|Morgan McCombs|Person|
+10|courtneyseyl|Courtney Seyl|Person|
+10|sarahlpowers|Sarah Powers|Person|
+10|teknevision|Karla|Unknown|
+10|crisinternationalch|CRIS|Unknown|
+10|weare_all_stories|Ash Hammell|Unknown|
+10|anewromanempire||Unknown|
+10|httpsmarg||Unknown||Nothing found on the open web
+10|earthbornerituals||Unknown||Nothing found on the open web`;
+
+const MESSAGE=`Hi there! Thank you for following Sprout Society. We haven't met yet, so I wanted to say hello and introduce us. Sprout is a nonprofit community space in Bushwick where artists, musicians, and neighbors come together through events like Sprout N Tell, our music and art showcase.
+
+If you'd like to come by, showcase your work, host something, or just learn more, you can let us know here: https://sprout-crm-tool-next-js.vercel.app/get-involved
+
+Come join us on Discord! It's a way to connect with our community, a place to showcase yourself, and where you can stay up to date on our events and offerings:
+https://discord.gg/SUuDdrSAv
+
+Thank you,
+Max
+Community Manager`;
+
+/* The 35 org accounts stay on Organizations, so they are left off this list. */
+const ORGS=new Set("citynhearts mamarecess recessatwork regulate2elevatellc dear_community thefieldwetend sobersupper dancesupportny 423arts_afro_jazz_collective almaartsny amazingunknownartists ankydyn.gallery artlives.studio _artsccc artyardbklyn asylumartsnetwork brooklyn.art.cave brooklynstudiosnyc dinawindartfoundation everythai.official girl.social ivyhousestudio lyrical.libations murmurationtheatreco nooarts_org prospectartproject qommunit scholesstreetstudio sobercuriouslive solasstudionyc sparsabrooklyn stompinggroundsarthouse itsstudioaris venue.archives_ zepvalue".split(" "));
+const rows=RAW.split("\n").map(l=>{const [b,h,n,t,f,note]=l.split("|");return{batch:+b,h,name:n,type:t,note:note||"",
+  status:f==="S"?"Messaged":(f==="N"||f==="H")?"Skip":"To message",skipWhy:f==="N"?"Not following us":f==="H"?"Held to confirm":"",
+  sent:f==="S"?"2026-11-02":"",crm:f==="H"?"held":"linked",reply:""};}).filter(r=>!ORGS.has(r.h));
+
+const STATUSES=["To message","Messaged","Replied","Interested","Added","Skip"];
+const RANK=Object.fromEntries(STATUSES.map((s,i)=>[s,i]));
+const S={state:"typical",scope:"lean",tab:"send",batch:1,status:"All",q:"",open:"",adding:false,confirm:"",page:0};
+const PAGE=25;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $=id=>document.getElementById(id);
+const stage=$("stage");
+const count=(fn,list=rows)=>list.filter(fn).length;
+const batches=[...new Set(rows.map(r=>r.batch))];
+
+function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>{el.hidden=true;},3600);}
+
+function tagFor(r){
+  if(r.status==="Messaged")return `<span class="tag sent">Messaged ${esc(r.sent.slice(5))}</span>`;
+  if(r.status==="Replied"||r.status==="Interested"||r.status==="Added")return `<span class="tag ok">${r.status}</span>`;
+  if(r.status==="Skip")return `<span class="tag">Skip</span><small>${esc(r.skipWhy)}</small>`;
+  return `<span class="tag">To message</span>`;
+}
+function crmLine(r){
+  if(r.crm==="held")return "Not linked: confirm first";
+  if(r.crm==="new")return "Not in the CRM";
+  if(r.status==="Added")return `<a class="lnk" href="#send">Open contact</a>`;
+  return `<a class="lnk" href="#send">In the CRM</a>`;
+}
+function actionsFor(r){
+  const h=esc(r.h);
+  const prof=`<a class="btn2" href="https://instagram.com/${h}" target="_blank" rel="noopener noreferrer">Profile ↗</a>`;
+  if(r.status==="To message")return `${prof}<button class="btn2" data-act="copy" data-h="${h}">Copy message</button><button class="btn2" data-act="sent" data-h="${h}">Mark sent</button><button class="btn2" data-act="skip" data-h="${h}">Skip</button>`;
+  if(r.status==="Messaged")return `${prof}<button class="btn2" data-act="reply" data-h="${h}">Log reply</button><button class="btn2" data-act="unsent" data-h="${h}">Unmark</button>`;
+  if(r.status==="Replied"||r.status==="Interested")return `${prof}<button class="btn2" data-act="reply" data-h="${h}">Edit reply</button><button class="btn2" data-act="add" data-h="${h}">Add to CRM</button>`;
+  if(r.status==="Skip")return `${prof}<button class="btn2" data-act="unskip" data-h="${h}">Put back</button>`;
+  return prof;
+}
+function replyPanel(r){
+  const h=esc(r.h);
+  return `<div class="panel" style="margin:0">
+    <div><label class="lbl" for="rp-text">What they said</label><textarea id="rp-text" class="ta" placeholder="Paste or type their reply">${esc(r.reply)}</textarea></div>
+    <div class="two"><div><label class="lbl" for="rp-status">Where it stands</label><select id="rp-status" class="sel"><option${r.status!=="Interested"?" selected":""}>Replied</option><option${r.status==="Interested"?" selected":""}>Interested</option></select></div></div>
+    <div class="bar" style="margin:0"><button class="btn" data-act="savereply" data-h="${h}">Save reply</button><button class="btn2" data-act="close">Cancel</button></div>
+  </div>`;
+}
+function confirmPanel(r){
+  const h=esc(r.h);
+  const who=esc(r.name||"@"+r.h);
+  const line=r.crm==="new"?`This creates a new contact for ${who} and keeps their reply.`:`This moves ${who} from Outreach into Contacts. Their record, notes, and history stay as they are.`;
+  return `<div class="panel" style="margin:0"><div class="confirm">${line}</div><div class="bar" style="margin:0"><button class="btn" data-act="confirmadd" data-h="${h}">Add to CRM</button><button class="btn2" data-act="close">Cancel</button></div></div>`;
+}
+function scoped(){return S.batch==="all"?rows:rows.filter(r=>r.batch===S.batch);}
+function visible(){
+  const q=S.q.trim().toLowerCase();
+  return scoped().filter(r=>(S.status==="All"||r.status===S.status)&&(!q||`${r.h} ${r.name} ${r.type}`.toLowerCase().includes(q)))
+    .sort((a,b)=>RANK[a.status]-RANK[b.status]||a.batch-b.batch);
+}
+function isCards(){return S.state==="phone"||window.innerWidth<640;}
+function listHTML(){
+  const all=visible();
+  const pages=Math.max(1,Math.ceil(all.length/PAGE));
+  if(S.page>=pages)S.page=pages-1;
+  const shown=all.slice(S.page*PAGE,(S.page+1)*PAGE);
+  if(!all.length){
+    const done=!count(r=>r.status==="To message",scoped());
+    return `<div class="empty"><b>${done&&!S.q&&S.status==="All"?"This batch is finished":"No one matches"}</b>${done&&!S.q&&S.status==="All"?"Pick the next batch above.":"Clear the search or pick another status."}</div>`;
+  }
+  const pager=pages>1?`<div class="pager"><span>${S.page*PAGE+1}–${Math.min((S.page+1)*PAGE,all.length)} of ${all.length}</span><button class="btn2" data-act="prev"${S.page?"":" disabled"}>Prev</button><button class="btn2" data-act="next"${S.page<pages-1?"":" disabled"}>Next</button></div>`:"";
+  const extra=r=>S.open===r.h?(S.confirm===r.h?confirmPanel(r):replyPanel(r)):"";
+  if(isCards())return shown.map(r=>`<div class="card"><div class="head"><div class="who"><b>@${esc(r.h)}</b><small>${esc(r.name||"No name")} · ${esc(r.type)}</small>${r.note?`<small>${esc(r.note)}</small>`:""}</div><div>${tagFor(r)}</div></div><div class="bar" style="margin:0">${actionsFor(r)}</div>${extra(r)}</div>`).join("")+pager;
+  return `<div class="tw"><table><thead><tr><th>Instagram</th><th>Name</th><th>Type</th><th>Batch</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead><tbody>${shown.map(r=>`<tr><td><b>@${esc(r.h)}</b></td><td>${esc(r.name)||"<span style='color:var(--dim)'>No name</span>"}<small>${crmLine(r)}</small>${r.note?`<small>${esc(r.note)}</small>`:""}</td><td>${esc(r.type)}</td><td class="num">${r.batch}</td><td>${tagFor(r)}</td><td><div class="acts">${actionsFor(r)}</div></td></tr>${S.open===r.h?`<tr><td colspan="6">${extra(r)}</td></tr>`:""}`).join("")}</tbody></table></div>${pager}`;
+}
+function sendHTML(){
+  const list=scoped();
+  const chips=["All",...STATUSES].map(s=>`<button class="chip" data-act="status" data-v="${s}" aria-pressed="${S.status===s}">${s} ${s==="All"?list.length:count(r=>r.status===s,list)}</button>`).join("");
+  const bat=batches.map(b=>{const left=count(r=>r.batch===b&&r.status==="To message");return `<button class="chip" data-act="batch" data-v="${b}" aria-pressed="${S.batch===b}">${b} · ${left} left</button>`;}).join("");
+  const add=S.adding?`<div class="panel"><div class="two"><div><label class="lbl" for="ad-h">Instagram handle</label><input id="ad-h" class="in" placeholder="@handle"></div><div><label class="lbl" for="ad-n">Name (optional)</label><input id="ad-n" class="in"></div><div><label class="lbl" for="ad-t">Type</label><input id="ad-t" class="in" placeholder="Art, Music, Venue"></div><div><label class="lbl" for="ad-b">Batch</label><select id="ad-b" class="sel">${batches.map(b=>`<option${b===S.batch?" selected":""}>${b}</option>`).join("")}</select></div></div><div style="font-size:12.5px;color:var(--dim)">They stay on this page until they respond. No CRM contact is created yet.</div><div class="bar" style="margin:0"><button class="btn" data-act="saveadd">Add account</button><button class="btn2" data-act="canceladd">Cancel</button></div></div>`:"";
+  return `<div class="bar"><span class="cap">Batch</span><button class="chip" data-act="batch" data-v="all" aria-pressed="${S.batch==="all"}">All</button>${bat}</div>
+  <div class="bar">${chips}<span class="sep"></span><input id="o-q" class="in search" aria-label="Search accounts" placeholder="Search handle or name" value="${esc(S.q)}"><button class="btn2" data-act="openadd">+ Add account</button></div>
+  ${add}<div id="o-list">${listHTML()}</div>`;
+}
+function resultsHTML(){
+  const c=s=>count(r=>r.status===s);
+  const reached=c("Messaged")+c("Replied")+c("Interested")+c("Added");
+  const heard=c("Replied")+c("Interested")+c("Added");
+  const tiles=[["Messaged",reached],["Replied",heard],["Interested",c("Interested")],["Added to CRM",c("Added")],["To message",c("To message")]];
+  const replies=rows.filter(r=>r.reply);
+  return `<div class="kpis">${tiles.map(([l,n])=>`<div class="kpi"><b>${n}</b><span>${l}</span></div>`).join("")}</div>
+  <div class="tw" style="margin-bottom:14px"><table><thead><tr><th>Batch</th><th>Accounts</th><th>To message</th><th>Messaged</th><th>Replied</th><th>Interested</th><th>Added</th><th>Skipped</th></tr></thead><tbody>${batches.map(b=>{const l=rows.filter(r=>r.batch===b);const n=s=>count(r=>r.status===s,l);return `<tr class="num"><td><b>Outreach ${b}</b></td><td>${l.length}</td><td>${n("To message")}</td><td>${n("Messaged")}</td><td>${n("Replied")}</td><td>${n("Interested")}</td><td>${n("Added")}</td><td>${n("Skip")}</td></tr>`;}).join("")}</tbody></table></div>
+  <div class="cap" style="margin-bottom:6px">Replies</div>
+  ${replies.length?replies.map(r=>`<div class="rep"><b>@${esc(r.h)}</b> · ${esc(r.name)} · Outreach ${r.batch} · ${tagFor(r)}<div>${esc(r.reply)}</div></div>`).join(""):`<div class="empty"><b>No replies yet</b>Press Log reply on a messaged account in Send, and it shows here.</div>`}`;
+}
+function messagesHTML(){
+  return `<div class="two" style="grid-template-columns:minmax(0,3fr) minmax(0,2fr)">
+    <div><label class="lbl" for="m-name">Message name</label><input id="m-name" class="in" value="First hello (people who follow us)" style="margin-bottom:10px">
+    <label class="lbl" for="m-body">Message</label><textarea id="m-body" class="ta" style="min-height:300px">${esc(MESSAGE)}</textarea>
+    <div class="bar" style="margin-top:10px"><button class="btn" data-act="savemsg">Save message</button><button class="btn2" data-act="addmsg">+ Add a message</button></div></div>
+    <div class="panel" style="align-self:start"><label class="lbl" for="m-ai">Ask Claude to rewrite it</label><input id="m-ai" class="in" placeholder="Make it shorter, or invite them to the next show"><div><button class="btn2" data-act="rewrite">Rewrite</button></div><div style="font-size:12.5px;color:var(--dim)">Your text stays until you keep the rewrite. Undo brings the last version back.</div></div>
+  </div>`;
+}
+function whoHTML(){
+  const list=scoped().slice(0,PAGE);
+  return `<div class="bar"><span class="cap">Batch</span><button class="chip" data-act="batch" data-v="all" aria-pressed="${S.batch==="all"}">All</button>${batches.map(b=>`<button class="chip" data-act="batch" data-v="${b}" aria-pressed="${S.batch===b}">${b}</button>`).join("")}<span class="sep"></span><button class="btn2" data-act="openadd">+ Add account</button><button class="btn2" data-act="openadd">Paste a list</button></div>
+  <div class="tw"><table><thead><tr><th>Instagram</th><th>Name</th><th>Type</th><th>Follows us?</th><th>Batch</th><th>Skip</th></tr></thead><tbody>${list.map((r,i)=>`<tr><td><b>@${esc(r.h)}</b></td><td>${esc(r.name)}</td><td>${esc(r.type)}</td><td>${r.skipWhy==="Not following us"?"No":r.skipWhy?"Check":"Yes"}</td><td><select class="sel" aria-label="Batch for ${esc(r.h)}" id="wb-${i}">${batches.map(b=>`<option${b===r.batch?" selected":""}>${b}</option>`).join("")}</select></td><td><input type="checkbox" aria-label="Skip ${esc(r.h)}"${r.status==="Skip"?" checked":""}></td></tr>`).join("")}</tbody></table></div>`;
+}
+function emptyHTML(){
+  return `<div class="top"><div><h1>Outreach</h1><p>Instagram outreach from @sproutsocietyorg. Add accounts, send one batch at a time, and log what comes back.</p></div><div class="tally">0 messaged · 0 replied</div></div>
+  <div class="empty"><b>No accounts yet</b>Add an Instagram account to start your first batch.<br><button class="btn" data-act="noop">+ Add account</button></div>`;
+}
+function render(){
+  if(S.state==="empty"){stage.className="frame";stage.innerHTML=emptyHTML();return;}
+  stage.className="frame"+(S.state==="phone"?" phone":"");
+  const tabs=[["send","Send"],...(S.scope==="full"?[["who","Who to reach"]]:[]),["results","Results"],["messages","Messages"]];
+  if(S.scope==="lean"&&S.tab==="who")S.tab="send";
+  const reached=count(r=>["Messaged","Replied","Interested","Added"].includes(r.status));
+  const heard=count(r=>["Replied","Interested","Added"].includes(r.status));
+  const body=S.tab==="results"?resultsHTML():S.tab==="messages"?messagesHTML():S.tab==="who"?whoHTML():sendHTML();
+  const much=S.state==="much"?`<div class="note">Too much: all 110 people in one list, 25 at a time. The longest names and handles wrap inside their columns.</div>`:"";
+  stage.innerHTML=`<div class="top"><div><h1>Outreach</h1><p>Instagram outreach from @sproutsocietyorg. Copy the message, send it from Instagram, then mark it sent.</p></div><div class="tally">${heard} replied · ${reached} messaged · ${count(r=>r.status==="To message")} to message · ${count(r=>r.status==="Skip")} skipped</div></div>${much}
+  <div class="bar">${tabs.map(([k,l])=>`<button class="chip" data-act="tab" data-v="${k}" aria-pressed="${S.tab===k}">${l}</button>`).join("")}</div>${body}`;
+}
+const find=h=>rows.find(r=>r.h===h);
+document.addEventListener("click",async e=>{
+  const st=e.target.closest("[data-state]");
+  if(st){S.state=st.dataset.state;S.tab="send";S.page=0;S.open="";S.confirm="";S.batch=S.state==="much"?"all":S.state==="phone"?2:1;S.status="All";
+    document.querySelectorAll("[data-state]").forEach(b=>b.setAttribute("aria-pressed",b===st));render();return;}
+  const sc=e.target.closest("[data-scope]");
+  if(sc){S.scope=sc.dataset.scope;if(S.scope==="full")S.tab="who";document.querySelectorAll("[data-scope]").forEach(b=>b.setAttribute("aria-pressed",b===sc));render();return;}
+  const b=e.target.closest("[data-act]");
+  if(!b)return;
+  const a=b.dataset.act,v=b.dataset.v,r=b.dataset.h?find(b.dataset.h):null;
+  if(a==="tab"){S.tab=v;}
+  else if(a==="batch"){S.batch=v==="all"?"all":+v;S.page=0;S.open="";}
+  else if(a==="status"){S.status=v;S.page=0;}
+  else if(a==="prev"){S.page--;}
+  else if(a==="next"){S.page++;}
+  else if(a==="openadd"){S.adding=true;S.tab="send";}
+  else if(a==="canceladd"){S.adding=false;}
+  else if(a==="saveadd"){const h=$("ad-h").value.trim().replace(/^@/,"");if(!h){toast("Enter an Instagram handle.");return;}
+    if(find(h)){toast("That account is already on the list.");return;}
+    rows.push({batch:+$("ad-b").value,h,name:$("ad-n").value.trim(),type:$("ad-t").value.trim()||"Unknown",note:"",status:"To message",skipWhy:"",sent:"",crm:"new",reply:""});S.adding=false;toast("Account added to this batch.");}
+  else if(a==="copy"){try{await navigator.clipboard.writeText(MESSAGE);toast("Message copied. Paste it into Instagram, then press Mark sent.");}catch{toast("Copy failed. Open Messages and select the text.");}return;}
+  else if(a==="sent"){r.status="Messaged";r.sent="2026-11-02";toast("Marked sent and added to their comm log.");}
+  else if(a==="unsent"){r.status="To message";r.sent="";toast("Marked not sent and noted in their comm log.");}
+  else if(a==="skip"){r.status="Skip";r.skipWhy="Skipped by hand";toast("Skipped and noted in their comm log.");}
+  else if(a==="unskip"){r.status=r.sent?"Messaged":"To message";r.skipWhy="";toast("Back on the list.");}
+  else if(a==="reply"){S.open=r.h;S.confirm="";}
+  else if(a==="close"){S.open="";S.confirm="";}
+  else if(a==="savereply"){const t=$("rp-text").value.trim();if(!t){toast("Add what they said first.");return;}r.reply=t;r.status=$("rp-status").value;S.open="";toast("Reply saved to Results and their comm log.");}
+  else if(a==="add"){S.open=r.h;S.confirm=r.h;}
+  else if(a==="confirmadd"){r.status="Added";S.open="";S.confirm="";toast("Wireframe only: this would add them to Contacts.");}
+  else if(a==="savemsg"){toast("Wireframe only: this would save the message.");return;}
+  else if(a==="addmsg"||a==="noop"){toast("Wireframe only.");return;}
+  else if(a==="rewrite"){toast("Wireframe only: Claude's rewrite would appear in the message box.");return;}
+  render();
+});
+document.addEventListener("input",e=>{if(e.target.id==="o-q"){S.q=e.target.value;S.page=0;const l=$("o-list");if(l)l.innerHTML=listHTML();}});
+window.addEventListener("resize",()=>{if(S.tab==="send"&&S.state!=="empty"){const l=$("o-list");if(l)l.innerHTML=listHTML();}});
+render();
+</script>

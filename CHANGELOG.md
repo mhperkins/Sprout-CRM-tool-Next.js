@@ -2,6 +2,22 @@
 
 ---
 
+## 2026-11-02: Outreach rebuilt, and the Day Board becomes a checklist
+
+App code, two new tables, CRM data, and scheduled jobs. Effort: high. Merge `162bc23`.
+
+- **Why:** the old Outreach page did no outreach, and Max was not using the Day Board or its emails. Wireframes approved first: `docs/wireframes/2026-11-02_outreach-wireframe.html` and `docs/wireframes/2026-11-02_day-board-checklist-wireframe.html`.
+- **Outreach:** Send, Results, and Messages tabs in `components/OutreachPage.jsx`, with 110 people and their batches in `sprout_outreach_accounts` and message templates in `sprout_outreach_messages`. Every button writes to the person's comm log. Add to CRM is the only way into Contacts, and it re-checks the database first. Organizations are left out for now.
+- **Comm log:** touchpoints can carry `auto: true`. Button records do not reset cadence or health; real DMs and replies do. The 9 sent DMs were logged on 4 contacts and 5 orgs.
+- **Day Board:** a to-do list, oldest first, beside the next 14 days of the Sprout Google calendar. The personal calendar is hidden until toggled. A finished task stays struck through for the day. Weekly bank, categories, hours, and push are gone.
+- **Emails:** a Monday overview from 8am ET and a day-before reminder from 9am ET replace the daily recap and Sunday summary. Both list everything on the Sprout calendar.
+- **Fixes along the way:** the rewrite route is staff-only and uses the current mission language. The calendar read now handles multi-day and past-midnight events.
+- **Jobs:** `sprout-tasks-roll-forward` unscheduled. Tasks stay on the list until done.
+- **Removed:** the old Outreach page, `app/api/outreach`, and `lib/md.js`. Max's edited Sprint 01 moved into `virtual-agency/employees/Outreach/sprints/`. A permission check blocked dropping the unused `sprout_outreach_docs` table, so it is still there.
+- **Verified:** logic checks, build, two code reviews with all findings fixed, a live calendar read, and live handle matching. 3,975 contacts and 46 orgs unchanged. Max has not clicked through the new pages yet.
+
+---
+
 ## 2026-11-02: Guest media upload link, and showcase participants in the CRM
 
 App code, two new tables, and CRM data. Effort: medium for the upload link, high for the contact writes.
@@ -11,6 +27,20 @@ App code, two new tables, and CRM data. Effort: medium for the upload link, high
 - **CRM:** new Guest media tile and popup on the event page. One alert email per send. Tables `sprout_media_forms` and `sprout_media_uploads` (authenticated RLS plus grants). No new Google sign-in was needed.
 - **Verified:** full flow in real Chrome at 390px on a production build, then a real upload through production after the merge. All test files and rows deleted. One test alert went to maxperkins@.
 - **Showcase participants:** 13 new contacts tagged Showcase and linked to Vol. 5 or Pat's Industry Day, Arina Andrle merged into Ari Andrle, Mara Einson added to Industry Day.
+
+---
+
+## 2026-11-02: Instagram DM plan, 122 new prospects, and app audit
+
+Sheet, CRM data, and docs only; no app code or migration. Effort: medium.
+
+- **DM plan:** new DM Plan tab on the IG triage sheet lists every DM with its label (Followup/Survey or Outreach) and batch, in batches of no more than 15.
+- **Survey links:** created the 13 missing artist survey links. All 18 load on the live site.
+- **Prospects:** added 122 triage accounts as prospects (95 contacts, 27 orgs), tag `ig_outreach_2026_11`, no next actions. Held @robstanleytunes and @simsouldon as likely existing Community contacts.
+- **Tests:** sent both DM drafts from @sproutsocietyorg to @_maxwellhenry. The outreach message was rewritten afterward for people who have never interacted with Sprout.
+- **Follower check:** 124 of the 143 outreach accounts follow @sproutsocietyorg. The other 19 are marked to skip, because the message thanks them for following.
+- **Outreach sent:** 9 of the 11 Outreach 1 DMs went out. A permission check stopped the run before @kyrabowie and @jonathanpuentephoto. Survey DMs have not been sent.
+- **Audit:** read-only review of the app. The plan is in `docs/plans/2026-11-02_app-streamline-plan.md`: rebuild Outreach like the Impact Survey, remove Prospects, split out a Mailing list, delete dead code, cut the sidebar from 13 items to 8, and redesign the Day Board. Newsletter loses Send to list and keeps Test send.
 
 ---
 
