@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thank-You Send</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#030000; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ink); font-family:Lato,system-ui,sans-serif; color:#fff; display:flex; justify-content:center; padding:40px 16px; }
+  .slide { width:100%; max-width:1100px; border:1px solid #222; border-radius:16px; overflow:hidden; }
+  .top { padding:36px 40px 24px; border-bottom:4px solid var(--fuchsia); }
+  .eyebrow { color:var(--fuchsia); font-weight:900; letter-spacing:3px; text-transform:uppercase; font-size:12px; }
+  h1 { margin:10px 0 6px; font-size:clamp(26px,4vw,40px); font-weight:900; }
+  .badges { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+  .b { padding:5px 12px; border-radius:999px; font-size:12px; font-weight:900; }
+  .b1 { background:var(--acid); color:var(--ink); } .b2 { background:var(--cyan); color:var(--ink); } .b3 { background:var(--fuchsia); } .b4 { background:#222; color:#ddd; font-family:monospace; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; padding:28px 40px 36px; }
+  .card { background:#111; border-radius:12px; padding:20px; border-left:6px solid var(--acid); }
+  .card.f { border-left-color:var(--fuchsia); } .card.y { border-left-color:var(--banana); } .card.c { border-left-color:var(--cyan); }
+  .ic { font-size:26px; } .ct { font-weight:900; font-size:17px; margin:8px 0 6px; }
+  .card p { margin:0; color:#cfcfcb; font-size:14.5px; line-height:1.55; }
+  @media (max-width:600px) { .top { padding:28px 20px 20px; } .grid { padding:20px; } }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div class="eyebrow">Delivery · 2026-11-02</div>
+    <h1>121 thank-yous sent</h1>
+    <div class="badges">
+      <span class="b b1">Committed to main</span><span class="b b2">Pushed</span><span class="b b3">1 bounce</span>
+      <span class="b b4">1f99562</span><span class="b b4">main</span>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="ic">✉️</div><div class="ct">Sent from maxperkins@</div>
+      <p>86 attendees, 30 artists, and 5 hosts. One test send came first, then the rest went out three seconds apart.</p>
+    </div>
+    <div class="card c">
+      <div class="ic">✅</div><div class="ct">Checked before sending</div>
+      <p>Every draft had one unique recipient and one survey link, and all 121 links matched their CRM record.</p>
+    </div>
+    <div class="card f">
+      <div class="ic">⚠️</div><div class="ct">One bounce: Delina</div>
+      <p>Comcast rejected the address, so that link stays unsent until there's a working one. The other 120 are marked sent.</p>
+    </div>
+    <div class="card y">
+      <div class="ic">📬</div><div class="ct">Next up</div>
+      <p>The Instagram DM list is 19 people, and 14 still need survey links. Test replies are cleared. Rachel Long and Jared Cavazos have replied.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
