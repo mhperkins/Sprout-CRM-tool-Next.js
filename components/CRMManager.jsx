@@ -5928,6 +5928,10 @@ const saveOrgs = useCallback((u) => {
     setContacts(prev => prev.some(c => c.id === rec.id) ? prev.map(c => c.id === rec.id ? rec : c) : [...prev, rec]);
   }, []);
 
+  const orgChanged = useCallback((rec) => {
+    setOrgs(prev => prev.map(o => o.id === rec.id ? rec : o));
+  }, []);
+
   const saveOneEvent = useCallback((rec) => {
     setEvents(prev => prev.map(e => e.id === rec.id ? rec : e));
     svcSaveEvents([rec]).then(({ error }) => {
@@ -6089,7 +6093,7 @@ if (dbError) return (
 <Sidebar view={view} setView={(v)=>{setPendingDetail(null);setPendingEvent(null);setSurveyStart(null);setView(v);}} contacts={contacts} events={events} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)} onCollapse={toggleSidebar}/>
       {sbCollapsed&&<button className="sb-reopen" onClick={toggleSidebar} title="Show sidebar">☰</button>}
       <main className="main">
-        {view==="dashboard"&&<DayBoard contacts={contacts} orgs={orgs} onSaveContact={saveOneContact} onSaveOrg={saveOneOrg} openContact={openContact} setView={setView} showToast={showToast}/>}
+        {view==="dashboard"&&<DayBoard contacts={contacts} orgs={orgs} onContactChanged={contactChanged} onOrgChanged={orgChanged} openContact={openContact} setView={setView} showToast={showToast}/>}
 {view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail} setView={setView}/>}
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
 {view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))} pendingEvent={pendingEvent} onPendingEventConsumed={clearPendingEvent} portals={portals} onCreatePortal={makePortal} onRotatePortal={rotatePortal} onRemovePortal={removePortal} onRefreshPortals={refreshPortals} onSavePortalAnswer={savePortalAnswer}/>}
