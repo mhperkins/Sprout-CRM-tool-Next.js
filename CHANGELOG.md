@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-11-02: 121 thank-you and survey emails sent
+
+Gmail and CRM data only; no app code or migration. Effort: high.
+
+- **Audit before sending:** all 121 drafts had one unique recipient and one survey link, and every link matched its CRM invite. Live links loaded.
+- **Sent:** one test send, sent copy checked, then the other 120 from maxperkins@ using Gmail's send-draft API, because the Gmail connector was no longer available. The 14 unrelated drafts stayed in Drafts.
+- **Bounce:** Delina's `drosebart@comcast.net` was rejected, so that link stays unsent. The other 120 links are marked sent. Bounces were checked once, right after the send.
+- **Test replies:** deleted the artist and attendee test replies. The test links remain and are blank.
+- **Corrected:** the no-email Instagram DM list is 19 people, not 20, and 14 of them still need survey links.
+
+---
+
 ## 2026-10-30: Thank-you drafts finalized and every recipient in the CRM
 
 Gmail drafts and CRM data only; no app code or migration. Effort: medium.
