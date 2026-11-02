@@ -11,7 +11,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
-  todayET, addDays, weekStartOf, shortDay, monthDay, weekdayLong, clock, newTaskId, daysLate,
+  todayET, addDays, weekStartOf, shortDay, monthDay, weekdayLong, eventTime, newTaskId, daysLate,
   crmOpenActions, syncPlan, completeCrmAction, reopenCrmAction, moveCrmAction, contactName, recordOfKey,
 } from "../lib/dayBoard";
 import {
@@ -63,8 +63,6 @@ const DB_STYLES = `
 const FIRST = 10;
 const WINDOW_DAYS = 14;
 
-const evTime = (e) => (e.allDay ? "All day" : `${clock(e.start)}–${clock(e.end)}`);
-
 export default function DayBoard({ contacts, orgs, onContactChanged, onOrgChanged, openContact, setView, showToast }) {
   const [today, setToday] = useState(() => todayET());
   const [tasks, setTasks] = useState(null);
@@ -78,8 +76,10 @@ export default function DayBoard({ contacts, orgs, onContactChanged, onOrgChange
   const [synced, setSynced] = useState(false);
 
   const load = useCallback(async () => {
-    const { data, error } = await fetchBoardTasks(todayET());
-    if (error) setTaskErr(error); else { setTaskErr(""); setTasks(data); }
+    const t = todayET();
+    const { data, error } = await fetchBoardTasks(addDays(t, -1));
+    if (error) setTaskErr(error);
+    else { setTaskErr(""); setTasks(data.filter((x) => !x.done || (x.done_at && todayET(new Date(x.done_at)) === t))); }
   }, []);
 
   const loadCal = useCallback(async () => {
@@ -95,7 +95,7 @@ export default function DayBoard({ contacts, orgs, onContactChanged, onOrgChange
   useEffect(() => {
     const id = setInterval(() => {
       const t = todayET();
-      setToday((old) => { if (t !== old) { load(); loadCal(); } return t; });
+      setToday((old) => { if (t !== old) { load(); loadCal(); setSynced(false); } return t; });
     }, 60000);
     return () => clearInterval(id);
   }, [load, loadCal]);
@@ -147,7 +147,7 @@ export default function DayBoard({ contacts, orgs, onContactChanged, onOrgChange
   // Saving writes the whole record, so start from the database copy, not the page's.
   const freshRecord = async (t) => {
     const r = await fetchCrmRecordsByIds({ contactIds: t.contact_id ? [t.contact_id] : [], orgIds: t.org_id ? [t.org_id] : [] });
-    return (t.contact_id ? r.contacts[0] : r.orgs[0]) || null;
+    return { rec: (t.contact_id ? r.contacts[0] : r.orgs[0]) || null, error: r.error };
   };
 
   // Awaited and checked first, so no button reports success on a write that didn't happen.
@@ -160,28 +160,32 @@ export default function DayBoard({ contacts, orgs, onContactChanged, onOrgChange
     return null;
   };
 
-  const logged = (rec, summary) => ({ ...rec, touchpoints: [...(rec.touchpoints || []), { date: todayET(), summary }] });
+  // auto: a record of the button press, not contact with the person, so cadence ignores it.
+  const logged = (rec, summary) => ({ ...rec, touchpoints: [...(rec.touchpoints || []), { date: todayET(), summary, auto: true }] });
 
   const patchTask = async (t, patch) => {
     const { error } = await updateTask(t.id, patch);
     if (error) { showToast(`Couldn't save: ${error}`, "err"); return false; }
-    setTasks((l) => l.map((x) => (x.id === t.id ? { ...x, ...patch } : x)));
+    setTasks((l) => (l || []).map((x) => (x.id === t.id ? { ...x, ...patch } : x)));
     return true;
   };
 
   // CRM first: if that write fails, the checklist stays true.
-  const crmStep = async (t, change) => {
+  const crmStep = async (t, change, summary) => {
     if (!crmLinked(t)) return true;
-    const rec = await freshRecord(t);
+    const { rec, error } = await freshRecord(t);
+    if (error) { showToast("Couldn't read the CRM. Nothing changed.", "err"); return false; }
     if (!rec) return true; // the record was merged or deleted; the task can still move
-    const err = await writeCrm(t, change(rec));
+    const next = change(rec);
+    if (next === rec) return true; // nothing to change there, so nothing to log
+    const err = await writeCrm(t, logged(next, summary));
     if (err) { showToast(`Couldn't update the CRM: ${err}`, "err"); return false; }
     return true;
   };
 
   const complete = async (t) => {
     setBusy(t.id);
-    if (await crmStep(t, (rec) => logged(completeCrmAction(rec, t), `Completed: ${t.title}`))) {
+    if (await crmStep(t, (rec) => completeCrmAction(rec, t), `Completed: ${t.title}`)) {
       await patchTask(t, { done: true, done_at: new Date().toISOString() });
     }
     setBusy("");
@@ -189,7 +193,7 @@ export default function DayBoard({ contacts, orgs, onContactChanged, onOrgChange
 
   const undo = async (t) => {
     setBusy(t.id);
-    if (await crmStep(t, (rec) => logged(reopenCrmAction(rec, t), `Reopened: ${t.title}`))) {
+    if (await crmStep(t, (rec) => reopenCrmAction(rec, t), `Reopened: ${t.title}`)) {
       await patchTask(t, { done: false, done_at: null });
     }
     setBusy("");
@@ -199,13 +203,35 @@ export default function DayBoard({ contacts, orgs, onContactChanged, onOrgChange
     const date = moving.date;
     if (!date) { showToast("Pick a date.", "err"); return; }
     setBusy(t.id);
+    const stop = (msg) => { showToast(msg, "err"); setBusy(""); };
     let key = t.action_key;
-    const ok = await crmStep(t, (rec) => {
-      const moved = moveCrmAction(rec, t, date);
-      key = moved.key;
-      return logged(moved.rec, `Moved to ${monthDay(date)}: ${t.title}`);
-    });
-    if (ok && (await patchTask(t, { due: date, week_start: weekStartOf(date), action_key: key }))) {
+    let moved = null;
+    if (crmLinked(t)) {
+      const { rec, error } = await freshRecord(t);
+      if (error) return stop("Couldn't read the CRM. Nothing changed.");
+      if (rec) {
+        moved = moveCrmAction(rec, t, date);
+        if (moved.stale) {
+          setMoving(null); setSynced(false); await load();
+          return stop("This follow-up changed in the CRM, so I refreshed your list. Nothing moved.");
+        }
+        key = moved.key;
+      }
+    }
+    // A record's new key can match a finished task, which still holds it. Free it up first,
+    // while nothing has changed yet.
+    if (key !== t.action_key) {
+      const { data, error } = await fetchTaskActionKeys();
+      if (error) return stop("Couldn't check your list. Nothing changed.");
+      const clash = data.find((x) => x.action_key === key && x.id !== t.id);
+      if (clash && !clash.done) return stop("That follow-up is already on your list for that date.");
+      if (clash) { const r = await updateTask(clash.id, { action_key: null }); if (r.error) return stop("Couldn't update your list. Nothing changed."); }
+    }
+    if (moved) {
+      const err = await writeCrm(t, logged(moved.rec, `Moved to ${monthDay(date)}: ${t.title}`));
+      if (err) return stop(`Couldn't update the CRM: ${err}`);
+    }
+    if (await patchTask(t, { due: date, week_start: weekStartOf(date), day: null, action_key: key })) {
       setMoving(null);
       showToast(`Moved to ${shortDay(date)}`);
     }
@@ -222,7 +248,7 @@ export default function DayBoard({ contacts, orgs, onContactChanged, onOrgChange
     const { error } = await insertTasks([row]);
     if (error) { showToast(`Couldn't add the task: ${error}`, "err"); return; }
     setAdding("");
-    setTasks((l) => [...l, row]);
+    setTasks((l) => [...(l || []), row]);
     showToast("Task added ✓");
   };
 
@@ -256,7 +282,7 @@ export default function DayBoard({ contacts, orgs, onContactChanged, onOrgChange
           <div className="db-hd"><h2>To do</h2></div>
           <form className="db-add" onSubmit={(e) => { e.preventDefault(); addTask(); }}>
             <input className="db-in" aria-label="New task" placeholder="Add a task" value={adding} onChange={(e) => setAdding(e.target.value)} />
-            <button type="submit" className="db-btn" disabled={!adding.trim()}>Add</button>
+            <button type="submit" className="db-btn" disabled={!adding.trim() || !tasks}>Add</button>
           </form>
           {taskErr && <div className="db-warn"><span>Couldn&apos;t load your list: {taskErr}</span><button className="db-lnk" onClick={load}>Try again</button></div>}
           {!tasks && !taskErr && <div className="db-empty">Loading…</div>}
@@ -264,7 +290,7 @@ export default function DayBoard({ contacts, orgs, onContactChanged, onOrgChange
           {list.map((t) => {
             const who = whoOf(t);
             const late = daysLate(t, today) > 0;
-            const off = busy === t.id;
+            const off = Boolean(busy); // one write at a time: saves replace the whole record
             return (
               <div className={`db-task${t.done ? " isdone" : ""}`} key={t.id}>
                 {t.done
@@ -301,7 +327,7 @@ export default function DayBoard({ contacts, orgs, onContactChanged, onOrgChange
           {days.map(([d, evs]) => (
             <div key={d}>
               <div className="db-day">{shortDay(d)}{d === today ? " · Today" : ""}</div>
-              {evs.map((e) => <div className={`db-ev${e.cal === "mine" ? " mine" : ""}`} key={e.id}><span className="tm">{evTime(e)}</span><span>{e.title}</span></div>)}
+              {evs.map((e) => <div className={`db-ev${e.cal === "mine" ? " mine" : ""}`} key={e.id}><span className="tm">{eventTime(e)}</span><span>{e.title}</span></div>)}
             </div>
           ))}
         </div>

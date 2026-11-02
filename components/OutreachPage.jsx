@@ -166,11 +166,13 @@ export default function OutreachPage({ contacts = [], orgs = [], events = [], sh
     }
   };
 
-  // One button press: update the row, its history, and the linked comm log.
-  const act = async (row, patch, logText) => {
+  // One button press: update the row, its history, and the linked comm log. auto = a
+  // bookkeeping entry, not real contact with the person, so cadence ignores it.
+  const act = async (row, patch, logText, auto = false) => {
     setBusy(row.id);
     const date = todayET();
-    const history = [...(row.history || []), { date, text: logText }];
+    const flag = auto ? { auto: true } : {};
+    const history = [...(row.history || []), { date, text: logText, ...flag }];
     const { row: saved, error } = await updateOutreachAccount(row.id, { ...patch, history });
     if (error) { showToast?.("Could not save: " + error, "err"); setBusy(""); return null; }
     patchRow(saved);
@@ -178,7 +180,7 @@ export default function OutreachPage({ contacts = [], orgs = [], events = [], sh
     if (row.contact_id) {
       const rec = await freshContact(row.contact_id);
       if (rec) {
-        const err = await writeContact({ ...rec, touchpoints: [...(rec.touchpoints || []), { date, summary: logText }] });
+        const err = await writeContact({ ...rec, touchpoints: [...(rec.touchpoints || []), { date, summary: logText, ...flag }] });
         if (err) { logged = false; showToast?.("Saved here, but their comm log did not update: " + err, "err"); }
       } else {
         // Their record was merged or deleted: drop the link so the row keeps working.
@@ -201,9 +203,9 @@ export default function OutreachPage({ contacts = [], orgs = [], events = [], sh
   };
 
   const markSent = async (row) => { if (await act(row, { status: "messaged", sent_at: new Date().toISOString() }, LOG.sent)) showToast?.("Marked sent ✓ Added to their comm log."); };
-  const unmark = async (row) => { if (await act(row, { status: "to_message", sent_at: null }, LOG.unsent)) showToast?.("Marked not sent."); };
-  const skip = async (row) => { if (await act(row, { status: "skip", skip_reason: "Skipped by hand" }, LOG.skip("by hand"))) showToast?.("Skipped."); };
-  const unskip = async (row) => { if (await act(row, { status: row.sent_at ? "messaged" : "to_message", skip_reason: "" }, LOG.unskip)) showToast?.("Back on the list."); };
+  const unmark = async (row) => { if (await act(row, { status: "to_message", sent_at: null }, LOG.unsent, true)) showToast?.("Marked not sent."); };
+  const skip = async (row) => { if (await act(row, { status: "skip", skip_reason: "Skipped by hand" }, LOG.skip("by hand"), true)) showToast?.("Skipped."); };
+  const unskip = async (row) => { if (await act(row, { status: row.sent_at ? "messaged" : "to_message", skip_reason: "" }, LOG.unskip, true)) showToast?.("Back on the list."); };
 
   const saveReply = async () => {
     const row = all.find((r) => r.id === panel.id);
@@ -238,7 +240,7 @@ export default function OutreachPage({ contacts = [], orgs = [], events = [], sh
     }
     if (err) { showToast?.("Could not save the contact. Nothing changed: " + err, "err"); setBusy(""); return; }
     const { row: saved, error } = await updateOutreachAccount(row.id, {
-      status: "added", contact_id: contactId, history: [...(row.history || []), { date, text: LOG.added }],
+      status: "added", contact_id: contactId, history: [...(row.history || []), { date, text: LOG.added, auto: true }],
     });
     setBusy("");
     if (error) { showToast?.("Contact saved, but this row did not update: " + error, "err"); return; }

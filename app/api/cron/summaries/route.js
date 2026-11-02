@@ -52,6 +52,11 @@ async function claimSend(kind, period) {
   return claim;
 }
 
+const alreadySent = async (kind, period) => {
+  const { data } = await svc().from("sprout_summary_sends").select("sent_at").eq("kind", kind).eq("period", period).maybeSingle();
+  return Boolean(data?.sent_at);
+};
+
 async function sendOnce(kind, period, build) {
   const claim = await claimSend(kind, period);
   if (!claim) return "already sent";
@@ -85,8 +90,12 @@ export async function POST(req) {
 
     if (now.minutes >= 9 * 60) {
       const day = addDays(now.date, 1);
-      const events = await fetchSproutEvents(day, day);
-      out.tomorrow = events.length ? await sendOnce("tomorrow", day, () => buildTomorrowReminder(day, events)) : "nothing tomorrow";
+      if (await alreadySent("tomorrow", day)) {
+        out.tomorrow = "already sent";
+      } else {
+        const events = await fetchSproutEvents(day, day);
+        out.tomorrow = events.length ? await sendOnce("tomorrow", day, () => buildTomorrowReminder(day, events)) : "nothing tomorrow";
+      }
     } else {
       out.tomorrow = "not due";
     }

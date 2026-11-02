@@ -637,7 +637,7 @@ const daysSince = (d) => d ? Math.floor((new Date()-new Date(d))/86400000) : nul
 const daysUntil = (d) => d ? Math.ceil((new Date(d)-new Date())/86400000) : null;
 
 function lastTouchDate(record) {
-  const tps = record.touchpoints || [];
+  const tps = (record.touchpoints || []).filter(t=>!t.auto);
   if (!tps.length) return null;
   return tps.map(t=>t.date).sort().reverse()[0];
 }
