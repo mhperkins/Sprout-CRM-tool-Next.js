@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Guest Media Upload</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+:root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--grey:#5f5f5c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:#fff;font-family:Lato,Helvetica,Arial,sans-serif;padding:32px 16px}
+.slide{max-width:1000px;margin:0 auto}
+.eye{font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--acid)}
+h1{font-size:38px;font-weight:900;margin:8px 0 6px;line-height:1.15}
+.lead{color:#cfcfca;font-size:17px;line-height:1.5;margin:0 0 20px}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.b{background:#1c1b1b;border:1px solid #3a3a38;border-radius:999px;padding:6px 13px;font-size:13px;font-weight:700}
+.b.on{background:var(--acid);border-color:var(--acid);color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.card{background:var(--paper);color:var(--ink);border-radius:10px;padding:18px;border-left:6px solid var(--cyan)}
+.card:nth-child(2){border-left-color:var(--fuchsia)}
+.card:nth-child(3){border-left-color:var(--banana)}
+.card:nth-child(4){border-left-color:var(--acid)}
+.card h2{font-size:17px;font-weight:900;margin:0 0 8px}
+.card p,.card li{font-size:14.5px;line-height:1.5;color:#3a3a38;margin:0}
+.card ul{margin:0;padding-left:18px}
+.foot{margin-top:18px;color:#a8a8a3;font-size:13px;line-height:1.6;word-break:break-word}
+</style></head><body><div class="slide">
+<div class="eye">Sprout CRM · Delivered 2026-11-02</div>
+<h1>Guest media upload link</h1>
+<p class="lead">People who came to an event can now send their photos and video from their phone, with no sign-in and no sharing settings to get wrong.</p>
+<div class="badges"><span class="b on">main</span><span class="b">merge 41c17ef</span><span class="b">feature 4012f51</span><span class="b">Pushed + live</span><span class="b">Effort: medium</span></div>
+<div class="grid">
+<div class="card"><h2>📲 For guests</h2><ul><li>One link per event: /media/&lt;token&gt;</li><li>Photos and video up to 10 GB each</li><li>Name, Instagram, email, note, OK to post: all optional</li></ul></div>
+<div class="card"><h2>☁️ Straight to Drive</h2><ul><li>Team shared drive &gt; Guest media uploads</li><li>One folder per event</li><li>Files go phone to Google, not through our server</li></ul></div>
+<div class="card"><h2>🔗 Link check</h2><p>Footage already elsewhere can be pasted as a link. A private Google link is rejected on the spot with how to fix it.</p></div>
+<div class="card"><h2>🗂 In the CRM</h2><ul><li>New Guest media tile on each event</li><li>Who sent what, OK to post or Ask first</li><li>One alert email per send</li></ul></div>
+</div>
+<p class="foot">Verified on production: a real file uploaded, confirmed in Drive, then deleted. Tables sprout_media_forms and sprout_media_uploads. Vol. 5 link: sprout-crm-tool-next-js.vercel.app/media/OjjNoYSwFmSv8OF7wfHjYg</p>
+</div></body></html>

@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-11-02: Guest media upload link, and showcase participants in the CRM
+
+App code, two new tables, and CRM data. Effort: medium for the upload link, high for the contact writes.
+
+- **Upload link:** new public `/media/<token>`, one per event, no sign-in. Guests send photos and video up to 10 GB each. The server opens a resumable Google Drive upload and the browser sends the file straight to Google, so nothing large passes through our server. Files land in the Team shared drive under Guest media uploads, in one folder per event.
+- **Why not the portal:** the portal is a host intake form. Pasted links often come back private, so the page checks each one on entry and uploads remove the sharing step.
+- **CRM:** new Guest media tile and popup on the event page. One alert email per send. Tables `sprout_media_forms` and `sprout_media_uploads` (authenticated RLS plus grants). No new Google sign-in was needed.
+- **Verified:** full flow in real Chrome at 390px on a production build, then a real upload through production after the merge. All test files and rows deleted. One test alert went to maxperkins@.
+- **Showcase participants:** 13 new contacts tagged Showcase and linked to Vol. 5 or Pat's Industry Day, Arina Andrle merged into Ari Andrle, Mara Einson added to Industry Day.
+
+---
+
 ## 2026-11-02: 121 thank-you and survey emails sent
 
 Gmail and CRM data only; no app code or migration. Effort: high.
