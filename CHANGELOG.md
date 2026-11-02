@@ -2,6 +2,144 @@
 
 ---
 
+## 2026-11-02: 121 thank-you and survey emails sent
+
+Gmail and CRM data only; no app code or migration. Effort: high.
+
+- **Audit before sending:** all 121 drafts had one unique recipient and one survey link, and every link matched its CRM invite. Live links loaded.
+- **Sent:** one test send, sent copy checked, then the other 120 from maxperkins@ using Gmail's send-draft API, because the Gmail connector was no longer available. The 14 unrelated drafts stayed in Drafts.
+- **Bounce:** Delina's `drosebart@comcast.net` was rejected, so that link stays unsent. The other 120 links are marked sent. Bounces were checked once, right after the send.
+- **Test replies:** deleted the artist and attendee test replies. The test links remain and are blank.
+- **Corrected:** the no-email Instagram DM list is 19 people, not 20, and 14 of them still need survey links.
+
+---
+
+## 2026-10-30: Thank-you drafts finalized and every recipient in the CRM
+
+Gmail drafts and CRM data only; no app code or migration. Effort: medium.
+
+- **Vol. 5 drafts:** the 11 artist and 15 attendee thank-yous now use the quick favor ending, with no bullets. Attendee drafts say "on October 23" instead of "on Friday", so they read correctly on any send date. Max chose this because many attendees are artists.
+- **Contacts:** created 15 Vol. 5 attendees (Attendee tag, on the Vol. 5 event as confirmed) and Cullie Poseria (Event Host, linked to Bar Nun, on three Bar Nun events). Every survey link now has a contact.
+- **Events:** added 48 existing people to the events they attended or hosted, so People lists match the survey records. Tagged Pat Hopkins as Event Host.
+- **Tooling:** the claude.ai Gmail `update_draft` tool rewrites links into expiring redirects, so drafts with links must be rebuilt with the workspace draft tool.
+- **Send plan:** Claude sends all 121 on Max's command, Monday 11/2 around 10am ET. One test send first, then paced batches, then mark links sent. Nothing has been sent.
+
+---
+
+## 2026-10-29: Host form requires only name, email, type of event, attendance
+
+Merge `a968a8c` (branch `fewer-required`, `1b55e77`), pushed. No migration. Effort: low.
+
+- Phone, event name, public/private, preferred date and start/end times are now optional (Max's call). A request with no event name gets "Event request: <org or person>" as its CRM name and id, and the alert email subject falls back the same way.
+- Tested live on production with only the four fields (date, attendance and admission all "Don't know yet"): 200, pending event `evt_test_request_please_ignore` with no date, portal link loads, alert email sent to maxperkins@. Test event left for Max to delete in the app.
+
+---
+
+## 2026-10-29: "Ticketed or free?" on the host form; "Don't know yet" on attendance
+
+Merge `1312375` (branch `admission`, `eb88a42`), pushed. No migration. Effort: low.
+
+- New optional question **Ticketed or free?** (Ticketed / donation, Free, Don't know yet) beside Expected attendance on `/book` and the host portal; shown in the alert email and the CRM Host details tile. Kept separate from Type of event, and optional so existing portals don't gain a missing answer.
+- **Expected attendance** gets the same "Don't know yet" checkbox as the date (stores `tbd`, shown as "Don't know yet").
+
+---
+
+## 2026-10-29: "Don't know yet" on the host form date; Andie Mechanic meeting
+
+Merge `b951e8e` (branch `date-tbd`, `517ecd1`), pushed. No migration. Effort: low.
+
+- `/book` and the host portal: a "Don't know yet" checkbox under Preferred date. It stores `tbd`, counts as answered, and never reaches the event record (only real dates do). The portal header reads "Date to be confirmed", the CRM shows "Don't know yet", and the alert email says "Date not set yet".
+- Andie Mechanic: logged a meeting about Andie hosting a music/art showcase (hosting form to come, possible January show), with a follow-up due 11/12.
+
+---
+
+## 2026-10-28: Host survey about hosting in general; host drafts
+
+Merge `7665c03`, pushed. No migration. Effort: low.
+
+- Host survey drops the per-event attendance question and asks about "your events" in general (Max's call). Grant Metrics attendance still comes from sign-ins and typed numbers.
+- Five host drafts in maxperkins@ ("Thank you for hosting at Sprout"): Jonathan (Queer Social), Cullie (Bar Nun, link now includes Sober October), Jess (Sing Easy), Rachel (Buzzkill, new link), and Pat (Max's draft with the host subject and link). Floorwork held for later.
+
+---
+
+## 2026-10-28: Open test survey, numbering fix
+
+Merge `3102164`, pushed. No migration. Effort: low.
+
+- **Open test survey ↗** on each Impact Survey tab opens a test link for that survey. Test replies show under Every reply marked Test and stay out of tallies, quotes and Grant Metrics.
+- The form now numbers only questions it shows (a hidden attendance question made the host test skip 2).
+- Max's earlier test links became test links, so they no longer need deleting.
+
+---
+
+## 2026-10-28: Personal attendee links, logo in form header, neighborhood question everywhere
+
+Merges `aabdd04`, `0b8b584`, pushed. No migration. Effort: medium.
+
+- **Personal attendee links:** each of the 86 attendee drafts now carries that person's own link, so the survey greets them by name and Replies shows who answered. The form no longer asks name or email. A shared link is now an attendee link with no email.
+- **Logo:** the white Sprout Society logo sits in the shared form header (all surveys, /book, host portal, program form, /showcase).
+- **"Where are you coming from?"** added as the first question on the artist and host surveys.
+
+---
+
+## 2026-10-28: Attendee survey asks where people come from; personal attendee drafts
+
+Merge `322d404`, pushed. No migration. Effort: low.
+
+- Attendee survey Q2: "Where are you coming from?" (one tap: Bushwick, Elsewhere in Brooklyn, Queens, Manhattan, Farther). Max kept the survey short: no loneliness, earnings or ZIP questions.
+- The 7 BCC attendee drafts became 86 personal drafts greeting each person by first name (Max's edits kept). May drafts' subject now says Sprout N Tell.
+
+---
+
+## 2026-10-28: Attendee survey + attendee thank-you drafts
+
+Merge `11794c4`, pushed. No migration. Effort: medium.
+
+- **New Attendees survey** with one shared link per night, so it fits a BCC thank-you. Each submission is its own reply with its own private link (reopen to edit). Optional name and email. 60 replies per link per hour.
+- Survey page opens on Showcase artists; Attendees > Send lists past nights with Create/Copy shared link.
+- Shared links made for the 7 nights with sign-ins.
+- **Drafts (maxperkins@, Max sends):** six BCC thank-yous by night (May Show n Tell, Game Night, Happy Hour, Vol. 2, Vol. 3, Vol. 4) and the survey paragraph added to the Vol. 5 attendee draft. Artists, staff and test sign-ins left out.
+
+---
+
+## 2026-10-28: Discord card off the survey thank-you screen
+
+Merge `1c8f787`, pushed. Effort: low. Max's call: the Google review is the most important ask, so it is now the only one on the thank-you screen. Discord stays in the survey emails and the Copy email template.
+
+---
+
+## 2026-10-28: Google review steps shown before the tap
+
+Merge `6b616c6`, pushed. No migration. Effort: low.
+
+- Max missed the "Copied" note because Google opens in a new tab. The steps now sit above the button in a yellow box: we copy your answer; Google opens in a new tab; paste it, or write something else, and post.
+- Button reads "Copy my answer and open Google" when Q5 has an answer.
+- Google's review link has no way to prefill text, so copy-and-paste stays.
+
+---
+
+## 2026-10-28: Survey copy pass (intro, answer options, Discord, email template)
+
+Merge `d226cfa`, pushed. No migration. Effort: low.
+
+- **Intro** on both surveys: "Thank you for being a part of the Sprout Community, {name}! A few quick questions." with the first name filled in.
+- **Artist answers.** Q1: A collaborator, A friend, New fans or followers, A gig lead, Something else, None yet. Q2: Sale/Tips, A booking, A collaboration, Something else, Nothing yet. "Something else" opens an optional text box; Replies show the words.
+- **Discord card** on the survey thank-you screen, under the Google review card.
+- **Copy email** uses Max's template with clickable "here" and "Discord" links (rich-text copy); hosts point to /book.
+- **Gmail:** the 32 drafts rebuilt with links; Discord paragraph added to the 20 participant drafts without touching Max's personal edits.
+- Test invite `sinv_test_max_review` created for Max to try the Google review live.
+
+---
+
+## 2026-10-28: Vol. 5 thank-yous + survey drafts, Google review button
+
+Merge `e8f85ab` (commit `d258fd3`), pushed. No migration. Effort: medium.
+
+- **32 Gmail drafts in maxperkins@ for Max to send:** 1 BCC thank-you to the 15 Vol. 5 door sign-ins (Discord, @sproutsocietyorg, /submit, /get-involved; "we'll share the next date"); 11 personal thank-yous to Vol. 5 artists with their own survey link; 20 personal survey asks to earlier artists (Vols. 1 to 4, Industry Day) naming their night. Max chose personal over one BCC (the link is per person).
+- **Survey links:** 12 new artist links created, 19 reused from 10/8 (never sent); Sean Jeffers' link gained Vol. 5. All still unsent until Max sends.
+- **Left out:** Journey C. + Christopher Brisita (dropped out), Rachel Long (co-host, personal note), Warren Carrington (unconfirmed he played). 20 past participants have no email and need an Instagram DM.
+- **Google review button** on the survey thank-you screen: copies the person's Q5 testimonial and opens Sprout's Google review box (place ID `ChIJbV1ZHABfwokRXwYabmZeNyQ`, derived from the Maps listing). Shown to everyone, never only happy replies (Google's review-gating rule). Checked on a local production build; one test alert went to maxperkins@.
+
 ## 2026-10-28: Showcase past participants + artist survey list
 
 Merge `0f90c01` (commits `eed080f`, `f4b19ec`), pushed. No migration. Effort: low/medium.

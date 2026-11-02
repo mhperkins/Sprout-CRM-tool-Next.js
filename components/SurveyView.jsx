@@ -19,7 +19,7 @@ import { fetchSurveys, saveSurvey, fetchSurveyInvites, createSurveyInvite, updat
 import { buildPastParticipants, normName } from "../lib/pastParticipants";
 import {
   SURVEY_TYPES, SURVEY_AUDIENCES, SHARE_OPTS, DEFAULT_SURVEYS, blankQuestion, newQuestionId,
-  sanitizeSurvey, surveyProblems, tallySurvey, surveyEmail, eventLabel,
+  sanitizeSurvey, surveyProblems, tallySurvey, surveyEmail, eventLabel, otherKey, isOpenLink, isTestInvite, TEST_EMAIL,
 } from "../lib/surveyForm";
 import { pickOrganizer } from "../lib/eventPortal";
 import SurveyForm from "./SurveyForm";
@@ -101,9 +101,22 @@ async function copyText(text) {
   try { await navigator.clipboard.writeText(text); return true; } catch { return false; }
 }
 
+/** Copy rich text with a plain-text fallback, so links stay clickable when pasted into Gmail. */
+async function copyRich(text, html) {
+  try {
+    if (typeof ClipboardItem === "undefined") throw new Error("no ClipboardItem");
+    await navigator.clipboard.write([new ClipboardItem({
+      "text/plain": new Blob([text], { type: "text/plain" }),
+      "text/html": new Blob([html], { type: "text/html" }),
+    })]);
+    return true;
+  } catch { return copyText(text); }
+}
+
 /** Show one answer as plain text, using the questions that reply was given. */
-function answerText(q, v, evById) {
+function answerText(q, v, evById, other = "") {
   if (v == null) return "";
+  if (other && ["single", "multi"].includes(q.type)) return `${q.type === "multi" ? v.join(", ") : v} (${other})`;
   if (q.type === "event_count") return Object.entries(v).map(([id, n]) => `${evById.get(id)?.name || "Event"}: ${n}`).join(" · ");
   if (q.type === "multi") return v.join(", ");
   if (q.type === "rating_rows") return (q.rows || []).map((r, i) => (v[i] ? `${r}: ${v[i]}` : "")).filter(Boolean).join(" · ");
@@ -112,7 +125,7 @@ function answerText(q, v, evById) {
 }
 
 export default function SurveyView({ events = [], contacts = [], orgs = [], showToast, openContact, start = null }) {
-  const [audience, setAudience] = useState(start?.audience || "host");
+  const [audience, setAudience] = useState(start?.audience || "artist");
   const [tab, setTab] = useState(start?.tab || "replies");
   const [entries, setEntries] = useState([]);
   const [surveys, setSurveys] = useState(null);
@@ -146,7 +159,9 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
   const orgById = useMemo(() => new Map(orgs.map(o => [o.id, o])), [orgs]);
   const evById = useMemo(() => new Map(events.map(e => [e.id, e])), [events]);
   const held = useMemo(() => events.filter(ev => isHeld(ev, today)).sort((a, b) => b.event_date.localeCompare(a.event_date)), [events, today]);
-  const mine = useMemo(() => invites.filter(i => i.survey_id === survey?.id), [invites, survey]);
+  const allMine = useMemo(() => invites.filter(i => i.survey_id === survey?.id), [invites, survey]);
+  const mine = useMemo(() => allMine.filter(i => !isTestInvite(i)), [allMine]); // real links only
+  const testInvite = allMine.find(isTestInvite) || null;
 
   // Artists are the Showcase page's Past participants list, so both pages agree on
   // who played. Someone not in the CRM still gets a link (DM it on Instagram).
@@ -155,7 +170,8 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
 
   /* ── who should get a link ── */
   const suggestions = useMemo(() => {
-    if (audience !== "host") {
+    if (audience === "attendee") return []; // attendees share one link per night (see the Send tab)
+    if (audience === "artist") {
       const heldIds = new Set(held.map(ev => ev.id));
       return participants
         .map(p => ({ key: p.contact ? p.contact.id : p.key, contact: p.contact, name: p.name, ig: p.ig, eventIds: p.shows.map(ev => ev.id).filter(id => heldIds.has(id)) }))
@@ -189,6 +205,25 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
 
   const counts = { sent: mine.filter(i => i.sent_at).length, replied: mine.filter(i => i.replied_at).length };
 
+  /* ── attendees: one shared link per night ── */
+  const openByEvent = useMemo(() => new Map(mine.filter(isOpenLink).map(i => [(i.event_ids || [])[0], i])), [mine]);
+  const repliesByEvent = useMemo(() => {
+    const m = new Map();
+    mine.filter(i => i.replied_at).forEach(i => (i.event_ids || []).forEach(id => m.set(id, (m.get(id) || 0) + 1)));
+    return m;
+  }, [mine]);
+  const copyShared = async (ev) => {
+    setBusyRow(ev.id);
+    let inv = openByEvent.get(ev.id);
+    if (!inv) {
+      const { invite, error } = await createSurveyInvite({ survey_id: survey.id, name: "Shared link", event_ids: [ev.id] });
+      if (error) { showToast?.("Could not create the link: " + error, "err"); setBusyRow(""); return; }
+      inv = invite; patchInvite(inv);
+    }
+    showToast?.((await copyText(linkFor(inv))) ? "Shared link copied ✓ Paste it into the thank-you." : "Copy failed: " + linkFor(inv), undefined);
+    setBusyRow("");
+  };
+
   const patchInvite = (inv) => setInvites(list => list.some(i => i.id === inv.id) ? list.map(i => (i.id === inv.id ? inv : i)) : [inv, ...list]);
 
   const ensureInvite = async (row) => {
@@ -207,8 +242,9 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
       const evs = (inv.event_ids || []).map(id => evById.get(id)).filter(Boolean);
       const mail = surveyEmail({ firstName: (inv.name || "").split(" ")[0] || row.contact?.first_name, audience, events: evs, url: linkFor(inv) });
       const to = inv.email || row.contact?.email;
-      const ok = await copyText(`To: ${to || "(no email on file)"}\nSubject: ${mail.subject}\n\n${mail.body}`);
-      showToast?.(ok ? "Email copied ✓ Paste it into Gmail, then mark it sent." : "Copy failed. Use Copy link instead.", ok ? undefined : "err");
+      // Address and subject go on the toast, so the clipboard holds only the body to paste.
+      const ok = await copyRich(mail.body, mail.html);
+      showToast?.(ok ? `Email copied ✓ To: ${to || "(no email on file)"} · Subject: ${mail.subject}. Paste into Gmail, then mark it sent.` : "Copy failed. Use Copy link instead.", ok ? undefined : "err");
     }
     setBusyRow("");
   };
@@ -294,9 +330,20 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
   if (loadErr) return <div className="sv"><style>{SV_STYLES}</style><div className="sv-note">{loadErr}</div></div>;
   if (!surveys || !draft) return <div className="sv"><style>{SV_STYLES}</style><div className="sv-empty">Loading surveys…</div></div>;
 
-  const replies = mine.filter(i => i.replied_at).sort((a, b) => b.replied_at.localeCompare(a.replied_at));
+  const replies = allMine.filter(i => i.replied_at).sort((a, b) => b.replied_at.localeCompare(a.replied_at));
   const tallies = tallySurvey(survey, mine);
-  const quotes = replies.flatMap(inv => (inv.questions || []).filter(q => q.type === "testimonial").map(q => ({ inv, t: inv.answers?.[q.id] }))).filter(x => x.t?.text);
+  const quotes = replies.filter(inv => !isTestInvite(inv)).flatMap(inv => (inv.questions || []).filter(q => q.type === "testimonial").map(q => ({ inv, t: inv.answers?.[q.id] }))).filter(x => x.t?.text);
+  // One test link per survey, on the most recent night so every question shows.
+  const openTest = async () => {
+    const w = window.open("about:blank", "_blank"); // opened now, before the await, so it isn't blocked
+    let inv = testInvite;
+    if (!inv) {
+      const { invite, error } = await createSurveyInvite({ survey_id: survey.id, name: "Test survey", email: TEST_EMAIL, event_ids: held[0] ? [held[0].id] : [] });
+      if (error) { w?.close(); showToast?.("Could not create the test link: " + error, "err"); return; }
+      inv = invite; patchInvite(inv);
+    }
+    if (w) w.location.href = linkFor(inv); else showToast?.("Test link: " + linkFor(inv));
+  };
   const switchAudience = (a) => {
     if (a === audience) return;
     if (dirty) { showToast?.("Save the question changes first (or reload to drop them).", "err"); setTab("edit"); return; }
@@ -309,7 +356,7 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
       <div className="sv-top">
         <div>
           <h1>Impact survey</h1>
-          <p>Short surveys for hosts and showcase artists. Their answers prove the space works: they feed Grant Metrics attendance and its quotes.</p>
+          <p>Short surveys for showcase artists, attendees and hosts. Their answers prove the space works: they feed Grant Metrics attendance and its quotes.</p>
         </div>
         <div style={{ fontSize: 13, color: "var(--dim)" }}>{counts.replied} replied · {counts.sent} sent · {mine.length} links</div>
       </div>
@@ -320,6 +367,8 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
         {[["replies", `Replies (${replies.length})`], ["send", "Send"], ["edit", `Edit questions${dirty ? " •" : ""}`]].map(([k, l]) => (
           <button key={k} className="sv-chip" aria-pressed={tab === k} onClick={() => setTab(k)}>{l}</button>
         ))}
+        <span className="sv-sep" />
+        <button className="sv-btn2" onClick={openTest}>Open test survey ↗</button>
       </div>
 
       {/* ═══ REPLIES ═══ */}
@@ -357,11 +406,11 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
                 <div className="sv-rep" key={inv.id}>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "baseline" }}>
                     {c ? <button className="sv-lnk" style={{ fontSize: 14, fontWeight: 900, color: "#030000", textDecoration: "none" }} onClick={() => openContact?.(c)}>{inv.name || fullName(c)}</button>
-                      : <b>{inv.name || "Someone"}</b>}
+                      : <b>{inv.name || "Someone"}{isTestInvite(inv) && <span className="sv-tag" style={{ marginLeft: 6 }}>Test</span>}</b>}
                     <span className="sv-empty" style={{ fontSize: 12 }}>{(inv.event_ids || []).map(id => evById.get(id)).filter(Boolean).map(eventLabel).join(" · ")} · replied {fmtWhen(inv.replied_at)}</span>
                   </div>
                   <dl>{(inv.questions || []).map(q => {
-                    const t = answerText(q, inv.answers?.[q.id], evById);
+                    const t = answerText(q, inv.answers?.[q.id], evById, inv.answers?.[otherKey(q.id)]);
                     return t ? [<dt key={q.id + "t"}>{q.label}</dt>, <dd key={q.id + "d"}>{t}</dd>] : null;
                   })}</dl>
                 </div>
@@ -373,6 +422,27 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
 
       {/* ═══ SEND ═══ */}
       {tab === "send" && <>
+        {audience === "attendee" ? <>
+        <div className="sv-note" style={{ background: "#F4F4F0", borderLeftColor: "var(--cyan)" }}>
+          Attendees share <b>one link per night</b>, so it fits the BCC thank-you. Press <b>Copy shared link</b> and paste it into the email. Each person who answers shows up under Replies, by name if they give one.
+        </div>
+        {held.length === 0 ? <div className="sv-card sv-empty">No past nights yet.</div>
+          : <div className="sv-tw"><table className="sv-t">
+            <thead><tr><th>Night</th><th>Replies</th><th style={{ textAlign: "right" }}>Shared link</th></tr></thead>
+            <tbody>{held.slice(0, 40).map(ev => {
+              const inv = openByEvent.get(ev.id);
+              return (
+                <tr key={ev.id}>
+                  <td>{eventLabel(ev)}</td>
+                  <td>{repliesByEvent.get(ev.id) || 0}</td>
+                  <td style={{ textAlign: "right" }}>
+                    <button className="sv-btn2" disabled={busyRow === ev.id} onClick={() => copyShared(ev)}>{inv ? "Copy shared link" : "Create + copy shared link"}</button>
+                  </td>
+                </tr>
+              );
+            })}</tbody>
+          </table></div>}
+        </> : <>
         <div className="sv-note" style={{ background: "#F4F4F0", borderLeftColor: "var(--cyan)" }}>
           The CRM never emails anyone. <b>Copy email</b> copies one plain message with that person's link; paste it into Gmail, send it, then press <b>Mark sent</b>.
           {audience === "host" ? " Hosts are the linked host on past events marked Partner or Rental." : " Artists are the Showcase page's Past participants who played a past night. No email? Use Copy link and send it as an Instagram DM."}
@@ -456,6 +526,7 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
               );
             })}</tbody>
           </table></div>}
+        </>}
       </>}
 
       {/* ═══ EDIT ═══ */}

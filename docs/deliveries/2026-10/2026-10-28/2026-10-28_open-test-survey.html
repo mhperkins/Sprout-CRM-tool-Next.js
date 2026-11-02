@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Open test survey</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#030000;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--paper:#F7F7F6}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);font-family:Lato,system-ui,sans-serif;color:var(--ink)}
+.slide{max-width:900px;margin:32px auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.12)}
+.hd{background:var(--ink);color:#fff;padding:28px 36px;border-bottom:5px solid var(--acid)}
+.eb{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acid);font-weight:900}
+h1{margin:6px 0 10px;font-size:30px;font-weight:900}
+.b{font-size:12px;font-weight:900;padding:5px 10px;border-radius:999px;background:#fff;color:var(--ink);margin-right:6px}.b.c{background:var(--cyan)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;padding:28px 36px}
+.card{border-radius:10px;padding:18px 20px;background:var(--paper);border-left:6px solid var(--cyan);font-size:14px;line-height:1.5}
+.card.y{border-color:var(--banana)}.card.f{border-color:var(--fuchsia)}.card h3{margin:0 0 8px;font-size:17px}
+.btn{display:inline-block;border:1px solid #cfcfca;border-radius:8px;padding:6px 12px;font-weight:700;font-size:13px;background:#fff}
+.ft{padding:0 36px 24px;font-size:12px;color:#6b6b68}
+</style></head><body>
+<div class="slide">
+ <div class="hd"><div class="eb">Delivered · 2026-10-28</div><h1>🧪 Open test survey</h1>
+  <span class="b">main</span><span class="b c">merge 3102164</span></div>
+ <div class="grid">
+  <div class="card"><h3>One click per survey</h3><span class="btn">Open test survey ↗</span><br><br>On the Artists, Attendees and Hosts tabs. Opens a real test link on the latest night.</div>
+  <div class="card y"><h3>Kept out of the numbers</h3>Test replies show under Every reply with a Test tag, never in tallies, quotes or Grant Metrics.</div>
+  <div class="card f"><h3>Numbering fix</h3>Questions number 1, 2, 3… with no gaps, even when the attendance question is hidden.</div>
+ </div>
+ <div class="ft">components/SurveyView.jsx · SurveyForm.jsx · GrantMetrics.jsx · lib/surveyForm.js · Sprout CRM Next</div>
+</div>
+</body></html>

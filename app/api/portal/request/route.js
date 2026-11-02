@@ -64,10 +64,12 @@ export async function POST(req) {
   }
 
   // ── Create the pending event ──
-  const eventId = await newEventId(answers.event_name);
+  // Event name is optional, so fall back to who is asking for the CRM record.
+  const fallbackName = `Event request: ${answers.org_name || answers.contact_name}`;
+  const eventId = await newEventId(answers.event_name || answers.org_name || answers.contact_name);
   const base = {
     id: eventId,
-    name: "",
+    name: fallbackName,
     event_date: null,
     status: "pending",
     location: "Sprout Society",

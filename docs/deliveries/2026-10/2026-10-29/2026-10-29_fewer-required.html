@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fewer Required Fields</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#030000; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ink); font-family:Lato,system-ui,sans-serif; color:#fff; display:flex; justify-content:center; padding:40px 16px; }
+  .slide { width:100%; max-width:1100px; border:1px solid #222; border-radius:16px; overflow:hidden; }
+  .top { padding:36px 40px 24px; border-bottom:4px solid var(--cyan); }
+  .eyebrow { color:var(--cyan); font-weight:900; letter-spacing:3px; text-transform:uppercase; font-size:12px; }
+  h1 { margin:10px 0 6px; font-size:clamp(26px,4vw,40px); font-weight:900; }
+  .badges { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+  .b { padding:5px 12px; border-radius:999px; font-size:12px; font-weight:900; }
+  .b1 { background:var(--acid); color:var(--ink); } .b2 { background:var(--cyan); color:var(--ink); } .b3 { background:var(--fuchsia); } .b4 { background:#222; color:#ddd; font-family:monospace; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; padding:28px 40px 36px; }
+  .card { background:#111; border-radius:12px; padding:20px; border-left:6px solid var(--acid); }
+  .card.f { border-left-color:var(--fuchsia); } .card.y { border-left-color:var(--banana); }
+  .ic { font-size:26px; } .ct { font-weight:900; font-size:17px; margin:8px 0 6px; }
+  .card p { margin:0; color:#cfcfcb; font-size:14.5px; line-height:1.55; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; margin-top:12px; }
+  .chip { border-radius:999px; padding:5px 11px; font-size:12.5px; font-weight:700; }
+  .req { background:var(--acid); color:var(--ink); } .opt { background:#2a2a2a; color:#bbb; }
+  code { color:var(--banana); }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div class="eyebrow">Delivery · 2026-10-29</div>
+    <h1>Hosting form: four answers to send</h1>
+    <div class="badges">
+      <span class="b b1">Merged to main</span><span class="b b2">Pushed</span><span class="b b3">Tested live</span>
+      <span class="b b4">a968a8c</span><span class="b b4">fewer-required · 1b55e77</span>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="ic">✅</div><div class="ct">Required now</div>
+      <div class="chips"><span class="chip req">Name</span><span class="chip req">Email</span><span class="chip req">Type of event</span><span class="chip req">Expected attendance</span></div>
+      <div class="chips"><span class="chip opt">Phone</span><span class="chip opt">Event name</span><span class="chip opt">Public or private</span><span class="chip opt">Date</span><span class="chip opt">Start / end</span></div>
+    </div>
+    <div class="card y">
+      <div class="ic">🏷</div><div class="ct">No event name? Still findable</div>
+      <p>The CRM names it "Event request: [org or person]", and the alert email subject uses the same name.</p>
+    </div>
+    <div class="card f">
+      <div class="ic">🧪</div><div class="ct">Live test passed</div>
+      <p>A production request with only the four answers saved as a pending event with no date, the portal link loads, and the alert email went out. Delete <code>evt_test_request_please_ignore</code> in the app.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

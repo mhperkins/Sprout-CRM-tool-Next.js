@@ -7,8 +7,8 @@
 // on any device shows and changes their own answers.
 
 import { hasServiceKey } from "@/lib/portalDb";
-import { inviteByToken, surveyById, inviteEvents, saveInviteAnswers } from "@/lib/surveyDb";
-import { sanitizeAnswers, answerProblems } from "@/lib/surveyForm";
+import { inviteByToken, surveyById, inviteEvents, saveInviteAnswers, recentOpenReplies, createOpenReply } from "@/lib/surveyDb";
+import { sanitizeAnswers, answerProblems, isOpenLink } from "@/lib/surveyForm";
 import { notifySurveyReply } from "@/lib/notify";
 
 export const runtime = "nodejs";
@@ -36,7 +36,8 @@ export async function GET(_req, { params }) {
   if (res) return res;
   return Response.json({
     survey: { audience: survey.audience, title: survey.title, intro: survey.intro, thanks: survey.thanks, questions: survey.questions },
-    name: invite.name || "",
+    name: isOpenLink(invite) ? "" : invite.name || "",
+    open: isOpenLink(invite),
     events,
     answers: invite.answers || {},
     replied: Boolean(invite.replied_at),
@@ -52,6 +53,27 @@ export async function POST(req, { params }) {
   const answers = sanitizeAnswers(body?.answers, survey.questions, events.map((e) => e.id));
   const problems = answerProblems(answers, survey.questions);
   if (problems.length) return fail(problems[0]);
+
+  // A shared link: this submission becomes its own reply with its own private link.
+  if (isOpenLink(invite)) {
+    const name = String(body?.name || "").trim().slice(0, 120);
+    const email = String(body?.email || "").trim().slice(0, 200);
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail("That email doesn't look right. Fix it or leave it blank.");
+    try {
+      if ((await recentOpenReplies(invite)) >= 60) return fail("Lots of replies just came in. Please try again in a little while.", 429);
+    } catch { return fail("The survey is temporarily unavailable. Please try again in a few minutes.", 503); }
+    const { reply, error } = await createOpenReply(invite, { name, email, answers, questions: survey.questions });
+    if (error) {
+      console.error("survey POST (shared link) — save failed:", error);
+      return fail("We could not save that. Please try again.", 500);
+    }
+    try {
+      await notifySurveyReply({ invite: reply, survey, events, answers, origin: new URL(req.url).origin, updated: false });
+    } catch (e) {
+      console.error("survey — notification email failed:", e?.message || e);
+    }
+    return Response.json({ ok: true, token: reply.token });
+  }
 
   const firstReply = !invite.replied_at;
   const { error } = await saveInviteAnswers(invite.id, { answers, questions: survey.questions, firstReply });

@@ -10,9 +10,13 @@
 
 import { useState, useEffect } from "react";
 import { PortalShell } from "./PortalForm";
-import { SHARE_OPTS, eventLabel } from "../lib/surveyForm";
+import { SHARE_OPTS, eventLabel, fillIntro, isOther, otherKey } from "../lib/surveyForm";
 
 const FOOT = "Questions about this survey? Email us and a human will answer.";
+
+// Sprout's Google Business Profile "write a review" box. Shown to everyone who sends,
+// whatever they answered: asking only happy people breaks Google's review rules.
+const GOOGLE_REVIEW_URL = "https://search.google.com/local/writereview?placeid=ChIJbV1ZHABfwokRXwYabmZeNyQ";
 
 const EXTRA_CSS = `
 .sv-q{margin-bottom:24px}
@@ -27,6 +31,11 @@ const EXTRA_CSS = `
 .sv-rate-row{display:grid;gap:6px}
 .sv-rate-row span{font-size:14px}
 .sv-sub{font-size:13.5px;font-weight:700;margin:12px 0 6px}
+.sv-review{margin-top:18px}
+.sv-review-q{font-size:14.5px;font-style:italic;color:#3a3a38;border-left:4px solid #FAD100;padding:4px 0 4px 12px;margin:10px 0 14px;white-space:pre-wrap}
+.sv-review .pt-btn{display:block;text-align:center;text-decoration:none}
+.sv-steps{margin:0 0 14px;padding:12px 14px 12px 32px;background:#FFF6CC;border-radius:8px;font-size:15px;line-height:1.5;color:#030000}
+.sv-steps li+li{margin-top:6px}
 `;
 
 export default function SurveyForm({ token, preview }) {
@@ -40,6 +49,11 @@ export default function SurveyForm({ token, preview }) {
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [copied, setCopied] = useState(false);
+  // A shared link (attendees): the first send creates this person's own reply, and
+  // from then on the page saves to that reply's private link instead.
+  const [open, setOpen] = useState(false);
+  const [activeToken, setActiveToken] = useState(token);
 
   useEffect(() => {
     if (preview) { setSurvey(preview.survey); setName(preview.name || ""); setEvents(preview.events || []); return; }
@@ -50,7 +64,7 @@ export default function SurveyForm({ token, preview }) {
         const json = await res.json();
         if (!alive) return;
         if (!res.ok) { setFatal(json?.error || "This link is not valid."); setLoading(false); return; }
-        setSurvey(json.survey); setName(json.name); setEvents(json.events || []);
+        setSurvey(json.survey); setName(json.name); setEvents(json.events || []); setOpen(Boolean(json.open));
         setAnswers(json.answers || {}); setReplied(json.replied); setLoading(false);
       } catch {
         if (alive) { setFatal("We could not load the survey. Please refresh and try again."); setLoading(false); }
@@ -71,11 +85,16 @@ export default function SurveyForm({ token, preview }) {
     if (preview) { setErr("This is a preview, so nothing was sent."); return; }
     setBusy(true);
     try {
-      const res = await fetch(`/api/survey/${token}`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ answers }),
+      const res = await fetch(`/api/survey/${activeToken}`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.error || "Something went wrong. Please try again.");
+      if (json.token) {
+        setActiveToken(json.token); setOpen(false);
+        try { window.history.replaceState(null, "", `/survey/${json.token}`); } catch { /* the page still works */ }
+      }
       setReplied(true); setDone(true); top();
     } catch (e) { setErr(e.message); }
     setBusy(false);
@@ -99,9 +118,33 @@ export default function SurveyForm({ token, preview }) {
   if (done) {
     return (
       <PortalShell subtitle="A few questions" footNote={FOOT}>
+        <style>{EXTRA_CSS}</style>
         <div className="pt-wrap">
           <div className="pt-hero"><div className="pt-h1">Thank you{first ? `, ${first}` : ""}.</div><p className="pt-lead">{survey.thanks}</p></div>
-          <button className="pt-btn pt-btn-2" onClick={() => { setDone(false); top(); }}>Change my answers</button>
+          {(() => {
+            const tq = survey.questions.find((q) => q.type === "testimonial");
+            const words = ((tq && answers[tq.id]?.text) || "").trim();
+            const copy = async () => {
+              if (!words) return;
+              try { await navigator.clipboard.writeText(words); setCopied(true); } catch { /* the link still opens */ }
+            };
+            return (
+              <div className="pt-card sv-review">
+                <div className="pt-lbl" style={{ textTransform: "none", letterSpacing: 0, fontSize: 15.5 }}>Would you post this on Google?</div>
+                <div className="pt-help">A Google review helps people find Sprout. {words ? "" : "A sentence or two is plenty."}</div>
+                {words && <div className="sv-review-q">{words}</div>}
+                {words && (
+                  <ol className="sv-steps">
+                    <li>Tap the button below. <b>We copy your answer for you.</b></li>
+                    <li>Google opens in a new tab. <b>Paste your answer into the review box</b>, or write something else if you like, and post.</li>
+                  </ol>
+                )}
+                <a className="pt-btn" href={GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer" onClick={copy}>{words ? "Copy my answer and open Google" : "Post a Google review"}</a>
+                {copied && <div className="pt-help" style={{ marginTop: 8 }}>Copied. Paste it into the review box.</div>}
+              </div>
+            );
+          })()}
+          <button className="pt-btn pt-btn-2" style={{ marginTop: 14 }} onClick={() => { setDone(false); setCopied(false); top(); }}>Change my answers</button>
         </div>
       </PortalShell>
     );
@@ -138,8 +181,14 @@ export default function SurveyForm({ token, preview }) {
           </div>
         ))}</div>;
     }
-    if (q.type === "single") return <div className="sv-q" key={q.id}>{label}{hint}{chips(q, v, (o, on) => set(q.id, on ? null : o))}</div>;
-    if (q.type === "multi") return <div className="sv-q" key={q.id}>{label}{hint}{chips(q, v, (o, on) => set(q.id, on ? (v || []).filter((x) => x !== o) : [...(v || []), o]), true)}</div>;
+    // "Something else" ticked: an optional box for what it was.
+    const otherBox = () => [].concat(v || []).some(isOther) && (
+      <input className="pt-in" style={{ marginTop: 10 }} maxLength={300} placeholder="What was it? (optional)"
+        aria-label={`${q.label} something else`} value={answers[otherKey(q.id)] || ""}
+        onChange={(e) => set(otherKey(q.id), e.target.value)} />
+    );
+    if (q.type === "single") return <div className="sv-q" key={q.id}>{label}{hint}{chips(q, v, (o, on) => set(q.id, on ? null : o))}{otherBox()}</div>;
+    if (q.type === "multi") return <div className="sv-q" key={q.id}>{label}{hint}{chips(q, v, (o, on) => set(q.id, on ? (v || []).filter((x) => x !== o) : [...(v || []), o]), true)}{otherBox()}</div>;
     if (q.type === "scale") {
       const sq = { ...q, options: ["1", "2", "3", "4", "5"] };
       return <div className="sv-q" key={q.id}>{label}{hint}{chips(sq, v != null ? String(v) : null, (o, on) => set(q.id, on ? null : Number(o)))}</div>;
@@ -192,12 +241,15 @@ export default function SurveyForm({ token, preview }) {
               {name ? `For ${name}` : ""}{name && events.length ? " · " : ""}{events.length === 1 ? eventLabel(events[0]) : events.length > 1 ? `${events.length} nights at Sprout` : ""}
             </p>
           )}
-          {survey.intro && <p className="pt-lead" style={{ marginTop: 8 }}>{survey.intro}</p>}
+          {survey.intro && <p className="pt-lead" style={{ marginTop: 8 }}>{fillIntro(survey.intro, name)}</p>}
         </div>
 
         {replied && <div className="pt-note">You already sent answers. Change anything below and send again.</div>}
 
-        <div className="pt-card"><div className="sv-body">{survey.questions.map(field)}</div></div>
+        {/* Number only what shows: an attendance question with no nights is hidden. */}
+        <div className="pt-card"><div className="sv-body">{survey.questions
+          .filter((q) => q.type !== "event_count" || events.length)
+          .map(field)}</div></div>
 
         {err && <div className="pt-err">{err}</div>}
         <button className="pt-btn" onClick={send} disabled={busy}>{busy ? "Sending…" : replied ? "Save my changes" : "Send my answers"}</button>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ticketed or Free</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#030000; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ink); font-family:Lato,system-ui,sans-serif; color:#fff; display:flex; justify-content:center; padding:40px 16px; }
+  .slide { width:100%; max-width:1100px; border:1px solid #222; border-radius:16px; overflow:hidden; }
+  .top { padding:36px 40px 24px; border-bottom:4px solid var(--fuchsia); }
+  .eyebrow { color:var(--fuchsia); font-weight:900; letter-spacing:3px; text-transform:uppercase; font-size:12px; }
+  h1 { margin:10px 0 6px; font-size:clamp(26px,4vw,40px); font-weight:900; }
+  .badges { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+  .b { padding:5px 12px; border-radius:999px; font-size:12px; font-weight:900; }
+  .b1 { background:var(--acid); color:var(--ink); } .b2 { background:var(--cyan); color:var(--ink); } .b3 { background:var(--fuchsia); } .b4 { background:#222; color:#ddd; font-family:monospace; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; padding:28px 40px 36px; }
+  .card { background:#111; border-radius:12px; padding:20px; border-left:6px solid var(--cyan); }
+  .card.y { border-left-color:var(--banana); } .card.a { border-left-color:var(--acid); }
+  .ic { font-size:26px; } .ct { font-weight:900; font-size:17px; margin:8px 0 6px; }
+  .card p { margin:0; color:#cfcfcb; font-size:14.5px; line-height:1.55; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; margin-top:12px; }
+  .chip { background:#fff; color:var(--ink); border-radius:999px; padding:5px 11px; font-size:12.5px; font-weight:700; }
+  code { color:var(--banana); }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div class="eyebrow">Delivery · 2026-10-29</div>
+    <h1>Hosting form: "Ticketed or free?" + unsure attendance</h1>
+    <div class="badges">
+      <span class="b b1">Merged to main</span><span class="b b2">Pushed</span><span class="b b3">Effort: low</span>
+      <span class="b b4">1312375</span><span class="b b4">admission · eb88a42</span>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="ic">🎟</div><div class="ct">New question: Ticketed or free?</div>
+      <p>Sits beside Expected attendance on <code>/book</code> and every host portal. Optional, so existing portals stay complete.</p>
+      <div class="chips"><span class="chip">Ticketed / donation</span><span class="chip">Free</span><span class="chip">Don't know yet</span></div>
+    </div>
+    <div class="card y">
+      <div class="ic">👥</div><div class="ct">Attendance can be "Don't know yet"</div>
+      <p>Same checkbox as the date: greys out the number and still lets the request send.</p>
+    </div>
+    <div class="card a">
+      <div class="ic">📬</div><div class="ct">Shows up where you look</div>
+      <p>The alert email and the CRM Host details tile both show the new answer and "Don't know yet" in plain words.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

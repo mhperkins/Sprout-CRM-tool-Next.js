@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thank-You Drafts Ready</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#030000; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ink); font-family:Lato,system-ui,sans-serif; color:#fff; display:flex; justify-content:center; padding:40px 16px; }
+  .slide { width:100%; max-width:1100px; border:1px solid #222; border-radius:16px; overflow:hidden; }
+  .top { padding:36px 40px 24px; border-bottom:4px solid var(--acid); }
+  .eyebrow { color:var(--acid); font-weight:900; letter-spacing:3px; text-transform:uppercase; font-size:12px; }
+  h1 { margin:10px 0 6px; font-size:clamp(26px,4vw,40px); font-weight:900; }
+  .badges { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+  .b { padding:5px 12px; border-radius:999px; font-size:12px; font-weight:900; }
+  .b1 { background:var(--acid); color:var(--ink); } .b2 { background:var(--cyan); color:var(--ink); } .b3 { background:var(--fuchsia); } .b4 { background:#222; color:#ddd; font-family:monospace; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; padding:28px 40px 36px; }
+  .card { background:#111; border-radius:12px; padding:20px; border-left:6px solid var(--acid); }
+  .card.f { border-left-color:var(--fuchsia); } .card.y { border-left-color:var(--banana); } .card.c { border-left-color:var(--cyan); }
+  .ic { font-size:26px; } .ct { font-weight:900; font-size:17px; margin:8px 0 6px; }
+  .card p { margin:0; color:#cfcfcb; font-size:14.5px; line-height:1.55; }
+  @media (max-width:600px) { .top { padding:28px 20px 20px; } .grid { padding:20px; } }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div class="eyebrow">Delivery · 2026-10-30</div>
+    <h1>121 thank-yous ready, every recipient in the CRM</h1>
+    <div class="badges">
+      <span class="b b1">Committed to main</span><span class="b b2">Pushed</span><span class="b b3">Nothing sent yet</span>
+      <span class="b b4">571600a</span><span class="b b4">main</span>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="ic">✉️</div><div class="ct">Vol. 5 drafts rewritten</div>
+      <p>11 artist and 15 attendee drafts now use the quick favor ending, with no bullets. Attendees read "on October 23" instead of "on Friday."</p>
+    </div>
+    <div class="card c">
+      <div class="ic">🌱</div><div class="ct">16 new contacts</div>
+      <p>15 Vol. 5 attendees plus Cullie Poseria, linked to Bar Nun. Every survey link now has a contact.</p>
+    </div>
+    <div class="card y">
+      <div class="ic">🗓</div><div class="ct">48 people added to events</div>
+      <p>People lists now match the survey records across six events. Vol. 5 went from 15 to 30, and Pat Hopkins is tagged Event Host.</p>
+    </div>
+    <div class="card f">
+      <div class="ic">🚀</div><div class="ct">Monday 11/2, on Max's command</div>
+      <p>One test send first, then paced batches, then links marked sent. The 14 unrelated drafts stay untouched.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
