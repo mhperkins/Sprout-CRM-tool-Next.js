@@ -265,8 +265,12 @@ export default function EventPortal({ token }) {
           </div>
         )}
 
+        <div className="pt-note">
+          <strong>Everything saves automatically.</strong> Your answers, links, and files save as you go, so there is no
+          save button. Close this page whenever you like and come back any time to pick up where you left off.
+        </div>
+
         <Fold title="Event details">
-          <p className="pt-sec-blurb" style={{ marginTop: 6 }}>Everything here saves as you type, so come back any time.</p>
           <div className="pt-sec-body">
             <FieldList fields={CONTACT_FIELDS} data={data} setField={setField} scope={event?.id} />
             <div style={{ borderTop: "1px solid #ECECEA", margin: "6px 0 20px" }} />
