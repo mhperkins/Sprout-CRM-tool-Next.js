@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-11-03: Instagram survey DMs and Outreach Batch 2
+
+No app code. Effort: medium. Instagram + DM Plan sheet + `sprout_survey_invites`.
+
+- **Surveys:** 16 survey DMs sent from @sproutsocietyorg; `sent_at` set on those 16 invites. Max Sibner was cut by Max (sent by mistake, unsent within minutes; invite stays unsent). Three private profiles (Kali, BENSN, Kyle) went through the inbox New message flow.
+- **Outreach:** 11 DMs: Jonathan Puente (the last of Outreach 1) plus all of Batch 2. Sent column filled on the DM Plan tab.
+- **Cuts:** Beth Graybill (@simsouldon) and Kenzi Parker (@knzparker) left off on Max's call.
+- **Rule change:** any account that follows us, org or person, can get an outreach DM (saved to memory). All 23 listed orgs follow us, so the org hold is lifted.
+- **Next:** Batch 3 (art orgs and venues) on 11/4, after Max reviews the list.
+
+---
+
 ## 2026-11-03: Daily calendar email shows today and tomorrow
 
 App code only. Effort: low. Merge `b016a66`.
