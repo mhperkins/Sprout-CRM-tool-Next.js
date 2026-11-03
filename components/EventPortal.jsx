@@ -43,12 +43,37 @@ const CONTACT_FIELDS = f("contact_name", "contact_email", "contact_phone", "org_
 const EVENT_FIELDS = f("event_name", "event_type", "audience", "event_date", "alt_date", "start_time", "end_time", "attendance", "admission", "short_desc");
 const FOOD_FIELDS = f("food_drink");
 
+/** A section that opens and closes like a dropdown bar. Closed by default; the
+ *  contents stay mounted so typed answers keep autosaving. */
+function Fold({ title, children }) {
+  return (
+    <details className="pt-card pt-fold">
+      <summary className="pt-fold-sum">
+        <span className="pt-sec-ttl">{title}</span>
+        <span className="pt-fold-chev" aria-hidden="true">▾</span>
+      </summary>
+      <div className="pt-fold-body">{children}</div>
+    </details>
+  );
+}
+
+const FOLD_CSS = `
+  .pt-fold { padding:0; }
+  .pt-fold-sum { list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:20px 24px; }
+  .pt-fold-sum::-webkit-details-marker { display:none; }
+  .pt-fold-sum:focus-visible { outline:2px solid var(--cyan, #73C4D6); outline-offset:-2px; border-radius:10px; }
+  .pt-fold-chev { font-size:18px; color:#8a8a86; transition:transform .15s; }
+  .pt-fold[open] .pt-fold-chev { transform:rotate(180deg); }
+  .pt-fold-body { padding:0 24px 24px; }
+  .pt-fold-body > .pt-sec-blurb:first-child { margin-top:0 !important; }
+  @media (max-width:560px) { .pt-fold-sum { padding:16px; } .pt-fold-body { padding:0 16px 18px; } }
+`;
+
 /** Download cards for our logos, so hosts can drop them straight onto a flyer. */
 function BrandKit() {
   if (!BRAND_ASSETS.length) return null;
   return (
-    <div className="pt-card">
-      <div className="pt-sec-ttl">Our logos for your flyer</div>
+    <Fold title="Our logos for your flyer">
       <p className="pt-sec-blurb" style={{ marginTop: 6 }}>
         Download whichever version fits your design. Both have a transparent background.
       </p>
@@ -78,7 +103,7 @@ function BrandKit() {
       <ul style={{ margin: "18px 0 0", paddingLeft: 20, fontSize: 13.5, lineHeight: 1.75, color: "#5f5f5c" }}>
         {BRAND_GUIDELINES.map((g) => <li key={g}>{g}</li>)}
       </ul>
-    </div>
+    </Fold>
   );
 }
 
@@ -224,6 +249,7 @@ export default function EventPortal({ token }) {
   return (
     <PortalShell subtitle="Event portal" title={event?.name || ""}>
       <div className="pt-wrap">
+        <style>{FOLD_CSS}</style>
         <div className="pt-hero">
           <div className="pt-h1">{data.event_name || event?.name || "Your event"}</div>
           <p className="pt-lead">
@@ -239,18 +265,16 @@ export default function EventPortal({ token }) {
           </div>
         )}
 
-        <div className="pt-card">
-          <div className="pt-sec-ttl">Event details</div>
+        <Fold title="Event details">
           <p className="pt-sec-blurb" style={{ marginTop: 6 }}>Everything here saves as you type, so come back any time.</p>
           <div className="pt-sec-body">
             <FieldList fields={CONTACT_FIELDS} data={data} setField={setField} scope={event?.id} />
             <div style={{ borderTop: "1px solid #ECECEA", margin: "6px 0 20px" }} />
             <FieldList fields={EVENT_FIELDS} data={data} setField={setField} scope={event?.id} />
           </div>
-        </div>
+        </Fold>
 
-        <div className="pt-card">
-          <div className="pt-sec-ttl">Links</div>
+        <Fold title="Links">
           <p className="pt-sec-blurb" style={{ marginTop: 6 }}>Tickets, RSVP, Instagram posts, Drive folders. Sprout sees these too.</p>
           <div className="pt-sec-body">
             {links.length > 0 && (
@@ -278,10 +302,9 @@ export default function EventPortal({ token }) {
             </div>
             <button className="pt-btn pt-btn-2 pt-btn-sm" onClick={addLink} disabled={assetBusy || !linkUrl.trim()}>+ Add link</button>
           </div>
-        </div>
+        </Fold>
 
-        <div className="pt-card">
-          <div className="pt-sec-ttl">Files</div>
+        <Fold title="Files">
           <p className="pt-sec-blurb" style={{ marginTop: 6 }}>Flyers, photos, tech riders, anything we should have. Sprout sees these too.</p>
           <div className="pt-sec-body">
             {media.length > 0 && (
@@ -304,14 +327,13 @@ export default function EventPortal({ token }) {
             </div>
             <input ref={fileRef} type="file" multiple style={{ display: "none" }} onChange={(e) => addFiles(e.target.files)} />
           </div>
-        </div>
+        </Fold>
 
         {assetErr && <div className="pt-err">{assetErr}</div>}
 
         <BrandKit />
 
-        <div className="pt-card">
-          <div className="pt-sec-ttl">More details</div>
+        <Fold title="More details">
           <p className="pt-sec-blurb" style={{ marginTop: 6 }}>
             Everything else: lineup, sound, setup, promo, tickets. Sprout can read and edit this too.
           </p>
@@ -320,17 +342,16 @@ export default function EventPortal({ token }) {
               placeholder={FIELD_BY_KEY.more_details?.placeholder || ""}
               onChange={(e) => setField("more_details", e.target.value)} />
           </div>
-        </div>
+        </Fold>
 
-        <div className="pt-card">
-          <div className="pt-sec-ttl">Food and drinks</div>
+        <Fold title="Food and drinks">
           <p className="pt-sec-blurb" style={{ marginTop: 6 }}>
             Sprout runs a lot of sober and sober-friendly programming, so let us know what is planned.
           </p>
           <div className="pt-sec-body">
             <FieldList fields={FOOD_FIELDS} data={data} setField={setField} scope={event?.id} />
           </div>
-        </div>
+        </Fold>
       </div>
 
       <div className="pt-bar">
