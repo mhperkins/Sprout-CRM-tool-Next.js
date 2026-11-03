@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-11-03: Event portal logos, order, and dropdown bars
+
+Merges `06a7185` + `e4a59d5`. Effort: low. Why: the flyer logo card offered only the flower icon, and the page was long.
+
+- **Logos:** the flower icon is replaced by the Sprout Society wordmark, black and white, transparent PNGs (~1900px, upscaled from the 473px newsletter logo). The flower files stay for `/coming-soon`.
+- **Order:** Event details, Links, Files, Our logos, More details, Food and drinks.
+- **Dropdowns:** every section is a native `<details>` bar, closed by default; contents stay mounted, so autosave is unchanged.
+- **Autosave note** above the bars: everything saves automatically, come back any time.
+- Verified on a real portal at 1000px and 390px. Logos are soft for large print; swap in Canva exports later.
+
+---
+
 ## 2026-11-03: Instagram survey DMs and Outreach Batch 2
 
 No app code. Effort: medium. Instagram + DM Plan sheet + `sprout_survey_invites`.
