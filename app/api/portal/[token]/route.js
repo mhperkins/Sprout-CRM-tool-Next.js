@@ -9,7 +9,8 @@
 // with the same message, so the endpoint cannot be used to probe for valid links.
 
 import { sanitizePortalData, portalProgress, fillBlanks } from "@/lib/eventPortal";
-import { hasServiceKey, portalByToken, publicEvent, savePortalData, syncEventFromPortal, crmSeedForEvent, markPortalAlerted } from "@/lib/portalDb";
+import { hasServiceKey, portalByToken, publicEvent, savePortalData, syncEventFromPortal, crmSeedForEvent, markPortalAlerted, brandLogos } from "@/lib/portalDb";
+import { logosFromProfile } from "@/lib/brandAssets";
 import { notifyPortalActivity } from "@/lib/notify";
 
 export const runtime = "nodejs";
@@ -77,7 +78,14 @@ export async function GET(_req, { params }) {
   }
 
   const event = await publicEvent(portal.event_id);
+  let logos = [];
+  try {
+    logos = await brandLogos();
+  } catch (e) {
+    console.error("portal GET — brand logos failed:", e?.message);
+  }
   return Response.json({
+    brandAssets: logosFromProfile(logos),
     portal: { status: portal.status, submitted_at: portal.submitted_at, data, updatedAt: portal.updatedAt },
     event,
     progress: portalProgress(data),
