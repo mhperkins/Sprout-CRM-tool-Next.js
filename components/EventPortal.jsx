@@ -3,8 +3,8 @@
 /**
  * EventPortal.jsx — the client-facing portal at /portal/[token].
  *
- * One short page: the booking details, food and drinks, links, files, a shared
- * "More details" box, and our logos. Answers autosave. Links and files are written
+ * One short page: the booking details, links, our logos, files, a shared
+ * "More details" box. Answers autosave. Links and files are written
  * to the event record itself, so they show up in the CRM's Links and Media tiles.
  * The token in the URL is the only credential; it scopes every request to one booking.
  */
@@ -41,7 +41,6 @@ const STATUS_NOTE = {
 const f = (...keys) => keys.map((k) => FIELD_BY_KEY[k]).filter(Boolean);
 const CONTACT_FIELDS = f("contact_name", "contact_email", "contact_phone", "org_name");
 const EVENT_FIELDS = f("event_name", "event_type", "audience", "event_date", "alt_date", "start_time", "end_time", "attendance", "admission", "short_desc");
-const FOOD_FIELDS = f("food_drink");
 
 /** A section that opens and closes like a dropdown bar. Closed by default; the
  *  contents stay mounted so typed answers keep autosaving. */
@@ -310,6 +309,8 @@ export default function EventPortal({ token }) {
           </div>
         </Fold>
 
+        <BrandKit assets={brandAssets} />
+
         <Fold title="Files">
           <p className="pt-sec-blurb" style={{ marginTop: 6 }}>Flyers, photos, tech riders, anything we should have. Sprout sees these too.</p>
           <div className="pt-sec-body">
@@ -337,8 +338,6 @@ export default function EventPortal({ token }) {
 
         {assetErr && <div className="pt-err">{assetErr}</div>}
 
-        <BrandKit assets={brandAssets} />
-
         <Fold title="More details">
           <p className="pt-sec-blurb" style={{ marginTop: 6 }}>
             Everything else: lineup, sound, setup, promo, tickets. Sprout can read and edit this too.
@@ -347,15 +346,6 @@ export default function EventPortal({ token }) {
             <textarea className="pt-ta" style={{ minHeight: 200 }} value={data.more_details || ""}
               placeholder={FIELD_BY_KEY.more_details?.placeholder || ""}
               onChange={(e) => setField("more_details", e.target.value)} />
-          </div>
-        </Fold>
-
-        <Fold title="Food and drinks">
-          <p className="pt-sec-blurb" style={{ marginTop: 6 }}>
-            Sprout runs a lot of sober and sober-friendly programming, so let us know what is planned.
-          </p>
-          <div className="pt-sec-body">
-            <FieldList fields={FOOD_FIELDS} data={data} setField={setField} scope={event?.id} />
           </div>
         </Fold>
       </div>
