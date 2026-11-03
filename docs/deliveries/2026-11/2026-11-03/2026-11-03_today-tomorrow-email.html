@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Today and Tomorrow Email</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--muted:#6c6c61}
+*{box-sizing:border-box}body{margin:0;background:var(--ink);font-family:Lato,Helvetica,Arial,sans-serif;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px}
+.slide{width:100%;max-width:1100px;background:var(--ink);border:1px solid #222;border-radius:14px;padding:40px}
+.eyebrow{color:var(--acid);font-weight:900;letter-spacing:3px;text-transform:uppercase;font-size:13px}
+h1{font-size:clamp(28px,4.5vw,46px);font-weight:900;margin:10px 0 6px;line-height:1.1}
+.sub{color:#bdbdb5;font-size:17px;margin:0 0 28px}
+.badges{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
+.b{padding:7px 14px;border-radius:999px;font-weight:700;font-size:13px}
+.b1{background:var(--acid);color:var(--ink)}.b2{background:var(--cyan);color:var(--ink)}.b3{background:var(--fuchsia)}.b4{background:#222;border:1px solid #444}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.card{background:#111;border-radius:10px;padding:20px;border-left:6px solid var(--banana)}
+.card h3{margin:0 0 8px;font-size:17px}.card p{margin:0;color:#cfcfc8;font-size:15px;line-height:1.5}
+.mock{background:var(--paper);color:var(--ink);border-radius:8px;padding:16px 18px;margin-top:6px;font-size:14px}
+.mock .lab{font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:8px 0 2px}
+.mock .t{color:var(--muted);display:inline-block;width:112px}
+code{background:#222;padding:1px 6px;border-radius:4px;font-size:13px}
+</style></head><body><div class="slide">
+<div class="eyebrow">Sprout CRM · Delivered 2026-11-03</div>
+<h1>📬 The daily email now shows today and tomorrow</h1>
+<p class="sub">The 9am ET Sprout calendar email lists both days, in two sections.</p>
+<div class="badges"><span class="b b1">main · b016a66</span><span class="b b2">branch today-tomorrow-email (merged, removed)</span><span class="b b3">Effort: low</span><span class="b b4">No migration</span></div>
+<div class="grid">
+<div class="card"><h3>📅 What it looks like</h3><div class="mock"><b>Today and tomorrow at Sprout</b><div class="lab">Today · Tuesday, November 3</div><span class="t">7pm–10pm</span>QS Sober Hang<div class="lab">Tomorrow · Wednesday, November 4</div><span class="t">2pm–6pm</span>GGC Programming<br><span class="t">6:30pm–9:30pm</span>FW Rehearsals</div></div>
+<div class="card" style="border-left-color:var(--cyan)"><h3>⏰ When it sends</h3><p>Every day from 9am ET, once per day. It skips only when both days are empty; an empty day says "Nothing on the calendar." The Monday overview is unchanged.</p></div>
+<div class="card" style="border-left-color:var(--fuchsia)"><h3>🛠 Files</h3><p><code>lib/dayBoardSummary.js</code> gains <code>buildTodayTomorrow</code>. <code>app/api/cron/summaries/route.js</code> sends it under kind <code>daily</code>, keyed by today's date.</p></div>
+<div class="card" style="border-left-color:var(--acid)"><h3>✅ Verified</h3><p>Rendered against the live Program Calendar and the build passes. Claude didn't send it. The first real email goes out on the next 15-minute check.</p></div>
+</div></div></body></html>

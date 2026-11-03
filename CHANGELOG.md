@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-11-03: Daily calendar email shows today and tomorrow
+
+App code only. Effort: low. Merge `b016a66`.
+
+- **Why:** Max wanted the automated Sprout CRM email to show both TODAY and TOMORROW events.
+- **What:** the 9am ET email (`buildTodayTomorrow` in `lib/dayBoardSummary.js`) now has a Today section and a Tomorrow section, replacing the tomorrow-only reminder. It sends once a day (kind `daily`, keyed by today's date) and skips only when both days are empty. An empty day reads "Nothing on the calendar." The Monday overview is unchanged.
+- **No migration:** the send log already allows `daily`.
+- **Verified:** rendered against the live Program Calendar for 11/3 and 11/4 (1 + 2 events), build passes. Not sent by Claude; the first real one goes out on the next 15-minute check after deploy.
+
+---
+
 ## 2026-11-02: Outreach rebuilt, and the Day Board becomes a checklist
 
 App code, two new tables, CRM data, and scheduled jobs. Effort: high. Merge `162bc23`.
