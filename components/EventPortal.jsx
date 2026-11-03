@@ -70,15 +70,15 @@ const FOLD_CSS = `
 `;
 
 /** Download cards for our logos, so hosts can drop them straight onto a flyer. */
-function BrandKit() {
-  if (!BRAND_ASSETS.length) return null;
+function BrandKit({ assets = BRAND_ASSETS }) {
+  if (!assets.length) return null;
   return (
     <Fold title="Our logos for your flyer">
       <p className="pt-sec-blurb" style={{ marginTop: 6 }}>
-        Download whichever version fits your design. Both have a transparent background.
+        Download whichever version fits your design.
       </p>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14, marginTop: 18 }}>
-        {BRAND_ASSETS.map((a) => (
+        {assets.map((a) => (
           <div key={a.key} style={{ border: "1px solid #e4e4e1", borderRadius: 8, overflow: "hidden", background: "#fff" }}>
             <div style={{
               height: 140, display: "flex", alignItems: "center", justifyContent: "center", padding: 18,
@@ -111,6 +111,7 @@ export default function EventPortal({ token }) {
   const [loading, setLoading] = useState(true);
   const [fatal, setFatal] = useState("");
   const [event, setEvent] = useState(null);
+  const [brandAssets, setBrandAssets] = useState(BRAND_ASSETS);
   const [data, setData] = useState({});
   const dataRef = useRef({});
 
@@ -131,6 +132,7 @@ export default function EventPortal({ token }) {
         if (!alive) return;
         if (!res.ok) { setFatal(json?.error || "This link is not valid."); setLoading(false); return; }
         setEvent(json.event);
+        if (Array.isArray(json.brandAssets)) setBrandAssets(json.brandAssets);
         setData(json.portal?.data || {});
         dataRef.current = json.portal?.data || {};
         setLoading(false);
@@ -335,7 +337,7 @@ export default function EventPortal({ token }) {
 
         {assetErr && <div className="pt-err">{assetErr}</div>}
 
-        <BrandKit />
+        <BrandKit assets={brandAssets} />
 
         <Fold title="More details">
           <p className="pt-sec-blurb" style={{ marginTop: 6 }}>

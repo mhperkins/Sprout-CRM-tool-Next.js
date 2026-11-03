@@ -2684,9 +2684,73 @@ function ImportView({contacts,orgs,onImportContact,onImportOrg,showToast}) {
 }
 
 /* ─── Settings ───────────────────────────────────────────────────────────────── */
+/* Flyer logos staff upload for the event portal (sprout_profile.data.brand_logos).
+   Saves on every change; when the list is empty the portal shows its built-in logos. */
+function BrandLogosCard({logos,onChange,showToast}) {
+  const [busy,setBusy]=useState(false);
+  const fileRef=useRef(null);
+  const list=Array.isArray(logos)?logos:[];
+  const upload=async(files)=>{
+    if(!files?.length) return;
+    setBusy(true);
+    try {
+      const added=[];
+      for(const f of Array.from(files)){
+        if(!/^image\//.test(f.type)){ showToast(`${f.name} is not an image`,"err"); continue; }
+        const meta=await uploadEventMedia("brand",f);
+        const base=(f.name||"logo").replace(/\.[^.]+$/,"").replace(/[-_]+/g," ").trim();
+        added.push({id:uid(),label:base||"Sprout Society logo",note:"",bg:/white|light|reverse|knockout/i.test(f.name)?"dark":"light",url:meta.url,name:f.name||"logo.png"});
+      }
+      if(added.length){ onChange([...list,...added]); showToast(`${added.length} logo${added.length>1?"s":""} added ✓`); }
+    } catch(e){ showToast(e.message||"Upload failed","err"); }
+    setBusy(false);
+    if(fileRef.current) fileRef.current.value="";
+  };
+  const patch=(id,p)=>onChange(list.map(l=>l.id===id?{...l,...p}:l));
+  const remove=(l)=>{ onChange(list.filter(x=>x.id!==l.id)); deleteEventMedia(l.url); showToast("Logo removed"); };
+  const move=(i,d)=>{ const j=i+d; if(j<0||j>=list.length) return; const n=[...list]; [n[i],n[j]]=[n[j],n[i]]; onChange(n); };
+  return (
+    <div className="card"><div className="card-hd"><span className="card-ttl">Flyer logos (event portal)</span></div><div className="card-bd">
+      <div style={{fontSize:13,color:"var(--g600)",marginBottom:14,lineHeight:1.5}}>
+        Hosts download these from their event portal to put on flyers. Upload transparent PNGs (or SVG) at print size, about 2000px wide.
+        {list.length===0 && <> Nothing uploaded yet, so the portal shows the built-in logos.</>}
+      </div>
+      {list.map((l,i)=>(
+        <div key={l.id} style={{display:"flex",gap:14,alignItems:"flex-start",padding:"12px 0",borderTop:"1px solid var(--g200)",flexWrap:"wrap"}}>
+          <div style={{width:150,height:90,flexShrink:0,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",padding:10,background:l.bg==="dark"?"#030000":"#F7F7F6",border:"1px solid var(--g200)"}}>
+            <img src={l.url} alt={l.label} style={{maxWidth:"100%",maxHeight:"100%",objectFit:"contain"}}/>
+          </div>
+          <div style={{flex:"1 1 220px",minWidth:0}}>
+            <div className="fg"><label className="fl">Name hosts see</label>
+              <input className="fi" defaultValue={l.label} onBlur={e=>{const v=e.target.value.trim(); if(v!==l.label) patch(l.id,{label:v});}}/></div>
+            <div className="fg"><label className="fl">Note (optional)</label>
+              <input className="fi" defaultValue={l.note} placeholder="e.g. Use it on light backgrounds." onBlur={e=>{const v=e.target.value.trim(); if(v!==(l.note||"")) patch(l.id,{note:v});}}/></div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+              <label className="fl" style={{margin:0}}>Preview background</label>
+              <select className="fi" style={{width:"auto"}} value={l.bg==="dark"?"dark":"light"} onChange={e=>patch(l.id,{bg:e.target.value})}>
+                <option value="light">Light (for dark artwork)</option>
+                <option value="dark">Dark (for white artwork)</option>
+              </select>
+              <button className="btn btn-ghost btn-sm" disabled={i===0} onClick={()=>move(i,-1)} title="Move up">↑</button>
+              <button className="btn btn-ghost btn-sm" disabled={i===list.length-1} onClick={()=>move(i,1)} title="Move down">↓</button>
+              <button className="btn btn-ghost btn-sm" onClick={()=>remove(l)}>Remove</button>
+            </div>
+          </div>
+        </div>
+      ))}
+      <div style={{marginTop:12}}>
+        <button className="btn btn-blk" disabled={busy} onClick={()=>fileRef.current?.click()}>{busy?"Uploading…":"⬆ Upload logo"}</button>
+        <input ref={fileRef} type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" multiple style={{display:"none"}} onChange={e=>upload(e.target.files)}/>
+      </div>
+    </div></div>
+  );
+}
+
 function SettingsView({profile,onUpdate,showToast}) {
   const [d,setD]=useState(profile);
   const s=(k,v)=>setD(p=>({...p,[k]:v}));
+  // Logos save immediately (not on Save Settings), so an upload is never lost.
+  const setLogos=(list)=>{ setD(p=>({...p,brand_logos:list})); onUpdate({...profile,brand_logos:list}); };
   return (
     <div className="page">
 <div className="pg-hd"><div><div className="pg-ttl">Settings</div><div className="pg-sub">Organization profile and communications setup</div></div></div>
@@ -2707,6 +2771,7 @@ function SettingsView({profile,onUpdate,showToast}) {
         <div className="frow"><div className="fg"><label className="fl">Name</label><input className="fi" value={d.contactName} onChange={e=>s("contactName",e.target.value)}/></div><div className="fg"><label className="fl">Title</label><input className="fi" value={d.contactTitle} onChange={e=>s("contactTitle",e.target.value)}/></div></div>
         <div className="frow"><div className="fg"><label className="fl">Email</label><input type="email" className="fi" value={d.contactEmail} onChange={e=>s("contactEmail",e.target.value)}/></div><div className="fg"><label className="fl">Phone</label><input className="fi" value={d.contactPhone} onChange={e=>s("contactPhone",e.target.value)}/></div></div>
       </div></div>
+      <BrandLogosCard logos={d.brand_logos} onChange={setLogos} showToast={showToast}/>
       <div className="settings-foot"><button className="btn btn-acid" onClick={()=>{onUpdate(d);showToast("Settings saved ✓");}}>Save Settings</button></div>
     </div>
   );
@@ -4261,7 +4326,7 @@ function EventMediaPanel({event,onUpdateEvent,showToast}) {
                 <button className="btn btn-ghost btn-sm" onClick={()=>{setRenaming(true);setConfirmDel(false);setFolderName(current.name);}}>Rename</button>
                 {confirmDel?(
                   <>
-                    <button className="btn btn-sm" style={{background:"var(--red)",color:"#fff"}} onClick={deleteFolder}>Delete folder, keep files</button>
+                    <button className="btn btn-ghost btn-sm" style={{background:"var(--red)",color:"#fff"}} onClick={deleteFolder}>Delete folder, keep files</button>
                     <button className="btn btn-ghost btn-sm" onClick={()=>setConfirmDel(false)}>Cancel</button>
                   </>
                 ):(
