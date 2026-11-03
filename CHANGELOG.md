@@ -11,6 +11,7 @@ Merges `06a7185` + `e4a59d5`. Effort: low. Why: the flyer logo card offered only
 - **Dropdowns:** every section is a native `<details>` bar, closed by default; contents stay mounted, so autosave is unchanged.
 - **Autosave note** above the bars: everything saves automatically, come back any time.
 - Verified on a real portal at 1000px and 390px.
+- **Final order (merge `86592fe`):** Event details, Links, Our logos, Files, More details. Food and drinks removed from the portal (Max's call); the field stays defined so old answers survive.
 - **Logo upload (merge `f123677`):** the built-in logos did not look right to Max, so staff now upload the real files in CRM Settings → Flyer logos (event portal). Stored in `sprout_profile.data.brand_logos`; the portal shows only uploads when any exist, else the built-in pair. No migration.
 
 ---
