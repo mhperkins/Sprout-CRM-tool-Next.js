@@ -3,8 +3,8 @@
 // time, claims it so it sends once, sends it, and gives the claim back if the send fails so
 // the next check retries.
 //
-// Monday overview: Monday from 8am. Tomorrow reminder: every day from 9am, skipped when the
-// next day has nothing on the Sprout calendar.
+// Monday overview: Monday from 8am. Today and tomorrow: every day from 9am, skipped when
+// both days are empty on the Sprout calendar.
 //
 // Auth: pg_cron sends the Vault secret as a Bearer token; the route compares its sha256
 // with sprout_cron_keys. The plaintext never leaves the database.
@@ -14,7 +14,7 @@ import { createHash, randomBytes, timingSafeEqual } from "crypto";
 import { svc, hasServiceKey } from "@/lib/portalDb";
 import { sendEmail } from "@/lib/notify";
 import { fetchSproutEvents } from "@/lib/googleCalendar";
-import { buildMondayOverview, buildTomorrowReminder, DAY_BOARD_TO } from "@/lib/dayBoardSummary";
+import { buildMondayOverview, buildTodayTomorrow, DAY_BOARD_TO } from "@/lib/dayBoardSummary";
 import { etParts, addDays, weekdayIndex } from "@/lib/dayBoard";
 
 export const runtime = "nodejs";
@@ -89,15 +89,19 @@ export async function POST(req) {
     }
 
     if (now.minutes >= 9 * 60) {
-      const day = addDays(now.date, 1);
-      if (await alreadySent("tomorrow", day)) {
-        out.tomorrow = "already sent";
+      const tomorrow = addDays(now.date, 1);
+      if (await alreadySent("daily", now.date)) {
+        out.daily = "already sent";
       } else {
-        const events = await fetchSproutEvents(day, day);
-        out.tomorrow = events.length ? await sendOnce("tomorrow", day, () => buildTomorrowReminder(day, events)) : "nothing tomorrow";
+        const events = await fetchSproutEvents(now.date, tomorrow);
+        const todayEvents = events.filter((e) => e.date === now.date);
+        const tomorrowEvents = events.filter((e) => e.date === tomorrow);
+        out.daily = events.length
+          ? await sendOnce("daily", now.date, () => buildTodayTomorrow(now.date, todayEvents, tomorrowEvents))
+          : "nothing today or tomorrow";
       }
     } else {
-      out.tomorrow = "not due";
+      out.daily = "not due";
     }
   } catch (e) {
     console.error("calendar emails:", e?.message || e);
