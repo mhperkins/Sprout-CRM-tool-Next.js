@@ -50,7 +50,7 @@ function BrandKit() {
     <div className="pt-card">
       <div className="pt-sec-ttl">Our logos for your flyer</div>
       <p className="pt-sec-blurb" style={{ marginTop: 6 }}>
-        Download whichever version fits your design. PNGs have a transparent background; SVGs scale to any size.
+        Download whichever version fits your design. Both have a transparent background.
       </p>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14, marginTop: 18 }}>
         {BRAND_ASSETS.map((a) => (
@@ -250,16 +250,6 @@ export default function EventPortal({ token }) {
         </div>
 
         <div className="pt-card">
-          <div className="pt-sec-ttl">Food and drinks</div>
-          <p className="pt-sec-blurb" style={{ marginTop: 6 }}>
-            Sprout runs a lot of sober and sober-friendly programming, so let us know what is planned.
-          </p>
-          <div className="pt-sec-body">
-            <FieldList fields={FOOD_FIELDS} data={data} setField={setField} scope={event?.id} />
-          </div>
-        </div>
-
-        <div className="pt-card">
           <div className="pt-sec-ttl">Links</div>
           <p className="pt-sec-blurb" style={{ marginTop: 6 }}>Tickets, RSVP, Instagram posts, Drive folders. Sprout sees these too.</p>
           <div className="pt-sec-body">
@@ -318,6 +308,8 @@ export default function EventPortal({ token }) {
 
         {assetErr && <div className="pt-err">{assetErr}</div>}
 
+        <BrandKit />
+
         <div className="pt-card">
           <div className="pt-sec-ttl">More details</div>
           <p className="pt-sec-blurb" style={{ marginTop: 6 }}>
@@ -330,7 +322,15 @@ export default function EventPortal({ token }) {
           </div>
         </div>
 
-        <BrandKit />
+        <div className="pt-card">
+          <div className="pt-sec-ttl">Food and drinks</div>
+          <p className="pt-sec-blurb" style={{ marginTop: 6 }}>
+            Sprout runs a lot of sober and sober-friendly programming, so let us know what is planned.
+          </p>
+          <div className="pt-sec-body">
+            <FieldList fields={FOOD_FIELDS} data={data} setField={setField} scope={event?.id} />
+          </div>
+        </div>
       </div>
 
       <div className="pt-bar">
