@@ -5580,7 +5580,7 @@ function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpda
   );
 }
 
-function EventsView({events,contacts,orgs,onUpdate,onSaveOneEvent,onDelete,showToast,onUpdateContacts,pendingEvent,onPendingEventConsumed,portals={},onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals,onSavePortalAnswer}) {
+function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showToast,onUpdateContacts,pendingEvent,onPendingEventConsumed,portals={},onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals,onSavePortalAnswer}) {
   const [search,setSearch]=useState("");
   const [fStatus,setFStatus]=useState("all");
   const [viewMode,setViewMode]=useState(()=>{ try{ return localStorage.getItem("sprout_evt_view")||"calendar"; }catch{ return "calendar"; } });
@@ -5731,7 +5731,7 @@ function EventsView({events,contacts,orgs,onUpdate,onSaveOneEvent,onDelete,showT
         </div>;
       })()}
       {/* Date requests from /book and client portals, waiting for approval. */}
-      <BookingRequestsPanel events={events} onSaveOneEvent={onSaveOneEvent} showToast={showToast}
+      <BookingRequestsPanel onEventChanged={onEventChanged} showToast={showToast}
         onOpenEvent={(id)=>{ setSelectedId(id); setEvtPage("detail"); }}/>
       <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
         <input className="fi" style={{maxWidth:260}} placeholder="Search events…" value={search} onChange={e=>setSearch(e.target.value)}/>
@@ -6165,7 +6165,7 @@ if (dbError) return (
         {view==="dashboard"&&<DayBoard contacts={contacts} orgs={orgs} onContactChanged={contactChanged} onOrgChanged={orgChanged} openContact={openContact} setView={setView} showToast={showToast}/>}
 {view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail} setView={setView}/>}
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
-{view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onSaveOneEvent={saveOneEvent} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))} pendingEvent={pendingEvent} onPendingEventConsumed={clearPendingEvent} portals={portals} onCreatePortal={makePortal} onRotatePortal={rotatePortal} onRemovePortal={removePortal} onRefreshPortals={refreshPortals} onSavePortalAnswer={savePortalAnswer}/>}
+{view==="events"&&<EventsView events={events} contacts={contacts} orgs={orgs} onUpdate={saveEvents} onEventChanged={(rec)=>setEvents(prev=>prev.some(e=>e.id===rec.id)?prev.map(e=>e.id===rec.id?rec:e):[...prev,rec])} onDelete={deleteEvent} showToast={showToast} onUpdateContacts={(c)=>saveContacts(contacts.map(x=>x.id===c.id?c:x))} pendingEvent={pendingEvent} onPendingEventConsumed={clearPendingEvent} portals={portals} onCreatePortal={makePortal} onRotatePortal={rotatePortal} onRemovePortal={removePortal} onRefreshPortals={refreshPortals} onSavePortalAnswer={savePortalAnswer}/>}
         {view==="grants"&&<GrantMetrics events={events} contacts={contacts} orgs={orgs} onUpdateEvent={saveOneEvent} profile={profile} openEvent={openEvent} showToast={showToast} setView={setView}/>}
         {view==="survey"&&<SurveyView events={events} contacts={contacts} orgs={orgs} openContact={openContact} showToast={showToast} start={surveyStart}/>}
         {view==="members"&&<MembersView contacts={contacts} orgs={orgs} onSaveContact={saveOneContact} onSaveOrg={saveOneOrg} openContact={openContact} showToast={showToast}/>}

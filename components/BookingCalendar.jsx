@@ -14,7 +14,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   addDays, weekday, todayNY, earliestDate, latestDate, monthTitle, shortDate, longDate,
-  clock, timeRange, toMin, clashesFor, expandRepeat, slotProblem, WEEKDAYS, MAX_SLOTS,
+  clock, timeRange, toMin, endMin, clashesFor, expandRepeat, slotProblem, WEEKDAYS, MAX_SLOTS,
 } from "../lib/booking";
 
 export const BK_CSS = `
@@ -74,7 +74,7 @@ const byTime = (a, b) => a.start - b.start;
 /** Everything on one day, merged and sorted, for the cell, the agenda and the panel. */
 function dayItems(date, busy, mine) {
   const own = (mine || []).filter((s) => s.date === date && (s.status === "confirmed" || s.status === "requested"))
-    .map((s) => ({ kind: s.status === "confirmed" ? "mine" : "req", start: toMin(s.start_time), end: toMin(s.end_time), slot: s }));
+    .map((s) => ({ kind: s.status === "confirmed" ? "mine" : "req", start: toMin(s.start_time), end: endMin(s.end_time), slot: s }));
   const other = (busy || []).filter((b) => b.date === date).map((b) => ({ kind: "busy", start: b.start, end: b.end }));
   return [...own, ...other].sort(byTime);
 }
@@ -220,7 +220,7 @@ export function PickDatesModal({ initialDate, loadBusy, mine = [], onClose, onDo
   useEffect(() => { if (!repeat) return; if (!days.length) setDays([weekday(first)]); }, [repeat]); // eslint-disable-line
 
   const ownBlocks = mine.filter((s) => s.status === "requested" || s.status === "confirmed")
-    .map((s) => ({ date: s.date, start: toMin(s.start_time), end: toMin(s.end_time) }));
+    .map((s) => ({ date: s.date, start: toMin(s.start_time), end: endMin(s.end_time) }));
   const rows = list.map((s) => {
     const shape = slotProblem(s);
     const taken = !shape && clashesFor(s, busy)[0];
@@ -229,7 +229,7 @@ export function PickDatesModal({ initialDate, loadBusy, mine = [], onClose, onDo
     return { ...s, why };
   });
   const chosen = rows.filter((r) => !r.why && !unchecked[r.date]);
-  const timeErr = toMin(end) != null && toMin(start) != null && toMin(end) <= toMin(start) ? "The end time has to be after the start time." : "";
+  const timeErr = endMin(end) != null && toMin(start) != null && endMin(end) <= toMin(start) ? "The end time has to be after the start time." : "";
 
   const toggleDay = (d) => setDays((x) => (x.includes(d) ? x.filter((y) => y !== d) : [...x, d].sort()));
 
@@ -244,7 +244,12 @@ export function PickDatesModal({ initialDate, loadBusy, mine = [], onClose, onDo
           <div>
             <div className="pt-row">
               <div className="pt-fg"><label className="pt-lbl" htmlFor="bk-first">First date</label>
-                <input id="bk-first" className="pt-in" type="date" value={first} min={earliestDate()} max={latestDate()} onChange={(e) => { setFirst(e.target.value); setUnchecked({}); }} /></div>
+                <input id="bk-first" className="pt-in" type="date" value={first} min={earliestDate()} max={latestDate()} onChange={(e) => {
+                  const v = e.target.value;
+                  setFirst(v); setUnchecked({});
+                  // Keep the repeat alive: an end date before the new first date would collapse it to one date.
+                  if (v && until < v) setUntil(addDays(v, 27));
+                }} /></div>
             </div>
             <div className="pt-row">
               <div className="pt-fg"><label className="pt-lbl" htmlFor="bk-start">Start</label>
@@ -252,7 +257,7 @@ export function PickDatesModal({ initialDate, loadBusy, mine = [], onClose, onDo
               <div className="pt-fg"><label className="pt-lbl" htmlFor="bk-end">End</label>
                 <input id="bk-end" className="pt-in" type="time" step="900" value={end} onChange={(e) => setEnd(e.target.value)} /></div>
             </div>
-            <p className="pt-help" style={{ marginTop: -8, marginBottom: 14 }}>Include setup and cleanup time.</p>
+            <p className="pt-help" style={{ marginTop: -8, marginBottom: 14 }}>Include setup and cleanup time. For midnight, pick 12:00 AM.</p>
             <div className="pt-fg">
               <span className="pt-lbl">Repeat</span>
               <div className="bk-radio">

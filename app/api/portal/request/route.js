@@ -73,17 +73,19 @@ export async function POST(req) {
     try {
       ({ ok: wanted, rejected } = await checkSlots({ slots: body.slots }));
     } catch (e) {
-      console.error("portal/request — slot check failed:", e?.message);
-      return Response.json({ error: "We couldn't check the calendar just now. Please try again in a minute." }, { status: 502 });
+      // Google Calendar unreachable: keep the request anyway. Staff see the clash
+      // check when they approve, so nothing double-books.
+      console.error("portal/request — calendar check failed, saving unchecked:", e?.message);
+      ({ ok: wanted, rejected } = await checkSlots({ slots: body.slots, skipCalendar: true }));
     }
     if (!wanted.length) {
       return Response.json({ error: rejected[0]?.reason || "Those dates are taken. Please pick others.", rejected }, { status: 409 });
     }
-    const first = wanted.slice().sort((a, b) => a.date.localeCompare(b.date))[0];
-    answers.event_date = first.date;
-    answers.start_time = first.start;
-    answers.end_time = first.end;
   }
+  // The first date only gives the pending event a place on the CRM calendar. It is
+  // NOT written into the portal answers, or every portal autosave would push it back
+  // onto the event after staff decline it. Approval sets the real dates.
+  const firstSlot = wanted.slice().sort((a, b) => a.date.localeCompare(b.date))[0] || null;
   const regular = answers.booking_kind === "Regular booking";
 
   // ── Create the pending event ──
@@ -110,7 +112,11 @@ export async function POST(req) {
     next_actions: [],
     notes: `Booking request submitted through the events portal on ${new Date().toISOString().slice(0, 10)} by ${answers.contact_name} (${email}).`,
   };
-  const merged = { ...base, ...portalToEventPatch(answers) };
+  const merged = {
+    ...base,
+    ...portalToEventPatch(answers),
+    ...(firstSlot ? { event_date: firstSlot.date, start_time: firstSlot.start, end_time: firstSlot.end } : {}),
+  };
   const { data: valid, error: vErr } = validateEvent(merged);
   if (vErr) {
     console.warn("portal/request — event failed validation:", vErr);

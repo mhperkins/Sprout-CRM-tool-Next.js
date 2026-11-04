@@ -11,9 +11,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { fetchBookingRequests, decideBookingSlots } from "../lib/services";
-import { shortDate, timeRange, eventPatchForConfirmed } from "../lib/booking";
+import { shortDate, timeRange } from "../lib/booking";
 
-export default function BookingRequestsPanel({ events = [], onSaveOneEvent, onOpenEvent, showToast }) {
+export default function BookingRequestsPanel({ onEventChanged, onOpenEvent, showToast }) {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -44,12 +44,9 @@ export default function BookingRequestsPanel({ events = [], onSaveOneEvent, onOp
     if (error) { showToast?.(error, "err"); return; }
 
     for (const r of data) {
-      // Put the confirmed dates on the CRM event, and approve the booking itself.
-      const ev = events.find((e) => e.id === r.event_id);
-      if (ev && r.confirmed.length && onSaveOneEvent) {
-        const patch = eventPatchForConfirmed(ev, r.all_confirmed);
-        onSaveOneEvent({ ...ev, ...patch, status: ev.status === "pending" ? "upcoming" : ev.status });
-      }
+      // The server already put the dates on the CRM event; refresh this tab's copy
+      // so a later save here can't overwrite it with stale data.
+      if (r.event && onEventChanged) onEventChanged(r.event);
       const bits = [
         r.confirmed.length && `${r.confirmed.length} confirmed`,
         r.declined.length && `${r.declined.length} declined`,

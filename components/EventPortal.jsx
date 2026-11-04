@@ -13,6 +13,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { FIELD_BY_KEY } from "../lib/eventPortal";
 import { portalProgress, isISODate } from "../lib/eventPortal";
 import { PortalShell, FieldList, useAutosave, uploadPortalFile } from "./PortalForm";
+// Dates and times live in the "Your dates" section, which checks the calendar.
+// The old date/time answers are no longer editable here.
 import { BRAND_ASSETS, BRAND_GUIDELINES } from "../lib/brandAssets";
 import { DatesSection } from "./BookingCalendar";
 
@@ -41,7 +43,7 @@ const STATUS_NOTE = {
 
 const f = (...keys) => keys.map((k) => FIELD_BY_KEY[k]).filter(Boolean);
 const CONTACT_FIELDS = f("contact_name", "contact_email", "contact_phone", "org_name");
-const EVENT_FIELDS = f("booking_kind", "event_name", "event_type", "audience", "event_date", "alt_date", "start_time", "end_time", "attendance", "admission", "short_desc");
+const EVENT_FIELDS = f("booking_kind", "event_name", "event_type", "audience", "attendance", "admission", "short_desc");
 
 /** A section that opens and closes like a dropdown bar. Closed by default; the
  *  contents stay mounted so typed answers keep autosaving. */
