@@ -8,6 +8,7 @@ import { validateEvent } from "@/lib/schemas";
 import { REQUEST_KEYS, ALL_FIELDS, isBlank, portalToEventPatch } from "@/lib/eventPortal";
 import { svc, hasServiceKey, newToken, newPortalId, newEventId } from "@/lib/portalDb";
 import { notifyBookingRequest } from "@/lib/notify";
+import { checkSlots, insertRequested } from "@/lib/bookingDb";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -63,6 +64,28 @@ export async function POST(req) {
     );
   }
 
+  // ── Dates picked on our calendar (optional) ──
+  // Checked against the Program Calendar before anything is saved. If every date
+  // is taken, nothing is created and the form says which ones.
+  let wanted = [];
+  let rejected = [];
+  if (Array.isArray(body?.slots) && body.slots.length) {
+    try {
+      ({ ok: wanted, rejected } = await checkSlots({ slots: body.slots }));
+    } catch (e) {
+      console.error("portal/request — slot check failed:", e?.message);
+      return Response.json({ error: "We couldn't check the calendar just now. Please try again in a minute." }, { status: 502 });
+    }
+    if (!wanted.length) {
+      return Response.json({ error: rejected[0]?.reason || "Those dates are taken. Please pick others.", rejected }, { status: 409 });
+    }
+    const first = wanted.slice().sort((a, b) => a.date.localeCompare(b.date))[0];
+    answers.event_date = first.date;
+    answers.start_time = first.start;
+    answers.end_time = first.end;
+  }
+  const regular = answers.booking_kind === "Regular booking";
+
   // ── Create the pending event ──
   // Event name is optional, so fall back to who is asking for the CRM record.
   const fallbackName = `Event request: ${answers.org_name || answers.contact_name}`;
@@ -80,7 +103,8 @@ export async function POST(req) {
     recap: "",
     contact_ids: [],
     confirmed_ids: [],
-    tags: ["portal_request"],
+    tags: regular ? ["portal_request", "rental"] : ["portal_request"],
+    outcomes: regular ? { hosted_by: "rental" } : null,
     links: [],
     checklist: [],
     next_actions: [],
@@ -108,8 +132,9 @@ export async function POST(req) {
 
   // ── Create the portal ──
   const token = newToken();
+  const portalId = newPortalId();
   const { error: pErr } = await sb.from("sprout_event_portals").insert({
-    id: newPortalId(),
+    id: portalId,
     event_id: valid.id,
     token,
     status: "draft",
@@ -124,13 +149,26 @@ export async function POST(req) {
     return Response.json({ error: "We could not save that request. Please try again." }, { status: 500 });
   }
 
+  // ── Save the requested dates ──
+  let slots = [];
+  if (wanted.length) {
+    try {
+      slots = await insertRequested({ eventId: valid.id, portalId, slots: wanted, note: String(body?.note || "") });
+    } catch (e) {
+      await sb.from("sprout_event_portals").delete().eq("id", portalId);
+      await sb.from("sprout_events").delete().eq("id", valid.id);
+      console.error("portal/request — slot insert failed:", e?.message);
+      return Response.json({ error: "We could not save those dates. Please try again." }, { status: 500 });
+    }
+  }
+
   // Tell staff a request came in. Awaited so serverless doesn't cut it off, but a
   // failed email never fails the request — it is already saved as a pending event.
   try {
-    await notifyBookingRequest({ answers, eventId: valid.id, token, origin: new URL(req.url).origin });
+    await notifyBookingRequest({ answers, eventId: valid.id, token, origin: new URL(req.url).origin, slots });
   } catch (e) {
     console.error("portal/request — notification email failed:", e?.message);
   }
 
-  return Response.json({ token, event_id: valid.id });
+  return Response.json({ token, event_id: valid.id, dates: slots.length, rejected });
 }
