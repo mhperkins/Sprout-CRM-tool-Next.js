@@ -46,7 +46,10 @@ import {
   deleteGalleryEntry,
   regenerateProgramFormToken,
   deleteProgramEntry,
+  approveEventOnCalendar,
+  fetchEventSlots,
 } from "../lib/services";
+import { shortDate as slotDate, timeRange as slotTimes } from "../lib/booking";
 import { programLinks, programToText } from "../lib/programForm";
 import { PORTAL_SECTIONS, FIELD_BY_KEY, displayValue, portalProgress, sectionProgress, portalToText, isBlank as pIsBlank, pickOrganizer, portalSeedFromCRM } from "../lib/eventPortal";
 import { buildNewsletter, TEMPLATES, defaultMonthYear, COMPACT_SECTIONS, QUICK_HIT_SECTIONS, blankCompactItem, COMPACT_BLOCKS, QUICK_HIT_BLOCKS, COMPACT_FIXED_TOP, COMPACT_FIXED_BOTTOM, QH_FIXED_TOP, QH_FIXED_BOTTOM, orderedBlockIds } from "../lib/newsletter";
@@ -4721,8 +4724,17 @@ function EventProgramPanel({program,onCreate,onRotate,onDeleteEntry,onRefresh,sh
   );
 }
 
-function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpdateEvent,onUpdateContacts,onContactClick,portal,onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals,onSavePortalAnswer,showToast}) {
+function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpdateEvent,onApprove,onUpdateContacts,onContactClick,portal,onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals,onSavePortalAnswer,showToast}) {
   const linked = contacts.filter(c=>(event.contact_ids||[]).includes(c.id));
+
+  // Booking dates (from /book and the portal). A waiting request keeps its dates here,
+  // not on the event, so the header alone would only show the first one.
+  const [slots,setSlots]=useState([]);
+  useEffect(()=>{
+    let alive=true;
+    fetchEventSlots(event.id).then(({data})=>{ if(alive) setSlots(data); });
+    return ()=>{ alive=false; };
+  },[event.id,event.status,event.event_date]);
 
   // Program form: the tile and its popup share one copy, loaded per event.
   const [program,setProgram]=useState({form:null,entries:[],loaded:false});
@@ -5030,9 +5042,26 @@ function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpda
                   {prog&&!prog.readyToSchedule&&` ${prog.requiredTotal-prog.requiredDone} essential${prog.requiredTotal-prog.requiredDone===1?" is":"s are"} still missing from the portal.`}
                 </div>
               </div>
-              <button className="btn btn-blk" onClick={()=>{ onUpdateEvent({...event,status:"upcoming"}); showToast?.("Approved onto the calendar ✓"); }}>
+              <button className="btn btn-blk" onClick={()=>onApprove?.(event)}>
                 Approve onto the calendar →
               </button>
+            </div>
+          )}
+          {slots.length>0&&(
+            <div style={{display:"flex",flexWrap:"wrap",gap:6,alignItems:"center",margin:"0 0 12px"}}>
+              <span style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase",color:"var(--g500)",marginRight:2}}>
+                {slots.length} date{slots.length===1?"":"s"}
+              </span>
+              {slots.map(s=>{
+                const st={requested:["Waiting","#fff8d6","#5c4a00"],confirmed:["On calendar","var(--acid-lt)","#3a3d00"],declined:["Declined","var(--fuchsia-lt)","#8b0057"]}[s.status]||[s.status,"var(--g100)","var(--g600)"];
+                return (
+                  <span key={s.id} title={s.decline_reason||undefined}
+                    style={{fontSize:11.5,padding:"3px 9px",borderRadius:20,border:"1px solid var(--g200)",background:"#fff",display:"inline-flex",gap:6,alignItems:"center"}}>
+                    {slotDate(s.date)} · {slotTimes(s.start_time,s.end_time)}
+                    <span style={{fontSize:10,fontWeight:700,padding:"1px 6px",borderRadius:20,background:st[1],color:st[2]}}>{st[0]}</span>
+                  </span>
+                );
+              })}
             </div>
           )}
           <div className="evd-strip">
@@ -5556,7 +5585,7 @@ function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpda
             onRotate={onRotatePortal}
             onRemove={onRemovePortal}
             onRefresh={onRefreshPortals}
-            onApprove={()=>onUpdateEvent({...event,status:"upcoming"})}
+            onApprove={()=>onApprove?.(event)}
             showToast={showToast}
           />
         </Modal>
@@ -5646,6 +5675,17 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
     onUpdate(events.map(e=>e.id===updated.id?updated:e));
   };
 
+  // Approve onto the calendar: the server approves the event's waiting dates (or its
+  // own date and times), writes them to the Sprout Google Calendar, emails the host,
+  // and updates the event. This tab only refreshes its copy, so nothing stale saves over it.
+  const approveToCalendar = async (ev) => {
+    showToast("Adding to the Sprout calendar…");
+    const { data, error } = await approveEventOnCalendar(ev.id);
+    if (error) { showToast(error, "err"); return; }
+    if (data?.event) onEventChanged?.(data.event);
+    showToast(data?.message || "Approved", data?.ok ? undefined : "err");
+  };
+
   const handleContactClick = (c) => { setInlineContact({...c}); };
   const handleCancelEdit = () => { setEditDraft(null); setEvtPage(selectedId?"detail":"list"); };
   const handleSaveInlineContact = () => {
@@ -5675,6 +5715,7 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
       onEdit={()=>{setEditDraft({...selectedEvent});setEvtPage("edit");}}
       onDelete={()=>setConfirmDel(selectedEvent.id)}
       onUpdateEvent={handleUpdateEvent}
+      onApprove={approveToCalendar}
       onContactClick={handleContactClick}
       portal={portals[selectedEvent.id]}
       onSavePortalAnswer={onSavePortalAnswer}
@@ -5774,7 +5815,7 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
                   <td onClick={ev=>ev.stopPropagation()} style={{display:"flex",gap:4}}>
                     {e.status==="pending"&&(
                       <button className="btn btn-blk btn-xs" title="Put this event on the calendar"
-                        onClick={()=>{ handleUpdateEvent({...e,status:"upcoming"}); showToast(`Approved "${e.name||"event"}" onto the calendar ✓`); }}>Approve</button>
+                        onClick={()=>approveToCalendar(e)}>Approve</button>
                     )}
                     <button className="btn btn-ghost btn-xs" onClick={()=>{setEditDraft({...e});setEvtPage("edit");}}>Edit</button>
                     <button className="btn btn-danger btn-xs" onClick={()=>setConfirmDel(e.id)}>Del</button>

@@ -4,7 +4,7 @@
 //         and each client gets one email listing what changed.
 
 import { requireStaff } from "@/lib/staffAuth";
-import { pendingRequests, decideSlots } from "@/lib/bookingDb";
+import { pendingRequests, decideSlots, approveEvent } from "@/lib/bookingDb";
 import { svc } from "@/lib/portalDb";
 import { notifySlotDecision } from "@/lib/notify";
 
@@ -27,6 +27,19 @@ export async function POST(req) {
   if (denied) return denied;
   let body;
   try { body = await req.json(); } catch { return Response.json({ error: "Invalid request." }, { status: 400 }); }
+
+  // { approveEvent: id } = the event page / list "Approve onto the calendar" button.
+  if (typeof body?.approveEvent === "string") {
+    try {
+      const out = await approveEvent(body.approveEvent);
+      await emailDecisions(req, out.results, "");
+      return Response.json(out);
+    } catch (e) {
+      console.error("bookings POST approveEvent:", e?.message || e);
+      return Response.json({ error: `Couldn't approve that: ${e?.message || "unknown error"}` }, { status: 500 });
+    }
+  }
+
   const approve = Array.isArray(body?.approve) ? body.approve : [];
   const decline = Array.isArray(body?.decline) ? body.decline : [];
   const reason = String(body?.reason || "");
@@ -40,7 +53,12 @@ export async function POST(req) {
     return Response.json({ error: `Couldn't save that: ${e?.message || "unknown error"}` }, { status: 500 });
   }
 
-  // One email per booking. A failed email never undoes the decision.
+  await emailDecisions(req, results, reason);
+  return Response.json({ results });
+}
+
+// One email per booking. A failed email never undoes the decision.
+async function emailDecisions(req, results = [], reason = "") {
   const origin = new URL(req.url).origin;
   for (const r of results) {
     if (!r.confirmed.length && !r.declined.length) continue;
@@ -58,5 +76,4 @@ export async function POST(req) {
       r.emailed = false;
     }
   }
-  return Response.json({ results });
 }
