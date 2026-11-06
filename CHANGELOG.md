@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-11-06: Survey thank-you email from Max's Gmail
+
+Merge `cd0fd35` (branch `survey-thanks-email`). Effort: medium.
+
+- **New automated thank-you.** A person's first survey send triggers `sendSurveyThanks` in `lib/notify.js`: thanks, the /get-involved link and the Discord invite, signed Max, Community Manager. Wired into both paths of `app/api/survey/[token]/route.js` (personal links and shared-link replies).
+- **Sent from maxperkins@, not hello@.** `sendEmail` accepts a sender, display name and refresh token; the new `MAX_GMAIL_REFRESH_TOKEN` (same Google client) is in `.env.local` and Vercel Production. Max's call: people should hear from him.
+- **Safe by default.** No send for test invites, replies without an email, or edits; a failure is logged and the reply still saves. One live test sent to maxperkins@.
+- **Why:** Max wanted every respondent thanked with the same get-involved and Discord asks as the outreach DMs. The 15 earlier respondents get a manual send on Monday 11/9.
+
+---
+
 ## 2026-11-06: MCP sees every contact again; hosting + survey status pass
 
 Merge `abffd29` (branch `fix-mcp-paging`). Effort: medium for the status pass, re-tiered to max for the MCP fix because a create could overwrite an existing record. Ran on Opus 5.5.
