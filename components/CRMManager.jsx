@@ -5344,6 +5344,7 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
   const [evtPage,setEvtPage]=useState("list");
   const [selectedId,setSelectedId]=useState(null);
   const [fHost,setFHost]=useState("all");
+  const [showDone,setShowDone]=useState(false); // list view: completed events hidden by default
   const [waitingGroups,setWaitingGroups]=useState([]); // booking requests, shared with the calendar
   const [confirmDel,setConfirmDel]=useState(null);
   const [inlineContact,setInlineContact]=useState(null);
@@ -5498,16 +5499,28 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
         </div>
       </div>
 
-      {viewMode==="list" ? (
+      {viewMode==="list" ? (()=>{
+        // Completed events stay out of the list unless asked for (the status filter
+        // set to Completed, or the toggle). The calendar still shows them, greyed.
+        const doneN=filtered.filter(e=>e.status==="completed").length;
+        const listRows=fStatus==="completed"||showDone?filtered:filtered.filter(e=>e.status!=="completed");
+        return <>
+      {doneN>0&&fStatus!=="completed"&&(
+        <div style={{display:"flex",justifyContent:"flex-end",marginBottom:8}}>
+          <button className="btn btn-ghost btn-xs" aria-pressed={showDone} onClick={()=>setShowDone(v=>!v)}>
+            {showDone?`Hide ${doneN} completed`:`Show ${doneN} completed`}
+          </button>
+        </div>
+      )}
       <div className="tbl-wrap">
         <table className="tbl">
           <thead><tr>
             <th>Event</th><th>Date</th><th>Status</th><th>Contacts</th><th>Location</th><th></th>
           </tr></thead>
           <tbody>
-            {filtered.length===0
-              ? <tr><td colSpan={6} style={{textAlign:"center",color:"var(--g400)",padding:"28px 0",fontSize:13}}>No events found</td></tr>
-              : filtered.map(e=>(
+            {listRows.length===0
+              ? <tr><td colSpan={6} style={{textAlign:"center",color:"var(--g400)",padding:"28px 0",fontSize:13}}>{doneN?"No upcoming events. Completed ones are hidden.":"No events found"}</td></tr>
+              : listRows.map(e=>(
                 <tr key={e.id} onClick={()=>{setSelectedId(e.id);setEvtPage("detail");}}>
                   <td style={{fontWeight:700}}>
                     {e.name||"(Unnamed)"}
@@ -5538,7 +5551,8 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
           </tbody>
         </table>
       </div>
-      ) : (()=>{
+        </>;
+      })() : (()=>{
         const today=new Date().toISOString().slice(0,10);
         const [yr,mo]=calMonth.split("-").map(Number);
         const firstDow=new Date(yr,mo-1,1).getDay();
