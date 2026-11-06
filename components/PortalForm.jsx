@@ -21,6 +21,9 @@ export const PORTAL_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&display=swap');
   .pt *, .pt *::before, .pt *::after { box-sizing: border-box; margin: 0; padding: 0; }
   .pt {
+    /* The portal pages are designed light. Without this, a dark-mode Mac draws
+       dark native checkboxes, radios and pickers on the white cards. */
+    color-scheme: light;
     --ink:#030000; --paper:#F7F7F6; --cyan:#2a8ca0; --cyan-lt:#73C4D6;
     --fuchsia:#E10098; --acid:#C6C902; --banana:#FAD100;
     --g100:#ECECEA; --g200:#DCDCD9; --g300:#C2C2BF; --g500:#8a8a86; --g600:#5f5f5c;
