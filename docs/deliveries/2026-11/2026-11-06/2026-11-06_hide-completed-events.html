@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hide Completed Events</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap">
+<style>
+:root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--fuchsia:#E10098;--cyan:#73C4D6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Lato,system-ui,sans-serif;padding:40px max(16px,4vw)}
+.slide{max-width:900px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+.top{background:var(--ink);color:#fff;padding:26px 30px;display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:flex-end}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--acid);font-weight:900}
+h1{margin:6px 0 0;font-size:30px;font-weight:900}
+.b{font-size:12px;font-weight:900;padding:5px 11px;border-radius:999px;background:#fff;color:var(--ink);font-family:ui-monospace,Consolas,monospace;margin-left:6px}
+.b.a{background:var(--acid)}
+.rule{height:4px;background:var(--acid)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;padding:24px 30px}
+.card{border:1.5px solid #e4e4e1;border-radius:11px;padding:14px 16px;border-top:6px solid var(--c)}
+.card h3{margin:0 0 6px;font-size:15px;font-weight:900}.card p{margin:0;font-size:13px;line-height:1.55;color:#3a3a38}
+code{font-family:ui-monospace,Consolas,monospace;font-size:12px}
+</style></head><body>
+<div class="slide">
+  <div class="top"><div><div class="eyebrow">Sprout CRM · Delivered 2026-11-06</div><h1>Completed events hidden from the list</h1></div>
+  <div><span class="b a">main</span><span class="b">merge 51ce4a4</span><span class="b">adc3116</span></div></div>
+  <div class="rule"></div>
+  <div class="grid">
+    <div class="card" style="--c:var(--cyan)"><h3>☰ List view</h3><p>Completed events are hidden by default.</p></div>
+    <div class="card" style="--c:var(--fuchsia)"><h3>👁 Show N completed</h3><p>One toggle brings them back. The status filter set to Completed shows them too.</p></div>
+    <div class="card" style="--c:var(--acid)"><h3>🗓 Calendar</h3><p>Unchanged: past events still show, greyed. File: <code>components/CRMManager.jsx</code></p></div>
+  </div>
+</div>
+</body></html>

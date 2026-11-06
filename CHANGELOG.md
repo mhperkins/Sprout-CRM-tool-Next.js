@@ -2,6 +2,12 @@
 
 ---
 
+## 2026-11-06: Completed events hidden from the Events list
+
+Merge `51ce4a4` (branch `hide-completed`). Effort: low.
+
+- **List view hides completed events** by default (Max's ask). A "Show N completed" toggle brings them back, and the status filter set to Completed still shows them. The calendar is unchanged.
+
 ## 2026-11-06: Events page redesign
 
 Merge `5897011` (branch `events-redesign`). Effort: high. Wireframe `docs/wireframes/2026-11-06_events-page-redesign.html`, signed off by Max.
