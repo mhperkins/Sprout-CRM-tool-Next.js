@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-11-06: Events page redesign
+
+Merge `5897011` (branch `events-redesign`). Effort: high. Wireframe `docs/wireframes/2026-11-06_events-page-redesign.html`, signed off by Max.
+
+- **Event page = the host portal's dropdown bars.** Dates, Host & details, Links & files, People, Checklist, Program, Gallery, Outcomes. What shows depends on Hosted by and the stage: rentals get no Checklist, Program and Gallery only once used, Outcomes only on past events. One bar opens per stage. Why: a Floorwork rental showed the same 11 tiles as a Sprout N Tell.
+- **Edit Event page removed.** Name, status, Hosted by, date, times, location, repeat, description and notes edit in place; checklist templates import from the Checklist bar; "+ Add event" opens a new event page.
+- **Communications cut.** Tile, popup and awaiting count gone; the `comms[]` data stays.
+- **Booking dates: Edit and Delete.** Hover a confirmed date (tap on a phone). New `editConfirmedSlot` / `removeSlot` in `lib/bookingDb.js` move or remove the Sprout HQ calendar entry too, then keep the event's date list in step. Tested on a throwaway event against the real calendar.
+- **Events list.** One Needs you box (date requests, requests with no dates, events with no Hosted by), two stats, Share hosting form button, Hosted by filter, waiting dates as dashed chips on the calendar.
+
 ## 2026-11-06: Survey thank-you email from Max's Gmail
 
 Merge `cd0fd35` (branch `survey-thanks-email`). Effort: medium.

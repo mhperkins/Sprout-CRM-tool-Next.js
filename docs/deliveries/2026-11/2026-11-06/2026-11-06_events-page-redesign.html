@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Events Page Redesign</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap">
+<style>
+:root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--fuchsia:#E10098;--cyan:#73C4D6;--banana:#FAD100;--g:#6d6c68}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Lato,system-ui,sans-serif;padding:40px max(16px,4vw)}
+.slide{max-width:1100px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+.top{background:var(--ink);color:#fff;padding:28px 34px;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-end}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--acid);font-weight:900}
+h1{margin:6px 0 0;font-size:34px;font-weight:900}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.b{font-size:12px;font-weight:900;padding:5px 11px;border-radius:999px;background:#fff;color:var(--ink);font-family:ui-monospace,Consolas,monospace}
+.b.f{background:var(--fuchsia);color:#fff}.b.a{background:var(--acid)}
+.rule{height:4px;background:var(--acid)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;padding:26px 34px}
+.card{border:1.5px solid #e4e4e1;border-radius:11px;padding:16px 18px;border-top:6px solid var(--c)}
+.card h3{margin:0 0 8px;font-size:15px;font-weight:900}
+.card p,.card li{font-size:13px;line-height:1.55;color:#3a3a38;margin:0}
+.card ul{margin:0;padding-left:18px}
+.foot{padding:0 34px 26px;font-size:12px;color:var(--g);display:flex;flex-wrap:wrap;gap:6px 18px}
+code{font-family:ui-monospace,Consolas,monospace;font-size:12px}
+</style></head><body>
+<div class="slide">
+  <div class="top">
+    <div><div class="eyebrow">Sprout CRM · Delivered 2026-11-06</div><h1>Events page redesign</h1></div>
+    <div class="badges"><span class="b a">main</span><span class="b">merge 5897011</span><span class="b">branch 7e5b1c6</span><span class="b f">Effort: high</span></div>
+  </div>
+  <div class="rule"></div>
+  <div class="grid">
+    <div class="card" style="--c:var(--cyan)"><h3>▾ Portal-style bars</h3><ul><li>Dates · Host &amp; details · Links &amp; files · People · Checklist · Program · Gallery · Outcomes</li><li>Shown by Hosted by + stage; one bar open per stage</li><li>Floorwork: 11 tiles → 4 bars</li></ul></div>
+    <div class="card" style="--c:var(--fuchsia)"><h3>✎ Edit in place</h3><ul><li>Name, status, Hosted by in the header</li><li>Date, times, repeat in Dates</li><li>Edit Event page deleted</li><li>Communications cut (data kept)</li></ul></div>
+    <div class="card" style="--c:var(--acid)"><h3>🗓 Date Edit / Delete</h3><ul><li>Hover a confirmed date; tap on a phone</li><li>Moves or removes the Sprout HQ calendar entry too</li><li>Tested on the real calendar, cleaned up</li></ul></div>
+    <div class="card" style="--c:var(--banana)"><h3>☑ Needs you</h3><ul><li>Date requests, requests with no dates, events with no Hosted by</li><li>Stats cut to Requests + Checklist overdue</li><li>Share hosting form · Hosted by filter · dashed waiting chips</li></ul></div>
+  </div>
+  <div class="foot"><span>Files: <code>components/CRMManager.jsx</code>, <code>components/BookingRequestsPanel.jsx</code>, <code>lib/bookingDb.js</code>, <code>lib/services.js</code>, <code>app/api/bookings/route.js</code></span><span>Next: Max clicks through (login wall)</span></div>
+</div>
+</body></html>
