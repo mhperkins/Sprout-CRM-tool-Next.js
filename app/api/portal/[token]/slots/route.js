@@ -8,7 +8,7 @@
 
 import { hasServiceKey, portalByToken, publicEvent } from "@/lib/portalDb";
 import { busyFor, slotsForEvent, publicSlot, checkSlots, insertRequested, cancelRequested } from "@/lib/bookingDb";
-import { notifySlotRequest } from "@/lib/notify";
+import { notifySlotRequest, notifySlotReceived } from "@/lib/notify";
 import { ISO, daysBetween } from "@/lib/booking";
 
 export const runtime = "nodejs";
@@ -74,6 +74,13 @@ export async function POST(req, { params }) {
         slots: created, note, origin: new URL(req.url).origin,
       });
     } catch (e) { console.error("portal slots — alert failed:", e?.message || e); }
+    try {
+      await notifySlotReceived({
+        to: portal.data?.contact_email, name: portal.data?.contact_name,
+        eventName: portal.data?.event_name, slots: created,
+        portalUrl: `${new URL(req.url).origin}/portal/${portal.token}`,
+      });
+    } catch (e) { console.error("portal slots — requester confirmation failed:", e?.message || e); }
 
     return Response.json({ created: created.map(publicSlot), rejected });
   } catch (e) {

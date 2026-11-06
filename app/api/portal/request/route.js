@@ -7,7 +7,7 @@
 import { validateEvent } from "@/lib/schemas";
 import { REQUEST_KEYS, ALL_FIELDS, isBlank, portalToEventPatch } from "@/lib/eventPortal";
 import { svc, hasServiceKey, newToken, newPortalId, newEventId } from "@/lib/portalDb";
-import { notifyBookingRequest } from "@/lib/notify";
+import { notifyBookingRequest, notifySlotReceived } from "@/lib/notify";
 import { checkSlots, insertRequested } from "@/lib/bookingDb";
 
 export const runtime = "nodejs";
@@ -174,6 +174,15 @@ export async function POST(req) {
     await notifyBookingRequest({ answers, eventId: valid.id, token, origin: new URL(req.url).origin, slots });
   } catch (e) {
     console.error("portal/request — notification email failed:", e?.message);
+  }
+  // And tell the requester we got it, with their private link.
+  try {
+    await notifySlotReceived({
+      to: email, name: answers.contact_name, eventName: answers.event_name,
+      slots, portalUrl: `${new URL(req.url).origin}/portal/${token}`, fromBook: true,
+    });
+  } catch (e) {
+    console.error("portal/request — requester confirmation failed:", e?.message);
   }
 
   return Response.json({ token, event_id: valid.id, dates: slots.length, rejected });
