@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Approve To Calendar</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap">
+<style>
+  :root { --ink:#030000; --paper:#F7F7F6; --acid:#C6C902; --fuchsia:#E10098; --cyan:#73C4D6; --banana:#FAD100; --g:#5f5f5c; --line:#dcdcd9; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:#e9e9e6; font-family:Lato, system-ui, sans-serif; color:var(--ink); display:flex; justify-content:center; padding:24px; }
+  .slide { width:1280px; max-width:100%; aspect-ratio:16/9; background:var(--paper); border-radius:14px; overflow:hidden; display:grid; grid-template-rows:auto auto 1fr auto; box-shadow:0 12px 40px rgba(0,0,0,.18); }
+  .top { background:var(--ink); color:#fff; padding:26px 40px 22px; display:flex; justify-content:space-between; align-items:flex-end; gap:20px; }
+  .eyebrow { font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--acid); font-weight:900; }
+  h1 { font-size:36px; font-weight:900; margin-top:6px; }
+  .sub { font-size:15px; color:#c2c2bf; margin-top:6px; max-width:740px; }
+  .badges { display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
+  .badge { font-size:12px; font-weight:900; border-radius:999px; padding:5px 12px; white-space:nowrap; }
+  .b-live { background:var(--acid); color:var(--ink); }
+  .b-hash { background:#1f1d1d; color:#fff; border:1px solid #444; font-family:ui-monospace, Consolas, monospace; font-weight:700; }
+  .rule { height:5px; background:var(--acid); }
+  .body { padding:26px 40px; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px; align-content:start; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:16px 18px; position:relative; overflow:hidden; }
+  .card::before { content:""; position:absolute; left:0; top:0; bottom:0; width:6px; background:var(--c, var(--cyan)); }
+  .card h3 { font-size:16px; font-weight:900; }
+  .card p { font-size:13.5px; line-height:1.55; color:var(--g); margin-top:6px; }
+  .wide { grid-column:span 3; }
+  .chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .chip { font-size:12px; border:1px solid var(--line); border-radius:999px; padding:4px 10px; background:#fff; }
+  .st { font-size:10.5px; font-weight:900; border-radius:999px; padding:1px 7px; margin-left:6px; }
+  .foot { padding:12px 40px 16px; display:flex; justify-content:space-between; font-size:12px; color:var(--g); border-top:1px solid var(--line); }
+  .foot b { color:var(--ink); }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Sprout CRM · Delivery · Nov 6, 2026</div>
+      <h1>Approve now puts it on Google Calendar</h1>
+      <div class="sub">The event page's old Approve button only changed the status. Every Approve button now writes to the Sprout HQ calendar.</div>
+    </div>
+    <div class="badges">
+      <span class="badge b-live">● Merged · deploying</span>
+      <span class="badge b-hash">main · 0914524</span>
+      <span class="badge b-hash">effort: medium</span>
+    </div>
+  </div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="card" style="--c:var(--fuchsia)">
+      <h3>All three buttons</h3>
+      <p>Event page banner, portal panel, and the Requests list row now do the same thing: approve and write to the calendar.</p>
+    </div>
+    <div class="card" style="--c:var(--cyan)">
+      <h3>Requests or not</h3>
+      <p>Waiting dates get approved (the host is emailed). An event with no requests gets its own date and times written.</p>
+    </div>
+    <div class="card" style="--c:var(--acid)">
+      <h3>No duplicates</h3>
+      <p>If the calendar already has something at that time, it's treated as this event: approved, no second entry, with a note to check.</p>
+    </div>
+    <div class="card wide" style="--c:var(--banana)">
+      <h3>Every date on the event page</h3>
+      <p>A waiting request used to show only its first date. The event page now lists them all with their status.</p>
+      <div class="chips">
+        <span class="chip">Thu, Nov 26 · 6pm to 10pm <span class="st" style="background:#fff8d6;color:#5c4a00">Waiting</span></span>
+        <span class="chip">Sat, Nov 28 · 6pm to 10pm <span class="st" style="background:#fff8d6;color:#5c4a00">Waiting</span></span>
+        <span class="chip">Mon, Nov 23 · 6:30pm to 9:30pm <span class="st" style="background:#E9E99A;color:#3a3d00">On calendar</span></span>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <span><b>Tested</b> against the real calendar on two throwaway events, then cleaned up.</span>
+    <span>branch approve-to-calendar → main · pushed</span>
+  </div>
+</div>
+</body>
+</html>

@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-11-06: Approve onto the calendar writes to Google Calendar; event page lists every date
+
+Merge `0914524` (branch `approve-to-calendar`). Effort: medium. Why: Max approved his test booking with the event page's Approve button, which only flipped the status, so nothing reached the Sprout HQ calendar; and the event page showed only the first of his two dates.
+
+- **All three Approve buttons** (event page banner, portal panel, Requests list row) now call `/api/bookings` with `approveEvent`. Waiting date requests are approved and written to the Program Calendar, and the host is emailed. An event with no requests gets its own date and times written instead.
+- **No duplicates:** if the calendar already has something at that time (staff often add their own events by hand), the event is approved and no second entry is added; the message says to check it.
+- **Repeating series and events with no time** are approved but not written; the message says so.
+- **Nothing reaches the calendar = not approved:** the event stays pending and the reason shows.
+- **Event page** lists every booking date with Waiting / On calendar / Declined, under the header.
+- Tested against the real calendar on two throwaway events (clear night, and a night already booked), then cleaned up.
+
+---
+
 ## 2026-11-04 to 11-06: Booking calendar (clients pick dates, staff approve)
 
 Merge `2c462c5` (branch `booking-calendar`, commits `0e25807`, `8e164d4`, `d85d824`, `fce823e`, `2b03e1e`) + migration `sprout_booking_slots`. Effort: high. Ran on Opus 5.5. Why: Floorwork and Queer Social collided on Tue 11/3. Floorwork's dates were only ever a pattern ("Sun to Wed"); the Program Calendar had a Tuesday FW series in October that was cancelled night by night, and no email ever listed their dates.
