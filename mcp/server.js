@@ -55,56 +55,82 @@ const isOverdue = (c) => {
 
 // ── Supabase query helpers ───────────────────────────────────────────────────
 
-async function getContacts() {
+// Supabase/PostgREST returns at most 1,000 rows per request. A plain .select()
+// silently truncates, which once hid ~2,800 contacts from every tool: updates
+// answered "No record found" for real ids, and the create-collision check missed
+// existing ids so an upsert could OVERWRITE a hidden record. Always page.
+const PAGE = 1000;
+async function selectAll(table, cols) {
+  const rows = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from(table)
+      .select(cols)
+      .order("id")
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(error.message);
+    rows.push(...(data ?? []));
+    if (!data || data.length < PAGE) return rows;
+  }
+}
+
+// Fetch one row by id straight from the table (never via a full list scan).
+async function selectById(table, cols, id) {
   const { data, error } = await supabase
-    .from("sprout_contacts")
-    .select(
-      "id,data,first_name,last_name,email,relationship_status,next_action_date,created_at"
-    );
+    .from(table)
+    .select(cols)
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw new Error(error.message);
-  return (data ?? []).map((row) => ({
-    ...row.data,
-    id: row.id,
-    first_name: row.first_name,
-    last_name: row.last_name,
-    email: row.email,
-    relationship_status: row.relationship_status,
-    next_action_date: row.next_action_date,
-    created_at: row.created_at,
-  }));
+  return data;
+}
+
+const CONTACT_COLS =
+  "id,data,first_name,last_name,email,relationship_status,next_action_date,created_at";
+const ORG_COLS =
+  "id,data,name,category,relationship_status,next_action_date,created_at";
+const EVENT_COLS = "id,data,name,event_date,status,created_at";
+
+const mapContact = (row) => ({
+  ...row.data,
+  id: row.id,
+  first_name: row.first_name,
+  last_name: row.last_name,
+  email: row.email,
+  relationship_status: row.relationship_status,
+  next_action_date: row.next_action_date,
+  created_at: row.created_at,
+});
+
+const mapOrg = (row) => ({
+  ...row.data,
+  id: row.id,
+  name: row.name,
+  category: row.category,
+  relationship_status: row.relationship_status,
+  next_action_date: row.next_action_date,
+  created_at: row.created_at,
+});
+
+const mapEvent = (row) => ({
+  ...row.data,
+  id: row.id,
+  name: row.name,
+  event_date: row.event_date,
+  status: row.status,
+  created_at: row.created_at,
+});
+
+async function getContacts() {
+  return (await selectAll("sprout_contacts", CONTACT_COLS)).map(mapContact);
 }
 
 async function getOrgs() {
-  const { data, error } = await supabase
-    .from("sprout_orgs")
-    .select(
-      "id,data,name,category,relationship_status,next_action_date,created_at"
-    );
-  if (error) throw new Error(error.message);
-  return (data ?? []).map((row) => ({
-    ...row.data,
-    id: row.id,
-    name: row.name,
-    category: row.category,
-    relationship_status: row.relationship_status,
-    next_action_date: row.next_action_date,
-    created_at: row.created_at,
-  }));
+  return (await selectAll("sprout_orgs", ORG_COLS)).map(mapOrg);
 }
 
 async function getEvents() {
-  const { data, error } = await supabase
-    .from("sprout_events")
-    .select("id,data,name,event_date,status,created_at");
-  if (error) throw new Error(error.message);
-  return (data ?? []).map((row) => ({
-    ...row.data,
-    id: row.id,
-    name: row.name,
-    event_date: row.event_date,
-    status: row.status,
-    created_at: row.created_at,
-  }));
+  return (await selectAll("sprout_events", EVENT_COLS)).map(mapEvent);
 }
 
 async function getProfile() {
@@ -123,8 +149,16 @@ async function getProfile() {
 // active dated next_actions[] entry, falling back to the flat field — exactly
 // as saveContacts does, honoring the next-action dual-field rule.
 
-const findContact = async (id) => (await getContacts()).find((c) => c.id === id);
-const findOrg = async (id) => (await getOrgs()).find((o) => o.id === id);
+const findContact = async (id) => {
+  if (!id) return undefined;
+  const row = await selectById("sprout_contacts", CONTACT_COLS, id);
+  return row ? mapContact(row) : undefined;
+};
+const findOrg = async (id) => {
+  if (!id) return undefined;
+  const row = await selectById("sprout_orgs", ORG_COLS, id);
+  return row ? mapOrg(row) : undefined;
+};
 
 // Stable-ish unique id for a next_actions[] entry (no crypto dependency).
 const newActionId = () =>
