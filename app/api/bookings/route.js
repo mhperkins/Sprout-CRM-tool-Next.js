@@ -4,7 +4,7 @@
 //         and each client gets one email listing what changed.
 
 import { requireStaff } from "@/lib/staffAuth";
-import { pendingRequests, decideSlots, approveEvent } from "@/lib/bookingDb";
+import { pendingRequests, decideSlots, approveEvent, editConfirmedSlot, removeSlot } from "@/lib/bookingDb";
 import { svc } from "@/lib/portalDb";
 import { notifySlotDecision } from "@/lib/notify";
 
@@ -37,6 +37,22 @@ export async function POST(req) {
     } catch (e) {
       console.error("bookings POST approveEvent:", e?.message || e);
       return Response.json({ error: `Couldn't approve that: ${e?.message || "unknown error"}` }, { status: 500 });
+    }
+  }
+
+  // { editSlot:{id,date,start,end} } and { removeSlot:id } = the event page's Edit / Delete on one date.
+  if (body?.editSlot && typeof body.editSlot.id === "string") {
+    try { return Response.json(await editConfirmedSlot(body.editSlot.id, body.editSlot)); }
+    catch (e) {
+      console.error("bookings POST editSlot:", e?.message || e);
+      return Response.json({ error: `Couldn't change that date: ${e?.message || "unknown error"}` }, { status: 500 });
+    }
+  }
+  if (typeof body?.removeSlot === "string") {
+    try { return Response.json(await removeSlot(body.removeSlot)); }
+    catch (e) {
+      console.error("bookings POST removeSlot:", e?.message || e);
+      return Response.json({ error: `Couldn't remove that date: ${e?.message || "unknown error"}` }, { status: 500 });
     }
   }
 

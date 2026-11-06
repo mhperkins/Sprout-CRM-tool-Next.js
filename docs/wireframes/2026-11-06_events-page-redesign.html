@@ -1,0 +1,336 @@
+<title>Events Page Redesign</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap">
+<style>
+/* Layout: review chrome (screen tabs + Lean/Full) over a grey-box app frame; notes column beside it, stacked on phones. */
+:root{
+  --bg:#f4f4f2; --panel:#ffffff; --box:#e6e6e3; --box2:#d6d6d2; --line:#c9c9c4;
+  --fg:#1c1b1a; --muted:#6d6c68; --ink:#030000;
+  --ok:#2f7d3a; --okbg:#e3f1e4; --warn:#9a6b00; --warnbg:#fbf0cf; --bad:#b0225e; --badbg:#fbe1ec;
+  --accent:#E10098; --cyan:#2a8ca0;
+  --f:"Lato",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141413; --panel:#1d1d1b; --box:#2a2a27; --box2:#363632; --line:#41413c;
+  --fg:#ecebe7; --muted:#a3a29c; --ink:#ffffff;
+  --ok:#7fcf88; --okbg:#1f3322; --warn:#e8c25a; --warnbg:#3a3015; --bad:#f07aae; --badbg:#3d1a29;
+  --accent:#ff4fb8; --cyan:#73C4D6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141413; --panel:#1d1d1b; --box:#2a2a27; --box2:#363632; --line:#41413c;
+  --fg:#ecebe7; --muted:#a3a29c; --ink:#ffffff;
+  --ok:#7fcf88; --okbg:#1f3322; --warn:#e8c25a; --warnbg:#3a3015; --bad:#f07aae; --badbg:#3d1a29;
+  --accent:#ff4fb8; --cyan:#73C4D6; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f);font-size:14px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 60px}
+h1{font-size:22px;font-weight:900;margin:0;text-wrap:balance}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;max-width:1240px;margin:0 auto 14px}
+.sub{color:var(--muted);font-size:13px;margin-top:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:none;color:var(--fg);font:inherit;font-weight:700;padding:7px 16px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;max-width:1240px;margin:0 auto 16px}
+.tabs a{text-decoration:none;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-weight:700;font-size:13px}
+.tabs a[aria-current="page"]{border-color:var(--ink);box-shadow:inset 0 -3px 0 var(--accent)}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;max-width:1240px;margin:0 auto}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)}}
+.notes{display:flex;flex-direction:column;gap:12px;min-width:0}
+.note{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.note h3{margin:0 0 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.note ul{margin:0;padding-left:18px}.note li{margin:3px 0}
+.note p{margin:0 0 6px}
+/* app frame */
+.frame{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0}
+.crumb{background:var(--box);padding:8px 14px;font-size:12px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap}
+.page{padding:18px;display:flex;flex-direction:column;gap:12px}
+.phone .page{padding:12px}
+.ph{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;justify-content:space-between}
+.ph-l{min-width:0;flex:1 1 280px;display:flex;flex-direction:column;gap:6px}
+.name{font-size:20px;font-weight:900;border-bottom:1px dashed var(--line);display:inline-block;padding-bottom:1px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:700;background:var(--box);color:var(--fg);white-space:nowrap}
+.chip.ok{background:var(--okbg);color:var(--ok)}.chip.warn{background:var(--warnbg);color:var(--warn)}.chip.bad{background:var(--badbg);color:var(--bad)}
+.chip.sel::after{content:"▾";font-size:10px;opacity:.7}
+.btn{font:inherit;font-weight:700;font-size:13px;border-radius:6px;padding:8px 14px;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--fg)}
+.btn.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.link{border:0;background:none;color:var(--cyan);padding:2px 0;text-decoration:underline}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,.seg button:focus-visible,summary:focus-visible,.tabs a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.banner{border-radius:8px;padding:10px 12px;background:var(--warnbg);color:var(--warn);font-size:13px}
+.strip{display:flex;flex-wrap:wrap;gap:6px}
+/* bars */
+.bars{display:flex;flex-direction:column;gap:8px}
+details.bar{border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+details.bar>summary{list-style:none;cursor:pointer;padding:11px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+details.bar>summary::-webkit-details-marker{display:none}
+details.bar>summary::before{content:"▸";color:var(--muted);transition:transform .15s}
+details.bar[open]>summary::before{transform:rotate(90deg)}
+@media (prefers-reduced-motion:reduce){details.bar>summary::before{transition:none}}
+.bt{font-weight:900;font-size:15px}
+.bs{color:var(--muted);font-size:13px;flex:1 1 160px;min-width:0}
+.bb{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.rows{display:flex;flex-direction:column;border:1px solid var(--box2);border-radius:6px;overflow:hidden}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 10px;border-top:1px solid var(--box2);font-size:13px}
+.row:first-child{border-top:0}
+.row .grow{flex:1 1 150px;min-width:0}
+.row.dim{opacity:.55}
+/* Hover actions on date rows (like the Contacts list). Phone: tap the row to show them. */
+.hov{cursor:default}
+.row-acts{display:flex;gap:6px;opacity:0;transition:opacity .12s}
+.hov:hover .row-acts,.hov:focus-within .row-acts{opacity:1}
+.hov:hover{background:var(--bg)}
+.phone .hov{cursor:pointer}
+.phone .row-acts{display:none}
+.phone .hov.tapped .row-acts{display:flex;opacity:1;flex-basis:100%;justify-content:flex-end}
+.phone .hov.tapped{background:var(--bg)}
+@media (prefers-reduced-motion:reduce){.row-acts{transition:none}}
+@media (hover:none){.row-acts{opacity:1}}
+.num{font-variant-numeric:tabular-nums}
+.kv{display:grid;grid-template-columns:minmax(110px,160px) minmax(0,1fr);gap:4px 12px;font-size:13px}
+.kv dt{color:var(--muted)}.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.fld{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);flex:1 1 130px;min-width:0}
+.fld span.in{background:var(--box);border-radius:5px;padding:7px 9px;color:var(--fg);font-size:13px;min-height:32px}
+.frow{display:flex;flex-wrap:wrap;gap:10px}
+.box{background:var(--box);border-radius:6px;padding:10px;font-size:13px;color:var(--muted)}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px}
+.thumbs div{aspect-ratio:1;background:var(--box2);border-radius:4px;max-width:100%}
+.addrow{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);padding:4px 2px}
+.ck{width:16px;height:16px;border:2px solid var(--line);border-radius:4px;flex:0 0 auto}
+.ck.on{background:var(--ok);border-color:var(--ok)}
+.done .grow{text-decoration:line-through;color:var(--muted)}
+.empty{font-size:13px;color:var(--muted);padding:8px 0}
+.danger{font-size:12px;color:var(--bad);text-align:right}
+/* list page */
+.lh{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.need{border:2px solid var(--ink);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.need h2{margin:0;font-size:15px;font-weight:900}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:1px solid var(--box2);border-radius:6px;overflow:hidden}
+.cal .dh{background:var(--box);font-size:11px;font-weight:700;text-align:center;padding:4px 0;color:var(--muted)}
+.cal .d{min-height:86px;border-top:1px solid var(--box2);border-left:1px solid var(--box2);padding:3px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.cal .d:nth-child(7n+1){border-left:0}
+.cal .d.out{background:var(--bg)}
+.cal .d.today{box-shadow:inset 0 0 0 2px var(--accent)}
+.dn{font-size:11px;color:var(--muted)}
+.ev{font-size:10.5px;line-height:1.25;background:var(--box2);border-radius:3px;padding:1px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev.wait{background:none;border:1px dashed var(--warn);color:var(--warn)}
+.ev.rent{background:var(--box)}
+.stats{display:flex;flex-wrap:wrap;gap:8px}
+.stat{background:var(--box);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--muted)}
+.stat b{display:block;font-size:20px;color:var(--fg);font-variant-numeric:tabular-nums}
+.phones{display:flex;flex-wrap:wrap;gap:18px;justify-content:center}
+.phone{width:390px;max-width:100%;border:8px solid var(--box2);border-radius:28px;overflow:hidden;background:var(--panel)}
+.phone .cal .d{min-height:56px}
+.phone .ev{font-size:9px}
+.tag{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:700;font-size:13px;max-width:calc(100% - 32px)}
+</style>
+
+<div class="top">
+  <div>
+    <h1>Events page redesign</h1>
+    <div class="sub">Wireframe, 2026-11-06. Grey boxes, real CRM data. Bars open and close; buttons show what they would do.</div>
+  </div>
+  <div class="seg" role="group" aria-label="Version">
+    <button id="v-lean" aria-pressed="true">Lean</button>
+    <button id="v-full" aria-pressed="false">Full</button>
+  </div>
+</div>
+<nav class="tabs" id="tabs" aria-label="Screens"></nav>
+<div class="wrap">
+  <main id="stage" style="min-width:0"></main>
+  <aside class="notes" id="notes"></aside>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const SCREENS=[
+ ["list","Events list"],["request","Request"],["sprout","Upcoming Sprout N Tell"],
+ ["rental","Upcoming rental"],["past","Past event"],["phone","390px"]];
+let full=false;let lastKey=null;
+/* Max's version picks per screen (2026-11-06). The Lean/Full switch still compares. */
+const DEF={list:true,request:false,sprout:true,rental:true,past:true,phone:true};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600)}
+function btn(label,cls,msg){return `<button class="btn ${cls||""}" data-msg="${esc(msg||label)}">${label}</button>`}
+function bar(title,summary,body,open){return `<details class="bar"${open?" open":""}><summary><span class="bt">${title}</span><span class="bs">${summary}</span></summary><div class="bb">${body}</div></details>`}
+function addRow(items){return `<div class="addrow">${items.map(i=>`<button class="btn link" data-msg="${esc(i[1])}">${i[0]}</button>`).join("")}</div>`}
+
+/* ---------- shared header ---------- */
+function header(o){
+  return `<div class="ph"><div class="ph-l">
+    <div class="tag">${o.kind}</div>
+    <span class="name" title="Click to rename">${esc(o.name)}</span>
+    <div class="meta">${o.chips.join("")}</div>
+    <div class="meta">${o.line}</div>
+  </div><div class="acts">${o.actions}</div></div>`}
+
+/* ---------- REQUEST: Shradha ---------- */
+function pageRequest(){
+  const h=header({kind:"Booking request",name:"Shradha Sardana art showcase (dates TBD)",
+    chips:[`<span class="chip warn sel">Request</span>`,`<span class="chip sel">Hosted by: not set</span>`],
+    line:`Host: Shradha Sardana, Billo Atelier · Requested 11/24 or 12/11 · both booked`,
+    actions:btn("+ Add a date","pri","Opens a date row in the Dates bar")+btn("Decline","","Would mark the request declined and email Shradha")});
+  const banner=`<div class="banner">Both requested dates are taken. Max told her on 11/5. Call 11/13 or 11/14 to pick new dates.</div>`;
+  const dates=bar("Dates", full?"2 requested · both unavailable · 0 on calendar":"2 requested, both unavailable",
+   `<div class="rows">
+     <div class="row"><span class="grow"><b>Tue 11/24</b> · 7:00 to 9:00 am <span class="chip warn">am? likely pm</span></span><span class="chip bad">Unavailable: Floorwork 6:30 to 9:30pm</span>${btn("Decline","sm","Would decline 11/24")}</div>
+     <div class="row"><span class="grow"><b>Fri 12/11</b> · 7:00 to 9:00 am</span><span class="chip bad">Unavailable: booked</span>${btn("Decline","sm","Would decline 12/11")}</div>
+   </div>
+   ${btn("+ Add a date","sm","Would open the month calendar with grey Unavailable blocks")}
+   <div class="frow"><label class="fld">Event date<span class="in">Not set (placeholder 11/24 removed)</span></label><label class="fld">Start<span class="in">—</span></label><label class="fld">End<span class="in">—</span></label><label class="fld">Repeats<span class="in">One time</span></label></div>`,true);
+  const host=bar("Host & details", full?"From her request form · 7 answers":"From her request form",
+   `<dl class="kv"><dt>Name</dt><dd>Shradha Sardana</dd><dt>Email</dt><dd>sardana.shradha@gmail.com</dd><dt>Organization</dt><dd>Shradha Sardana/Billo Atelier</dd><dt>Type of event</dt><dd>Performance / show</dd><dt>Expected attendance</dt><dd>25</dd><dt>Audience</dt><dd>Private / invite only</dd><dt>Ticketed or free</dt><dd>Free</dd><dt>About it</dt><dd>I would like to chat about a possible art showcase with an intimate crowd and some Indian classical performances in the space.</dd></dl>
+   <div class="box"><b>Our notes</b><br>Requested 11/24 or 12/11 (both booked, Max told her 11/5). Call 11/13 or 11/14 to pick new dates.</div>
+   <div class="acts">${btn("Copy portal link","sm","Copied /portal/joaD1UQxaiIWwk2jXbatUA")}${btn("Open portal ↗","sm","Would open her portal")}</div>`);
+  const links=bar("Links & files","Nothing yet",`<div class="empty">Nothing yet. Links and files Shradha adds in her portal show here.</div>${btn("+ Add link or file","sm","Would add a link or upload")}`);
+  const people=bar("People","1 · Shradha Sardana",`<div class="rows"><div class="row"><span class="grow">Shradha Sardana</span><span class="chip">Host</span></div></div>${btn("+ Add person","sm","Would search contacts")}`);
+  const extra=addRow([["+ Add a checklist","Would show once Hosted by is Sprout or Partner"],["+ Add program form","Turns on the Program bar"],["+ Add gallery form","Turns on the Gallery bar"]]);
+  return frame("Events › Shradha Sardana art showcase",h+banner+`<div class="bars">${dates+host+links+people}</div>`+extra+(full?`<div class="danger">Delete event</div>`:""));
+}
+
+/* ---------- UPCOMING SPROUT N TELL (Vol. 4 as of 8/20) ---------- */
+const CL=[["8/10","Confirm Musicians",1],["8/10","Confirm Artists",1],["8/12","Artists/Music Confirmed",1],["8/16","Flyers Posted",0],["8/19","Social Plan",1],["8/19","CHECK-IN system ready",0],["8/21","Time Survey for Pre-Show Zoom Talk",1],["8/21","FINAL Lineup and Artists",1],["8/21","Room Layout (Music, Art, Furniture)",1],["8/22","Equipment List",0],["8/23","Pre-Show Zoom",1],["8/23","QR Codes Made",0],["8/24","QR Codes for Signage made",0],["8/24","Refreshments Plan",0],["8/24","Run of Show / Soundcheck",0],["8/26","QR codes and screens",0],["8/26","All poster/signage printed",0],["8/27","QR Codes Printed",0],["8/27","Artist signage/bio",0],["8/27","Space Decorated",0],["8/27","Hanging (art install)",0],["8/28","GAMEDAY",0],["9/4","THANK YOU FOLLOW UP",0]];
+function pageSprout(){
+  const overdue=CL.filter(c=>!c[2]&&(c[0]==="8/16"||c[0]==="8/19")).length;
+  const done=CL.filter(c=>c[2]).length;
+  const h=header({kind:"Sprout event",name:"Sprout N Tell Vol. 4",
+    chips:[`<span class="chip ok sel">Upcoming</span>`,`<span class="chip sel">Hosted by: Sprout</span>`],
+    line:`Fri 8/28 · 6:00 to 10:00pm · 8 days out`,
+    actions:btn("Copy program form link","pri","Copied the /program link for the lineup")});
+  const strip=full?`<div class="strip"><span class="chip">8 days out</span><span class="chip bad">${overdue} overdue</span><span class="chip">${done} of ${CL.length} done</span><span class="chip">8 program entries</span></div>`:"";
+  const dates=bar("Dates","Fri 8/28 · 6:00 to 10:00pm",`<div class="frow"><label class="fld">Event date<span class="in">2026-08-28</span></label><label class="fld">Start<span class="in">6:00pm</span></label><label class="fld">End<span class="in">10:00pm</span></label><label class="fld">Repeats<span class="in">One time</span></label></div>`);
+  const host=bar("Host & details","Sprout runs it · no host portal",`<div class="box"><b>Our notes</b><br>Postponed from 2026-08-28; rescheduled to 2026-09-11.</div><div class="empty">No host portal. Sprout runs this night.</div>`);
+  const links=bar("Links & files", full?"3 links · 3 files":"3 links, 3 files",
+   `<div class="rows"><div class="row"><span class="grow">Sign-in</span><span class="chip">Link</span></div><div class="row"><span class="grow">Program Notes</span><span class="chip">Link</span></div><div class="row"><span class="grow">TV Slide Show</span><span class="chip">Link</span></div></div>
+    ${full?`<div class="thumbs"><div></div><div></div><div></div></div><div class="sub">Program notes graphic · Sign-in graphic · Flyer</div>`:`<div class="sub">3 files: program notes graphic, sign-in graphic, flyer</div>`}
+    <div class="acts">${btn("+ Add link","sm","Would add a link")}${btn("+ Upload","sm","Would upload to event-media")}${full?btn("Guest upload link","sm","Copied /media link for guests"):""}</div>`);
+  const people=bar("People","28 · 8 in the lineup",`<div class="rows">${["Shradha Sardana · Art","Brandon Wisecarver · Art","Maggie V. Miles · Art","Tim Falvey · Music","Sean Jeffers · Music","Pat Hopkins (mPATH) · Music","Greg Smith · Music","Gabby Morales"].map(n=>`<div class="row"><span class="grow">${n}</span>${full?`<span class="chip">RSVP</span>`:""}</div>`).join("")}<div class="row dim"><span class="grow">+20 more</span></div></div>${btn("+ Add person","sm","Would search contacts")}`);
+  const list=(full?CL:CL.filter(c=>!c[2]).slice(0,8)).map(c=>{const od=!c[2]&&(c[0]==="8/16"||c[0]==="8/19");return `<div class="row${c[2]?" done":""}"><span class="ck${c[2]?" on":""}"></span><span class="grow">${c[1]}</span><span class="num ${od?"chip bad":"sub"}">${c[0]}${od?" overdue":""}</span></div>`}).join("");
+  const check=bar("Checklist", `${done} of ${CL.length} done · <b style="color:var(--bad)">${overdue} overdue</b>`,
+   `<div class="rows">${list}</div>${full?"":`<div class="sub">Showing the next 8 open items. ${btn("Show all 23","link sm","Would expand the full list")}</div>`}
+    <div class="acts">${btn("+ Add item","sm","Would add an item")}${full?btn("Calendar view","sm","Would show the month calendar with drag-to-move"):""}</div>`,true);
+  const prog=bar("Program","8 sent their info",`<div class="rows">${["Tim Falvey of Big Iron Echoes","This Here Giraffe","Sean Jeffers","mPATH","Shradha Sardana","Brandon Wisecarver","Greg Smith","Maggie V. Miles"].map(n=>`<div class="row"><span class="ck" style="border-radius:50%;background:var(--box2);border:0;width:28px;height:28px"></span><span class="grow">${n}</span></div>`).join("")}</div><div class="acts">${btn("Copy form link","sm","Copied")}${btn("Copy all as text","sm","Copied 8 bios")}</div>`);
+  const extra=addRow([["+ Add gallery form","Turns on the Gallery bar"]]);
+  return frame("Events › Sprout N Tell Vol. 4",`<div class="banner" style="background:var(--box);color:var(--muted)">No upcoming Sprout N Tell is in the CRM yet. This is Vol. 4 as it stood on Thu 8/20, with its real checklist, lineup and people.</div>`+h+strip+`<div class="bars">${dates+host+links+people+check+prog}</div>`+extra+(full?`<div class="danger">Delete event</div>`:""));
+}
+
+/* ---------- RENTAL: Floorwork ---------- */
+const FW=[["Sun 11/1","3:00 to 5:00pm"],["Mon 11/2","6:30 to 9:30pm"],["Wed 11/4","6:30 to 9:30pm"],["Sun 11/8","3:00 to 5:00pm"],["Mon 11/9","6:30 to 9:30pm"],["Wed 11/11","6:30 to 9:30pm"],["Sun 11/15","3:00 to 5:00pm"],["Mon 11/16","6:30 to 9:30pm"],["Tue 11/17","6:30 to 9:30pm"],["Wed 11/18","6:30 to 9:30pm"],["Sun 11/22","3:00 to 5:00pm"],["Mon 11/23","6:30 to 9:30pm"],["Tue 11/24","6:30 to 9:30pm"]];
+function pageRental(){
+  const h=header({kind:"Rental",name:"Floorwork rehearsals",
+    chips:[`<span class="chip ok sel">Upcoming</span>`,`<span class="chip sel">Hosted by: Rental</span>`],
+    line:`Host: Mara Einson, Floorwork Arts Collective · 13 dates, 10 still ahead · next Sun 11/8, 3:00 to 5:00pm`,
+    actions:btn("Copy portal link for Mara","pri","Copied /portal/Mwm3wdlesaMT-LWPlgm6xQ")});
+  const past=FW.slice(0,3), ahead=FW.slice(3);
+  const rows=a=>a.map(d=>`<div class="row hov" tabindex="0"><span class="grow"><b>${d[0]}</b> · ${d[1]}</span><span class="chip ok">On calendar</span><span class="row-acts">${btn("Edit","sm",`Would open ${d[0]} to change its date or time`)}${btn("Delete","sm",`Would ask to confirm, then remove ${d[0]} from the event and the Sprout HQ calendar`)}</span></div>`).join("");
+  const dates=bar("Dates", full?"10 ahead · 3 past · 0 waiting":"10 ahead, 0 waiting",
+   `<div class="rows">${rows(ahead)}</div>
+    ${full?`<details><summary class="sub" style="cursor:pointer">3 past dates</summary><div class="rows" style="margin-top:6px">${past.map(d=>`<div class="row dim"><span class="grow"><b>${d[0]}</b> · ${d[1]}</span><span class="chip">Done</span></div>`).join("")}</div></details>`:`<div class="sub">3 past dates hidden</div>`}
+    <div class="acts">${btn("+ Add dates","sm","Would open the month calendar picker")}</div>
+    <div class="frow"><label class="fld">Repeats<span class="in">On specific dates</span></label></div>`,true);
+  const host=bar("Host & details","Mara Einson · portal not sent yet",
+   `<dl class="kv"><dt>Name</dt><dd>Mara Einson</dd><dt>Email</dt><dd>maeinson1@gmail.com</dd><dt>Phone</dt><dd>978-504-9237</dd><dt>Organization</dt><dd>Floorwork Arts Collective</dd><dt>Type of event</dt><dd>Rehearsal · Regular booking</dd><dt>Audience</dt><dd>Private / invite only</dd><dt>Expected attendance</dt><dd>Don't know yet</dd></dl>
+    <div class="box"><b>Our notes</b><br>Proposal (8/24): $20/day rehearsals; from Dec 2026, 2+ ticketed events/month, 30% ticket split to Sprout + all concessions.</div>
+    <div class="acts">${btn("Copy portal link","sm","Copied")}${btn("Open portal ↗","sm","Would open Mara's portal")}</div>`);
+  const links=bar("Links & files","Nothing yet",`<div class="empty">Nothing yet. Files Mara uploads in her portal show here.</div>${btn("+ Add link or file","sm","Would add")}`);
+  const people=bar("People","1 · Mara Einson",`<div class="rows"><div class="row"><span class="grow">Mara Einson</span><span class="chip">Host</span></div></div>${btn("+ Add person","sm","Would search contacts")}`);
+  const extra=addRow([["+ Add program form","Turns on the Program bar"],["+ Add gallery form","Turns on the Gallery bar"]]);
+  return frame("Events › Floorwork rehearsals",h+`<div class="bars">${dates+host+links+people}</div>`+extra+(full?`<div class="sub">Rental fee and payment move to Outcomes once dates are past.</div><div class="danger">Delete event</div>`:""));
+}
+
+/* ---------- PAST: Vol. 5 ---------- */
+function pagePast(){
+  const h=header({kind:"Sprout event · past",name:"Sprout n' Tell - Sprout Society x Buzzkill NYC",
+    chips:[`<span class="chip sel">Completed</span>`,`<span class="chip sel">Hosted by: Sprout</span>`],
+    line:`Fri 10/23 · 7:00 to 10:00pm · co-host Rachel Long, Buzzkill NYC`,
+    actions:btn("Copy numbers","pri","Copied: 50 came, 16 emails, 20 artists")});
+  const dates=bar("Dates","Fri 10/23 · 7:00 to 10:00pm",`<div class="frow"><label class="fld">Event date<span class="in">2026-10-23</span></label><label class="fld">Start<span class="in">7:00pm</span></label><label class="fld">End<span class="in">10:00pm</span></label></div>`);
+  const host=bar("Host & details","Rachel Long · Buzzkill NYC",`<dl class="kv"><dt>Name</dt><dd>Rachel Long</dd><dt>Email</dt><dd>rachel@buzzkillnyc.com</dd><dt>Organization</dt><dd>Buzzkill NYC · @buzzkillnyc</dd><dt>Type of event</dt><dd>Performance / show</dd><dt>Expected attendance</dt><dd>50</dd></dl><div class="box"><b>Our notes</b><br>LINEUP (confirmed 2026-10-20). Gallery artists (10)… Music (4)… Art drop-off Sun 10/18… <span class="btn link">Show all</span></div>`);
+  const links=bar("Links & files", "6 links · 67 files in 18 folders",
+   `<div class="rows">${["Gallery submissions (responses sheet)","Gallery hang plan (wall-by-wall layout)","TV Slide Show","Door sign-ins (Sign-ins tab, rows 67-83)"].map(l=>`<div class="row"><span class="grow">${l}</span><span class="chip">Link</span></div>`).join("")}<div class="row dim"><span class="grow">+2 more links</span></div></div>
+   ${full?`<div class="strip"><span class="chip">All 67</span><span class="chip">Hang plan</span><span class="chip">Tristan Baker</span><span class="chip">Pepper Auerbach</span><span class="chip">+15 folders</span></div><div class="thumbs">${"<div></div>".repeat(10)}</div>`:`<div class="sub">67 files in 18 folders</div>`}
+   <div class="acts">${btn("Open files","sm","Would open the media popup with folders")}${btn("Download all","sm","Would zip 67 files")}${full?btn("Guest upload link","sm","Copied /media/OjjNoYSwFmSv8OF7wfHjYg"):""}</div>`);
+  const people=bar("People","31",`<div class="rows">${["Andie Mechanic","Ari Andrle","Isabella Paris","Liara Neja","Pepper Auerbach","Sean Jeffers"].map(n=>`<div class="row"><span class="grow">${n}</span></div>`).join("")}<div class="row dim"><span class="grow">+25 more</span></div></div>`);
+  const check=bar("Checklist","No checklist",`<div class="empty">No checklist on this night.</div>`);
+  const prog=bar("Program","20 sent their info",`<div class="sub">Tristan Baker, Arina Andrle, Andie Mechanic, Liv Tyler, Pepper Auerbach, +15 more</div>`);
+  const out=bar("Outcomes","50 came · 16 emails · 20 artists",
+   `<div class="frow"><label class="fld">Headcount<span class="in num">50</span></label><label class="fld">First-timers<span class="in">—</span></label><label class="fld">Emails collected<span class="in num">16</span></label><label class="fld">Artists<span class="in num">20</span></label></div>
+    ${full?`<div class="frow"><label class="fld">Members who came<span class="in">—</span></label><label class="fld">Dues collected<span class="in">—</span></label><label class="fld">Quote<span class="in">—</span></label></div>`:""}
+    <label class="fld">Where the count came from<span class="in">Max estimate ~50 through the night; 16 emails from door sign-ins; ~23 door QR scans after tests. Program: 20 participants = 9 art, 4 music, 7 vendors</span></label>
+    ${full?`<label class="fld">Recap (for the newsletter)<span class="in">Empty. No event has a recap yet.</span></label>`:""}`,true);
+  const extra=addRow([["+ Add gallery form","Turns on the Gallery bar"]]);
+  return frame("Events › Sprout n' Tell x Buzzkill NYC",h+`<div class="bars">${dates+host+links+people+check+prog+out}</div>`+extra);
+}
+
+/* ---------- EVENTS LIST ---------- */
+const NOV={1:[["Floorwork 3p","rent"]],2:[["Floorwork 6:30p","rent"]],3:[["QS Sober Hang 7p",""]],4:[["Floorwork 6:30p","rent"]],6:[["12-Step 6:30p",""]],8:[["Sauna Hat 11a",""],["Floorwork 3p","rent"]],9:[["Floorwork 6:30p","rent"]],11:[["Floorwork 6:30p","rent"]],13:[["12-Step 6:30p",""],["QS Sober Hang 7p",""]],15:[["Floorwork 3p","rent"]],16:[["Floorwork 6:30p","rent"]],17:[["Floorwork 6:30p","rent"]],18:[["Floorwork 6:30p","rent"]],20:[["12-Step 6:30p",""]],22:[["Floorwork 3p","rent"]],23:[["Floorwork 6:30p","rent"]],24:[["Floorwork 6:30p","rent"],["Shradha (no date)","wait"]],26:[["sdf 6p · waiting","wait"]],27:[["12-Step 6:30p",""]],28:[["sdf 6p · waiting","wait"]]};
+function calendar(){
+  let h=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d=>`<div class="dh">${d}</div>`).join("");
+  for(let i=1;i<=35;i++){const day=i<=30?i:i-30;const out=i>30;const evs=out?[]:(NOV[day]||[]);
+    h+=`<div class="d${out?" out":""}${!out&&day===6?" today":""}"><span class="dn">${day}</span>${evs.slice(0,3).map(e=>`<span class="ev ${e[1]}">${e[0]}</span>`).join("")}</div>`}
+  return `<div class="cal">${h}</div>`}
+function listView(){
+  const L=[["Sun 11/8","Sauna Hat Workshop","Hosted by: not set"],["Sun 11/8","Floorwork rehearsals (date 4 of 13)","Rental"],["Fri 11/13","Queer Social - Sober Hangout","Hosted by: not set"],["Sat 12/5","CRAFTERNOON","Hosted by: not set"],["Sat 12/12","The Intention Circle: A Vision Board Party","Hosted by: not set"],["Sun 12/13","The Awestruck Collective (Working Title)","Hosted by: not set"],["Sat 1/16","The Humanhood: A Show By Andie Mechanic","Hosted by: not set"]];
+  return `<div class="rows">${L.map(r=>`<div class="row"><span class="num" style="width:74px">${r[0]}</span><span class="grow"><b>${r[1]}</b></span><span class="chip">${r[2]}</span></div>`).join("")}</div>`}
+function needsYou(compact){
+  const items=[
+   `<div class="row"><span class="grow"><b>sdf</b> (Max's test booking) · 2 dates waiting: Thu 11/26, Sat 11/28, 6:00 to 10:00pm</span><div class="acts">${btn("Approve onto the calendar","pri sm","Would approve both dates and write them to the Sprout HQ calendar")}${btn("Decline","sm","Would decline both dates")}</div></div>`,
+   `<div class="row"><span class="grow"><b>Shradha Sardana art showcase</b> · request, no open dates · call 11/13 or 11/14</span>${btn("Open","sm","Opens the Request screen")}</div>`];
+  if(full&&!compact)items.push(`<div class="row"><span class="grow"><b>6 upcoming events have no "Hosted by"</b> · Sauna Hat, Queer Social Sober Hangout, CRAFTERNOON, Intention Circle, Awestruck Collective, Humanhood. The page picks its bars from this.</span>${btn("Set them","sm","Would open a quick picker: Sprout / Partner / Rental")}</div>`);
+  return `<section class="need"><h2>Needs you (${items.length})</h2><div class="rows">${items.join("")}</div></section>`}
+let calMode="cal";
+function pageList(compact){
+  const head=`<div class="lh"><div><h1 style="font-size:20px">Events</h1></div><div class="acts">${btn("Share hosting form","","Copied sprout-crm-tool-next-js.vercel.app/book")}${btn("+ Add event","pri","Would open a new event page with every bar empty")}</div></div>`;
+  const stats=full&&!compact?`<div class="stats"><div class="stat"><b>2</b>Requests</div><div class="stat"><b>0</b>Checklist overdue</div></div>`:"";
+  const tools=`<div class="lh"><div class="acts"><button class="btn sm" disabled>‹</button><b>November 2026</b><button class="btn sm" data-msg="Would go to December">›</button></div><div class="seg" role="group" aria-label="View"><button data-cal="cal" aria-pressed="${calMode==="cal"}">Calendar</button><button data-cal="list" aria-pressed="${calMode==="list"}">List</button></div></div>`;
+  const filt=full&&!compact?`<div class="frow"><label class="fld">Search<span class="in">Name, host or org</span></label><label class="fld">Status<span class="in">All</span></label><label class="fld">Hosted by<span class="in">All</span></label></div>`:"";
+  return head+stats+needsYou(compact)+tools+filt+(calMode==="cal"?calendar():listView())+`<div class="sub">Dashed = waiting on you. Repeating events show on every date.</div>`;
+}
+
+/* ---------- frame + router ---------- */
+function frame(crumb,inner){return `<div class="frame"><div class="crumb">${esc(crumb)}</div><div class="page">${inner}</div></div>`}
+const NOTES={
+ list:["The 5 stat boxes, the separate Booking requests card and the pending list merge into one <b>Needs you</b> box at the top.","Calendar stays the main view; List is one click away.","The hosting-form link becomes a <b>Share hosting form</b> button.","Full adds: 2 stats (Requests, Checklist overdue), search and filters, and a Needs you row for events with no Hosted by (6 today)."],
+ request:["Real data: Shradha's request (evt_tbd). Her portal times read 7:00 to 9:00 <b>am</b>; she probably meant pm.","The Dates bar opens by default on a request.","The Approve button appears in the header once a date is free; today the primary action is <b>+ Add a date</b>.","The old pending banner, status strip and Edit Event page are gone: name and status are edited in the header, date and time in Dates."],
+ sprout:["No upcoming Sprout N Tell exists, so this is Vol. 4 as it stood on 8/20, with its real 23-item checklist and 8 program entries.","The Checklist bar opens by default on an upcoming Sprout or Partner event.","Program shows because it was used. Gallery was not, so it is a one-line <b>+ Add gallery form</b> link.","Full adds a status strip, the whole checklist, a calendar view, thumbnails and the guest upload link."],
+ rental:["Real data: Floorwork, 13 confirmed dates. Today's page shows it 11 tiles; this is 4 bars.","The Dates bar opens by default on a rental, since dates are what change.","Hover over a date to show <b>Edit</b> and <b>Delete</b>, like the Contacts list. Delete asks first, then also removes it from the Sprout HQ calendar.","No Checklist bar: rentals don't get one (Sprout and Partner do).","Primary action: copy Mara's portal link (not sent yet)."],
+ past:["Real data: Vol. 5 x Buzzkill. Outcomes opens by default on a past event.","Primary action: <b>Copy numbers</b> for grants.","Links, Media and Guest media are one <b>Links & files</b> bar.","Full adds the members, dues and quote boxes, and the recap box (no event has a recap yet)."],
+ phone:["Phones have no hover: <b>tap a date</b> to show Edit and Delete under it, tap again to hide them. Try it on the Floorwork dates.","Every bar stacks to full width. Header actions wrap under the name.","The calendar shrinks; event names truncate with an ellipsis.","No sideways scroll at 390px."]
+};
+const CALLS=`<div class="note"><h3>Your calls so far</h3><ul>
+<li>Bars match the client portal, in its order.</li><li>Communications is cut; its data stays.</li>
+<li>Program and Gallery: hidden until used (a one-line + link on every event).</li>
+<li>One bar opens per stage: Dates on a request or rental, Checklist on an upcoming Sprout or Partner event, Outcomes on a past event.</li>
+<li>Edit Event folds into the bars.</li><li>Checklist on Sprout and Partner events, not rentals.</li>
+<li>Versions: Events list full, Request lean, Upcoming full, Past full, Phone full.</li>
+<li>Upcoming dates show Edit and Delete on hover; on a phone, tap the date.</li></ul></div>`;
+const CUT=`<div class="note"><h3>Cut from today's page</h3><ul><li>Communications tile, popup and "awaiting reply" count</li><li>Status strip (lean) and the pending banner</li><li>The 11-tile grid and per-tile popups</li><li>Separate Edit Event page and its tabs</li><li>3 of 5 stat boxes on the list</li></ul></div>`;
+const ASK=`<div class="note"><h3>Settled</h3><ul><li>Partner nights (Queer Social, Bar Nun) look like a rental, plus a Checklist bar.</li><li>The "no Hosted by" row stays in Needs you.</li></ul></div>`;
+
+function render(){
+  const id=(location.hash||"#list").slice(1);const key=SCREENS.some(s=>s[0]===id)?id:"list";
+  if(key!==lastKey){lastKey=key;full=DEF[key];$("#v-lean").setAttribute("aria-pressed",!full);$("#v-full").setAttribute("aria-pressed",full)}
+  $("#tabs").innerHTML=SCREENS.map(s=>`<a href="#${s[0]}"${s[0]===key?' aria-current="page"':""}>${s[1]}</a>`).join("");
+  let html;
+  if(key==="list")html=frame("Events",pageList());
+  else if(key==="request")html=pageRequest();
+  else if(key==="sprout")html=pageSprout();
+  else if(key==="rental")html=pageRental();
+  else if(key==="past")html=pagePast();
+  else html=`<div class="phones"><div class="phone">${pageRental()}</div><div class="phone">${frame("Events",pageList(true))}</div></div>`;
+  $("#stage").innerHTML=html;
+  $("#notes").innerHTML=`<div class="note"><h3>${full?"Full":"Lean"} · ${SCREENS.find(s=>s[0]===key)[1]}</h3><ul>${NOTES[key].map(n=>`<li>${n}</li>`).join("")}</ul></div>`+CALLS+CUT+ASK;
+}
+document.addEventListener("click",e=>{
+  const c=e.target.closest("[data-cal]");if(c){calMode=c.dataset.cal;render();return}
+  const r=e.target.closest(".phone .hov");if(r&&!e.target.closest("button")){r.classList.toggle("tapped");return}
+  const b=e.target.closest("[data-msg]");if(b){toast("Wireframe: "+b.dataset.msg)}
+});
+function setV(f){full=f;$("#v-lean").setAttribute("aria-pressed",!f);$("#v-full").setAttribute("aria-pressed",f);render()}
+$("#v-lean").onclick=()=>setV(false);$("#v-full").onclick=()=>setV(true);
+window.addEventListener("hashchange",render);render();
+</script>
