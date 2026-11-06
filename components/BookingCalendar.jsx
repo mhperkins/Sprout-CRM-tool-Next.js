@@ -1,11 +1,13 @@
 "use client";
 
 /**
- * BookingCalendar.jsx — the date calendar for /book and the portal's Dates section.
+ * BookingCalendar.jsx — the date calendar for /book and the portal's "Your dates" section.
  *
  *   <DatesSection token>    portal: the client's own dates + everyone else's as
- *                           "Unavailable", and a popup to ask for more.
- *   <BookDatesPicker>       /book: the same popup, picking dates before the request exists.
+ *                           "Unavailable". Clicking a day or "Ask for dates" opens the picker.
+ *   <BookDatesPicker>       /book: the same picker, before the request exists.
+ *   <PickDatesModal>        the picker: a month calendar where you click days on and off,
+ *                           one time range for every picked day, and per-day edits.
  *
  * Busy times arrive as { date, start, end } in minutes, with no titles. The server
  * re-checks every date, so the checks here are only there to help people pick.
@@ -14,37 +16,38 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   addDays, weekday, todayNY, earliestDate, latestDate, monthTitle, shortDate, longDate,
-  clock, timeRange, toMin, endMin, clashesFor, expandRepeat, slotProblem, WEEKDAYS, MAX_SLOTS,
+  clock, timeRange, toMin, endMin, clashesFor, slotProblem, WEEKDAYS, MAX_SLOTS, NOTICE_DAYS,
 } from "../lib/booking";
 
 export const BK_CSS = `
   .bk-legend { display:flex; flex-wrap:wrap; gap:14px; font-size:12.5px; color:var(--g600); margin:12px 0; }
   .bk-sw { display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-2px; margin-right:6px; }
   .bk-sw.mine { background:var(--ink); } .bk-sw.req { border:1.5px dashed var(--ink); background:#fff; } .bk-sw.busy { background:var(--g200); }
+  .bk-sw.pick { background:#fff; box-shadow:inset 0 0 0 2px var(--fuchsia); }
   .bk-nav { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
   .bk-mt { font-size:18px; font-weight:900; min-width:150px; }
   .bk-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); border-top:1px solid var(--g200); border-left:1px solid var(--g200); }
   .bk-dow { font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--g500); padding:6px; border-right:1px solid var(--g200); border-bottom:1px solid var(--g200); background:var(--paper); }
-  .bk-day { min-height:86px; padding:5px; border-right:1px solid var(--g200); border-bottom:1px solid var(--g200); display:flex; flex-direction:column; gap:3px; background:#fff; cursor:pointer; text-align:left; font-family:inherit; border-top:none; border-left:none; min-width:0; }
+  .bk-day { min-height:86px; padding:5px; border-right:1px solid var(--g200); border-bottom:1px solid var(--g200); display:flex; flex-direction:column; gap:3px; background:#fff; cursor:pointer; text-align:left; font-family:inherit; color:var(--ink); border-top:none; border-left:none; min-width:0; position:relative; }
   .bk-day:hover { background:#fbfbfa; } .bk-day:focus-visible { outline:2px solid var(--cyan); outline-offset:-2px; }
-  .bk-day.out { background:var(--paper); cursor:default; } .bk-day.past { opacity:.5; }
-  .bk-day.sel { box-shadow:inset 0 0 0 2px var(--ink); }
+  .bk-day.out { background:var(--paper); cursor:default; } .bk-day.past, .bk-day.off { opacity:.45; cursor:default; }
+  .bk-day.picked { box-shadow:inset 0 0 0 2.5px var(--fuchsia); background:#fff5fb; }
+  .bk-day.picked .bk-dn::after { content:" ✓"; color:var(--fuchsia); font-weight:900; }
   .bk-dn { font-size:12px; color:var(--g500); font-variant-numeric:tabular-nums; }
   .bk-dn.today { color:var(--fuchsia); font-weight:900; }
   .bk-blk { font-size:10.5px; line-height:1.25; border-radius:3px; padding:2px 4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-variant-numeric:tabular-nums; }
   .bk-blk.mine { background:var(--ink); color:#fff; } .bk-blk.req { border:1.5px dashed var(--ink); background:#fff; } .bk-blk.busy { background:var(--g200); color:var(--g600); }
   .bk-more { font-size:10.5px; color:var(--g500); }
   .bk-agenda { display:none; flex-direction:column; border-top:1px solid var(--g200); }
-  .bk-arow { display:grid; grid-template-columns:54px minmax(0,1fr); gap:10px; padding:9px 4px; border-bottom:1px solid var(--g200); background:none; border-left:none; border-right:none; border-top:none; text-align:left; font-family:inherit; cursor:pointer; }
+  .bk-arow { display:grid; grid-template-columns:54px minmax(0,1fr); gap:10px; padding:9px 4px; border-bottom:1px solid var(--g200); background:#fff; border-left:none; border-right:none; border-top:none; text-align:left; font-family:inherit; color:var(--ink); cursor:pointer; }
+  .bk-arow.picked { box-shadow:inset 3px 0 0 var(--fuchsia); background:#fff5fb; }
+  .bk-arow.off { opacity:.45; cursor:default; }
   .bk-arow .d { font-size:11.5px; color:var(--g500); } .bk-arow .d b { display:block; font-size:17px; color:var(--ink); }
+  .bk-arow.picked .d b::after { content:" ✓"; color:var(--fuchsia); }
   .bk-arow .bl { display:flex; flex-direction:column; gap:3px; min-width:0; }
   .bk-arow .bk-blk { font-size:12.5px; padding:5px 7px; white-space:normal; }
   .bk-open { font-size:12.5px; color:var(--g500); padding:5px 0; }
   @media (max-width:600px) { .bk-grid { display:none; } .bk-agenda { display:flex; } }
-  .bk-panel { border:1px solid var(--g200); border-radius:8px; padding:14px; margin-top:14px; background:#fff; }
-  .bk-ph { font-size:15px; font-weight:900; margin-bottom:10px; }
-  .bk-slot { display:flex; justify-content:space-between; gap:10px; font-size:13.5px; padding:8px 10px; border-radius:6px; margin-bottom:6px; align-items:center; }
-  .bk-slot.mine { background:var(--ink); color:#fff; } .bk-slot.req { border:1.5px dashed var(--ink); } .bk-slot.busy { background:var(--g100); color:var(--g600); }
   .bk-list { display:flex; flex-direction:column; }
   .bk-lrow { display:flex; gap:10px; align-items:center; flex-wrap:wrap; font-size:14px; padding:9px 0; border-bottom:1px solid var(--g100); font-variant-numeric:tabular-nums; }
   .bk-lrow .when { flex:1 1 200px; min-width:0; }
@@ -52,17 +55,23 @@ export const BK_CSS = `
   .bk-tag.ok { color:#4f6b00; } .bk-tag.wait { color:var(--g600); } .bk-tag.no { color:var(--fuchsia); }
   .bk-modal-bg { position:fixed; inset:0; background:rgba(3,0,0,.45); z-index:100; display:flex; align-items:flex-start; justify-content:center; overflow:auto;
     padding:max(24px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) 24px max(12px, env(safe-area-inset-left, 0px)); }
-  .bk-modal { background:#fff; border-radius:12px; width:100%; max-width:780px; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,.25); }
-  .bk-mgrid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; }
-  @media (max-width:680px) { .bk-mgrid { grid-template-columns:minmax(0,1fr); } .bk-modal { padding:16px; } }
-  .bk-gen { border:1px solid var(--g200); border-radius:8px; max-height:300px; overflow:auto; padding:6px 10px; }
-  .bk-gen label, .bk-gen div.row { display:flex; gap:10px; align-items:center; font-size:13.5px; padding:6px 0; border-bottom:1px solid var(--g100); font-variant-numeric:tabular-nums; }
-  .bk-gen input { width:17px; height:17px; accent-color:var(--ink); }
-  .bk-gen .taken { color:var(--fuchsia); }
+  .bk-modal { background:#fff; border-radius:12px; width:100%; max-width:1040px; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,.25); color:var(--ink); }
+  .bk-mgrid { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); gap:22px; align-items:start; }
+  @media (max-width:820px) { .bk-mgrid { grid-template-columns:minmax(0,1fr); } .bk-modal { padding:16px; } }
+  .bk-side { border:1px solid var(--g200); border-radius:10px; padding:14px; display:flex; flex-direction:column; gap:12px; background:var(--paper); }
+  .bk-times { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .bk-times input { width:auto; flex:1 1 120px; }
+  .bk-picks { display:flex; flex-direction:column; gap:6px; max-height:340px; overflow:auto; }
+  .bk-pick { background:#fff; border:1px solid var(--g200); border-radius:8px; padding:8px 10px; font-size:13.5px; display:flex; flex-direction:column; gap:6px; font-variant-numeric:tabular-nums; }
+  .bk-pick.bad { border-color:var(--fuchsia); }
+  .bk-pick-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .bk-pick-row .when { flex:1 1 150px; min-width:0; font-weight:700; }
+  .bk-pick .why { font-size:12px; color:var(--fuchsia); }
+  .bk-pick .taken { font-size:12px; color:var(--g500); }
+  .bk-summary { display:flex; gap:10px; align-items:center; flex-wrap:wrap; border:1.5px solid var(--g200); border-radius:8px; padding:10px 12px; font-size:14px; }
   .bk-radio { display:flex; flex-direction:column; gap:6px; font-size:14.5px; }
   .bk-radio label { display:flex; gap:8px; align-items:center; cursor:pointer; }
   .bk-radio input { accent-color:var(--ink); width:17px; height:17px; }
-  .bk-summary { display:flex; gap:10px; align-items:center; flex-wrap:wrap; border:1.5px solid var(--g200); border-radius:8px; padding:10px 12px; font-size:14px; }
 `;
 
 const ym = (iso) => iso.slice(0, 7);
@@ -70,24 +79,22 @@ const monthStart = (m) => `${m}-01`;
 const monthEnd = (m) => addDays(`${ym(addDays(`${m}-28`, 7))}-01`, -1);
 const shiftMonth = (m, n) => { const [y, mo] = m.split("-").map(Number); const d = new Date(Date.UTC(y, mo - 1 + n, 1)); return d.toISOString().slice(0, 7); };
 const byTime = (a, b) => a.start - b.start;
+const bookable = (d) => d >= earliestDate() && d <= latestDate();
 
-/** Everything on one day, merged and sorted, for the cell, the agenda and the panel. */
+/** Everything on one day, merged and sorted, for the cell, the agenda and the picker. */
 function dayItems(date, busy, mine) {
   const own = (mine || []).filter((s) => s.date === date && (s.status === "confirmed" || s.status === "requested"))
     .map((s) => ({ kind: s.status === "confirmed" ? "mine" : "req", start: toMin(s.start_time), end: endMin(s.end_time), slot: s }));
   const other = (busy || []).filter((b) => b.date === date).map((b) => ({ kind: "busy", start: b.start, end: b.end }));
   return [...own, ...other].sort(byTime);
 }
-const itemText = (it, short) => {
-  const t = `${clock(it.start)}${short ? "–" : " to "}${clock(it.end)}`;
-  if (it.kind === "busy") return short ? t : `${t}`;
-  return t;
-};
+const itemText = (it, short) => `${clock(it.start)}${short ? "–" : " to "}${clock(it.end)}`;
 const itemLabel = (it) => (it.kind === "busy" ? "Unavailable" : it.kind === "mine" ? "Yours, confirmed" : "Yours, waiting for Sprout");
 
-function Legend({ withMine }) {
+function Legend({ withMine, withPicked }) {
   return (
     <div className="bk-legend">
+      {withPicked && <span><i className="bk-sw pick" />Picked</span>}
       {withMine && <span><i className="bk-sw mine" />Yours, confirmed</span>}
       {withMine && <span><i className="bk-sw req" />Yours, waiting for Sprout</span>}
       <span><i className="bk-sw busy" />Unavailable</span>
@@ -96,8 +103,11 @@ function Legend({ withMine }) {
   );
 }
 
-/** Month grid (agenda list on phones). */
-export function MonthView({ month, setMonth, busy, mine, selected, onSelect, loading, withMine }) {
+/**
+ * Month grid (agenda list on phones).
+ * picked: Set of dates to outline. pickMode: days outside the booking window can't be clicked.
+ */
+export function MonthView({ month, setMonth, busy, mine, picked, onDay, loading, withMine, pickMode = false }) {
   const today = todayNY();
   const first = monthStart(month);
   const gridStart = addDays(first, -weekday(first));
@@ -107,6 +117,7 @@ export function MonthView({ month, setMonth, busy, mine, selected, onSelect, loa
   const inMonth = cells.filter((d) => ym(d) === month);
   const canBack = month > ym(today);
   const canFwd = month < ym(latestDate(today));
+  const isOff = (d) => (pickMode ? !bookable(d) : false);
 
   return (
     <div>
@@ -116,15 +127,19 @@ export function MonthView({ month, setMonth, busy, mine, selected, onSelect, loa
         <button type="button" className="pt-btn pt-btn-2 pt-btn-sm" disabled={!canFwd} onClick={() => setMonth(shiftMonth(month, 1))} aria-label="Next month">›</button>
         {loading && <span className="pt-help" style={{ margin: 0 }}>Loading…</span>}
       </div>
-      <Legend withMine={withMine} />
+      <Legend withMine={withMine} withPicked={pickMode} />
       <div className="bk-grid" role="grid" aria-label={monthTitle(month)}>
         {WEEKDAYS.map((w) => <div key={w} className="bk-dow">{w}</div>)}
         {cells.map((d) => {
           if (ym(d) !== month) return <div key={d} className="bk-day out" />;
           const items = dayItems(d, busy, mine);
+          const on = picked?.has(d);
+          const off = isOff(d);
           return (
-            <button type="button" key={d} className={`bk-day${d < today ? " past" : ""}${selected === d ? " sel" : ""}`}
-              onClick={() => onSelect(d)} aria-label={`${longDate(d)}${items.length ? `, ${items.length} booked` : ", open"}`}>
+            <button type="button" key={d} disabled={off}
+              className={`bk-day${d < today ? " past" : ""}${off ? " off" : ""}${on ? " picked" : ""}`}
+              aria-pressed={pickMode ? !!on : undefined}
+              onClick={() => onDay(d)} aria-label={`${longDate(d)}${items.length ? `, ${items.length} booked` : ", open"}${on ? ", picked" : ""}`}>
               <span className={`bk-dn${d === today ? " today" : ""}`}>{Number(d.slice(8))}</span>
               {items.slice(0, 3).map((it, i) => (
                 <span key={i} className={`bk-blk ${it.kind}`}>{itemText(it, true)}</span>
@@ -137,8 +152,10 @@ export function MonthView({ month, setMonth, busy, mine, selected, onSelect, loa
       <div className="bk-agenda">
         {inMonth.filter((d) => d >= today || ym(today) !== month).map((d) => {
           const items = dayItems(d, busy, mine);
+          const on = picked?.has(d);
+          const off = isOff(d);
           return (
-            <button type="button" key={d} className="bk-arow" onClick={() => onSelect(d)}>
+            <button type="button" key={d} disabled={off} className={`bk-arow${on ? " picked" : ""}${off ? " off" : ""}`} onClick={() => onDay(d)}>
               <div className="d">{WEEKDAYS[weekday(d)]}<b>{Number(d.slice(8))}</b></div>
               <div className="bl">
                 {items.length ? items.map((it, i) => (
@@ -153,151 +170,141 @@ export function MonthView({ month, setMonth, busy, mine, selected, onSelect, loa
   );
 }
 
-/** What's on one day, with open gaps between 9am and midnight. */
-function DayPanel({ date, busy, mine, onRequest, onCancel, busyId }) {
-  const items = dayItems(date, busy, mine);
-  const rows = [];
-  let cursor = 9 * 60;
-  for (const it of items) {
-    if (it.end <= cursor) { rows.push(it); continue; }
-    if (it.start > cursor) rows.push({ kind: "open", start: cursor, end: it.start });
-    rows.push(it);
-    cursor = Math.max(cursor, it.end);
-  }
-  if (cursor < 24 * 60) rows.push({ kind: "open", start: cursor, end: 24 * 60 });
-  const bookable = date >= earliestDate() && date <= latestDate();
-  return (
-    <div className="bk-panel" id="bk-daypanel">
-      <div className="bk-ph">{longDate(date)}</div>
-      {rows.map((r, i) => r.kind === "open" ? (
-        <div key={i} className="bk-slot" style={{ border: "1px solid var(--g200)" }}><span>{timeRange(r.start, r.end)}</span><span>Open</span></div>
-      ) : (
-        <div key={i} className={`bk-slot ${r.kind}`}>
-          <span>{timeRange(r.start, r.end)}</span>
-          <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            {itemLabel(r)}
-            {r.kind === "req" && onCancel && (
-              <button type="button" className="pt-btn-lnk" disabled={busyId === r.slot.id} onClick={() => onCancel(r.slot)}>Withdraw</button>
-            )}
-          </span>
-        </div>
-      ))}
-      {bookable
-        ? <button type="button" className="pt-btn pt-btn-sm" style={{ marginTop: 6 }} onClick={() => onRequest(date)}>Ask for this date</button>
-        : <p className="pt-help">{date < earliestDate() ? "Dates need at least 3 days' notice." : "We book up to about three months ahead."}</p>}
-    </div>
-  );
-}
-
 /**
- * The popup for picking dates. `loadBusy(from,to)` returns busy blocks; `mine` are
- * the client's own slots so they can't ask twice. `onDone(slots, note)` gets the checked dates.
+ * The picker. Click days on and off; one time range applies to every picked day,
+ * and any day can get its own times. Dates that clash are shown and left out.
+ *   loadBusy(from,to) -> busy blocks   mine -> the client's own slots
+ *   onDone(slots, note, state)         state lets /book reopen the picker as it was
  */
 export function PickDatesModal({ initialDate, loadBusy, mine = [], onClose, onDone, doneLabel = "Use these dates", sending = false, error = "", initial }) {
-  const start0 = initialDate && initialDate >= earliestDate() ? initialDate : earliestDate();
-  const [first, setFirst] = useState(initial?.first || start0);
+  const startMonth = ym(initial?.picks?.[0]?.date || (initialDate && bookable(initialDate) ? initialDate : earliestDate()));
+  const [month, setMonth] = useState(startMonth);
   const [start, setStart] = useState(initial?.start || "18:00");
   const [end, setEnd] = useState(initial?.end || "22:00");
-  const [repeat, setRepeat] = useState(initial?.repeat ?? false);
-  const [days, setDays] = useState(initial?.days || [weekday(start0)]);
-  const [until, setUntil] = useState(initial?.until || addDays(start0, 27));
   const [note, setNote] = useState(initial?.note || "");
-  const [busy, setBusy] = useState([]);
+  // date -> { start, end } when that day has its own times; null = uses the shared range
+  const [picks, setPicks] = useState(() => {
+    if (initial?.picks) return Object.fromEntries(initial.picks.map((p) => [p.date, p.custom ? { start: p.start, end: p.end } : null]));
+    return initialDate && bookable(initialDate) ? { [initialDate]: null } : {};
+  });
+  const [editing, setEditing] = useState("");
+  const [busyByMonth, setBusyByMonth] = useState({});
+  const [loading, setLoading] = useState(false);
   const [loadErr, setLoadErr] = useState("");
-  const [unchecked, setUnchecked] = useState({});
+  const [msg, setMsg] = useState("");
 
-  const list = useMemo(() => expandRepeat({ first, until, weekdays: repeat ? days : null, start, end }), [first, until, repeat, days, start, end]);
-  const lastDate = list.length ? list[list.length - 1].date : first;
-
+  // Load busy times for the shown month, plus any month that holds a picked day.
+  const months = useMemo(() => [...new Set([month, ...Object.keys(picks).map(ym)])], [month, picks]);
   useEffect(() => {
     let alive = true;
-    if (!first) return;
-    setLoadErr("");
-    loadBusy(first, lastDate > first ? lastDate : first).then((b) => { if (alive) setBusy(b); }).catch((e) => { if (alive) setLoadErr(e.message); });
+    const need = months.filter((m) => !busyByMonth[m]);
+    if (!need.length) return;
+    setLoading(true); setLoadErr("");
+    Promise.all(need.map((m) => loadBusy(monthStart(m), monthEnd(m)).then((b) => [m, b])))
+      .then((rows) => { if (alive) setBusyByMonth((prev) => ({ ...prev, ...Object.fromEntries(rows) })); })
+      .catch((e) => { if (alive) setLoadErr(e.message); })
+      .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
-  }, [first, lastDate, loadBusy]);
+  }, [months, busyByMonth, loadBusy]);
 
-  useEffect(() => { if (!repeat) return; if (!days.length) setDays([weekday(first)]); }, [repeat]); // eslint-disable-line
-
+  const busy = useMemo(() => Object.values(busyByMonth).flat(), [busyByMonth]);
   const ownBlocks = mine.filter((s) => s.status === "requested" || s.status === "confirmed")
     .map((s) => ({ date: s.date, start: toMin(s.start_time), end: endMin(s.end_time) }));
-  const rows = list.map((s) => {
+
+  const toggle = (d) => {
+    setMsg("");
+    if (!bookable(d)) { setMsg(d < earliestDate() ? `Dates need at least ${NOTICE_DAYS} days' notice.` : "We book up to about three months ahead."); return; }
+    setPicks((p) => {
+      if (d in p) { const { [d]: _gone, ...rest } = p; return rest; }
+      if (Object.keys(p).length >= MAX_SLOTS) { setMsg(`Up to ${MAX_SLOTS} dates at a time.`); return p; }
+      return { ...p, [d]: null };
+    });
+  };
+  const setDayTimes = (d, patch) => setPicks((p) => ({ ...p, [d]: { start: p[d]?.start || start, end: p[d]?.end || end, ...patch } }));
+  const resetDay = (d) => { setPicks((p) => ({ ...p, [d]: null })); setEditing(""); };
+
+  const rows = Object.keys(picks).sort().map((date) => {
+    const t = picks[date];
+    const s = { date, start: t?.start || start, end: t?.end || end };
     const shape = slotProblem(s);
     const taken = !shape && clashesFor(s, busy)[0];
     const already = !shape && !taken && clashesFor(s, ownBlocks)[0];
-    const why = shape || (taken ? `Taken ${timeRange(taken.start, taken.end)}` : already ? "You already have this" : "");
-    return { ...s, why };
+    const why = shape || (taken ? `Taken ${timeRange(taken.start, taken.end)}` : already ? `You already have ${timeRange(already.start, already.end)}` : "");
+    const dayBusy = dayItems(date, busy, mine);
+    return { ...s, custom: !!t, why, dayBusy };
   });
-  const chosen = rows.filter((r) => !r.why && !unchecked[r.date]);
-  const timeErr = endMin(end) != null && toMin(start) != null && endMin(end) <= toMin(start) ? "The end time has to be after the start time." : "";
-
-  const toggleDay = (d) => setDays((x) => (x.includes(d) ? x.filter((y) => y !== d) : [...x, d].sort()));
+  const sendable = rows.filter((r) => !r.why);
+  const pickedSet = useMemo(() => new Set(Object.keys(picks)), [picks]);
 
   return (
     <div className="bk-modal-bg" role="dialog" aria-modal="true" aria-label="Pick dates" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bk-modal">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 6 }}>
           <div className="pt-sec-ttl">Pick dates</div>
           <button type="button" className="pt-btn pt-btn-2 pt-btn-sm" onClick={onClose}>Close</button>
         </div>
+        <p className="pt-help" style={{ marginTop: 0, marginBottom: 14 }}>Click days to pick them. Click again to unpick. Grey times are already taken.</p>
         <div className="bk-mgrid">
-          <div>
-            <div className="pt-row">
-              <div className="pt-fg"><label className="pt-lbl" htmlFor="bk-first">First date</label>
-                <input id="bk-first" className="pt-in" type="date" value={first} min={earliestDate()} max={latestDate()} onChange={(e) => {
-                  const v = e.target.value;
-                  setFirst(v); setUnchecked({});
-                  // Keep the repeat alive: an end date before the new first date would collapse it to one date.
-                  if (v && until < v) setUntil(addDays(v, 27));
-                }} /></div>
-            </div>
-            <div className="pt-row">
-              <div className="pt-fg"><label className="pt-lbl" htmlFor="bk-start">Start</label>
-                <input id="bk-start" className="pt-in" type="time" step="900" value={start} onChange={(e) => setStart(e.target.value)} /></div>
-              <div className="pt-fg"><label className="pt-lbl" htmlFor="bk-end">End</label>
-                <input id="bk-end" className="pt-in" type="time" step="900" value={end} onChange={(e) => setEnd(e.target.value)} /></div>
-            </div>
-            <p className="pt-help" style={{ marginTop: -8, marginBottom: 14 }}>Include setup and cleanup time. For midnight, pick 12:00 AM.</p>
-            <div className="pt-fg">
-              <span className="pt-lbl">Repeat</span>
-              <div className="bk-radio">
-                <label><input type="radio" name="bk-rep" checked={!repeat} onChange={() => setRepeat(false)} /> Just this date</label>
-                <label><input type="radio" name="bk-rep" checked={repeat} onChange={() => setRepeat(true)} /> Every week on these days</label>
-              </div>
-            </div>
-            {repeat && <>
-              <div className="pt-chips" style={{ marginBottom: 14 }}>
-                {WEEKDAYS.map((w, i) => (
-                  <button type="button" key={w} className={`pt-chip${days.includes(i) ? " on" : ""}`} aria-pressed={days.includes(i)} onClick={() => toggleDay(i)}>{w}</button>
-                ))}
-              </div>
-              <div className="pt-fg"><label className="pt-lbl" htmlFor="bk-until">Until</label>
-                <input id="bk-until" className="pt-in" type="date" value={until} min={first} max={latestDate()} onChange={(e) => setUntil(e.target.value)} /></div>
-            </>}
-            <div className="pt-fg"><label className="pt-lbl" htmlFor="bk-note">Anything we should know (optional)</label>
-              <textarea id="bk-note" className="pt-ta" style={{ minHeight: 70 }} value={note} onChange={(e) => setNote(e.target.value)} /></div>
+          <div style={{ minWidth: 0 }}>
+            <MonthView month={month} setMonth={setMonth} busy={busy} mine={mine} picked={pickedSet} onDay={toggle} loading={loading} withMine={mine.length > 0} pickMode />
+            {msg && <div className="pt-err" style={{ marginTop: 10 }}>{msg}</div>}
+            {loadErr && <div className="pt-err" style={{ marginTop: 10 }}>{loadErr}</div>}
           </div>
-          <div>
-            <div className="pt-lbl">{rows.length} date{rows.length === 1 ? "" : "s"}</div>
-            <p className="pt-help" style={{ marginBottom: 8 }}>Uncheck any you don't want. Taken times can't be picked.{rows.length >= MAX_SLOTS ? ` Up to ${MAX_SLOTS} at a time.` : ""}</p>
-            {loadErr && <div className="pt-err">{loadErr}</div>}
-            {timeErr ? <div className="pt-err">{timeErr}</div> : (
-              <div className="bk-gen">
-                {rows.map((r) => r.why ? (
-                  <div className="row taken" key={r.date}><input type="checkbox" disabled aria-label={shortDate(r.date)} /> {shortDate(r.date)} <span className="bk-tag no">{r.why}</span></div>
-                ) : (
-                  <label key={r.date}>
-                    <input type="checkbox" checked={!unchecked[r.date]} onChange={() => setUnchecked((u) => ({ ...u, [r.date]: !u[r.date] }))} />
-                    {shortDate(r.date)} · {timeRange(start, end)}
-                  </label>
+          <div className="bk-side">
+            <div>
+              <div className="pt-lbl">Times for every picked day</div>
+              <div className="bk-times">
+                <input className="pt-in" type="time" step="900" aria-label="Start time" value={start} onChange={(e) => setStart(e.target.value)} />
+                <span>to</span>
+                <input className="pt-in" type="time" step="900" aria-label="End time" value={end} onChange={(e) => setEnd(e.target.value)} />
+              </div>
+              <p className="pt-help">Include setup and cleanup. For midnight, pick 12:00 AM.</p>
+            </div>
+
+            <div>
+              <div className="pt-lbl">{rows.length ? `${rows.length} day${rows.length === 1 ? "" : "s"} picked` : "No days picked yet"}</div>
+              {!rows.length && <p className="pt-help">Click any open day on the calendar.</p>}
+              <div className="bk-picks">
+                {rows.map((r) => (
+                  <div key={r.date} className={`bk-pick${r.why ? " bad" : ""}`}>
+                    <div className="bk-pick-row">
+                      <span className="when">{shortDate(r.date)}</span>
+                      <span>{timeRange(r.start, r.end)}{r.custom ? " *" : ""}</span>
+                      <button type="button" className="pt-btn-lnk" onClick={() => setEditing(editing === r.date ? "" : r.date)}>{editing === r.date ? "Done" : "Edit time"}</button>
+                      <button type="button" className="pt-btn-lnk" aria-label={`Remove ${shortDate(r.date)}`} onClick={() => toggle(r.date)}>✕</button>
+                    </div>
+                    {editing === r.date && (
+                      <div className="bk-times">
+                        <input className="pt-in" type="time" step="900" aria-label={`Start on ${shortDate(r.date)}`} value={r.start} onChange={(e) => setDayTimes(r.date, { start: e.target.value })} />
+                        <span>to</span>
+                        <input className="pt-in" type="time" step="900" aria-label={`End on ${shortDate(r.date)}`} value={r.end} onChange={(e) => setDayTimes(r.date, { end: e.target.value })} />
+                        {r.custom && <button type="button" className="pt-btn-lnk" onClick={() => resetDay(r.date)}>Use the shared times</button>}
+                      </div>
+                    )}
+                    {r.why && <span className="why">{r.why}. This day won't be sent.</span>}
+                    {!r.why && r.dayBusy.length > 0 && (
+                      <span className="taken">Also that day: {r.dayBusy.map((it) => `${timeRange(it.start, it.end)}${it.kind === "busy" ? "" : " (yours)"}`).join(", ")}</span>
+                    )}
+                  </div>
                 ))}
               </div>
-            )}
-            {error && <div className="pt-err" style={{ marginTop: 12 }}>{error}</div>}
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 14, flexWrap: "wrap" }}>
-              <b style={{ fontSize: 14 }}>{chosen.length} date{chosen.length === 1 ? "" : "s"} picked</b>
-              <button type="button" className="pt-btn" disabled={!chosen.length || !!timeErr || sending}
-                onClick={() => onDone(chosen.map(({ date, start: s, end: e }) => ({ date, start: s, end: e })), note, { first, start, end, repeat, days, until, note })}>
+              {rows.some((r) => r.custom) && <p className="pt-help">* has its own times</p>}
+            </div>
+
+            <div>
+              <label className="pt-lbl" htmlFor="bk-note">Anything we should know (optional)</label>
+              <textarea id="bk-note" className="pt-ta" style={{ minHeight: 64 }} value={note} onChange={(e) => setNote(e.target.value)} />
+            </div>
+
+            {error && <div className="pt-err" style={{ margin: 0 }}>{error}</div>}
+            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <b style={{ fontSize: 14 }}>{sendable.length} date{sendable.length === 1 ? "" : "s"} to send</b>
+              <button type="button" className="pt-btn" disabled={!sendable.length || sending}
+                onClick={() => onDone(
+                  sendable.map(({ date, start: s, end: e }) => ({ date, start: s, end: e })),
+                  note,
+                  { start, end, note, picks: rows.map(({ date, start: s, end: e, custom }) => ({ date, start: s, end: e, custom })) },
+                )}>
                 {sending ? "Sending…" : doneLabel}
               </button>
             </div>
@@ -317,14 +324,13 @@ const fetchJSON = async (url, opts) => {
 
 const STATUS_TAG = { confirmed: ["ok", "Confirmed"], requested: ["wait", "Waiting for Sprout"], declined: ["no", "Declined"] };
 
-/** The portal's Dates section. */
+/** The portal's "Your dates" section. */
 export function DatesSection({ token }) {
   const [month, setMonth] = useState(() => ym(todayNY()));
   const [mine, setMine] = useState([]);
   const [busy, setBusy] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
-  const [selected, setSelected] = useState("");
   const [modal, setModal] = useState(null);      // { date }
   const [sending, setSending] = useState(false);
   const [sendErr, setSendErr] = useState("");
@@ -343,10 +349,8 @@ export function DatesSection({ token }) {
     setLoading(false);
   }, [token, month]);
   useEffect(() => { load(); }, [load]);
-  // On a phone the day list is long, so bring the picked day's details into view.
-  useEffect(() => {
-    if (selected) document.getElementById("bk-daypanel")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  }, [selected]);
+
+  const open = (date = "") => { setSendErr(""); setToast(""); setModal({ date }); };
 
   const send = async (slots, note) => {
     setSending(true); setSendErr("");
@@ -379,22 +383,21 @@ export function DatesSection({ token }) {
     <div>
       <style>{BK_CSS}</style>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginTop: 6 }}>
-        <p className="pt-sec-blurb" style={{ margin: 0 }}>Your dates with us. Grey times are taken by someone else.</p>
-        <button type="button" className="pt-btn pt-btn-sm" onClick={() => { setSendErr(""); setModal({ date: selected || "" }); }}>+ Ask for dates</button>
+        <p className="pt-sec-blurb" style={{ margin: 0 }}>Your dates with us. Click a day to ask for it. Grey times are taken by someone else.</p>
+        <button type="button" className="pt-btn pt-btn-sm" onClick={() => open()}>+ Ask for dates</button>
       </div>
       {toast && <div className="pt-note pt-good" style={{ marginTop: 14, marginBottom: 0 }} role="status">✓ {toast}</div>}
       {err && <div className="pt-err" style={{ marginTop: 14 }}>{err}</div>}
 
       {!loading && !mine.length && (
         <div className="pt-note" style={{ marginTop: 14 }}>
-          <strong>Ready to pick your dates?</strong> Choose an open day below, or tap Ask for dates. Save this link: it's how you book with us from now on.
+          <strong>Ready to pick your dates?</strong> Click open days on the calendar below, or tap Ask for dates. Save this link: it's how you book with us from now on.
         </div>
       )}
 
       <div style={{ marginTop: 16 }}>
-        <MonthView month={month} setMonth={setMonth} busy={busy} mine={mine} selected={selected} onSelect={setSelected} loading={loading} withMine />
+        <MonthView month={month} setMonth={setMonth} busy={busy} mine={mine} onDay={(d) => open(bookable(d) ? d : "")} loading={loading} withMine />
       </div>
-      {selected && <DayPanel date={selected} busy={busy} mine={mine} busyId={busyId} onCancel={cancel} onRequest={(d) => { setSendErr(""); setModal({ date: d }); }} />}
 
       {mine.length > 0 && (
         <div style={{ marginTop: 20 }}>
@@ -432,8 +435,9 @@ export function BookDatesPicker({ value, onChange }) {
   const v = value || { known: null, slots: [] };
   const slots = v.slots || [];
   const sorted = slots.slice().sort((a, b) => a.date.localeCompare(b.date));
+  const sameTimes = sorted.every((s) => s.start === sorted[0]?.start && s.end === sorted[0]?.end);
   const summary = sorted.length
-    ? `${sorted.length} date${sorted.length === 1 ? "" : "s"} · ${shortDate(sorted[0].date)}${sorted.length > 1 ? ` to ${shortDate(sorted[sorted.length - 1].date)}` : ""} · ${timeRange(sorted[0].start, sorted[0].end)}`
+    ? `${sorted.length} date${sorted.length === 1 ? "" : "s"} · ${shortDate(sorted[0].date)}${sorted.length > 1 ? ` to ${shortDate(sorted[sorted.length - 1].date)}` : ""}${sameTimes ? ` · ${timeRange(sorted[0].start, sorted[0].end)}` : " · times vary"}`
     : "";
   return (
     <div className="pt-fg">
