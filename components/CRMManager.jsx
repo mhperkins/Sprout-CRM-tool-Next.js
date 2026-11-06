@@ -47,6 +47,9 @@ import {
   regenerateProgramFormToken,
   deleteProgramEntry,
   approveEventOnCalendar,
+  editBookingSlot,
+  removeBookingSlot,
+  decideBookingSlots,
   fetchEventSlots,
 } from "../lib/services";
 import { shortDate as slotDate, timeRange as slotTimes } from "../lib/booking";
@@ -274,6 +277,50 @@ const STYLES = `
   .evd-thumb-f span { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .evd-dl { text-decoration:none; color:var(--black); border:1.5px solid var(--g200); border-radius:5px; padding:0 6px; font-size:11px; }
   .evd-dl:hover { border-color:var(--cyan); }
+  /* Event page bars (2026-11-06): the same dropdown bars as the host's portal. */
+  .evb-hd { display:flex; flex-wrap:wrap; gap:12px; align-items:flex-start; justify-content:space-between; margin-bottom:14px; }
+  .evb-hd-l { flex:1 1 320px; min-width:0; display:flex; flex-direction:column; gap:6px; }
+  .evb-kind { font-size:10px; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--fuchsia); }
+  .evb-name { font-family:inherit; font-size:24px; font-weight:900; border:none; border-bottom:1.5px dashed transparent; background:transparent; color:var(--black); padding:0 0 2px; width:100%; outline:none; color-scheme:light; }
+  .evb-name:hover { border-bottom-color:var(--g300); }
+  .evb-name:focus { border-bottom-color:var(--cyan); }
+  .evb-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .evb-sel { font-family:inherit; font-size:11.5px; font-weight:700; border:1.5px solid var(--g200); border-radius:20px; padding:3px 8px; background:#fff; color:var(--black); cursor:pointer; color-scheme:light; }
+  .evb-rec { font-size:12px; color:var(--cyan); font-weight:700; }
+  .evb-line { font-size:13px; color:var(--g600); }
+  .evb-acts-hd { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .evb-list { display:flex; flex-direction:column; gap:10px; }
+  .evb { background:#fff; border:1.5px solid var(--g200); border-radius:11px; box-shadow:var(--sh-sm); min-width:0; }
+  .evb-sum { list-style:none; cursor:pointer; display:flex; align-items:center; gap:12px; padding:14px 18px; flex-wrap:wrap; }
+  .evb-sum::-webkit-details-marker { display:none; }
+  .evb-sum:focus-visible { outline:2px solid var(--cyan); outline-offset:-2px; border-radius:10px; }
+  .evb-ttl { font-size:15px; font-weight:900; }
+  .evb-s { flex:1 1 160px; min-width:0; font-size:12.5px; color:var(--g500); }
+  .evb-chev { font-size:16px; color:var(--g400); transition:transform .15s; margin-left:auto; }
+  .evb[open] .evb-chev { transform:rotate(180deg); }
+  .evb-body { padding:0 18px 18px; display:flex; flex-direction:column; gap:12px; min-width:0; }
+  .evb-rows { border:1.5px solid var(--g100); border-radius:8px; overflow:hidden; }
+  .evb-row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:8px 12px; border-top:1px solid var(--g100); font-size:13px; }
+  .evb-row:first-child { border-top:none; }
+  .evb-grow { flex:1 1 180px; min-width:0; }
+  .evb-dim { opacity:.55; }
+  .evb-acts { display:flex; gap:6px; opacity:0; transition:opacity .12s; }
+  .evb-hov { outline:none; }
+  .evb-hov:hover, .evb-hov:focus-within { background:var(--g50); }
+  .evb-hov:hover .evb-acts, .evb-hov:focus-within .evb-acts { opacity:1; }
+  @media (hover:none) {
+    .evb-acts { display:none; opacity:1; }
+    .evb-hov { cursor:pointer; }
+    .evb-hov.is-tap { background:var(--g50); }
+    .evb-hov.is-tap .evb-acts { display:flex; flex-basis:100%; justify-content:flex-end; }
+  }
+  .evb-fields { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px 14px; }
+  .evb-sub { font-size:9px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--g400); margin-top:4px; }
+  .evb-add { display:flex; flex-wrap:wrap; gap:16px; margin-top:12px; }
+  .evb-add button { background:none; border:none; padding:0; font-family:inherit; font-size:12.5px; font-weight:700; color:var(--cyan); cursor:pointer; text-decoration:underline; }
+  .evb-foot { display:flex; justify-content:flex-end; margin-top:18px; }
+  @media (prefers-reduced-motion:reduce) { .evb-chev, .evb-acts { transition:none; } }
+  @media (max-width:600px) { .evb-sum { padding:12px 14px; } .evb-body { padding:0 14px 14px; } .evb-name { font-size:20px; } }
   @media (max-width:900px) { .evd-shell { grid-template-columns:1fr; } .evd-spine { position:static; } }
   @media (max-width:700px) { .evd-grid { grid-template-columns:1fr; } }
   @keyframes sUp { from { transform:translateY(14px); opacity:0; } to { transform:translateY(0); opacity:1; } }
@@ -3691,259 +3738,6 @@ const BLANK_EVENT = () => ({
   checklist: [], next_actions: [], links: [],
 });
 
-function EventEditPage({editing,setEditing,onSave,onCancel,contacts}) {
-  const [eTab,setETab]=useState("overview");
-  const contactOpts = contacts.map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`.trim()||c.id,meta:c.title||""}));
-  const toggleContact = (cId) => {
-    const ids = editing.contact_ids||[];
-    setEditing({...editing, contact_ids: ids.includes(cId) ? ids.filter(x=>x!==cId) : [...ids,cId]});
-  };
-  const [cSearch,setCSearch]=useState("");
-  const filteredC = contactOpts.filter(o=>o.label.toLowerCase().includes(cSearch.toLowerCase()));
-
-  // Checklist helpers
-  const [clText,setClText]=useState(""); const [clDate,setClDate]=useState("");
-  const addChecklistItem = () => {
-    if(!clText.trim()) return;
-    const item={id:uid(),text:clText.trim(),date:clDate||null,completed:false};
-    setEditing({...editing,checklist:[...(editing.checklist||[]),item]});
-    setClText(""); setClDate("");
-  };
-  const toggleChecklist = (id) => {
-    const updated=(editing.checklist||[]).map(i=>i.id===id?{...i,completed:!i.completed}:i);
-    setEditing({...editing,checklist:updated});
-  };
-  const deleteChecklistItem = (id) => setEditing({...editing,checklist:(editing.checklist||[]).filter(i=>i.id!==id)});
-  const importChecklistTemplate = (tplName) => {
-    const tpl = EVENT_CHECKLIST_TEMPLATES[tplName];
-    if(!tpl || !editing.event_date) return;
-    const existing = new Set((editing.checklist||[]).map(i=>(i.text||"").toLowerCase().trim()));
-    const newItems = tpl
-      .filter(t=>!existing.has(t.text.toLowerCase().trim()))
-      .map(t=>({id:uid(),text:t.text,date:shiftDate(editing.event_date,t.offset),completed:false}));
-    if(newItems.length===0) return;
-    setEditing({...editing,checklist:[...(editing.checklist||[]),...newItems]});
-  };
-
-  // Next Actions helpers
-  const [naText,setNaText]=useState(""); const [naDate,setNaDate]=useState("");
-  const addNextAction = () => {
-    if(!naText.trim()) return;
-    const item={id:uid(),text:naText.trim(),date:naDate||null,completed:false};
-    setEditing({...editing,next_actions:[...(editing.next_actions||[]),item]});
-    setNaText(""); setNaDate("");
-  };
-  const toggleNextAction = (id) => {
-    const updated=(editing.next_actions||[]).map(i=>i.id===id?{...i,completed:!i.completed}:i);
-    setEditing({...editing,next_actions:updated});
-  };
-  const deleteNextAction = (id) => setEditing({...editing,next_actions:(editing.next_actions||[]).filter(i=>i.id!==id)});
-
-  // Links helpers
-  const [lkUrl,setLkUrl]=useState(""); const [lkLabel,setLkLabel]=useState("");
-  const addLink = () => {
-    if(!lkUrl.trim()) return;
-    const item={id:uid(),url:lkUrl.trim(),label:lkLabel.trim()};
-    setEditing({...editing,links:[...(editing.links||[]),item]});
-    setLkUrl(""); setLkLabel("");
-  };
-  const deleteLink = (id) => setEditing({...editing,links:(editing.links||[]).filter(l=>l.id!==id)});
-
-  const active_cl=(editing.checklist||[]).filter(i=>!i.completed);
-  const done_cl=(editing.checklist||[]).filter(i=>i.completed);
-  const active_na=(editing.next_actions||[]).filter(i=>!i.completed);
-  const done_na=(editing.next_actions||[]).filter(i=>i.completed);
-
-  return (
-    <div className="page">
-      <div className="pg-hd">
-        <div>
-          {!editing._isNew&&<div style={{fontSize:12,color:"var(--g500)",marginBottom:6}}>
-            <span style={{cursor:"pointer",color:"var(--cyan)"}} onClick={onCancel}>Events</span>
-            <span style={{margin:"0 6px",color:"var(--g400)"}}>›</span>
-            <span style={{cursor:"pointer",color:"var(--cyan)"}} onClick={onCancel}>{editing.name||"Event"}</span>
-            <span style={{margin:"0 6px",color:"var(--g400)"}}>›</span>
-            <span>Edit</span>
-          </div>}
-          {!editing._isNew&&<button className="btn btn-ghost btn-sm" style={{marginBottom:6}} onClick={onCancel}>← Back to detail</button>}
-          <div className="pg-ttl">{editing._isNew?"Add Event":`Edit — ${editing.name||"Event"}`}</div>
-          <div style={{fontSize:12,color:"var(--g500)",marginTop:2}}>Changes saved optimistically</div>
-        </div>
-        <div style={{display:"flex",gap:8}}>
-          <button className="btn btn-ghost btn-sm" onClick={onCancel}>Cancel</button>
-          <button className="btn btn-blk btn-sm" onClick={onSave}>Save Changes →</button>
-        </div>
-      </div>
-      <div className="modal-tabs">
-        {["overview","checklist","next actions","contacts","links"].map(t=><button key={t} className={`modal-tab ${eTab===t?"on":""}`} onClick={()=>setETab(t)}>{t}</button>)}
-      </div>
-
-      {eTab==="overview"&&<>
-        <div className="frow">
-          <div className="fg"><label className="fl">Event Name</label><input className="fi" value={editing.name||""} onChange={e=>setEditing({...editing,name:e.target.value})} autoFocus/></div>
-          {editing.recurrence?.frequency!=="dates"&&<div className="fg"><label className="fl">{editing.recurrence?"Start date":"Date"}</label><input type="date" className="fi" value={editing.event_date||""} onChange={e=>setEditing({...editing,event_date:e.target.value})}/></div>}
-        </div>
-        <div className="frow">
-          <div className="fg"><label className="fl">Start time</label><input type="time" className="fi" value={editing.start_time||""} onChange={e=>setEditing({...editing,start_time:e.target.value})}/></div>
-          <div className="fg"><label className="fl">End time</label><input type="time" className="fi" value={editing.end_time||""} onChange={e=>setEditing({...editing,end_time:e.target.value})}/></div>
-        </div>
-        <div className="fg">
-          <label className="fl">Repeats</label>
-          <select className="fs" value={editing.recurrence?.frequency||""} onChange={e=>{
-            const f=e.target.value;
-            if(!f){ setEditing({...editing,recurrence:null}); return; }
-            if(f==="dates"){
-              const seed = editing.recurrence?.dates?.length ? editing.recurrence.dates : (editing.event_date?[editing.event_date]:[]);
-              setEditing({...editing,recurrence:{frequency:"dates",dates:seed,until:null}}); return;
-            }
-            const wd = editing.recurrence?.weekday ?? (editing.event_date ? new Date(editing.event_date+"T12:00:00").getDay() : new Date().getDay());
-            setEditing({...editing,recurrence:{frequency:f,weekday:wd,until:editing.recurrence?.until??null}});
-          }}>
-            <option value="">Doesn't repeat</option>
-            <option value="weekly">Weekly</option>
-            <option value="biweekly">Every 2 weeks</option>
-            <option value="monthly">Monthly</option>
-            <option value="daily">Daily</option>
-            <option value="dates">On specific dates</option>
-          </select>
-        </div>
-        {editing.recurrence?.frequency==="dates"&&(()=>{
-          // The event date always tracks the earliest listed date, so sorting and auto-complete keep working.
-          const setDates = list => { const ds=[...new Set(list.filter(Boolean))].sort(); setEditing({...editing,event_date:ds[0]||"",recurrence:{...editing.recurrence,dates:ds}}); };
-          const ds = editing.recurrence.dates||[];
-          return <div className="fg"><label className="fl">Dates</label>
-            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
-              {ds.length===0&&<span style={{fontSize:12,color:"var(--g400)"}}>No dates yet. Pick one below.</span>}
-              {ds.map(d=>(
-                <span key={d} className="type-tag" style={{display:"inline-flex",alignItems:"center",gap:6}}>
-                  {fmtDate(d)}
-                  <button type="button" aria-label={`Remove ${d}`} onClick={()=>setDates(ds.filter(x=>x!==d))} style={{border:0,background:"none",cursor:"pointer",padding:0,fontWeight:700}}>×</button>
-                </span>
-              ))}
-            </div>
-            <input type="date" className="fi" value="" aria-label="Add a date" onChange={e=>{ if(e.target.value) setDates([...ds,e.target.value]); }}/>
-          </div>;
-        })()}
-        {editing.recurrence&&(editing.recurrence.frequency==="weekly"||editing.recurrence.frequency==="biweekly")&&
-          <div className="fg"><label className="fl">On</label>
-            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-              {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d,i)=>(
-                <button key={d} type="button" className={`btn btn-sm ${editing.recurrence.weekday===i?"btn-blk":"btn-ghost"}`}
-                  onClick={()=>setEditing({...editing,recurrence:{...editing.recurrence,weekday:i}})}>{d}</button>
-              ))}
-            </div>
-          </div>}
-        {editing.recurrence&&editing.recurrence.frequency!=="dates"&&
-          <div className="fg"><label className="fl">Repeat until <span style={{fontWeight:400,color:"var(--g400)"}}>· optional</span></label>
-            <input type="date" className="fi" value={editing.recurrence.until||""} onChange={e=>setEditing({...editing,recurrence:{...editing.recurrence,until:e.target.value||null}})}/></div>}
-        {editing.recurrence&&<div style={{fontSize:12,color:"var(--cyan)",fontWeight:700,marginBottom:12,marginTop:-4}}>{recurrenceSummary(editing)}</div>}
-        <div className="fg"><label className="fl">Status</label><RadioGroup options={EVT_STATUS_OPTS} value={editing.status||"upcoming"} onChange={v=>setEditing({...editing,status:v})}/></div>
-        <div className="fg"><label className="fl">Location</label><input className="fi" value={editing.location||""} onChange={e=>setEditing({...editing,location:e.target.value})}/></div>
-        <div className="fg"><label className="fl">Description</label><textarea className="fta" rows={3} value={editing.description||""} onChange={e=>setEditing({...editing,description:e.target.value})}/></div>
-        <div className="fg"><label className="fl">Recap blurb <span style={{fontWeight:400,color:"var(--g400)"}}>· 2–3 sentences, paste-ready for the newsletter</span></label><textarea className="fta" rows={3} value={editing.recap||""} onChange={e=>setEditing({...editing,recap:e.target.value})} placeholder="Warm, specific, no jargon. Pulled into the monthly roundup by the newsletter tool once status is completed."/></div>
-        <div className="fg"><label className="fl">Notes</label><textarea className="fta" rows={2} value={editing.notes||""} onChange={e=>setEditing({...editing,notes:e.target.value})}/></div>
-      </>}
-
-      {eTab==="checklist"&&<>
-        <div style={{fontSize:11,color:"var(--g400)",marginBottom:12}}>Event day / prep checklist — mark items done during the event.</div>
-        <div style={{marginBottom:14,padding:"10px 12px",background:"var(--g50)",borderRadius:8,border:"1px solid var(--g100)"}}>
-          <div style={{fontSize:11,fontWeight:700,marginBottom:6}}>📋 Import a checklist template</div>
-          {!editing.event_date
-            ? <div style={{fontSize:11,color:"var(--g400)"}}>Set the event date on the Overview tab first — each item's due date is calculated from it.</div>
-            : <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-                {Object.keys(EVENT_CHECKLIST_TEMPLATES).map(name=>(
-                  <button key={name} className="btn btn-ghost btn-sm" onClick={()=>importChecklistTemplate(name)}>＋ Import “{name}” checklist</button>
-                ))}
-                <span style={{fontSize:10,color:"var(--g400)",alignSelf:"center"}}>Dates auto-fill from {fmtDate(editing.event_date)} · already-added items are skipped</span>
-              </div>}
-        </div>
-        <div style={{maxHeight:340,overflowY:"auto",marginBottom:12}}>
-          {[...active_cl,...done_cl].map(item=>(
-            <div key={item.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}>
-              <input type="checkbox" checked={item.completed} onChange={()=>toggleChecklist(item.id)} style={{accentColor:"var(--cyan)",cursor:"pointer"}}/>
-              <span style={{flex:1,fontSize:12,textDecoration:item.completed?"line-through":"none",color:item.completed?"var(--g400)":"inherit"}}>{item.text}</span>
-              {item.date&&<span style={{fontSize:10,color:"var(--g400)"}}>{fmtDate(item.date)}</span>}
-              <button onClick={()=>deleteChecklistItem(item.id)} style={{background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:14,lineHeight:1,padding:"0 2px"}}>×</button>
-            </div>
-          ))}
-          {(editing.checklist||[]).length===0&&<div style={{fontSize:12,color:"var(--g400)",padding:"10px 0"}}>No checklist items yet.</div>}
-        </div>
-        <div className="frow" style={{alignItems:"flex-end",gap:8}}>
-          <div className="fg"><label className="fl">Item</label><input className="fi" placeholder="Add checklist item…" value={clText} onChange={e=>setClText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addChecklistItem()}/></div>
-          <div style={{width:130,flexShrink:0}}><label className="fl">Due date</label><input type="date" className="fi" value={clDate} onChange={e=>setClDate(e.target.value)}/></div>
-          <button className="btn btn-blk btn-sm" style={{flexShrink:0,marginBottom:1}} onClick={addChecklistItem}>Add</button>
-        </div>
-      </>}
-
-      {eTab==="next actions"&&<>
-        <div style={{fontSize:11,color:"var(--g400)",marginBottom:12}}>Follow-up actions after this event — track to completion.</div>
-        <div style={{maxHeight:340,overflowY:"auto",marginBottom:12}}>
-          {[...active_na,...done_na].map(item=>(
-            <div key={item.id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:"1px solid var(--g100)"}}>
-              <input type="checkbox" checked={item.completed} onChange={()=>toggleNextAction(item.id)} style={{accentColor:"var(--cyan)",cursor:"pointer"}}/>
-              <span style={{flex:1,fontSize:12,textDecoration:item.completed?"line-through":"none",color:item.completed?"var(--g400)":"inherit"}}>{item.text}</span>
-              {item.date&&<span style={{fontSize:10,color:"var(--g400)"}}>{fmtDate(item.date)}</span>}
-              <button onClick={()=>deleteNextAction(item.id)} style={{background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:14,lineHeight:1,padding:"0 2px"}}>×</button>
-            </div>
-          ))}
-          {(editing.next_actions||[]).length===0&&<div style={{fontSize:12,color:"var(--g400)",padding:"10px 0"}}>No next actions yet.</div>}
-        </div>
-        <div className="frow" style={{alignItems:"flex-end",gap:8}}>
-          <div className="fg"><label className="fl">Action</label><input className="fi" placeholder="Add next action…" value={naText} onChange={e=>setNaText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addNextAction()}/></div>
-          <div style={{width:130,flexShrink:0}}><label className="fl">Due date</label><input type="date" className="fi" value={naDate} onChange={e=>setNaDate(e.target.value)}/></div>
-          <button className="btn btn-blk btn-sm" style={{flexShrink:0,marginBottom:1}} onClick={addNextAction}>Add</button>
-        </div>
-      </>}
-
-      {eTab==="contacts"&&<div className="fg">
-        <label className="fl">Linked Contacts ({(editing.contact_ids||[]).length})</label>
-        <input className="fi" placeholder="Search contacts…" value={cSearch} onChange={e=>setCSearch(e.target.value)} style={{marginBottom:6}}/>
-        <div style={{maxHeight:360,overflowY:"auto",border:"1.5px solid var(--g200)",borderRadius:6}}>
-          {filteredC.map(o=>{
-            const on=(editing.contact_ids||[]).includes(o.value);
-            return <div key={o.value} onClick={()=>toggleContact(o.value)} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",cursor:"pointer",background:on?"var(--cyan-lt)":"#fff",borderBottom:"1px solid var(--g100)"}}>
-              <span style={{fontSize:12,fontWeight:700,flex:1}}>{o.label}</span>
-              {o.meta&&<span style={{fontSize:10,color:"var(--g400)"}}>{o.meta}</span>}
-              {on&&<span style={{color:"var(--cyan)",fontWeight:900,fontSize:14}}>✓</span>}
-            </div>;
-          })}
-          {filteredC.length===0&&<div style={{padding:"10px 12px",fontSize:12,color:"var(--g400)"}}>No contacts found</div>}
-        </div>
-      </div>}
-
-      {eTab==="links"&&<>
-        <div style={{fontSize:11,color:"var(--g400)",marginBottom:12}}>Store Google Docs, Drive folders, shared resources, and reference URLs for this event.</div>
-        <div style={{marginBottom:12}}>
-          {(editing.links||[]).length===0&&<div style={{fontSize:12,color:"var(--g400)",padding:"10px 0"}}>No links yet.</div>}
-          {(editing.links||[]).map(l=>{
-            const isDoc=l.url.includes("docs.google.com");
-            const isFolder=l.url.includes("drive.google.com");
-            const iconBg=isDoc?"rgba(115,196,214,0.15)":isFolder?"var(--acid-lt)":"var(--g100)";
-            const iconColor=isDoc?"#155e6e":isFolder?"#3a3d00":"var(--g600)";
-            const iconChar=isDoc?"D":isFolder?"F":"↗";
-            return (
-              <div key={l.id} onClick={()=>window.open(l.url,"_blank","noreferrer")} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",marginBottom:6,border:"1.5px solid var(--g200)",borderRadius:8,background:"#fff",boxShadow:"var(--sh-sm)",cursor:"pointer"}}>
-                <div style={{width:28,height:28,borderRadius:6,background:iconBg,color:iconColor,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,flexShrink:0}}>{iconChar}</div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:12,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{l.label||l.url}</div>
-                  {l.label&&<div style={{fontSize:10,color:"var(--g400)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{l.url}</div>}
-                </div>
-                <span style={{color:"var(--g400)",fontSize:13,flexShrink:0,padding:"4px"}}>↗</span>
-                <button onClick={ev=>{ev.stopPropagation();deleteLink(l.id);}} style={{background:"none",border:"none",cursor:"pointer",color:"var(--g400)",fontSize:16,lineHeight:1,padding:"0 2px",flexShrink:0}} title="Remove">×</button>
-              </div>
-            );
-          })}
-        </div>
-        <div className="frow" style={{alignItems:"flex-end",gap:8}}>
-          <div className="fg"><label className="fl">URL *</label><input className="fi" placeholder="https://…" value={lkUrl} onChange={e=>setLkUrl(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addLink()}/></div>
-          <div className="fg"><label className="fl">Label (optional)</label><input className="fi" placeholder="e.g. RSVP Form" value={lkLabel} onChange={e=>setLkLabel(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addLink()}/></div>
-          <button className="btn btn-blk btn-sm" style={{flexShrink:0,marginBottom:1}} onClick={addLink}>Add</button>
-        </div>
-      </>}
-    </div>
-  );
-}
-
 /* ─── Events Portal panel (CRM side) ─────────────────────────────────────────── */
 // Read-only view of what the client filled in through their portal link, rendered
 // from the SAME spec (lib/eventPortal.js) the client-facing form uses — so a field
@@ -4432,187 +4226,6 @@ function EventMediaPanel({event,onUpdateEvent,showToast}) {
   );
 }
 
-/* ─── Event workspace: communications ─────────────────────────────────────────
-   An event-scoped log of who was contacted, how, and where it stands. When an
-   entry names a CRM contact it also writes a touchpoint onto that contact, so
-   the event log and the relationship history never drift apart.                 */
-const COMM_CHANNELS={email:"✉ Email",dm:"📷 DM",text:"💬 Text",call:"📞 Call",in_person:"🤝 In person",other:"• Other"};
-const COMM_STATUS={
-  sent:     {label:"Sent",      bg:"var(--g100)",       fg:"var(--g600)"},
-  awaiting: {label:"Awaiting",  bg:"var(--acid-lt)",    fg:"#3a3d00"},
-  replied:  {label:"Replied",   bg:"var(--cyan-lt)",    fg:"#155e6e"},
-  confirmed:{label:"Confirmed", bg:"var(--cyan)",       fg:"#fff"},
-  declined: {label:"Declined",  bg:"var(--fuchsia-lt)", fg:"#8b0057"},
-};
-
-function EventCommsPanel({event,contacts,linked,onUpdateEvent,onUpdateContacts,onContactClick,showToast}) {
-  const comms=event.comms||[];
-  const today=localTodayISO();
-  const [open,setOpen]=useState(false);
-  const [filter,setFilter]=useState("all");
-  const blank={date:today,channel:"email",contact_id:"",to:"",summary:"",status:"sent"};
-  const [form,setForm]=useState(blank);
-
-  // Anyone attached to the event first, then the rest of the CRM, so the common
-  // case (chasing your own lineup) sits at the top of the picker.
-  const pickList=[...linked,...contacts.filter(c=>!linked.some(l=>l.id===c.id))];
-  const nameOf=(id)=>{
-    const c=contacts.find(x=>x.id===id);
-    if(!c) return id;
-    return ((c.first_name||"")+" "+(c.last_name||"")).trim()||c.email||id;
-  };
-
-  const save=()=>{
-    const summary=form.summary.trim();
-    if(!summary){ showToast("Add a short summary first"); return; }
-    const entry={
-      id:uid(),date:form.date||today,channel:form.channel,
-      contact_id:form.contact_id||null,to:form.to.trim(),
-      summary,status:form.status,
-    };
-    onUpdateEvent({...event,comms:[...comms,entry]});
-
-    // Mirror onto the contact's own history. The event log is saved above
-    // regardless, so a contact write failing here cannot lose the entry.
-    if(entry.contact_id&&onUpdateContacts){
-      const c=contacts.find(x=>x.id===entry.contact_id);
-      if(c){
-        const tag="["+(event.name||"Event")+"] "+(COMM_CHANNELS[entry.channel]||entry.channel)+": "+summary;
-        onUpdateContacts({...c,touchpoints:[...(c.touchpoints||[]),{
-          date:entry.date,summary:tag,next_action:"",next_action_date:null,
-        }]});
-      }
-    }
-    setForm({...blank,date:form.date,channel:form.channel});
-    setOpen(false);
-    showToast("Logged ✓");
-  };
-
-  const setStatus=(id,status)=>onUpdateEvent({...event,comms:comms.map(c=>c.id===id?{...c,status}:c)});
-  const remove=(id)=>onUpdateEvent({...event,comms:comms.filter(c=>c.id!==id)});
-
-  const awaiting=comms.filter(c=>c.status==="awaiting").length;
-  const shown=[...comms]
-    .filter(c=>filter==="all"?true:c.status===filter)
-    .sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-
-  return (
-    <div>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12,flexWrap:"wrap",gap:8}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-          <div style={{fontSize:11,color:"var(--g500)"}}>
-            {comms.length===0?"Nothing logged yet":comms.length+" logged"}
-          </div>
-          {awaiting>0&&<span style={{fontSize:10,fontWeight:800,padding:"2px 8px",borderRadius:20,background:"var(--acid-lt)",color:"#3a3d00"}}>
-            {awaiting} awaiting reply
-          </span>}
-        </div>
-        <div style={{display:"flex",gap:8,alignItems:"center"}}>
-          <select className="fi" style={{fontSize:11,width:"auto",padding:"4px 8px",height:"auto"}}
-            value={filter} onChange={e=>setFilter(e.target.value)}>
-            <option value="all">All</option>
-            {Object.entries(COMM_STATUS).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
-          </select>
-          <button className="btn btn-blk btn-sm" onClick={()=>setOpen(v=>!v)}>{open?"Cancel":"+ Log a message"}</button>
-        </div>
-      </div>
-
-      {open&&(
-        <div style={{border:"1.5px solid var(--g200)",borderRadius:8,padding:12,marginBottom:14,background:"#fff"}}>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
-            <div style={{flex:"0 0 130px"}}>
-              <label className="fl">Date</label>
-              <input type="date" className="fi" style={{fontSize:12}} value={form.date}
-                onChange={e=>setForm({...form,date:e.target.value})}/>
-            </div>
-            <div style={{flex:"0 0 130px"}}>
-              <label className="fl">Channel</label>
-              <select className="fi" style={{fontSize:12}} value={form.channel}
-                onChange={e=>setForm({...form,channel:e.target.value})}>
-                {Object.entries(COMM_CHANNELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}
-              </select>
-            </div>
-            <div style={{flex:"1 1 180px"}}>
-              <label className="fl">Contact</label>
-              <select className="fi" style={{fontSize:12}} value={form.contact_id}
-                onChange={e=>setForm({...form,contact_id:e.target.value})}>
-                <option value="">— someone else / a group —</option>
-                {pickList.map(c=>(
-                  <option key={c.id} value={c.id}>
-                    {(((c.first_name||"")+" "+(c.last_name||"")).trim()||c.email||c.id)+(linked.some(l=>l.id===c.id)?" ·":"")}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div style={{flex:"0 0 140px"}}>
-              <label className="fl">Status</label>
-              <select className="fi" style={{fontSize:12}} value={form.status}
-                onChange={e=>setForm({...form,status:e.target.value})}>
-                {Object.entries(COMM_STATUS).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
-              </select>
-            </div>
-          </div>
-          {!form.contact_id&&(
-            <div style={{marginBottom:8}}>
-              <label className="fl">Who (free text)</label>
-              <input className="fi" style={{fontSize:12}} placeholder="e.g. all 7/24 attendees, the venue"
-                value={form.to} onChange={e=>setForm({...form,to:e.target.value})}/>
-            </div>
-          )}
-          <label className="fl">What was said</label>
-          <textarea className="fi" style={{fontSize:12,minHeight:60,resize:"vertical"}}
-            placeholder="Sent set time and load-in details…"
-            value={form.summary} onChange={e=>setForm({...form,summary:e.target.value})}/>
-          <div style={{display:"flex",gap:8,marginTop:10,alignItems:"center"}}>
-            <button className="btn btn-blk btn-sm" onClick={save}>Log it</button>
-            <button className="btn btn-ghost btn-sm" onClick={()=>{setOpen(false);setForm(blank);}}>Cancel</button>
-            {form.contact_id&&<span style={{fontSize:10,color:"var(--g400)"}}>Also saved to {nameOf(form.contact_id)}&rsquo;s history</span>}
-          </div>
-        </div>
-      )}
-
-      {shown.length===0?(
-        <div style={{border:"1.5px dashed var(--g200)",borderRadius:10,padding:24,textAlign:"center",color:"var(--g400)",fontSize:12}}>
-          {comms.length===0
-            ? <>No communications logged for this event yet.<br/><span style={{fontSize:11}}>Log who you contacted so nothing gets chased twice or forgotten.</span></>
-            : "Nothing matches this filter."}
-        </div>
-      ):(
-        <div>
-          {shown.map(c=>{
-            const st=COMM_STATUS[c.status]||COMM_STATUS.sent;
-            const who=c.contact_id?nameOf(c.contact_id):(c.to||"—");
-            const clickable=!!c.contact_id&&!!onContactClick;
-            return (
-              <div key={c.id} style={{display:"flex",gap:10,padding:"10px 0",borderBottom:"1px solid var(--g100)",alignItems:"flex-start"}}>
-                <div style={{width:52,flexShrink:0,fontSize:10,color:"var(--g400)",fontWeight:700,paddingTop:2}}>
-                  {(c.date||"").slice(5).replace("-","/")}
-                </div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap",marginBottom:3}}>
-                    <span style={{fontSize:11,color:"var(--g500)"}}>{COMM_CHANNELS[c.channel]||c.channel}</span>
-                    <span onClick={()=>{if(clickable)onContactClick(contacts.find(x=>x.id===c.contact_id));}}
-                      style={{fontSize:12,fontWeight:800,cursor:clickable?"pointer":"default",color:clickable?"var(--cyan)":"var(--black)"}}>
-                      {who}
-                    </span>
-                    <select value={c.status} onChange={e=>setStatus(c.id,e.target.value)}
-                      style={{fontSize:9,fontWeight:800,padding:"2px 6px",borderRadius:20,border:"none",cursor:"pointer",background:st.bg,color:st.fg,fontFamily:"'Lato',sans-serif"}}>
-                      {Object.entries(COMM_STATUS).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
-                    </select>
-                  </div>
-                  <div style={{fontSize:12,lineHeight:1.6,color:"var(--g600)",whiteSpace:"pre-wrap"}}>{c.summary}</div>
-                </div>
-                <button onClick={()=>remove(c.id)} title="Delete entry"
-                  style={{background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:14,lineHeight:1,padding:"0 2px",flexShrink:0}}>×</button>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
 /* ─── Event workspace: program form ──────────────────────────────────────────
    One public link per event (/program/[token]) that artists and musicians use to
    send their bio, photo, and links. Nothing on it is required. Submissions live in
@@ -4724,7 +4337,7 @@ function EventProgramPanel({program,onCreate,onRotate,onDeleteEntry,onRefresh,sh
   );
 }
 
-function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpdateEvent,onApprove,onUpdateContacts,onContactClick,portal,onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals,onSavePortalAnswer,showToast}) {
+function EventDetailPage({event,allEvents,contacts,onBack,onDelete,onUpdateEvent,onApprove,onEventChanged,onUpdateContacts,onContactClick,portal,onCreatePortal,onRotatePortal,onRemovePortal,onRefreshPortals,onSavePortalAnswer,showToast}) {
   const linked = contacts.filter(c=>(event.contact_ids||[]).includes(c.id));
 
   // Booking dates (from /book and the portal). A waiting request keeps its dates here,
@@ -4832,9 +4445,6 @@ function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpda
   // Inline "+ Add person" on the People tile and its popup.
   const [personAdding,setPersonAdding]=useState(false);
   const [personQ,setPersonQ]=useState("");
-
-  // contacts modal
-  const [showContactsModal,setShowContactsModal]=useState(false);
 
   // calendar state — default to event month, else current month
   const defaultMonth=(event.event_date||today).slice(0,7);
@@ -4959,51 +4569,130 @@ function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpda
     );
   };
 
+  // ── BARS LAYOUT (2026-11-06 redesign) ───────────────────────────────────────
+  // The event page is the same dropdown bars as the host's portal, in the portal's
+  // order. Which bars show depends on who runs it (outcomes.hosted_by) and the stage.
+  // Bar bodies are plain function calls, not nested components, so inputs keep focus.
+  const [slotEdit,setSlotEdit]=useState(null);      // {id,date,start,end} while one booking date is edited
+  const [slotTap,setSlotTap]=useState(null);        // phone: the date whose Edit/Delete are showing
+  const [slotDel,setSlotDel]=useState(null);        // booking date waiting on the delete confirm
+  const [slotBusy,setSlotBusy]=useState("");        // slot id being saved
+  const [declineAsk,setDeclineAsk]=useState(false); // "Decline this request?" confirm
+  const [newItem,setNewItem]=useState({text:"",date:""});
+  const [newRecDate,setNewRecDate]=useState("");
+
+  const reloadSlots=async()=>{ const {data}=await fetchEventSlots(event.id); setSlots(data); };
+  // Date changes happen on the server (it also moves the Sprout calendar entry and the
+  // event's date list), so this tab only refreshes its copy. Nothing stale saves over it.
+  const afterSlotChange=async(data,error)=>{
+    if(error){ showToast(error,"err"); return false; }
+    if(data?.event) onEventChanged?.(data.event);
+    await reloadSlots();
+    showToast(data?.message||"Saved ✓", data?.ok===false?"err":undefined);
+    return data?.ok!==false;
+  };
+  const saveSlotEdit=async()=>{
+    if(!slotEdit) return;
+    setSlotBusy(slotEdit.id);
+    const {data,error}=await editBookingSlot(slotEdit);
+    setSlotBusy("");
+    if(await afterSlotChange(data,error)) setSlotEdit(null);
+  };
+  const confirmSlotDelete=async()=>{
+    const s=slotDel; setSlotDel(null); if(!s) return;
+    setSlotBusy(s.id);
+    const {data,error}=await removeBookingSlot(s.id);
+    setSlotBusy("");
+    await afterSlotChange(data,error);
+  };
+  const decideSlot=async(s,mode)=>{
+    setSlotBusy(s.id);
+    const {data,error}=await decideBookingSlots(mode==="approve"?{approve:[s.id]}:{decline:[s.id]});
+    setSlotBusy("");
+    if(error){ showToast(error,"err"); return; }
+    const r=(data||[])[0];
+    if(r?.event) onEventChanged?.(r.event);
+    await reloadSlots();
+    if(r?.failed?.length) showToast(r.failed[0].reason,"err");
+    else showToast(mode==="approve"?"Approved and added to the Sprout calendar ✓":"Date declined. The host was emailed.");
+  };
+  const declineRequest=async()=>{
+    setDeclineAsk(false);
+    const waitingIds=slots.filter(s=>s.status==="requested").map(s=>s.id);
+    if(waitingIds.length){
+      const {error}=await decideBookingSlots({decline:waitingIds});
+      if(error){ showToast(error,"err"); return; }
+      await reloadSlots();
+    }
+    onUpdateEvent({...event,status:"cancelled"});
+    showToast(waitingIds.length?"Request declined. The host was emailed.":"Request declined");
+  };
+
+  const setField=(patch,msg="Saved ✓")=>{ onUpdateEvent({...event,...patch}); if(msg) showToast(msg); };
+  const blurSave=(key)=>e=>{ const v=e.target.value; if(v!==(event[key]||"")) setField({[key]:v}); };
+  const setHosted=(k)=>{ onUpdateEvent({...event,outcomes:{hosted_by:"sprout",...(event.outcomes||{}),hosted_by:k}}); showToast("Saved ✓"); };
+  const rec=event.recurrence||null;
+  const setRec=(r)=>{
+    if(r?.frequency==="dates"){
+      const ds=[...new Set(r.dates||[])].filter(Boolean).sort();
+      setField({recurrence:{frequency:"dates",dates:ds,until:null},...(ds[0]?{event_date:ds[0]}:{})});
+    } else setField({recurrence:r});
+  };
+  const changeFreq=(v)=>{
+    if(v==="none") return setRec(null);
+    if(v==="dates") return setRec({frequency:"dates",dates:rec?.dates?.length?rec.dates:(event.event_date?[event.event_date]:[])});
+    const wd=rec?.weekday ?? (event.event_date?new Date(event.event_date+"T12:00:00").getDay():5);
+    setRec({frequency:v,weekday:(v==="weekly"||v==="biweekly")?wd:null,until:rec?.until||null,dates:[]});
+  };
+  const importTemplate=(name)=>{
+    const tpl=EVENT_CHECKLIST_TEMPLATES[name];
+    if(!tpl||!event.event_date) return;
+    const have=new Set(cl.map(i=>(i.text||"").trim().toLowerCase()));
+    const add=tpl.filter(t=>!have.has(t.text.trim().toLowerCase()))
+      .map(t=>({id:uid(),text:t.text,date:shiftDate(event.event_date,t.offset),completed:false}));
+    onUpdateEvent({...event,checklist:[...cl,...add]});
+    showToast(`${add.length} checklist item${add.length===1?"":"s"} added ✓`);
+  };
+  const addItemInline=()=>{
+    if(!newItem.text.trim()) return;
+    addChecklistItem(newItem.date||null,newItem.text);
+    setNewItem({text:"",date:""});
+    showToast("Item added ✓");
+  };
+  const copyText=(txt,ok)=>{ try{ navigator.clipboard.writeText(txt); showToast(ok); }catch{ showToast("Copy failed","err"); } };
+
   return (
     <div className="page" onClick={()=>{if(popover)setPopover(null);if(addDate!==null)setAddDate(null);}}>
-      {/* PAGE HEADER */}
-      <div className="pg-hd">
-        <div>
-          <div style={{fontSize:12,color:"var(--g500)",marginBottom:6}}>
-            <span style={{cursor:"pointer",color:"var(--cyan)"}} onClick={onBack}>Events</span>
-            <span style={{margin:"0 6px",color:"var(--g400)"}}>›</span>
-            <span>{event.name||"(Unnamed Event)"}</span>
-          </div>
-          <div className="pg-ttl">{event.name||"(Unnamed Event)"}</div>
-          <div className="pg-sub">{fmtDate(event.event_date)}{event.start_time?` · ${fmtTime(event.start_time)}${event.end_time?`–${fmtTime(event.end_time)}`:""}`:""}{event.location?` · ${event.location}`:""}</div>
-          {event.recurrence?.frequency&&<div style={{fontSize:12,color:"var(--cyan)",fontWeight:700,marginTop:2}}>{recurrenceSummary(event)}</div>}
-        </div>
-        <div style={{display:"flex",gap:8,alignItems:"center"}}>
-          <button className="btn btn-ghost btn-sm" onClick={onEdit}>Edit Event</button>
-          <button className="btn btn-danger btn-sm" onClick={onDelete}>Delete</button>
-        </div>
-      </div>
-      <div style={{marginBottom:16}}><EventStatusTag status={event.status}/></div>
-
-      {/* ── EVENT DASHBOARD ─────────────────────────────────────────────────────
-          Everything on one screen instead of five tabs. The booking protocol runs
-          down the left (the same nine sections the public portal asks every host),
-          and each tile shows a summary. A tile's footer opens its full editor in a
-          popup. Summaries are plain function calls, not nested components, so the
-          inline inputs keep focus while you type. */}
       {(()=>{
-        const localToday=localTodayISO();
-        const dayDiff=(d)=>Math.round((new Date(d+"T12:00:00")-new Date(localToday+"T12:00:00"))/86400000);
-        const daysOut=event.event_date?dayDiff(event.event_date):null;
+        const lt=localTodayISO();
+        const kind=event.outcomes?.hosted_by||"sprout";
+        const KIND={sprout:"Sprout event",partner:"Partner event",rental:"Rental"}[kind];
+        const isRequest=event.status==="pending";
+        const recurringLive=!!rec?.frequency&&!!nextOccurrence(event,lt);
+        const isPast=event.status==="completed"||(!isRequest&&event.status!=="cancelled"&&!recurringLive&&!!event.event_date&&event.event_date<lt);
+        const showChecklist=kind!=="rental"||clTotal>0;
+        const showProgram=!!program.form||program.entries.length>0;
+        const showGallery=!!gallery.form||gallery.entries.length>0;
+        const openBar=isRequest?"dates":isPast?"outcomes":(kind!=="rental"&&showChecklist?"checklist":"dates");
+
+        const dayDiff=(d)=>Math.round((new Date(d+"T12:00:00")-new Date(lt+"T12:00:00"))/86400000);
+        const nextDate=eventDisplayDate(event);
+        const daysOut=!isPast&&nextDate?dayDiff(nextDate):null;
         const openItems=cl.filter(i=>!i.completed).sort((a,b)=>(a.date||"9999-99-99").localeCompare(b.date||"9999-99-99"));
-        const overdue=openItems.filter(i=>i.date&&i.date<localToday).length;
-        const comms=event.comms||[];
-        const awaiting=comms.filter(c=>c.status==="awaiting").length;
-        const recentComms=[...comms].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,3);
+        const overdue=openItems.filter(i=>i.date&&i.date<lt).length;
         const media=event.media||[];
         const links=event.links||[];
         const confirmedN=(event.confirmed_ids||[]).length;
-        const nameOf=(id)=>{ const c=contacts.find(x=>x.id===id); return c?(((c.first_name||"")+" "+(c.last_name||"")).trim()||c.email||id):id; };
         const pdata=portal?.data||{};
         const prog=portal?portalProgress(pdata):null;
+        const missingN=prog?prog.requiredTotal-prog.requiredDone:0;
         const isImg=(m)=>(m.mime||"").startsWith("image/")||/\.(png|jpe?g|gif|webp|avif)$/i.test(m.url||"");
-        // Supabase storage ignores <a download> cross-origin; ?download= forces an attachment.
-        const dlUrl=(m)=>m.url+(m.url.includes("?")?"&":"?")+"download="+encodeURIComponent(m.name||"");
+        const waiting=slots.filter(s=>s.status==="requested");
+        const confirmed=slots.filter(s=>s.status==="confirmed");
+        const ahead=confirmed.filter(s=>s.date>=lt), past=confirmed.filter(s=>s.date<lt);
+        const declined=slots.filter(s=>s.status==="declined");
+        const hostName=pdata.contact_name||"";
+        const portalLink=portal?`${typeof window!=="undefined"?window.location.origin:""}/portal/${portal.token}`:"";
         const dueChip=(d)=>{
           if(!d) return null;
           const n=dayDiff(d);
@@ -5020,396 +4709,452 @@ function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpda
           setLinkLabel(""); setLinkUrl(""); setLinkAdding(false);
           showToast("Link added ✓");
         };
-        const tile=(key,title,count,body,footer,span)=>(
-          <div className={"evd-tile"+(span?" evd-span2":"")}>
-            <div className="evd-tile-hd">
-              <span className="evd-tile-ttl">{title}</span>
-              {count!==""&&count!=null&&<span className="evd-tile-n">{count}</span>}
-            </div>
-            <div className="evd-tile-b">{body}</div>
-            {footer&&<button className="evd-tile-f" onClick={()=>setOpenTile(key)}><span>{footer}</span><span>→</span></button>}
-          </div>
+        const bar=(key,title,summary,body)=>(
+          <details key={key+"-"+event.id} className="evb" open={openBar===key||undefined}>
+            <summary className="evb-sum">
+              <span className="evb-ttl">{title}</span>
+              <span className="evb-s">{summary}</span>
+              <span className="evb-chev" aria-hidden="true">▾</span>
+            </summary>
+            <div className="evb-body">{body}</div>
+          </details>
         );
+        const lbl=t=><div className="evd-lbl">{t}</div>;
+        const nm=(s)=>`${slotDate(s.date)} · ${slotTimes(s.start_time,s.end_time)}`;
 
-        return (
-        <>
-          {event.status==="pending"&&(
-            <div style={{display:"flex",alignItems:"center",gap:14,flexWrap:"wrap",borderLeft:"6px solid var(--banana)",background:"#fff",borderRadius:"0 10px 10px 0",padding:"14px 18px",marginBottom:16,boxShadow:"0 2px 10px rgba(0,0,0,0.06)"}}>
-              <div style={{flex:"1 1 260px",minWidth:0}}>
-                <div style={{fontSize:14,fontWeight:900}}>This is a pending booking request.</div>
-                <div style={{fontSize:12.5,color:"var(--g600)",lineHeight:1.6,marginTop:2}}>
-                  It is not on the calendar and will not appear in the newsletter until you approve it.
-                  {prog&&!prog.readyToSchedule&&` ${prog.requiredTotal-prog.requiredDone} essential${prog.requiredTotal-prog.requiredDone===1?" is":"s are"} still missing from the portal.`}
+        // ── header line ──
+        const dateLine=rec?.frequency==="dates"
+          ? `${(rec.dates||[]).length} date${(rec.dates||[]).length===1?"":"s"}${nextDate?` · next ${fmtDate(nextDate)}`:""}`
+          : `${nextDate?fmtDate(nextDate):"No date yet"}${event.start_time?` · ${fmtTime(event.start_time)}${event.end_time?`–${fmtTime(event.end_time)}`:""}`:""}`;
+
+        // ── primary action for the stage ──
+        let actions=null;
+        if(isRequest) actions=<>
+          <button className="btn btn-blk" onClick={()=>onApprove?.(event)}>Approve onto the calendar →</button>
+          <button className="btn btn-ghost" style={{color:"var(--fuchsia)",borderColor:"var(--fuchsia)"}} onClick={()=>setDeclineAsk(true)}>Decline</button>
+        </>;
+        else if(isPast) actions=<button className="btn btn-blk" onClick={()=>{
+          const o=event.outcomes||{};
+          const artists=o.artists??(program.entries.length||null);
+          const bits=[o.headcount!=null&&`${o.headcount} came`,o.first_timers!=null&&`${o.first_timers} first-timers`,o.emails_collected!=null&&`${o.emails_collected} emails collected`,artists!=null&&`${artists} artists`].filter(Boolean);
+          copyText(`${event.name||"Event"} (${fmtDate(event.event_date)}): ${bits.join(", ")||"no numbers yet"}`,"Numbers copied ✓");
+        }}>Copy numbers</button>;
+        else if(portal&&kind!=="sprout") actions=<button className="btn btn-blk" onClick={()=>copyText(portalLink,"Portal link copied ✓")}>Copy portal link{hostName?` for ${hostName.split(" ")[0]}`:""}</button>;
+        else if(kind==="sprout"&&program.form) actions=<button className="btn btn-blk" onClick={()=>copyText(window.location.origin+"/program/"+program.form.token,"Program form link copied ✓")}>Copy program form link</button>;
+
+        // ── DATES ──
+        const slotRow=(s)=>{
+          if(slotEdit?.id===s.id) return (
+            <div key={s.id} className="evb-row" style={{background:"var(--g50)"}}>
+              <input type="date" className="fi" style={{width:150,fontSize:12}} aria-label="Date" value={slotEdit.date} onChange={e=>setSlotEdit(v=>({...v,date:e.target.value}))}/>
+              <input type="time" className="fi" style={{width:110,fontSize:12}} aria-label="Start" value={slotEdit.start} onChange={e=>setSlotEdit(v=>({...v,start:e.target.value}))}/>
+              <span style={{fontSize:12,color:"var(--g500)"}}>to</span>
+              <input type="time" className="fi" style={{width:110,fontSize:12}} aria-label="End" value={slotEdit.end} onChange={e=>setSlotEdit(v=>({...v,end:e.target.value}))}/>
+              <button className="btn btn-blk btn-xs" disabled={slotBusy===s.id} onClick={saveSlotEdit}>{slotBusy===s.id?"Saving…":"Save"}</button>
+              <button className="btn btn-ghost btn-xs" onClick={()=>setSlotEdit(null)}>Cancel</button>
+            </div>
+          );
+          return (
+            <div key={s.id} className={"evb-row evb-hov"+(slotTap===s.id?" is-tap":"")} tabIndex={0}
+              onClick={e=>{ if(e.target.closest("button")) return; setSlotTap(t=>t===s.id?null:s.id); }}>
+              <span className="evb-grow"><b>{slotDate(s.date)}</b> · {slotTimes(s.start_time,s.end_time)}</span>
+              <span className="evd-chip" style={{background:"var(--acid-lt)",color:"#3a3d00"}}>{slotBusy===s.id?"Saving…":"On calendar"}</span>
+              <span className="evb-acts">
+                <button className="btn btn-ghost btn-xs" disabled={!!slotBusy} onClick={()=>setSlotEdit({id:s.id,date:s.date,start:s.start_time,end:s.end_time})}>Edit</button>
+                <button className="btn btn-danger btn-xs" disabled={!!slotBusy} onClick={()=>setSlotDel(s)}>Delete</button>
+              </span>
+            </div>
+          );
+        };
+        const datesSummary=slots.length
+          ? [waiting.length&&`${waiting.length} waiting`,ahead.length&&`${ahead.length} ahead`,past.length&&`${past.length} past`].filter(Boolean).join(" · ")||"No live dates"
+          : dateLine;
+        const datesBody=<>
+          {waiting.length>0&&<div className="evb-rows">
+            {waiting.map(s=>(
+              <div key={s.id} className="evb-row">
+                <span className="evb-grow"><b>{slotDate(s.date)}</b> · {slotTimes(s.start_time,s.end_time)}</span>
+                <span className="evd-chip" style={{background:"#fff8d6",color:"#5c4a00"}}>Waiting</span>
+                <button className="btn btn-blk btn-xs" disabled={!!slotBusy} onClick={()=>decideSlot(s,"approve")}>{slotBusy===s.id?"Working…":"Approve"}</button>
+                <button className="btn btn-ghost btn-xs" disabled={!!slotBusy} onClick={()=>decideSlot(s,"decline")}>Decline</button>
+              </div>
+            ))}
+          </div>}
+          {ahead.length>0&&<div className="evb-rows">{ahead.map(slotRow)}</div>}
+          {past.length>0&&(
+            <details>
+              <summary style={{fontSize:12,color:"var(--g500)",cursor:"pointer"}}>{past.length} past date{past.length===1?"":"s"}</summary>
+              <div className="evb-rows" style={{marginTop:6}}>
+                {past.map(s=><div key={s.id} className="evb-row evb-dim"><span className="evb-grow"><b>{slotDate(s.date)}</b> · {slotTimes(s.start_time,s.end_time)}</span><span className="evd-chip" style={{background:"var(--g100)",color:"var(--g600)"}}>Done</span></div>)}
+              </div>
+            </details>
+          )}
+          {declined.length>0&&<div style={{fontSize:12,color:"var(--g400)"}}>Declined: {declined.map(nm).join(", ")}</div>}
+          {ahead.length>0&&<div style={{fontSize:11,color:"var(--g400)"}}>Hover a date for Edit and Delete (on a phone, tap it). Both change the Sprout calendar too. The host isn't emailed.</div>}
+          <div className="evb-sub">This event</div>
+          <div className="evb-fields">
+            {rec?.frequency!=="dates"&&<div>{lbl(rec?.frequency?"Series starts":"Date")}
+              <input key={event.id+"d"+(event.event_date||"")} type="date" className="fi" style={{fontSize:12}} defaultValue={event.event_date||""} onBlur={blurSave("event_date")}/></div>}
+            <div>{lbl("Start")}
+              <input key={event.id+"st"+(event.start_time||"")} type="time" className="fi" style={{fontSize:12}} defaultValue={event.start_time||""} onBlur={blurSave("start_time")}/></div>
+            <div>{lbl("End")}
+              <input key={event.id+"et"+(event.end_time||"")} type="time" className="fi" style={{fontSize:12}} defaultValue={event.end_time||""} onBlur={blurSave("end_time")}/></div>
+            <div>{lbl("Location")}
+              <input key={event.id+"loc"} className="fi" style={{fontSize:12}} placeholder="Sprout Society" defaultValue={event.location||""} onBlur={blurSave("location")}/></div>
+            <div>{lbl("Repeats")}
+              <select className="fi" style={{fontSize:12}} value={rec?.frequency||"none"} onChange={e=>changeFreq(e.target.value)}>
+                <option value="none">Doesn't repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option>
+                <option value="biweekly">Every 2 weeks</option><option value="monthly">Monthly</option><option value="dates">On specific dates</option>
+              </select></div>
+            {(rec?.frequency==="weekly"||rec?.frequency==="biweekly")&&<div>{lbl("On")}
+              <select className="fi" style={{fontSize:12}} value={rec.weekday??5} onChange={e=>setRec({...rec,weekday:Number(e.target.value)})}>
+                {["Sundays","Mondays","Tuesdays","Wednesdays","Thursdays","Fridays","Saturdays"].map((d,i)=><option key={d} value={i}>{d}</option>)}
+              </select></div>}
+            {rec?.frequency&&rec.frequency!=="dates"&&<div>{lbl("Until")}
+              <input key={event.id+"un"+(rec.until||"")} type="date" className="fi" style={{fontSize:12}} defaultValue={rec.until||""}
+                onBlur={e=>{const v=e.target.value||null;if(v!==(rec.until||null))setRec({...rec,until:v});}}/></div>}
+          </div>
+          {rec?.frequency==="dates"&&!slots.length&&(
+            <div style={{display:"flex",flexWrap:"wrap",gap:6,alignItems:"center"}}>
+              {(rec.dates||[]).map(d=>(
+                <span key={d} className="evd-chip" style={{background:d<lt?"var(--g100)":"var(--cyan-lt)",color:d<lt?"var(--g500)":"#155e6e",fontSize:11}}>
+                  {fmtDate(d)}<button className="evd-x" style={{fontSize:13,marginLeft:4}} aria-label={"Remove "+d} onClick={()=>setRec({...rec,dates:rec.dates.filter(x=>x!==d)})}>×</button>
+                </span>
+              ))}
+              <input type="date" className="fi" style={{width:150,fontSize:12}} aria-label="Add a date" value={newRecDate} onChange={e=>setNewRecDate(e.target.value)}/>
+              <button className="btn btn-ghost btn-xs" disabled={!newRecDate} onClick={()=>{setRec({...rec,dates:[...(rec.dates||[]),newRecDate]});setNewRecDate("");}}>+ Add date</button>
+            </div>
+          )}
+          {rec?.frequency&&<div style={{fontSize:12,color:"var(--cyan)",fontWeight:700}}>{recurrenceSummary(event)}</div>}
+          {confirmed.length>0&&<div style={{fontSize:11,color:"var(--g400)"}}>The fields here don't change the Sprout calendar. Edit a booking date above to move it there.</div>}
+        </>;
+
+        // ── HOST & DETAILS ──
+        const hostSummary=portal
+          ? [hostName||pdata.org_name||"Host portal",missingN>0?`${missingN} essential${missingN===1?"":"s"} missing`:null].filter(Boolean).join(" · ")
+          : kind==="sprout"?"Sprout runs it":"No host portal yet";
+        const hostBody=<>
+          {!portal
+            ? <div>
+                <div className="evd-empty">{kind==="sprout"?"No host portal. Create one if an outside host is involved.":"No host portal yet. Create one to send the host a private link."}</div>
+                <button className="btn btn-blk btn-sm" style={{marginTop:8}} onClick={()=>onCreatePortal(event)}>+ Create portal link</button>
+              </div>
+            : <>
+                <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",border:"1px solid var(--g200)",borderRadius:8,padding:"8px 10px",background:"var(--g50,#fafafa)"}}>
+                  <div style={{flex:"1 1 220px",minWidth:0}}>
+                    <div style={{fontSize:9.5,fontWeight:700,letterSpacing:"0.05em",textTransform:"uppercase",color:"var(--g500)"}}>Send this to the host</div>
+                    <div style={{fontSize:11.5,fontWeight:700,color:"var(--cyan)",wordBreak:"break-all"}}>{portalLink}</div>
+                  </div>
+                  <button className="btn btn-ghost btn-sm" onClick={()=>copyText(portalLink,"Portal link copied ✓")}>Copy</button>
+                  <a className="btn btn-ghost btn-sm" href={portalLink} target="_blank" rel="noopener noreferrer">Open ↗</a>
+                </div>
+                {!prog.readyToSchedule&&<div style={{fontSize:12,fontWeight:700,color:"#8b0057"}}>Still needed: {prog.missingRequired.map(k=>FIELD_BY_KEY[k]?.label||k).join(", ")}</div>}
+                <div className="evd-host-grid">
+                  {[["Host",pdata.contact_name],["Email",pdata.contact_email],["Phone",pdata.contact_phone],["Organization",pdata.org_name],
+                    ["Type",pdata.event_type],["Public or private",pdata.audience],["Attendance",pdata.attendance==="tbd"?"Don't know yet":pdata.attendance],["Ticketed or free",pdata.admission],["Backup date",pdata.alt_date?fmtDate(pdata.alt_date):""]]
+                    .filter(([,v])=>!pIsBlank(v)).map(([k,v])=>(
+                      <div key={k}>{lbl(k)}<div style={{fontSize:12.5,wordBreak:"break-word"}}>{String(v)}</div></div>
+                    ))}
+                </div>
+                {!pIsBlank(pdata.food_drink)&&<div>{lbl("Food and drinks")}<p className="evd-p">{pdata.food_drink}</p></div>}
+                <div>
+                  <div className="evd-lbl">More details <span style={{fontWeight:400,textTransform:"none",letterSpacing:0}}>· the host sees and edits this too</span></div>
+                  <textarea key={portal.id+(portal.updatedAt||"")} className="fi" style={{fontSize:12,minHeight:80,resize:"vertical",lineHeight:1.6}}
+                    placeholder="Lineup, sound, setup, promo…" defaultValue={pdata.more_details||""}
+                    onBlur={e=>{const v=e.target.value;if(v!==(pdata.more_details||"")) onSavePortalAnswer?.(portal,"more_details",v);}}/>
+                </div>
+                <button className="btn btn-ghost btn-sm" style={{alignSelf:"flex-start"}} onClick={()=>setOpenTile("portal")}>All answers & portal settings →</button>
+              </>}
+          <div>{lbl("Description")}
+            <textarea key={event.id+"desc"} className="fi" style={{fontSize:12,minHeight:56,resize:"vertical",lineHeight:1.6}}
+              placeholder="What the event is" defaultValue={event.description||""} onBlur={blurSave("description")}/></div>
+          <div>{lbl("Our notes")}
+            <textarea key={event.id+"notes"} className="fi" style={{fontSize:12,minHeight:70,resize:"vertical",lineHeight:1.6}}
+              placeholder="Only staff see these" defaultValue={event.notes||""} onBlur={blurSave("notes")}/></div>
+        </>;
+
+        // ── LINKS & FILES ──
+        const guestN=guestMedia.uploads.length;
+        const linksSummary=[`${links.length} link${links.length===1?"":"s"}`,`${media.length} file${media.length===1?"":"s"}`,guestN?`${guestN} from guests`:null].filter(Boolean).join(" · ");
+        const linksBody=<>
+          {links.length===0&&!linkAdding&&<div className="evd-empty">No links yet. Add ticket, RSVP or Drive links.</div>}
+          {links.map(l=>(
+            <div key={l.id} className="evd-link">
+              <a href={l.url} target="_blank" rel="noopener noreferrer" className="evd-link-a">
+                <span className="evd-link-l">{l.label||l.url} ↗</span>
+                {l.label&&l.label!==l.url&&<span className="evd-link-u">{l.url}</span>}
+              </a>
+              <button className="evd-x" title="Remove link" aria-label={"Remove "+(l.label||l.url)} onClick={()=>onUpdateEvent({...event,links:links.filter(x=>x.id!==l.id)})}>×</button>
+            </div>
+          ))}
+          {linkAdding
+            ? <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                <input className="fi" style={{fontSize:12}} placeholder="Label, e.g. Tickets" aria-label="Link label" value={linkLabel} onChange={e=>setLinkLabel(e.target.value)}/>
+                <input className="fi" style={{fontSize:12}} placeholder="https://…" aria-label="Link address" value={linkUrl} onChange={e=>setLinkUrl(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")addLinkInline();}}/>
+                <div style={{display:"flex",gap:6}}>
+                  <button className="btn btn-blk btn-sm" onClick={addLinkInline}>Add</button>
+                  <button className="btn btn-ghost btn-sm" onClick={()=>{setLinkAdding(false);setLinkLabel("");setLinkUrl("");}}>Cancel</button>
                 </div>
               </div>
-              <button className="btn btn-blk" onClick={()=>onApprove?.(event)}>
-                Approve onto the calendar →
-              </button>
-            </div>
-          )}
-          {slots.length>0&&(
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,alignItems:"center",margin:"0 0 12px"}}>
-              <span style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase",color:"var(--g500)",marginRight:2}}>
-                {slots.length} date{slots.length===1?"":"s"}
-              </span>
-              {slots.map(s=>{
-                const st={requested:["Waiting","#fff8d6","#5c4a00"],confirmed:["On calendar","var(--acid-lt)","#3a3d00"],declined:["Declined","var(--fuchsia-lt)","#8b0057"]}[s.status]||[s.status,"var(--g100)","var(--g600)"];
-                return (
-                  <span key={s.id} title={s.decline_reason||undefined}
-                    style={{fontSize:11.5,padding:"3px 9px",borderRadius:20,border:"1px solid var(--g200)",background:"#fff",display:"inline-flex",gap:6,alignItems:"center"}}>
-                    {slotDate(s.date)} · {slotTimes(s.start_time,s.end_time)}
-                    <span style={{fontSize:10,fontWeight:700,padding:"1px 6px",borderRadius:20,background:st[1],color:st[2]}}>{st[0]}</span>
-                  </span>
-                );
-              })}
-            </div>
-          )}
-          <div className="evd-strip">
-            {daysOut!=null&&<span className="evd-strip-n">{daysOut>0?daysOut+" days out":daysOut===0?"Today":(-daysOut)+" days ago"}</span>}
-            {overdue>0&&<span className="evd-chip" style={{background:"var(--fuchsia-lt)",color:"#8b0057"}}>{overdue} overdue</span>}
-            {awaiting>0&&<span className="evd-chip" style={{background:"var(--acid-lt)",color:"#3a3d00"}}>{awaiting} awaiting reply</span>}
-            {prog&&!prog.readyToSchedule&&<span className="evd-chip" style={{background:"var(--g100)",color:"var(--g600)"}}>{prog.requiredTotal-prog.requiredDone} essentials missing</span>}
+            : <button className="btn btn-ghost btn-sm" style={{alignSelf:"flex-start"}} onClick={()=>setLinkAdding(true)}>+ Add link</button>}
+          <div className="evb-sub">Files</div>
+          {media.length===0
+            ? <div className="evd-empty">No flyers or photos yet.</div>
+            : <div className="evd-thumbs" style={{gridTemplateColumns:"repeat(auto-fill,minmax(110px,1fr))"}}>
+                {media.slice(0,6).map(m=>(
+                  <a key={m.id} href={m.url} target="_blank" rel="noopener noreferrer" className="evd-thumb" title={m.name} style={{textDecoration:"none",color:"inherit"}}>
+                    <div className="evd-thumb-img" style={{height:76}}>{isImg(m)?<img src={m.url} alt={m.name}/>:<span>{m.kind==="link"?"🔗":"📄"}</span>}</div>
+                    <div className="evd-thumb-f"><span>{m.name}</span></div>
+                  </a>
+                ))}
+              </div>}
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            <button className="btn btn-ghost btn-sm" onClick={()=>setOpenTile("media")}>{media.length?`Open all ${media.length} files${(event.media_folders||[]).length?` · ${(event.media_folders||[]).length} folders`:""}`:"+ Upload files"}</button>
           </div>
+          <div className="evb-sub">From guests</div>
+          {!guestMedia.form
+            ? guestMedia.loaded&&<button className="btn btn-ghost btn-sm" style={{alignSelf:"flex-start"}} onClick={makeMediaForm}>+ Create guest upload link</button>
+            : <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
+                <button className="btn btn-ghost btn-sm" onClick={()=>copyText(window.location.origin+"/media/"+guestMedia.form.token,"Guest upload link copied ✓")}>Copy guest upload link</button>
+                <button className="btn btn-ghost btn-sm" onClick={()=>setOpenTile("guestmedia")}>{guestN?`See ${guestN} upload${guestN===1?"":"s"}`:"Nobody has sent anything yet"}</button>
+              </div>}
+        </>;
 
-          <div className="evd-shell">
-            <div className="evd-grid">
-              {/* HOST DETAILS: what the host entered on their portal, plus the shared
-                  "More details" box that both sides edit. */}
-              {tile("portal","Host details","",(
-                !portal
-                  ? <div>
-                      <div className="evd-empty">No host portal yet. Create one to send the host a private link.</div>
-                      <button className="btn btn-blk btn-sm" style={{marginTop:8}} onClick={()=>onCreatePortal(event)}>+ Create portal link</button>
-                    </div>
-                  : <>
-                      {(()=>{
-                        const portalLink=`${typeof window!=="undefined"?window.location.origin:""}/portal/${portal.token}`;
-                        return (
-                          <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",border:"1px solid var(--g200)",borderRadius:8,padding:"8px 10px",background:"var(--g50,#fafafa)"}}>
-                            <div style={{flex:"1 1 220px",minWidth:0}}>
-                              <div style={{fontSize:9.5,fontWeight:700,letterSpacing:"0.05em",textTransform:"uppercase",color:"var(--g500)"}}>Send this to the host</div>
-                              <div style={{fontSize:11.5,fontWeight:700,color:"var(--cyan)",wordBreak:"break-all"}}>{portalLink}</div>
-                            </div>
-                            <button className="btn btn-blk btn-sm" onClick={()=>{ try{ navigator.clipboard.writeText(portalLink); showToast("Portal link copied ✓"); }catch{ showToast("Copy failed","err"); } }}>Copy portal link</button>
-                            <a className="btn btn-ghost btn-sm" href={portalLink} target="_blank" rel="noopener noreferrer">Open ↗</a>
-                          </div>
-                        );
-                      })()}
-                      {!prog.readyToSchedule&&(
-                        <div style={{fontSize:12,fontWeight:700,color:"#8b0057"}}>
-                          Still needed: {prog.missingRequired.map(k=>FIELD_BY_KEY[k]?.label||k).join(", ")}
-                        </div>
-                      )}
-                      <div className="evd-host-grid">
-                        {[["Host",pdata.contact_name],["Email",pdata.contact_email],["Phone",pdata.contact_phone],["Organization",pdata.org_name],
-                          ["Type",pdata.event_type],["Public or private",pdata.audience],["Attendance",pdata.attendance==="tbd"?"Don't know yet":pdata.attendance],["Ticketed or free",pdata.admission],["Backup date",pdata.alt_date?fmtDate(pdata.alt_date):""]]
-                          .filter(([,v])=>!pIsBlank(v)).map(([k,v])=>(
-                            <div key={k}><div className="evd-lbl">{k}</div><div style={{fontSize:12.5,wordBreak:"break-word"}}>{String(v)}</div></div>
-                          ))}
-                      </div>
-                      {!pIsBlank(pdata.food_drink)&&<div><div className="evd-lbl">Food and drinks</div><p className="evd-p">{pdata.food_drink}</p></div>}
-                      <div>
-                        <div className="evd-lbl">More details <span style={{fontWeight:400,textTransform:"none",letterSpacing:0}}>· the host sees and edits this too</span></div>
-                        <textarea key={portal.id+(portal.updatedAt||"")} className="fi" style={{fontSize:12,minHeight:90,resize:"vertical",lineHeight:1.6}}
-                          placeholder="Lineup, sound, setup, promo…"
-                          defaultValue={pdata.more_details||""}
-                          onBlur={e=>{const v=e.target.value;if(v!==(pdata.more_details||"")) onSavePortalAnswer?.(portal,"more_details",v);}}/>
-                      </div>
-                    </>
-              ),portal?"Portal link & all answers":null,true)}
-              {/* GALLERY: artists' pieces from the gallery submission form. */}
-              {tile("gallery","Gallery",gallery.entries.length?gallery.entries.length+" sent":"",(
-                !gallery.form&&gallery.entries.length===0
-                  ? <div>
-                      <div className="evd-empty">{gallery.loaded?"No gallery link yet. Create one to collect artists' pieces, sizes, and photos.":"Loading…"}</div>
-                      {gallery.loaded&&<button className="btn btn-blk btn-sm" style={{marginTop:8}} onClick={makeGalleryForm}>+ Create gallery link</button>}
-                    </div>
-                  : <>
-                      {gallery.form
-                        ? <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                            <button className="btn btn-blk btn-sm" onClick={()=>{
-                              const url=window.location.origin+"/gallery/"+gallery.form.token;
-                              try{ navigator.clipboard.writeText(url); showToast("Link copied ✓"); }catch{ showToast("Copy failed","err"); }
-                            }}>Copy gallery link</button>
-                            <a className="btn btn-ghost btn-sm" href={"/gallery/"+gallery.form.token} target="_blank" rel="noopener noreferrer">Open ↗</a>
-                          </div>
-                        : <button className="btn btn-blk btn-sm" onClick={makeGalleryForm}>+ Create gallery link</button>}
-                      {gallery.entries.length===0
-                        ? <div className="evd-empty">Nobody has sent anything yet.</div>
-                        : <div style={{display:"flex",flexDirection:"column",gap:6,marginTop:8}}>
-                            {gallery.entries.slice(0,5).map(en=>{
-                              const ps=en.data?.pieces||[];
-                              const thumb=ps.find(p=>p.photo_url)?.photo_url;
-                              return (
-                                <div key={en.id} style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
-                                  {thumb
-                                    ? <img src={thumb} alt="" style={{width:30,height:30,borderRadius:6,objectFit:"cover",flexShrink:0}}/>
-                                    : <div style={{width:30,height:30,borderRadius:6,background:"var(--g100)",flexShrink:0}}/>}
-                                  <div style={{minWidth:0}}>
-                                    <div style={{fontSize:12.5,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{en.data?.name||"(no name)"}</div>
-                                    <div style={{fontSize:10.5,color:"var(--g500)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{ps.length} piece{ps.length===1?"":"s"}{ps[0]?" · "+pieceLine(ps[0],0):""}</div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>}
-                    </>
-              ),"All submissions & link")}
-              {/* PROGRAM: what artists and musicians sent through the participant form. */}
-              {tile("program","Program",program.entries.length?program.entries.length+" sent":"",(
-                !program.form
-                  ? <div>
-                      <div className="evd-empty">{program.loaded?"No participant form yet. Create one link to send your lineup for bios, photos, and links.":"Loading…"}</div>
-                      {program.loaded&&<button className="btn btn-blk btn-sm" style={{marginTop:8}} onClick={makeProgramForm}>+ Create participant form link</button>}
-                    </div>
-                  : <>
-                      <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                        <button className="btn btn-blk btn-sm" onClick={()=>{
-                          const url=window.location.origin+"/program/"+program.form.token;
-                          try{ navigator.clipboard.writeText(url); showToast("Link copied ✓"); }catch{ showToast("Copy failed","err"); }
-                        }}>Copy form link</button>
-                        <a className="btn btn-ghost btn-sm" href={"/program/"+program.form.token} target="_blank" rel="noopener noreferrer">Open ↗</a>
-                      </div>
-                      {program.entries.length===0
-                        ? <div className="evd-empty">Nobody has sent anything yet.</div>
-                        : <div className="evd-host-grid">
-                            {program.entries.slice(0,6).map(en=>(
-                              <div key={en.id} style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
-                                {en.data?.photo_url
-                                  ? <img src={en.data.photo_url} alt="" style={{width:30,height:30,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
-                                  : <div style={{width:30,height:30,borderRadius:"50%",background:"var(--g100)",flexShrink:0}}/>}
-                                <div style={{minWidth:0}}>
-                                  <div style={{fontSize:12.5,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{en.data?.name||"(no name)"}</div>
-                                  {en.data?.role&&<div style={{fontSize:10.5,color:"var(--g500)"}}>{en.data.role}</div>}
-                                </div>
-                              </div>
-                            ))}
-                          </div>}
-                      {program.entries.length>6&&<div className="evd-more">+{program.entries.length-6} more</div>}
-                    </>
-              ),program.form?"All submissions & link":null,true)}
-              {tile("plan","Checklist",clTotal?clDone+"/"+clTotal+" done":"",(
-                <>
-                  <div style={{height:5,borderRadius:3,background:"var(--g100)",overflow:"hidden"}}>
-                    <div style={{height:"100%",background:"var(--cyan)",width:clTotal?(clDone/clTotal*100)+"%":"0%",transition:"width 0.3s"}}/>
-                  </div>
-                  {openItems.length===0
-                    ? <div className="evd-empty">{clTotal?"Everything is done.":"No checklist yet."}</div>
-                    : openItems.slice(0,6).map(item=>(
-                        <div key={item.id} className="evd-row">
-                          <input type="checkbox" checked={false} onChange={()=>onToggleChecklist(item.id)}
-                            style={{accentColor:"var(--cyan)",cursor:"pointer",marginTop:2,flexShrink:0}}/>
-                          <div className="evd-row-t">{item.text}{item.date&&<small>{fmtDate(item.date)}</small>}</div>
-                          {dueChip(item.date)}
-                        </div>
-                      ))}
-                  {openItems.length>6&&<div className="evd-more">+{openItems.length-6} more open</div>}
+        // ── PEOPLE ──
+        const peopleBody=<div style={{display:"flex",flexDirection:"column"}}>
+          {linked.length===0
+            ? <div className="evd-empty">Nobody attached yet.</div>
+            : <div>
+                {linked.slice(0,8).map(c=><ContactRow key={c.id} c={c}/>)}
+                {linked.length>8&&<button className="btn btn-ghost btn-sm" style={{marginTop:8}} onClick={()=>setOpenTile("people")}>All {linked.length} people →</button>}
+              </div>}
+          {peopleAdder()}
+        </div>;
+
+        // ── CHECKLIST ──
+        const checklistBody=<>
+          <div style={{height:5,borderRadius:3,background:"var(--g100)",overflow:"hidden"}}>
+            <div style={{height:"100%",background:"var(--cyan)",width:clTotal?(clDone/clTotal*100)+"%":"0%",transition:"width 0.3s"}}/>
+          </div>
+          {clTotal===0&&(
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              <div className="evd-empty">No checklist yet. Add items below, or import a template.</div>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                {Object.keys(EVENT_CHECKLIST_TEMPLATES).map(n=>(
+                  <button key={n} className="btn btn-ghost btn-sm" disabled={!event.event_date} onClick={()=>importTemplate(n)}>+ Import "{n}" checklist</button>
+                ))}
+              </div>
+              {!event.event_date&&<div style={{fontSize:11,color:"var(--g400)"}}>Set the date in the Dates bar first. Template items are dated from it.</div>}
+            </div>
+          )}
+          {clTotal>0&&openItems.length===0&&<div className="evd-empty">Everything is done.</div>}
+          {openItems.length>0&&<div>
+            {openItems.slice(0,10).map(item=>(
+              <div key={item.id} className="evd-row">
+                <input type="checkbox" checked={false} aria-label={"Done: "+item.text} onChange={()=>{onToggleChecklist(item.id);showToast("Done ✓");}}
+                  style={{accentColor:"var(--cyan)",cursor:"pointer",marginTop:2,flexShrink:0}}/>
+                <div className="evd-row-t">{item.text}{item.date&&<small>{fmtDate(item.date)}</small>}</div>
+                {dueChip(item.date)}
+              </div>
+            ))}
+          </div>}
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
+            <input className="fi" style={{flex:"1 1 200px",fontSize:12}} placeholder="New item" aria-label="New checklist item" value={newItem.text}
+              onChange={e=>setNewItem(v=>({...v,text:e.target.value}))} onKeyDown={e=>{if(e.key==="Enter")addItemInline();}}/>
+            <input type="date" className="fi" style={{width:150,fontSize:12}} aria-label="Due date" value={newItem.date} onChange={e=>setNewItem(v=>({...v,date:e.target.value}))}/>
+            <button className="btn btn-ghost btn-sm" disabled={!newItem.text.trim()} onClick={addItemInline}>+ Add item</button>
+          </div>
+          <button className="btn btn-ghost btn-sm" style={{alignSelf:"flex-start"}} onClick={()=>setOpenTile("plan")}>
+            {clTotal?`Calendar & all ${clTotal} items →`:"Calendar view →"}
+          </button>
+        </>;
+
+        // ── PROGRAM / GALLERY (only once used) ──
+        const programBody=<>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            {program.form
+              ? <>
+                  <button className="btn btn-ghost btn-sm" onClick={()=>copyText(window.location.origin+"/program/"+program.form.token,"Link copied ✓")}>Copy form link</button>
+                  <a className="btn btn-ghost btn-sm" href={"/program/"+program.form.token} target="_blank" rel="noopener noreferrer">Open ↗</a>
                 </>
-              ),clTotal?"Calendar & all "+clTotal+" items":"Open the calendar to add items")}
+              : <button className="btn btn-blk btn-sm" onClick={makeProgramForm}>+ Create participant form link</button>}
+          </div>
+          {program.entries.length===0
+            ? <div className="evd-empty">Nobody has sent anything yet.</div>
+            : <div className="evd-host-grid">
+                {program.entries.slice(0,8).map(en=>(
+                  <div key={en.id} style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
+                    {en.data?.photo_url
+                      ? <img src={en.data.photo_url} alt="" style={{width:30,height:30,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
+                      : <div style={{width:30,height:30,borderRadius:"50%",background:"var(--g100)",flexShrink:0}}/>}
+                    <div style={{minWidth:0}}>
+                      <div style={{fontSize:12.5,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{en.data?.name||"(no name)"}</div>
+                      {en.data?.role&&<div style={{fontSize:10.5,color:"var(--g500)"}}>{en.data.role}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>}
+          {program.entries.length>8&&<div className="evd-more">+{program.entries.length-8} more</div>}
+          <button className="btn btn-ghost btn-sm" style={{alignSelf:"flex-start"}} onClick={()=>setOpenTile("program")}>All submissions →</button>
+        </>;
+        const galleryBody=<>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            {gallery.form
+              ? <>
+                  <button className="btn btn-ghost btn-sm" onClick={()=>copyText(window.location.origin+"/gallery/"+gallery.form.token,"Link copied ✓")}>Copy gallery link</button>
+                  <a className="btn btn-ghost btn-sm" href={"/gallery/"+gallery.form.token} target="_blank" rel="noopener noreferrer">Open ↗</a>
+                </>
+              : <button className="btn btn-blk btn-sm" onClick={makeGalleryForm}>+ Create gallery link</button>}
+          </div>
+          {gallery.entries.length===0
+            ? <div className="evd-empty">Nobody has sent anything yet.</div>
+            : <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                {gallery.entries.slice(0,6).map(en=>{
+                  const ps=en.data?.pieces||[];
+                  const thumb=ps.find(p=>p.photo_url)?.photo_url;
+                  return (
+                    <div key={en.id} style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
+                      {thumb?<img src={thumb} alt="" style={{width:30,height:30,borderRadius:6,objectFit:"cover",flexShrink:0}}/>:<div style={{width:30,height:30,borderRadius:6,background:"var(--g100)",flexShrink:0}}/>}
+                      <div style={{minWidth:0}}>
+                        <div style={{fontSize:12.5,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{en.data?.name||"(no name)"}</div>
+                        <div style={{fontSize:10.5,color:"var(--g500)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{ps.length} piece{ps.length===1?"":"s"}{ps[0]?" · "+pieceLine(ps[0],0):""}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>}
+          <button className="btn btn-ghost btn-sm" style={{alignSelf:"flex-start"}} onClick={()=>setOpenTile("gallery")}>All submissions →</button>
+        </>;
 
-              {tile("people","People",linked.length?linked.length+" · "+confirmedN+" confirmed":"",(
-                <div style={{display:"flex",flexDirection:"column"}}>
-                  {linked.length===0
-                    ? <div className="evd-empty">Nobody attached yet.</div>
-                    : <div>
-                        {linked.slice(0,5).map(c=><ContactRow key={c.id} c={c}/>)}
-                        {linked.length>5&&<div className="evd-more" style={{marginTop:6}}>+{linked.length-5} more</div>}
-                      </div>}
-                  {peopleAdder()}
+        // ── OUTCOMES (past events only) ──
+        const o=event.outcomes||{};
+        const filled=o.headcount!=null&&o.headcount!=="";
+        const setO=patch=>onUpdateEvent({...event,outcomes:{hosted_by:"sprout",...o,...patch}});
+        const numBlur=key=>e=>{
+          const raw=e.target.value.trim();
+          const v=raw===""?null:Math.max(0,Math.round(Number(raw)));
+          if(raw!==""&&!Number.isFinite(v)){showToast("Enter a number","err");return;}
+          if(v!==(o[key]??null)){setO({[key]:v});showToast("Saved ✓");}
+        };
+        const txtBlur=key=>e=>{const v=e.target.value;if(v!==(o[key]||"")){setO({[key]:v});showToast("Saved ✓");}};
+        const numIn=(key,label,ph,short)=>(
+          <div>{lbl(label)}
+            <input key={event.id+short+(o[key]??"")} className="fi" style={{fontSize:12}} inputMode="numeric" placeholder={ph}
+              defaultValue={o[key]??""} onBlur={numBlur(key)}/></div>
+        );
+        const outSummary=[filled?`${o.headcount} came`:"Not filled in",o.emails_collected!=null&&`${o.emails_collected} emails`,o.artists!=null&&`${o.artists} artists`].filter(Boolean).join(" · ");
+        const outcomesBody=<>
+          {!filled&&<div style={{fontSize:12.5,fontWeight:700,color:"#8b5a00"}}>How many people came? Add a headcount so this event counts toward the grant numbers.</div>}
+          <div className="evd-host-grid">
+            {numIn("headcount","Headcount","e.g. 46","hc")}
+            {numIn("first_timers","First-timers","optional","ft")}
+            {numIn("emails_collected","Emails collected","from sign-ins","em")}
+            {numIn("artists","Artists featured",`${program.entries.length} from Program`,"ar")}
+            {numIn("members_attended","Members who came","optional","ma")}
+            {numIn("dues_collected","Dues collected ($)","optional","dc")}
+            {kind==="rental"&&<>
+              {numIn("rental_fee","Rental fee ($)","e.g. 450","rf")}
+              <div>{lbl("Payment")}
+                <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+                  <label style={{fontSize:12,display:"flex",gap:5,alignItems:"center",cursor:"pointer"}}>
+                    <input type="checkbox" checked={!!o.rental_paid} style={{accentColor:"var(--cyan)"}}
+                      onChange={e=>{const p=e.target.checked;setO({rental_paid:p,rental_paid_date:p?(o.rental_paid_date||lt):""});showToast(p?"Marked paid ✓":"Marked unpaid");}}/>Paid</label>
+                  {o.rental_paid&&<input type="date" className="fi" style={{fontSize:12,width:"auto"}} aria-label="Paid on" value={o.rental_paid_date||""} onChange={e=>setO({rental_paid_date:e.target.value})}/>}
+                </div></div>
+            </>}
+            <div>{lbl("Linked in CRM")}<div style={{fontSize:12.5}}>{linked.length} people · {confirmedN} checked in</div></div>
+          </div>
+          <div>{lbl("Where the count came from")}
+            <input key={event.id+"cs"} className="fi" style={{fontSize:12}} placeholder="Kiosk sign-ins, door count…" defaultValue={o.count_source||""} onBlur={txtBlur("count_source")}/></div>
+          <div>{lbl("A quote from the night (optional)")}
+            <textarea key={event.id+"q"} className="fi" style={{fontSize:12,minHeight:54,resize:"vertical",lineHeight:1.6}}
+              placeholder="Something someone said about the night…" defaultValue={o.quote||""} onBlur={txtBlur("quote")}/></div>
+          {/* assemble_newsletter only pulls recaps from completed events that have this filled. */}
+          <div>
+            <div className="evd-lbl">Recap <span style={{fontWeight:400,textTransform:"none",letterSpacing:0}}>· feeds the newsletter</span></div>
+            <textarea key={event.id+"rc"} className="fi" style={{fontSize:12,minHeight:64,resize:"vertical",lineHeight:1.6}}
+              placeholder="A short paste-ready blurb about how it went…" defaultValue={event.recap||""}
+              onBlur={e=>{const v=e.target.value;if(v!==(event.recap||"")){onUpdateEvent({...event,recap:v});showToast("Recap saved ✓");}}}/>
+          </div>
+        </>;
+
+        return (
+          <>
+            <div style={{fontSize:12,color:"var(--g500)",marginBottom:8}}>
+              <span style={{cursor:"pointer",color:"var(--cyan)"}} onClick={onBack}>Events</span>
+              <span style={{margin:"0 6px",color:"var(--g400)"}}>›</span>
+              <span>{event.name||"New event"}</span>
+            </div>
+            <div className="evb-hd">
+              <div className="evb-hd-l">
+                <div className="evb-kind">{isRequest?"Booking request":isPast?KIND+" · past":KIND}</div>
+                <input key={event.id+"nm"+(event.name||"")} className="evb-name" aria-label="Event name" placeholder="Name this event"
+                  defaultValue={event.name||""} autoFocus={!event.name}
+                  onKeyDown={e=>{if(e.key==="Enter")e.target.blur();}}
+                  onBlur={e=>{const v=e.target.value.trim(); if(!v){ if(event.name){e.target.value=event.name;showToast("An event needs a name","err");} return; } if(v!==(event.name||"")) setField({name:v},"Renamed ✓");}}/>
+                <div className="evb-meta">
+                  <select className="evb-sel" aria-label="Status" value={event.status||"upcoming"} onChange={e=>setField({status:e.target.value})}>
+                    {EVT_STATUS_OPTS.map(s=><option key={s.value} value={s.value}>{s.label}</option>)}
+                  </select>
+                  <select className="evb-sel" aria-label="Hosted by" value={event.outcomes?.hosted_by||""} onChange={e=>setHosted(e.target.value)}>
+                    <option value="" disabled>Hosted by: not set</option>
+                    <option value="sprout">Hosted by: Sprout</option>
+                    <option value="partner">Hosted by: Partner</option>
+                    <option value="rental">Hosted by: Rental</option>
+                  </select>
+                  {rec?.frequency&&<span className="evb-rec">{recurrenceSummary(event)}</span>}
                 </div>
-              ),linked.length>5?"All "+linked.length+" people":null)}
-
-              {tile("links","Links",links.length||"",(
-                <>
-                  {links.length===0&&!linkAdding&&<div className="evd-empty">No links yet. Add ticket, RSVP or Drive links.</div>}
-                  {links.map(l=>(
-                    <div key={l.id} className="evd-link">
-                      <a href={l.url} target="_blank" rel="noopener noreferrer" className="evd-link-a">
-                        <span className="evd-link-l">{l.label||l.url} ↗</span>
-                        {l.label&&l.label!==l.url&&<span className="evd-link-u">{l.url}</span>}
-                      </a>
-                      <button className="evd-x" title="Remove link"
-                        onClick={()=>onUpdateEvent({...event,links:links.filter(x=>x.id!==l.id)})}>×</button>
-                    </div>
-                  ))}
-                  {linkAdding
-                    ? <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                        <input className="fi" style={{fontSize:12}} placeholder="Label, e.g. Tickets"
-                          value={linkLabel} onChange={e=>setLinkLabel(e.target.value)}/>
-                        <input className="fi" style={{fontSize:12}} placeholder="https://…" value={linkUrl}
-                          onChange={e=>setLinkUrl(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")addLinkInline();}}/>
-                        <div style={{display:"flex",gap:6}}>
-                          <button className="btn btn-blk btn-sm" onClick={addLinkInline}>Add</button>
-                          <button className="btn btn-ghost btn-sm" onClick={()=>{setLinkAdding(false);setLinkLabel("");setLinkUrl("");}}>Cancel</button>
-                        </div>
-                      </div>
-                    : <button className="btn btn-ghost btn-sm" style={{alignSelf:"flex-start"}} onClick={()=>setLinkAdding(true)}>+ Add link</button>}
-                </>
-              ),null)}
-
-              {tile("media","Media",media.length||"",(
-                media.length===0
-                  ? <div className="evd-empty">No flyers or photos yet.</div>
-                  : <>
-                      <div className="evd-thumbs">
-                        {media.slice(0,4).map(m=>(
-                          <div key={m.id} className="evd-thumb">
-                            <a href={m.url} target="_blank" rel="noopener noreferrer" className="evd-thumb-img" title={m.name}>
-                              {isImg(m)?<img src={m.url} alt={m.name}/>:<span>{m.kind==="link"?"🔗":"📄"}</span>}
-                            </a>
-                            <div className="evd-thumb-f">
-                              <span title={m.name}>{m.name}</span>
-                              {m.kind==="file"&&<a href={dlUrl(m)} title="Download" className="evd-dl">⬇</a>}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      {media.length>4&&<div className="evd-more">+{media.length-4} more</div>}
-                    </>
-              ),"Upload & manage")}
-
-              {/* GUEST MEDIA: photos and video guests sent through the public upload link. */}
-              {tile("guestmedia","Guest media",guestMedia.uploads.length?guestMedia.uploads.length+" sent":"",(
-                !guestMedia.form
-                  ? <div>
-                      <div className="evd-empty">{guestMedia.loaded?"No upload link yet. Create one so guests can send their photos and video.":"Loading…"}</div>
-                      {guestMedia.loaded&&<button className="btn btn-blk btn-sm" style={{marginTop:8}} onClick={makeMediaForm}>+ Create upload link</button>}
-                    </div>
-                  : <>
-                      <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                        <button className="btn btn-blk btn-sm" onClick={()=>{
-                          const url=window.location.origin+"/media/"+guestMedia.form.token;
-                          try{ navigator.clipboard.writeText(url); showToast("Link copied ✓"); }catch{ showToast("Copy failed","err"); }
-                        }}>Copy upload link</button>
-                        <a className="btn btn-ghost btn-sm" href={"/media/"+guestMedia.form.token} target="_blank" rel="noopener noreferrer">Open ↗</a>
-                      </div>
-                      {guestMedia.uploads.length===0
-                        ? <div className="evd-empty">Nobody has sent anything yet.</div>
-                        : <div style={{display:"flex",flexDirection:"column",gap:5,marginTop:8}}>
-                            {groupSends(guestMedia.uploads).slice(0,4).map(g=>(
-                              <div key={g.batch} style={{fontSize:12.5,display:"flex",gap:6,alignItems:"center",minWidth:0}}>
-                                <span style={{fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{senderLabel(g.sender)}</span>
-                                <span style={{fontSize:10.5,color:"var(--g500)",whiteSpace:"nowrap"}}>{g.items.length} item{g.items.length===1?"":"s"}{g.sender.ok_to_post?" · OK to post":""}</span>
-                              </div>
-                            ))}
-                          </div>}
-                    </>
-              ),"All uploads & link")}
-
-              {tile("comms","Communications",comms.length?comms.length+" logged"+(awaiting?" · "+awaiting+" awaiting":""):"",(
-                recentComms.length===0
-                  ? <div className="evd-empty">Nothing logged yet.</div>
-                  : recentComms.map(c=>{
-                      const st=COMM_STATUS[c.status]||COMM_STATUS.sent;
-                      return (
-                        <div key={c.id} className="evd-row">
-                          <div className="evd-date">{(c.date||"").slice(5).replace("-","/")}</div>
-                          <div className="evd-row-t">
-                            <b>{c.contact_id?nameOf(c.contact_id):(c.to||"—")}</b>{" "}
-                            <span style={{color:"var(--g500)",fontSize:11}}>{COMM_CHANNELS[c.channel]||c.channel}</span>
-                            <small className="evd-clamp">{c.summary}</small>
-                          </div>
-                          <span className="evd-chip" style={{background:st.bg,color:st.fg}}>{st.label}</span>
-                        </div>
-                      );
-                    })
-              ),comms.length?"Log a message · see all "+comms.length:"Log a message",true)}
-
-              {/* OUTCOMES: filled in after the event; feeds the Grant Metrics page. */}
-              {(()=>{
-                const o=event.outcomes||{};
-                const kind=o.hosted_by||"sprout";
-                const upcoming=event.event_date&&event.event_date>localTodayISO();
-                const filled=o.headcount!=null&&o.headcount!=="";
-                const setO=patch=>onUpdateEvent({...event,outcomes:{hosted_by:"sprout",...o,...patch}});
-                const numBlur=key=>e=>{
-                  const raw=e.target.value.trim();
-                  const v=raw===""?null:Math.max(0,Math.round(Number(raw)));
-                  if(raw!==""&&!Number.isFinite(v)){showToast("Enter a number","err");return;}
-                  if(v!==(o[key]??null)){setO({[key]:v});showToast("Saved ✓");}
-                };
-                const txtBlur=key=>e=>{const v=e.target.value;if(v!==(o[key]||"")){setO({[key]:v});showToast("Saved ✓");}};
-                const lbl=t=><div className="evd-lbl">{t}</div>;
-                const count=upcoming?"":filled?o.headcount+" came":"Not filled in";
-                return tile("outcomes","Outcomes",count,(
-                  <>
-                    {upcoming&&<div className="evd-empty">Fill this in after {fmtDate(event.event_date)}. It feeds the Grant Metrics page.</div>}
-                    {!upcoming&&!filled&&<div style={{fontSize:12.5,fontWeight:700,color:"#8b5a00"}}>How many people came? Add a headcount so this event counts toward the grant numbers.</div>}
-                    <div className="evd-host-grid">
-                      <div>{lbl("Hosted by")}
-                        <select className="fi" style={{fontSize:12}} value={kind} onChange={e=>{setO({hosted_by:e.target.value});showToast("Saved ✓");}}>
-                          <option value="sprout">Sprout</option><option value="partner">Partner</option><option value="rental">Rental</option>
-                        </select></div>
-                      <div>{lbl("Headcount")}
-                        <input key={event.id+"hc"+(o.headcount??"")} className="fi" style={{fontSize:12}} inputMode="numeric" placeholder="e.g. 46"
-                          defaultValue={o.headcount??""} onBlur={numBlur("headcount")}/></div>
-                      <div>{lbl("First-timers")}
-                        <input key={event.id+"ft"+(o.first_timers??"")} className="fi" style={{fontSize:12}} inputMode="numeric" placeholder="optional"
-                          defaultValue={o.first_timers??""} onBlur={numBlur("first_timers")}/></div>
-                      <div>{lbl("Emails collected")}
-                        <input key={event.id+"em"+(o.emails_collected??"")} className="fi" style={{fontSize:12}} inputMode="numeric" placeholder="from sign-ins"
-                          defaultValue={o.emails_collected??""} onBlur={numBlur("emails_collected")}/></div>
-                      <div>{lbl("Counted from")}
-                        <input key={event.id+"cs"} className="fi" style={{fontSize:12}} placeholder="Kiosk sign-ins, door count…"
-                          defaultValue={o.count_source||""} onBlur={txtBlur("count_source")}/></div>
-                      {kind==="rental"&&<>
-                        <div>{lbl("Rental fee ($)")}
-                          <input key={event.id+"rf"+(o.rental_fee??"")} className="fi" style={{fontSize:12}} inputMode="numeric" placeholder="e.g. 450"
-                            defaultValue={o.rental_fee??""} onBlur={numBlur("rental_fee")}/></div>
-                        <div>{lbl("Payment")}
-                          <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
-                            <label style={{fontSize:12,display:"flex",gap:5,alignItems:"center",cursor:"pointer"}}>
-                              <input type="checkbox" checked={!!o.rental_paid} style={{accentColor:"var(--cyan)"}}
-                                onChange={e=>{const p=e.target.checked;setO({rental_paid:p,rental_paid_date:p?(o.rental_paid_date||localTodayISO()):""});showToast(p?"Marked paid ✓":"Marked unpaid");}}/>Paid</label>
-                            {o.rental_paid&&<input type="date" className="fi" style={{fontSize:12,width:"auto"}} value={o.rental_paid_date||""}
-                              onChange={e=>setO({rental_paid_date:e.target.value})}/>}
-                          </div></div>
-                      </>}
-                      <div>{lbl("Members who came")}
-                        <input key={event.id+"ma"+(o.members_attended??"")} className="fi" style={{fontSize:12}} inputMode="numeric" placeholder="optional"
-                          defaultValue={o.members_attended??""} onBlur={numBlur("members_attended")}/></div>
-                      <div>{lbl("Dues collected ($)")}
-                        <input key={event.id+"dc"+(o.dues_collected??"")} className="fi" style={{fontSize:12}} inputMode="numeric" placeholder="optional"
-                          defaultValue={o.dues_collected??""} onBlur={numBlur("dues_collected")}/></div>
-                      <div>{lbl("Artists featured")}
-                        <input key={event.id+"ar"+(o.artists??"")} className="fi" style={{fontSize:12}} inputMode="numeric"
-                          placeholder={`${program.entries.length} from Program`} defaultValue={o.artists??""} onBlur={numBlur("artists")}/></div>
-                      <div>{lbl("Linked in CRM")}<div style={{fontSize:12.5}}>{linked.length} people · {confirmedN} checked in</div></div>
-                    </div>
-                    <div>{lbl("A quote from the night (optional)")}
-                      <textarea key={event.id+"q"} className="fi" style={{fontSize:12,minHeight:54,resize:"vertical",lineHeight:1.6}}
-                        placeholder="Something someone said about the night…"
-                        defaultValue={o.quote||""} onBlur={txtBlur("quote")}/></div>
-                  </>
-                ),null,true);
-              })()}
-
-              {tile("details","Details","",(
-                <>
-                  {event.description&&<div><div className="evd-lbl">Description</div><p className="evd-p">{event.description}</p></div>}
-                  {event.notes&&<div><div className="evd-lbl">Notes</div><p className="evd-p">{event.notes}</p></div>}
-                  {!event.description&&!event.notes&&<div className="evd-empty">No description or notes. Add them with Edit Event.</div>}
-                  {/* RECAP: assemble_newsletter only pulls recaps from completed events that have
-                      this filled, so an empty box is why an event never reaches the roundup. */}
-                  <div>
-                    <div className="evd-lbl">Recap <span style={{fontWeight:400,textTransform:"none",letterSpacing:0}}>· feeds the newsletter</span></div>
-                    <textarea key={event.id} className="fi" style={{fontSize:12,minHeight:64,resize:"vertical",lineHeight:1.6}}
-                      placeholder="A short paste-ready blurb about how it went…"
-                      defaultValue={event.recap||""}
-                      onBlur={e=>{const v=e.target.value;if(v!==(event.recap||"")){onUpdateEvent({...event,recap:v});showToast("Recap saved ✓");}}}/>
-                    {event.status!=="completed"&&(event.recap||"").trim()&&(
-                      <div style={{fontSize:10,color:"var(--g400)",marginTop:5}}>
-                        This event is not marked completed yet, so the recap will not appear in the roundup.
-                      </div>
-                    )}
-                  </div>
-                </>
-              ),null,true)}
+                <div className="evb-line">
+                  {dateLine}{event.location?` · ${event.location}`:""}{hostName?` · Host: ${hostName}${pdata.org_name?`, ${pdata.org_name}`:""}`:""}
+                </div>
+              </div>
+              {actions&&<div className="evb-acts-hd">{actions}</div>}
             </div>
-          </div>
-        </>
+
+            {isRequest&&(
+              <div style={{borderLeft:"6px solid var(--banana)",background:"#fff",borderRadius:"0 10px 10px 0",padding:"12px 16px",marginBottom:14,boxShadow:"0 2px 10px rgba(0,0,0,0.06)",fontSize:12.5,color:"var(--g600)",lineHeight:1.6}}>
+                <b style={{color:"var(--black)"}}>Waiting on you.</b>{" "}
+                {waiting.length?`${waiting.length} date${waiting.length===1?" is":"s are"} waiting. `:"No booking dates yet, so Approve uses the date and times in the Dates bar. "}
+                Approve puts it on the Sprout calendar and emails the host.
+                {missingN>0&&` ${missingN} essential${missingN===1?" is":"s are"} still missing from the portal.`}
+              </div>
+            )}
+            {!isRequest&&(daysOut!=null||overdue>0||missingN>0)&&(
+              <div className="evd-strip" style={{margin:"0 0 14px"}}>
+                {daysOut!=null&&<span className="evd-strip-n">{daysOut>0?daysOut+" days out":daysOut===0?"Today":""}</span>}
+                {overdue>0&&<span className="evd-chip" style={{background:"var(--fuchsia-lt)",color:"#8b0057"}}>{overdue} overdue</span>}
+                {missingN>0&&<span className="evd-chip" style={{background:"var(--g100)",color:"var(--g600)"}}>{missingN} essentials missing</span>}
+              </div>
+            )}
+
+            <div className="evb-list">
+              {bar("dates","Dates",datesSummary,datesBody)}
+              {bar("host","Host & details",hostSummary,hostBody)}
+              {bar("links","Links & files",linksSummary,linksBody)}
+              {bar("people","People",linked.length?`${linked.length} · ${confirmedN} confirmed`:"Nobody yet",peopleBody)}
+              {showChecklist&&bar("checklist","Checklist",clTotal?<>{clDone} of {clTotal} done{overdue>0&&<b style={{color:"#8b0057"}}> · {overdue} overdue</b>}</>:"No items yet",checklistBody)}
+              {showProgram&&bar("program","Program",program.entries.length?`${program.entries.length} sent their info`:"Link made, nobody yet",programBody)}
+              {showGallery&&bar("gallery","Gallery",gallery.entries.length?`${gallery.entries.length} sent`:"Link made, nobody yet",galleryBody)}
+              {isPast&&bar("outcomes","Outcomes",outSummary,outcomesBody)}
+            </div>
+
+            {((program.loaded&&!showProgram)||(gallery.loaded&&!showGallery))&&(
+              <div className="evb-add">
+                {program.loaded&&!showProgram&&<button onClick={makeProgramForm}>+ Add program form</button>}
+                {gallery.loaded&&!showGallery&&<button onClick={makeGalleryForm}>+ Add gallery form</button>}
+              </div>
+            )}
+            <div className="evb-foot"><button className="btn btn-danger btn-sm" onClick={onDelete}>Delete event</button></div>
+          </>
         );
       })()}
+
+      {slotDel&&<ConfirmModal title="Remove this date" confirmLabel="Remove"
+        message={`Remove ${slotDate(slotDel.date)}, ${slotTimes(slotDel.start_time,slotDel.end_time)}? ${slotDel.status==="confirmed"?"It comes off the Sprout calendar too. ":""}The host isn't emailed.`}
+        onConfirm={confirmSlotDelete} onCancel={()=>setSlotDel(null)}/>}
+      {declineAsk&&<ConfirmModal title="Decline this request" confirmLabel="Decline"
+        message={`Decline "${event.name||"this request"}"? ${slots.some(s=>s.status==="requested")?"The host is emailed that their dates were declined. ":""}The event is marked Cancelled.`}
+        onConfirm={declineRequest} onCancel={()=>setDeclineAsk(false)}/>}
 
       {/* ── TILE POPUPS: the full editors, unchanged, one click from the dashboard ── */}
       {openTile==="plan"&&(
@@ -5526,13 +5271,6 @@ function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpda
           {linked.map(c=><ContactRow key={c.id} c={c}/>)}
         </Modal>
       )}
-      {openTile==="comms"&&(
-        <Modal xl title="Communications" onClose={()=>setOpenTile(null)}>
-          <EventCommsPanel event={event} contacts={contacts} linked={linked}
-            onUpdateEvent={onUpdateEvent} onUpdateContacts={onUpdateContacts}
-            onContactClick={onContactClick} showToast={showToast}/>
-        </Modal>
-      )}
       {openTile==="media"&&(
         <Modal xl title="Media" onClose={()=>setOpenTile(null)}>
           <EventMediaPanel event={event} onUpdateEvent={onUpdateEvent} showToast={showToast}/>
@@ -5591,20 +5329,6 @@ function EventDetailPage({event,allEvents,contacts,onBack,onEdit,onDelete,onUpda
         </Modal>
       )}
 
-      {/* CONTACTS MODAL */}
-      {showContactsModal&&(
-        <div className="mover" onClick={()=>setShowContactsModal(false)}>
-          <div className="modal" onClick={e=>e.stopPropagation()} style={{width:480,maxHeight:"80vh",display:"flex",flexDirection:"column"}}>
-            <div className="m-hd">
-              <div className="m-ttl">Contacts ({linked.length}) — RSVP</div>
-              <button className="m-close" onClick={()=>setShowContactsModal(false)}>×</button>
-            </div>
-            <div className="m-bd" style={{overflowY:"auto",flex:1}}>
-              {linked.map(c=><ContactRow key={c.id} c={c}/>)}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -5619,7 +5343,8 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
   const [calDrag,setCalDrag]=useState(null); // event id being dragged
   const [evtPage,setEvtPage]=useState("list");
   const [selectedId,setSelectedId]=useState(null);
-  const [editDraft,setEditDraft]=useState(null);
+  const [fHost,setFHost]=useState("all");
+  const [waitingGroups,setWaitingGroups]=useState([]); // booking requests, shared with the calendar
   const [confirmDel,setConfirmDel]=useState(null);
   const [inlineContact,setInlineContact]=useState(null);
 
@@ -5637,7 +5362,9 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
       const q=search.toLowerCase();
       const matchQ=!q||e.name?.toLowerCase().includes(q)||(e.location||"").toLowerCase().includes(q);
       const matchS=fStatus==="all"||e.status===fStatus;
-      return matchQ&&matchS;
+      const hb=e.outcomes?.hosted_by||"";
+      const matchH=fHost==="all"||(fHost==="none"?!hb:hb===fHost);
+      return matchQ&&matchS&&matchH;
     }).sort((a,b)=>{
       const da=eventDisplayDate(a)||"", db=eventDisplayDate(b)||"";
       if(!da&&!db) return 0;
@@ -5645,23 +5372,18 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
       if(!db) return -1;
       return da.localeCompare(db);
     });
-  },[events,search,fStatus]);
+  },[events,search,fStatus,fHost]);
 
   const selectedEvent = selectedId ? events.find(e=>e.id===selectedId) : null;
+  const openEvent = (id) => { setSelectedId(id); setEvtPage("detail"); };
 
-  const handleSave = () => {
-    if(!editDraft) return;
-    const {_isNew, ...clean} = editDraft;
-    const isNew = !!_isNew;
-    const updated = events.find(e=>e.id===clean.id)
-      ? events.map(e=>e.id===clean.id?clean:e)
-      : [...events, clean];
-    onUpdate(updated);
-    showToast(isNew?"Event added ✓":"Event updated ✓");
-    setSelectedId(clean.id);
-    setEditDraft(null);
-    if(isNew) { setEvtPage("list"); }
-    else { setEvtPage("detail"); }
+  // "+ Add event" makes the record straight away and opens its page, where every
+  // field is edited in its bar (the separate Edit Event page is gone).
+  const addNewEvent = () => {
+    const ev = BLANK_EVENT();
+    onUpdate([...events, ev]);
+    openEvent(ev.id);
+    showToast("New event added. Give it a name.");
   };
 
   const handleDelete = (id) => {
@@ -5687,35 +5409,24 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
   };
 
   const handleContactClick = (c) => { setInlineContact({...c}); };
-  const handleCancelEdit = () => { setEditDraft(null); setEvtPage(selectedId?"detail":"list"); };
   const handleSaveInlineContact = () => {
     if(!inlineContact||!onUpdateContacts) return;
     onUpdateContacts(inlineContact);
     setInlineContact(null);
   };
 
-  if((evtPage==="edit"||evtPage==="new")&&editDraft) return <>
-    <EventEditPage
-      editing={editDraft}
-      setEditing={setEditDraft}
-      onSave={handleSave}
-      onCancel={handleCancelEdit}
-      contacts={contacts}
-    />
-    {confirmDel&&<ConfirmModal message={`Delete "${editDraft.name||"this event"}"? This cannot be undone.`} onConfirm={()=>handleDelete(confirmDel)} onCancel={()=>setConfirmDel(null)}/>}
-  </>;
-
   if(evtPage==="detail"&&selectedEvent) return <>
     <EventDetailPage
+      key={selectedEvent.id}
       onUpdateContacts={onUpdateContacts}
       event={selectedEvent}
       allEvents={events}
       contacts={contacts}
       onBack={()=>{setEvtPage("list");setSelectedId(null);}}
-      onEdit={()=>{setEditDraft({...selectedEvent});setEvtPage("edit");}}
       onDelete={()=>setConfirmDel(selectedEvent.id)}
       onUpdateEvent={handleUpdateEvent}
       onApprove={approveToCalendar}
+      onEventChanged={onEventChanged}
       onContactClick={handleContactClick}
       portal={portals[selectedEvent.id]}
       onSavePortalAnswer={onSavePortalAnswer}
@@ -5735,50 +5446,51 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
         <div><div className="pg-ttl">Events</div><div className="pg-sub">{events.length} event{events.length!==1?"s":""} total</div></div>
         <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
           {/* Public booking form: send this to anyone who wants to host. Submissions land here as Requests. */}
-          {(()=>{
-            const bookLink=`${typeof window!=="undefined"?window.location.origin:""}/book`;
-            return (
-              <div style={{display:"flex",alignItems:"center",gap:8,border:"1px solid var(--g200)",borderRadius:8,padding:"6px 8px 6px 12px",background:"#fff"}}>
-                <div style={{minWidth:0}}>
-                  <div style={{fontSize:9.5,fontWeight:700,letterSpacing:"0.05em",textTransform:"uppercase",color:"var(--g500)"}}>Hosting request form</div>
-                  <div style={{fontSize:12,fontWeight:700,color:"var(--cyan)",wordBreak:"break-all"}}>{bookLink}</div>
-                </div>
-                <button className="btn btn-blk btn-sm" onClick={()=>{ try{ navigator.clipboard.writeText(bookLink); showToast("Booking link copied ✓"); }catch{ showToast("Copy failed","err"); } }}>Copy link</button>
-                <a className="btn btn-ghost btn-sm" href={bookLink} target="_blank" rel="noopener noreferrer">Open ↗</a>
-              </div>
-            );
-          })()}
-          <button className="btn btn-blk" onClick={()=>{ setEditDraft({...BLANK_EVENT(),_isNew:true}); setEvtPage("new"); }}>+ Add Event</button>
+          <button className="btn btn-ghost" onClick={()=>{
+            const bookLink=`${window.location.origin}/book`;
+            try{ navigator.clipboard.writeText(bookLink); showToast("Hosting form link copied ✓ "+bookLink); }catch{ showToast("Copy failed: "+bookLink,"err"); }
+          }}>Share hosting form</button>
+          <button className="btn btn-blk" onClick={addNewEvent}>+ Add event</button>
         </div>
       </div>
       {(()=>{
-        const today=new Date().toISOString().slice(0,10);
-        const upcoming=events.filter(e=>e.status==="upcoming").length;
-        const completed=events.filter(e=>e.status==="completed").length;
-        const pendingReq=events.filter(e=>e.status==="pending").length;   // unapproved portal bookings
-        const overdue=events.reduce((acc,e)=>acc+(e.checklist||[]).filter(i=>!i.completed&&i.date&&i.date<=today).length,0);
-        const statCard=(label,val,valColor,onClick)=>(
-          <div className="stat" style={{flex:1,minWidth:90,...(onClick?{cursor:"pointer"}:{})}} onClick={onClick} title={onClick?"Show only booking requests":undefined}>
+        const lt=localTodayISO();
+        const live=e=>e.status==="pending"||e.status==="upcoming";
+        const waitingDates=waitingGroups.reduce((n,g)=>n+g.slots.length,0);
+        const pendingReq=events.filter(e=>e.status==="pending").length;
+        const overdue=events.filter(live).reduce((acc,e)=>acc+(e.checklist||[]).filter(i=>!i.completed&&i.date&&i.date<lt).length,0);
+        const statCard=(label,val,sub,valColor,onClick,title)=>(
+          <div className="stat" style={{flex:"1 1 160px",minWidth:0,...(onClick?{cursor:"pointer"}:{})}} onClick={onClick} title={title}>
             <div className="stat-lbl">{label}</div>
             <div className="stat-val" style={valColor?{color:valColor}:{}}>{val}</div>
+            {sub&&<div style={{fontSize:11,color:"var(--g500)",marginTop:2}}>{sub}</div>}
           </div>
         );
         return <div className="stats" style={{marginBottom:18}}>
-          {statCard("Total",events.length)}
-          {statCard("Requests",pendingReq,pendingReq>0?"#5c4a00":undefined,()=>{ setFStatus("pending"); setView("list"); })}
-          {statCard("Upcoming",upcoming,"var(--cyan)")}
-          {statCard("Completed",completed)}
-          {statCard("Checklist overdue",overdue,overdue>0?"var(--orange)":undefined)}
+          {statCard("Requests",pendingReq+waitingGroups.filter(g=>g.event_status!=="pending").length,
+            waitingDates?`${waitingDates} date${waitingDates===1?"":"s"} waiting`:null,
+            pendingReq||waitingDates?"#5c4a00":undefined,()=>{ setFStatus("pending"); setView("list"); },"Show only booking requests")}
+          {statCard("Checklist overdue",overdue,"on upcoming events",overdue>0?"var(--orange)":undefined)}
         </div>;
       })()}
-      {/* Date requests from /book and client portals, waiting for approval. */}
-      <BookingRequestsPanel onEventChanged={onEventChanged} showToast={showToast}
-        onOpenEvent={(id)=>{ setSelectedId(id); setEvtPage("detail"); }}/>
+      {/* Everything waiting on staff: date requests, requests with no dates, events with no "Hosted by". */}
+      <BookingRequestsPanel onEventChanged={onEventChanged} showToast={showToast} onOpenEvent={openEvent}
+        onGroups={setWaitingGroups}
+        pendingEvents={events.filter(e=>e.status==="pending")}
+        unsetHost={(()=>{ const lt=localTodayISO(); return events.filter(e=>e.status==="upcoming"&&!e.outcomes?.hosted_by&&(e.recurrence?.frequency?!!nextOccurrence(e,lt):(e.event_date||"")>=lt)); })()}
+        onSetHostedBy={(ev,k)=>{ handleUpdateEvent({...ev,outcomes:{hosted_by:"sprout",...(ev.outcomes||{}),hosted_by:k}}); showToast("Saved ✓"); }}/>
       <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
-        <input className="fi" style={{maxWidth:260}} placeholder="Search events…" value={search} onChange={e=>setSearch(e.target.value)}/>
-        <select className="fs" style={{maxWidth:160}} value={fStatus} onChange={e=>setFStatus(e.target.value)}>
-          <option value="all">All Statuses</option>
+        <input className="fi" style={{flex:"1 1 200px",maxWidth:260}} placeholder="Search events…" aria-label="Search events" value={search} onChange={e=>setSearch(e.target.value)}/>
+        <select className="fs" style={{maxWidth:160}} aria-label="Status" value={fStatus} onChange={e=>setFStatus(e.target.value)}>
+          <option value="all">All statuses</option>
           {EVT_STATUS_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+        <select className="fs" style={{maxWidth:170}} aria-label="Hosted by" value={fHost} onChange={e=>setFHost(e.target.value)}>
+          <option value="all">Any host</option>
+          <option value="sprout">Hosted by Sprout</option>
+          <option value="partner">Hosted by Partner</option>
+          <option value="rental">Rental</option>
+          <option value="none">Hosted by: not set</option>
         </select>
         <div style={{marginLeft:"auto",display:"flex",gap:4}}>
           <button className={`btn btn-xs ${viewMode==="calendar"?"btn-blk":"btn-ghost"}`} onClick={()=>setView("calendar")}>🗓 Calendar</button>
@@ -5817,7 +5529,7 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
                       <button className="btn btn-blk btn-xs" title="Put this event on the calendar"
                         onClick={()=>approveToCalendar(e)}>Approve</button>
                     )}
-                    <button className="btn btn-ghost btn-xs" onClick={()=>{setEditDraft({...e});setEvtPage("edit");}}>Edit</button>
+                    <button className="btn btn-ghost btn-xs" onClick={()=>openEvent(e.id)}>Open</button>
                     <button className="btn btn-danger btn-xs" onClick={()=>setConfirmDel(e.id)}>Del</button>
                   </td>
                 </tr>
@@ -5843,6 +5555,13 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
           });
         });
         Object.values(byDay).forEach(list=>list.sort((a,b)=>(a.start_time||"99").localeCompare(b.start_time||"99")));
+        // Booking dates waiting on staff: dashed chips, so a request shows where it would land.
+        const waitByDay={};
+        waitingGroups.forEach(g=>g.slots.forEach(s=>{
+          if(s.date<monthStart||s.date>monthEnd) return;
+          const day=Number(s.date.slice(8,10));
+          (waitByDay[day]=waitByDay[day]||[]).push({...s,event_id:g.event_id,event_name:g.event_name});
+        }));
         const shiftMonth=(delta)=>{ const d=new Date(yr,mo-1+delta,1); setCalMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`); };
         const chipColor=(st)=>st==="completed"?{bg:"var(--g100)",fg:"var(--g500)"}:st==="cancelled"?{bg:"var(--fuchsia-lt)",fg:"#8b0057"}:st==="pending"?{bg:"var(--banana)",fg:"#5c4a00"}:{bg:"var(--cyan-lt)",fg:"#155e6e"};
         const moveEvent=(ev,dateStr)=>{ if(ev.event_date===dateStr) return; handleUpdateEvent({...ev,event_date:dateStr}); showToast("Event moved ✓"); };
@@ -5870,7 +5589,14 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
                   onDragOver={e=>{e.preventDefault();e.dataTransfer.dropEffect="move";}}
                   onDrop={e=>{e.preventDefault();const id=calDrag||e.dataTransfer.getData("text/plain");if(id){const tgt=events.find(x=>x.id===id);if(tgt)moveEvent(tgt,dayStr);setCalDrag(null);}}}>
                   <div className="cal-date">{day}</div>
-                  {items.map((ev,k)=>{
+                  {(waitByDay[day]||[]).map(s=>(
+                    <div key={s.id} className="cal-dot" title={`${s.event_name} · waiting on you · ${slotTimes(s.start_time,s.end_time)}`}
+                      onClick={e=>{e.stopPropagation();openEvent(s.event_id);}}
+                      style={{background:"transparent",border:"1.5px dashed #b38f00",color:"#5c4a00",cursor:"pointer"}}>
+                      {fmtTime(s.start_time)} {s.event_name} · waiting
+                    </div>
+                  ))}
+                  {items.filter(ev=>!(waitByDay[day]||[]).some(s=>s.event_id===ev.id)).map((ev,k)=>{
                     // Colour by THIS occurrence, not the series — past Fridays of a weekly event
                     // read completed while the series keeps running.
                     const occSt=occurrenceStatus(ev,dayStr);
@@ -5896,8 +5622,7 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
                               : <><label className="fl">Date</label>
                                   <input type="date" className="fi" style={{fontSize:11,marginBottom:10}} value={ev.event_date||""}
                                     onChange={e=>{if(e.target.value){moveEvent(ev,e.target.value);setCalPopover(null);}}}/></>}
-                            <button className="btn btn-blk btn-sm" style={{width:"100%",marginBottom:6}} onClick={()=>{setSelectedId(ev.id);setEvtPage("detail");setCalPopover(null);}}>View event page →</button>
-                            <button className="btn btn-ghost btn-sm" style={{width:"100%"}} onClick={()=>{setEditDraft({...ev});setEvtPage("edit");setCalPopover(null);}}>Edit</button>
+                            <button className="btn btn-blk btn-sm" style={{width:"100%"}} onClick={()=>{openEvent(ev.id);setCalPopover(null);}}>Open event page →</button>
                           </div>
                         )}
                       </div>
