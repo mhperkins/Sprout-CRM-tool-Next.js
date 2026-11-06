@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-11-06: MCP sees every contact again; hosting + survey status pass
+
+Merge `abffd29` (branch `fix-mcp-paging`). Effort: medium for the status pass, re-tiered to max for the MCP fix because a create could overwrite an existing record. Ran on Opus 5.5.
+
+- **MCP 1,000-row bug fixed (`mcp/server.js`).** `getContacts`, `getOrgs` and `getEvents` made one unpaged request, and Supabase returns at most 1,000 rows, so the MCP saw 1,000 of 3,977 contacts. Updates answered "No contact found" for real ids (the long-standing Natasha / Jess / Anna errors), `check_existing` and search missed people, health reported 1,000, and the create-collision check could miss an existing id so the upsert overwrote it. New `selectAll()` pages by id; `findContact` / `findOrg` query the table by id. Old and new servers compared through real read-only MCP calls; no June import record had been overwritten.
+- **Hosting requests gathered and logged.** Six live requests (Othership Sauna Hat Workshop 11/8, CRAFTERNOON 12/5, Intention Circle 12/12, Awestruck Collective 12/13, The Humanhood 1/16, Shradha Sardana's showcase with dates open), all answered by Max and now waiting on hosts. Created `org_othership`, `ind_maria_chernova`, `ind_aalisha_jaisinghani`; touchpoints, next actions and Event Host tags on every host; hosts linked to their events; `evt_tbd` renamed.
+- **Survey replies logged.** 17 replies (artists 13 of 49, hosts 2 of 5, attendees 2 of 85); each respondent got a dated survey touchpoint with their quote. Maia Baird's holiday-market interest became a next action (no email on file, reply by IG).
+- **Natasha Nesari = Modern Mystic Studios.** Studio website, Instagram, email, vendor touchpoint and Vol. 5 survey invite moved onto `ind_mr3up0m26qfe`; she was added to Vol. 5 People. The now-empty `ind_modern_mystic_studios` is still there (the auto-mode classifier blocked the delete).
+
+---
+
 ## 2026-11-06: Approve onto the calendar writes to Google Calendar; event page lists every date
 
 Merge `0914524` (branch `approve-to-calendar`). Effort: medium. Why: Max approved his test booking with the event page's Approve button, which only flipped the status, so nothing reached the Sprout HQ calendar; and the event page showed only the first of his two dates.

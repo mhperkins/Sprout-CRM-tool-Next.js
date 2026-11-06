@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCP Sees Everyone</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap">
+<style>
+  :root { --ink:#030000; --paper:#F7F7F6; --acid:#C6C902; --fuchsia:#E10098; --cyan:#73C4D6; --banana:#FAD100; --g:#5f5f5c; --line:#dcdcd9; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:#e9e9e6; font-family:Lato, system-ui, sans-serif; color:var(--ink); display:flex; justify-content:center; padding:24px; }
+  .slide { width:1280px; max-width:100%; aspect-ratio:16/9; background:var(--paper); border-radius:14px; overflow:hidden; display:grid; grid-template-rows:auto auto 1fr auto; box-shadow:0 12px 40px rgba(0,0,0,.18); }
+  .top { background:var(--ink); color:#fff; padding:26px 40px 22px; display:flex; justify-content:space-between; align-items:flex-end; gap:20px; }
+  .eyebrow { font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--acid); font-weight:900; }
+  h1 { font-size:36px; font-weight:900; margin-top:6px; }
+  .sub { font-size:15px; color:#c2c2bf; margin-top:6px; max-width:760px; }
+  .badges { display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
+  .badge { font-size:12px; font-weight:900; border-radius:999px; padding:5px 12px; white-space:nowrap; }
+  .b-live { background:var(--acid); color:var(--ink); }
+  .b-hash { background:#1f1d1d; color:#fff; border:1px solid #444; font-family:ui-monospace, Consolas, monospace; font-weight:700; }
+  .rule { height:5px; background:var(--acid); }
+  .body { padding:24px 40px; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:14px; align-content:start; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:15px 18px; position:relative; overflow:hidden; }
+  .card::before { content:""; position:absolute; left:0; top:0; bottom:0; width:6px; background:var(--c, var(--cyan)); }
+  .card h3 { font-size:16px; font-weight:900; }
+  .card p { font-size:13px; line-height:1.5; color:var(--g); margin-top:6px; }
+  .big { font-size:30px; font-weight:900; color:var(--ink); margin-top:4px; }
+  .big s { color:#b5b5b1; font-size:20px; margin-right:8px; }
+  .wide2 { grid-column:span 2; }
+  .wide { grid-column:span 3; }
+  .chips { display:flex; gap:7px; flex-wrap:wrap; margin-top:8px; }
+  .chip { font-size:12px; border:1px solid var(--line); border-radius:999px; padding:4px 10px; background:#fff; }
+  .foot { padding:12px 40px 16px; display:flex; justify-content:space-between; font-size:12px; color:var(--g); border-top:1px solid var(--line); }
+  .foot b { color:var(--ink); }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Sprout CRM · Delivery · Nov 6, 2026</div>
+      <h1>The CRM tool sees every contact again</h1>
+      <div class="sub">The MCP was reading only the first 1,000 contacts. That broke updates and could overwrite records on create. Plus: every hosting request and survey reply is now logged in the CRM.</div>
+    </div>
+    <div class="badges">
+      <span class="badge b-live">● Merged · pushed</span>
+      <span class="badge b-hash">main · abffd29</span>
+      <span class="badge b-hash">effort: medium → max</span>
+    </div>
+  </div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="card" style="--c:var(--fuchsia)">
+      <h3>Contacts the tool can see</h3>
+      <div class="big"><s>1,000</s>3,977</div>
+      <p>Every read now pages through the table; single records are looked up by id.</p>
+    </div>
+    <div class="card" style="--c:var(--cyan)">
+      <h3>"No contact found" is gone</h3>
+      <p>The error behind the Natasha, Jess and Anna failures. Anna Bennett now resolves; a fake id still reports not found.</p>
+    </div>
+    <div class="card" style="--c:var(--acid)">
+      <h3>No silent overwrites</h3>
+      <p>Create checks for an existing id in the database, not a partial list. Checked: no June import record was overwritten.</p>
+    </div>
+    <div class="card wide2" style="--c:var(--banana)">
+      <h3>Hosting requests: all answered, waiting on hosts</h3>
+      <div class="chips">
+        <span class="chip">Sauna Hat Workshop · Othership · Sun 11/8</span>
+        <span class="chip">CRAFTERNOON · 12/5 · confirmed</span>
+        <span class="chip">Intention Circle · 12/12 · hold</span>
+        <span class="chip">Awestruck Collective · 12/13 · hold</span>
+        <span class="chip">The Humanhood · 1/16 · visit next week</span>
+        <span class="chip">Shradha's showcase · new dates 11/13</span>
+      </div>
+      <p>3 new records (Othership, Maria Chernova, Aalisha Jaisinghani), next actions on every host, hosts linked to their events.</p>
+    </div>
+    <div class="card" style="--c:var(--fuchsia)">
+      <h3>Survey replies</h3>
+      <div class="big">17</div>
+      <p>Artists 13 of 49 · hosts 2 of 5 · attendees 2 of 85. Each logged as a touchpoint with the quote.</p>
+    </div>
+    <div class="card wide" style="--c:var(--cyan)">
+      <h3>Natasha Nesari = Modern Mystic Studios</h3>
+      <p>Studio website, Instagram, email, vendor touchpoint and Vol. 5 survey moved onto Natasha's record. The empty duplicate still needs deleting in the app (the safety check blocked it).</p>
+    </div>
+  </div>
+  <div class="foot">
+    <span><b>Tested</b> by running old and new MCP servers side by side on read-only calls against live data.</span>
+    <span>branch fix-mcp-paging → main · worktree removed · reload VS Code</span>
+  </div>
+</div>
+</body>
+</html>
