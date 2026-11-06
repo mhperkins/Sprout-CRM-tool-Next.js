@@ -8,13 +8,21 @@
 
 import { hasServiceKey } from "@/lib/portalDb";
 import { inviteByToken, surveyById, inviteEvents, saveInviteAnswers, recentOpenReplies, createOpenReply } from "@/lib/surveyDb";
-import { sanitizeAnswers, answerProblems, isOpenLink } from "@/lib/surveyForm";
-import { notifySurveyReply } from "@/lib/notify";
+import { sanitizeAnswers, answerProblems, isOpenLink, isTestInvite } from "@/lib/surveyForm";
+import { notifySurveyReply, sendSurveyThanks } from "@/lib/notify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const fail = (error, status = 400) => Response.json({ error }, { status });
+
+// The thank-you from Max goes out once, on a person's first send. Never to test
+// invites. Caught: a failed thank-you must never fail someone's reply.
+async function thank(invite) {
+  if (!invite?.email || isTestInvite(invite)) return;
+  try { await sendSurveyThanks({ to: invite.email, name: invite.name }); }
+  catch (e) { console.error("survey — thank-you email failed:", e?.message || e); }
+}
 
 async function load(params) {
   if (!hasServiceKey()) return { res: fail("This survey is not set up yet.", 503) };
@@ -72,6 +80,7 @@ export async function POST(req, { params }) {
     } catch (e) {
       console.error("survey — notification email failed:", e?.message || e);
     }
+    await thank(reply);
     return Response.json({ ok: true, token: reply.token });
   }
 
@@ -89,5 +98,6 @@ export async function POST(req, { params }) {
   } catch (e) {
     console.error("survey — notification email failed:", e?.message || e);
   }
+  if (firstReply) await thank(invite);
   return Response.json({ ok: true });
 }
