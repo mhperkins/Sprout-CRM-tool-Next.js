@@ -256,9 +256,9 @@ export function PickDatesModal({ initialDate, loadBusy, mine = [], onClose, onDo
               <div className="bk-times">
                 <input className="pt-in" type="time" step="900" aria-label="Start time" value={start} onChange={(e) => setStart(e.target.value)} />
                 <span>to</span>
-                <input className="pt-in" type="time" step="900" aria-label="End time" value={end} onChange={(e) => setEnd(e.target.value)} />
+                <input className="pt-in" type="time" step="900" max="22:00" aria-label="End time" value={end} onChange={(e) => setEnd(e.target.value)} />
               </div>
-              <p className="pt-help">Include setup and cleanup. For midnight, pick 12:00 AM.</p>
+              <p className="pt-help">Include setup and cleanup. Everything ends by 10pm.</p>
             </div>
 
             <div>
@@ -277,7 +277,7 @@ export function PickDatesModal({ initialDate, loadBusy, mine = [], onClose, onDo
                       <div className="bk-times">
                         <input className="pt-in" type="time" step="900" aria-label={`Start on ${shortDate(r.date)}`} value={r.start} onChange={(e) => setDayTimes(r.date, { start: e.target.value })} />
                         <span>to</span>
-                        <input className="pt-in" type="time" step="900" aria-label={`End on ${shortDate(r.date)}`} value={r.end} onChange={(e) => setDayTimes(r.date, { end: e.target.value })} />
+                        <input className="pt-in" type="time" step="900" max="22:00" aria-label={`End on ${shortDate(r.date)}`} value={r.end} onChange={(e) => setDayTimes(r.date, { end: e.target.value })} />
                         {r.custom && <button type="button" className="pt-btn-lnk" onClick={() => resetDay(r.date)}>Use the shared times</button>}
                       </div>
                     )}
