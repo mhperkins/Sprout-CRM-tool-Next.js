@@ -9,6 +9,7 @@ Merge `cd0fd35` (branch `survey-thanks-email`). Effort: medium.
 - **New automated thank-you.** A person's first survey send triggers `sendSurveyThanks` in `lib/notify.js`: thanks, the /get-involved link and the Discord invite, signed Max, Community Manager. Wired into both paths of `app/api/survey/[token]/route.js` (personal links and shared-link replies).
 - **Sent from maxperkins@, not hello@.** `sendEmail` accepts a sender, display name and refresh token; the new `MAX_GMAIL_REFRESH_TOKEN` (same Google client) is in `.env.local` and Vercel Production. Max's call: people should hear from him.
 - **Safe by default.** No send for test invites, replies without an email, or edits; a failure is logged and the reply still saves. One live test sent to maxperkins@.
+- **Reply line added (merge `901b0a2`).** The email now ends "If you have any questions, you can reply to this email." before the sign-off.
 - **Why:** Max wanted every respondent thanked with the same get-involved and Discord asks as the outreach DMs. The 15 earlier respondents get a manual send on Monday 11/9.
 
 ---
