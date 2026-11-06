@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-11-04 to 11-06: Booking calendar (clients pick dates, staff approve)
+
+Merge `2c462c5` (branch `booking-calendar`, commits `0e25807`, `8e164d4`, `d85d824`, `fce823e`, `2b03e1e`) + migration `sprout_booking_slots`. Effort: high. Ran on Opus 5.5. Why: Floorwork and Queer Social collided on Tue 11/3. Floorwork's dates were only ever a pattern ("Sun to Wed"); the Program Calendar had a Tuesday FW series in October that was cancelled night by night, and no email ever listed their dates.
+
+- **`/book`:** asks "One event or a regular booking?" and "Do you know your dates?" Yes opens the picker; Not yet skips it. A regular booking is tagged `rental` with `hosted_by: rental`.
+- **Picker:** the month calendar itself. Click days on and off, one time range for every picked day, Edit time per day. Grey blocks are Program Calendar times with no titles. Clashes show why and are left out. 3 days' notice, about 3 months ahead, nothing past 10pm.
+- **Portal "Your dates" section** (open by default): the client's confirmed and waiting dates, everyone else's as Unavailable, click a day or "Ask for dates" to request more, Withdraw a waiting request. The loose date/time fields left Event details.
+- **Events page "Booking requests" card:** each date re-checked against the Program Calendar; clashes come unchecked. Approve writes each date onto the Program Calendar as hello@, adds the dates to the CRM event, and sets it Upcoming. Decline takes a note.
+- **Emails:** the client gets "We got your request" on every submit and one email when dates are approved or declined. Max gets an alert per request.
+- **Table `sprout_booking_slots`** (authenticated-only RLS); public access only through token-scoped service-role routes. New routes `/api/availability`, `/api/portal/[token]/slots`, `/api/bookings`.
+- **Floorwork set up:** event `evt_floorwork_rehearsals`, its own portal link (kept out of git; it is the portal's only credential), 13 confirmed dates imported from the FW Rehearsals calendar entries (11/1 to 11/24). Not sent to Mara yet.
+- **Review:** `/code-review high` found 10 issues (declined dates landing on the event, portal autosave overwriting dates, double approval, half-failed calendar writes, stale browser saves, `/book` failing when Google is down, midnight ends, uncapped cache, stale recheck, repeat collapsing). All fixed and retested against the real calendar on a throwaway event, then cleaned up.
+- **Also:** portal pages set `color-scheme: light`, so dark-mode Macs draw light controls.
+- Two preview emails (labelled TEST) went to maxperkins@.
+
+---
+
 ## 2026-11-03: Event portal logos, order, and dropdown bars
 
 Merges `06a7185` + `e4a59d5`. Effort: low. Why: the flyer logo card offered only the flower icon, and the page was long.

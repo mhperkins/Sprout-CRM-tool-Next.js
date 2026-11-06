@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Booking Calendar Delivery</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap">
+<style>
+  :root { --ink:#030000; --paper:#F7F7F6; --acid:#C6C902; --fuchsia:#E10098; --cyan:#73C4D6; --banana:#FAD100; --g:#5f5f5c; --line:#dcdcd9; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:#e9e9e6; font-family:Lato, system-ui, sans-serif; color:var(--ink); display:flex; justify-content:center; padding:24px; }
+  .slide { width:1280px; max-width:100%; aspect-ratio:16/9; background:var(--paper); border-radius:14px; overflow:hidden; display:grid; grid-template-rows:auto 1fr auto; box-shadow:0 12px 40px rgba(0,0,0,.18); }
+  .top { background:var(--ink); color:#fff; padding:26px 40px 22px; display:flex; justify-content:space-between; align-items:flex-end; gap:20px; }
+  .eyebrow { font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--acid); font-weight:900; }
+  h1 { font-size:38px; font-weight:900; margin-top:6px; letter-spacing:-.01em; }
+  .sub { font-size:15px; color:#c2c2bf; margin-top:6px; max-width:720px; }
+  .badges { display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
+  .badge { font-size:12px; font-weight:900; border-radius:999px; padding:5px 12px; white-space:nowrap; }
+  .b-live { background:var(--acid); color:var(--ink); }
+  .b-hash { background:#1f1d1d; color:#fff; border:1px solid #444; font-family:ui-monospace, Consolas, monospace; font-weight:700; }
+  .rule { height:5px; background:var(--acid); }
+  .body { padding:24px 40px; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px; align-content:start; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:16px 18px; position:relative; overflow:hidden; }
+  .card::before { content:""; position:absolute; left:0; top:0; bottom:0; width:6px; background:var(--c, var(--cyan)); }
+  .card h3 { font-size:16px; font-weight:900; display:flex; gap:8px; align-items:center; }
+  .card p, .card li { font-size:13px; line-height:1.5; color:var(--g); }
+  .card p { margin-top:6px; }
+  .card ul { margin:6px 0 0 16px; }
+  .ic { font-size:18px; }
+  .wide { grid-column:span 2; }
+  .foot { padding:12px 40px 16px; display:flex; justify-content:space-between; font-size:12px; color:var(--g); border-top:1px solid var(--line); }
+  .foot b { color:var(--ink); }
+  code { font-family:ui-monospace, Consolas, monospace; font-size:12px; background:#f1f1ef; padding:1px 5px; border-radius:4px; color:var(--ink); }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Sprout CRM · Delivery · Nov 6, 2026</div>
+      <h1>Booking calendar: clients pick dates, Max approves</h1>
+      <div class="sub">Built after Floorwork and Queer Social collided on Tue 11/3. Every booking is now a list of real dates both sides can see.</div>
+    </div>
+    <div class="badges">
+      <span class="badge b-live">● Live on production</span>
+      <span class="badge b-hash">main · 2c462c5</span>
+      <span class="badge b-hash">effort: high · Opus 5.5</span>
+    </div>
+  </div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="card" style="--c:var(--fuchsia)">
+      <h3><span class="ic">🗓</span> Pick dates on the calendar</h3>
+      <p>Click days on and off, one time range for all, Edit time per day. Grey = taken, no names. 3 days' notice, about 3 months ahead, nothing past 10pm.</p>
+    </div>
+    <div class="card" style="--c:var(--cyan)">
+      <h3><span class="ic">🔗</span> /book + the portal</h3>
+      <p>"Do you know your dates?" opens the picker or skips it. After submitting, the client's portal shows their dates and is where they ask for more.</p>
+    </div>
+    <div class="card" style="--c:var(--acid)">
+      <h3><span class="ic">✅</span> Max approves</h3>
+      <p>Events page card re-checks each date against the Program Calendar. Approve puts it on the calendar and on the CRM event.</p>
+    </div>
+    <div class="card" style="--c:var(--banana)">
+      <h3><span class="ic">✉️</span> Emails</h3>
+      <ul><li>Client: "We got your request"</li><li>Client: confirmed / can't do</li><li>Max: alert per request</li></ul>
+    </div>
+    <div class="card wide" style="--c:var(--fuchsia)">
+      <h3><span class="ic">🎭</span> Floorwork is set up</h3>
+      <p>13 confirmed dates (11/1 to 11/24) imported from the FW Rehearsals calendar entries into <code>evt_floorwork_rehearsals</code>. Their private portal link is ready. Not sent to Mara yet.</p>
+    </div>
+    <div class="card wide" style="--c:var(--cyan)">
+      <h3><span class="ic">🛡</span> Reviewed and tested</h3>
+      <p>High-tier code review found 10 issues, all fixed: double approvals, declined dates leaking onto the event, half-failed calendar writes, Google outages. Approval tested against the real calendar on a throwaway event, then cleaned up.</p>
+    </div>
+    <div class="card" style="--c:var(--acid)">
+      <h3><span class="ic">🗄</span> Data</h3>
+      <p>New table <code>sprout_booking_slots</code>, signed-in staff only. Public access only through each client's private link.</p>
+    </div>
+  </div>
+  <div class="foot">
+    <span><b>Next:</b> one real /book test, send Mara her link, set up Queer Social's portal.</span>
+    <span>branch booking-calendar → main · pushed</span>
+  </div>
+</div>
+</body>
+</html>

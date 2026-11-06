@@ -1,0 +1,365 @@
+<title>Client Booking Calendar</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: wireframe board. A sticky frame index, then one grey frame per state, client side first, staff side after. */
+:root{
+  --bg:#f3f3f1; --paper:#ffffff; --line:#cfcfca; --ink:#1d1d1b; --muted:#6f6f6a; --box:#e4e4e0; --box2:#d6d6d1;
+  --mine:#1d1d1b; --mineText:#ffffff; --req:#ffffff; --busy:#c9c9c4; --warn:#b3261e; --ok:#2f6b3a; --note:#fff6c9; --noteLine:#e6d27a;
+  --sans: "Lato", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161615; --paper:#21211f; --line:#3b3b38; --ink:#ececea; --muted:#a2a29c; --box:#2c2c2a; --box2:#383835;
+  --mine:#ececea; --mineText:#161615; --req:#21211f; --busy:#4a4a46; --warn:#ff8a80; --ok:#8fd19e; --note:#3a3520; --noteLine:#7a6b2c; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#161615; --paper:#21211f; --line:#3b3b38; --ink:#ececea; --muted:#a2a29c; --box:#2c2c2a; --box2:#383835;
+  --mine:#ececea; --mineText:#161615; --req:#21211f; --busy:#4a4a46; --warn:#ff8a80; --ok:#8fd19e; --note:#3a3520; --noteLine:#7a6b2c; color-scheme:dark }
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:24px;margin:0 0 4px;text-wrap:balance}
+.lede{color:var(--muted);max-width:70ch;margin:0 0 14px}
+.index{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;flex-wrap:wrap;gap:6px;padding:8px 0;border-bottom:1px solid var(--line);margin-bottom:18px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.index a{font-size:12px;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--paper)}
+.index a:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.side{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:30px 0 8px}
+.frame{background:var(--paper);border:1px solid var(--line);border-radius:6px;margin-bottom:22px;overflow:hidden}
+.fhead{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between;padding:8px 12px;border-bottom:1px dashed var(--line);background:var(--box)}
+.fhead b{font-size:13px} .fhead span{font-size:12px;color:var(--muted)}
+.fbody{padding:16px}
+.callout{background:var(--note);border:1px solid var(--noteLine);border-radius:4px;padding:8px 10px;font-size:12.5px;margin-top:12px}
+.callout b{font-weight:700}
+/* portal chrome */
+.portal{border:1px solid var(--line);border-radius:6px}
+.pbar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--box2);border-bottom:1px solid var(--line)}
+.logo{width:90px;height:22px;background:var(--busy);border-radius:3px}
+.pbar .who{font-size:13px;color:var(--muted)}
+.ptabs{display:flex;gap:4px;padding:8px 14px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.ptabs div{font-size:13px;padding:6px 10px;border:1px solid transparent;border-bottom:none;color:var(--muted)}
+.ptabs .on{border-color:var(--line);background:var(--paper);color:var(--ink);font-weight:700;border-radius:4px 4px 0 0;margin-bottom:-1px}
+.pmain{padding:14px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px}
+@media (max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sp{flex:1}
+.btn{font:inherit;font-size:13px;border:1px solid var(--ink);background:var(--paper);color:var(--ink);border-radius:4px;padding:6px 12px;cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.ghost{border-color:var(--line)}
+.btn.danger{border-color:var(--warn);color:var(--warn)}
+.btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.mtitle{font-size:18px;font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);margin:10px 0}
+.sw{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-2px;margin-right:5px;border:1px solid var(--line)}
+.sw.mine{background:var(--mine);border-color:var(--mine)} .sw.req{background:var(--req);border:1.5px dashed var(--ink)} .sw.busy{background:var(--busy)}
+/* month */
+.cal{overflow-x:auto}
+.month{display:grid;grid-template-columns:repeat(7,minmax(92px,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line);min-width:660px}
+.dow{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:6px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--box)}
+.day{min-height:92px;padding:5px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:3px;cursor:pointer}
+.day:hover{background:var(--box)}
+.day.out{background:var(--bg);cursor:default}
+.day.sel{outline:2px solid var(--ink);outline-offset:-2px}
+.day.past{opacity:.5}
+.dn{font-size:12px;font-variant-numeric:tabular-nums;color:var(--muted)}
+.blk{font-size:11px;border-radius:3px;padding:2px 4px;line-height:1.25;font-variant-numeric:tabular-nums}
+.blk.mine{background:var(--mine);color:var(--mineText)}
+.blk.req{background:var(--req);border:1.5px dashed var(--ink)}
+.blk.busy{background:var(--busy);color:var(--ink)}
+.blk.more{color:var(--muted);padding-left:2px}
+/* side panel */
+.panel{border:1px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:10px;align-self:start}
+.panel h3{margin:0;font-size:15px}
+.slot{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:7px 8px;border-radius:4px;background:var(--box)}
+.slot.mine{background:var(--mine);color:var(--mineText)} .slot.busy{background:var(--busy)} .slot.open{background:transparent;border:1px solid var(--line)}
+.lbl{font-size:12px;color:var(--muted);display:block;margin-bottom:3px}
+.fld{width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;background:var(--paper);color:var(--ink);box-sizing:border-box}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:3px 9px;background:var(--paper)}
+.chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.radio{display:flex;flex-direction:column;gap:4px;font-size:13px}
+.list{display:flex;flex-direction:column;gap:3px;max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:4px;padding:6px}
+.li{display:flex;gap:8px;align-items:center;font-size:12.5px;font-variant-numeric:tabular-nums}
+.li.bad{color:var(--warn)}
+.tag{font-size:11px;border-radius:999px;padding:1px 7px;border:1px solid currentColor;white-space:nowrap}
+.tag.ok{color:var(--ok)} .tag.warn{color:var(--warn)} .tag.mute{color:var(--muted)}
+.mine-list{display:flex;flex-direction:column;gap:4px}
+.mrow{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:8px;font-size:13px;padding:6px 0;border-bottom:1px solid var(--line);align-items:center;font-variant-numeric:tabular-nums}
+.empty{border:1.5px dashed var(--line);border-radius:6px;padding:22px;text-align:center;color:var(--muted);font-size:14px}
+.empty b{color:var(--ink);display:block;margin-bottom:4px;font-size:15px}
+/* phone */
+.phone{width:390px;max-width:100%;border:8px solid var(--box2);border-radius:26px;overflow:hidden;margin:0 auto;background:var(--paper)}
+.pweek{display:flex;flex-direction:column}
+.pday{display:grid;grid-template-columns:52px minmax(0,1fr);gap:8px;padding:8px 10px;border-bottom:1px solid var(--line)}
+.pday .d{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pday .d b{display:block;font-size:17px;color:var(--ink)}
+.pday .bl{display:flex;flex-direction:column;gap:3px}
+.sticky-cta{position:sticky;bottom:0;padding:10px;background:var(--paper);border-top:1px solid var(--line)}
+/* staff */
+.crm{display:grid;grid-template-columns:150px minmax(0,1fr);min-height:300px}
+@media (max-width:700px){.crm{grid-template-columns:minmax(0,1fr)} .crm .nav{display:none}}
+.nav{background:var(--ink);padding:10px;display:flex;flex-direction:column;gap:6px}
+.nav div{height:12px;border-radius:3px;background:var(--muted);opacity:.5}
+.nav .on{opacity:1;background:var(--paper)}
+.req-card{border:1px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.req-card .meta{font-size:12.5px;color:var(--muted)}
+.dlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px}
+.dl{display:flex;gap:8px;align-items:center;font-size:12.5px;padding:5px 7px;border:1px solid var(--line);border-radius:4px;font-variant-numeric:tabular-nums}
+.dl.bad{border-color:var(--warn)}
+.dl .why{font-size:11px;color:var(--warn)}
+.calls{font-size:13.5px;max-width:78ch}
+.calls li{margin-bottom:6px}
+.toast{display:inline-flex;gap:8px;align-items:center;font-size:13px;border:1px solid var(--ok);color:var(--ok);border-radius:4px;padding:6px 10px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <h1>Client Booking Calendar</h1>
+  <p class="lede">v2. Scheduling starts on the hosting request form (/book). Someone who knows their dates picks them in a calendar popup; someone who doesn't skips it. After they submit, their portal link shows the same calendar with their confirmed and waiting dates, and that's where they come back to add dates later. Max approves every request. Names and dates are examples built from Floorwork's November.</p>
+
+  <nav class="index" aria-label="Frames">
+    <a href="#f0">A /book: dates question</a><a href="#f2">B /book: pick dates popup</a><a href="#f3">C Sent</a><a href="#f1">1 Portal: month</a><a href="#f4">2 Portal: no dates yet</a><a href="#f5">3 Portal: busy day</a><a href="#f6">4 Portal: phone 390</a><a href="#f7">5 Staff: requests</a><a href="#f8">6 Staff: empty</a><a href="#calls">Your calls</a>
+  </nav>
+
+  <div class="side">Step 1 · Hosting request form (/book, public)</div>
+
+  <section class="frame" id="f0">
+    <div class="fhead"><b>A · /book, the dates question</b><span>Replaces today's single "Preferred date" field</span></div>
+    <div class="fbody">
+      <div class="portal" style="max-width:640px">
+        <div class="pbar"><div class="logo"></div><div class="who">Host at Sprout Society</div></div>
+        <div class="pmain" style="display:flex;flex-direction:column;gap:10px">
+          <div class="row"><div class="fld" style="flex:1;min-width:140px;color:var(--muted)">Your name</div><div class="fld" style="flex:1;min-width:140px;color:var(--muted)">Email</div></div>
+          <div class="fld" style="color:var(--muted)">Type of event · Expected attendance · …</div>
+          <div><span class="lbl">Is this one event or a regular booking?</span>
+            <div class="chips"><span class="chip">One event</span><span class="chip on">Regular booking (rehearsals, a weekly class, a residency)</span></div></div>
+          <div><span class="lbl">Do you know your dates?</span>
+            <div class="radio"><label><input type="radio" name="kd" id="kd1" checked> Yes, pick them on our calendar</label><label><input type="radio" name="kd" id="kd2"> Not yet</label></div></div>
+          <div class="row" style="border:1px solid var(--line);border-radius:4px;padding:8px"><span style="font-size:13px">6 dates picked · Nov 15 to 25 · 6 to 10pm</span><div class="sp"></div><button class="btn">Edit dates</button></div>
+          <div class="row"><div class="sp"></div><button class="btn primary">Send request</button></div>
+        </div>
+      </div>
+      <div class="callout"><b>Yes</b> opens the popup (frame B); after picking, the form shows a one-line summary with Edit dates. <b>Not yet</b> hides the calendar, and the request comes in with no dates, same as "Don't know yet" today. "Regular booking" marks it as a rental rather than an event in the CRM.</div>
+    </div>
+  </section>
+
+  <div class="side">Step 2 · Their portal (link arrives by email after they submit)</div>
+
+  <section class="frame" id="f1">
+    <div class="fhead"><b>1 · Portal Dates tab, typical month</b><span>Floorwork, November. Click a day to see that night. "+ Request dates" opens the same popup as frame B.</span></div>
+    <div class="fbody">
+      <div class="portal">
+        <div class="pbar"><div class="logo"></div><div class="who">Floorwork Arts Collective · Private Nature rehearsals</div></div>
+        <div class="ptabs"><div>Event details</div><div class="on">Dates</div><div>Links</div><div>Our logos</div><div>Files</div></div>
+        <div class="pmain grid2">
+          <div style="min-width:0">
+            <div class="row"><button class="btn ghost" aria-label="Previous month">‹</button><div class="mtitle">November 2026</div><button class="btn ghost" aria-label="Next month">›</button><div class="sp"></div><button class="btn primary">+ Request dates</button></div>
+            <div class="legend"><span><i class="sw mine"></i>Yours, confirmed</span><span><i class="sw req"></i>Yours, waiting for Sprout</span><span><i class="sw busy"></i>Unavailable</span><span>Blank = open</span></div>
+            <div class="cal"><div class="month" data-month="typical"></div></div>
+          </div>
+          <aside class="panel" aria-label="Selected night">
+            <h3>Sun, Nov 15</h3>
+            <div class="slot busy"><span>10:00am to 5:00pm</span><span>Unavailable</span></div>
+            <div class="slot open"><span>5:00pm to 6:00pm</span><span>Open</span></div>
+            <div class="slot" style="border:1.5px dashed var(--ink);background:transparent"><span>6:00pm to 10:00pm</span><span>Waiting for Sprout</span></div>
+            <div class="slot open"><span>after 10:00pm</span><span>Open</span></div>
+            <button class="btn">Cancel this request</button>
+            <hr style="border:none;border-top:1px solid var(--line);width:100%">
+            <b style="font-size:13px">Your dates this month</b>
+            <div class="mine-list" data-mine></div>
+          </aside>
+        </div>
+      </div>
+      <div class="callout"><b>Why this fixes 11/3:</b> Floorwork's dates exist only as real dates on this calendar. Queer Social's portal would have shown Tue 11/3 as Unavailable, and Floorwork's would too. Grey blocks show the time but never who or what.</div>
+    </div>
+  </section>
+
+  <section class="frame" id="f2">
+    <div class="fhead"><b>B · Pick dates popup</b><span>On /book only grey Unavailable blocks show. Inside the portal it also shows their own dates.</span></div>
+    <div class="fbody">
+      <div class="portal"><div class="pmain grid2">
+        <div class="panel" style="border:none;padding:0">
+          <h3>Request dates</h3>
+          <div class="row" style="align-items:flex-start">
+            <label style="flex:1;min-width:130px"><span class="lbl">First date</span><input class="fld" id="r-date" value="Sun, Nov 15"></label>
+            <label style="flex:1;min-width:110px"><span class="lbl">Start</span><input class="fld" id="r-start" value="6:00pm"></label>
+            <label style="flex:1;min-width:110px"><span class="lbl">End</span><input class="fld" id="r-end" value="10:00pm"></label>
+          </div>
+          <span class="lbl">Include setup and cleanup time.</span>
+          <div><span class="lbl">Repeat</span>
+            <div class="radio"><label><input type="radio" name="rep" id="rep1"> Just this date</label><label><input type="radio" name="rep" id="rep2" checked> Every week on these days</label></div>
+          </div>
+          <div class="chips"><span class="chip on">Sun</span><span class="chip on">Mon</span><span class="chip on">Tue</span><span class="chip on">Wed</span><span class="chip">Thu</span><span class="chip">Fri</span><span class="chip">Sat</span></div>
+          <label><span class="lbl">Until</span><input class="fld" id="r-until" value="Wed, Nov 25"></label>
+          <label><span class="lbl">What it's for</span><input class="fld" id="r-what" value="Private Nature rehearsals"></label>
+          <label><span class="lbl">Anything we should know (optional)</span><textarea class="fld" id="r-note" rows="2">We'll need the back room chairs.</textarea></label>
+        </div>
+        <div class="panel">
+          <h3>This makes 8 dates</h3>
+          <span class="lbl">Uncheck any you don't want. Taken nights can't be requested.</span>
+          <div class="list" data-gen></div>
+          <div class="row"><b style="font-size:13px">6 dates picked</b><div class="sp"></div><button class="btn primary">Use these dates</button></div>
+        </div>
+      </div></div>
+      <div class="callout"><b>The key piece:</b> a repeating booking turns into a list of real dates the client sees and checks before sending. "Sun to Wed for 4 weeks" can never be the record again.</div>
+    </div>
+  </section>
+
+  <section class="frame" id="f3">
+    <div class="fhead"><b>C · After sending /book</b><span>Feedback state</span></div>
+    <div class="fbody">
+      <div class="toast">✓ Request sent with 6 dates. We emailed you a link to your portal.</div>
+      <p style="font-size:13px;color:var(--muted);margin:10px 0 0">The sent screen shows a "Go to your portal" button and the email carries the same link. In the portal the 6 nights show as dashed "Waiting for Sprout" blocks. When Max approves, they turn solid and the client gets an email listing the confirmed dates. If Max declines a date, it disappears and the email says why. Someone who answered "Not yet" lands on frame 2.</p>
+    </div>
+  </section>
+
+  <section class="frame" id="f4">
+    <div class="fhead"><b>2 · Portal, no dates yet</b><span>They answered "Not yet" on /book. This is where they come back.</span></div>
+    <div class="fbody">
+      <div class="empty"><b>Ready to pick your dates?</b>Choose open nights on the calendar below, or tap Request dates. Grey nights are already taken. Save this link: it's how you book with us from now on.<div style="margin-top:12px"><button class="btn primary">+ Request dates</button></div></div>
+      <p style="font-size:12.5px;color:var(--muted);margin:10px 0 0">The month grid still shows below, with only grey blocks.</p>
+    </div>
+  </section>
+
+  <section class="frame" id="f5">
+    <div class="fhead"><b>3 · Too much: a packed day</b><span>Day cells show 2 blocks, then "+N more"</span></div>
+    <div class="fbody grid2">
+      <div style="min-width:0"><div class="cal"><div class="month" data-month="busy" style="min-width:660px"></div></div></div>
+      <aside class="panel"><h3>Thu, Nov 12</h3>
+        <div class="slot busy"><span>10:00am to 5:00pm</span><span>Unavailable</span></div>
+        <div class="slot mine"><span>5:30pm to 7:00pm</span><span>Producers' meeting ✓</span></div>
+        <div class="slot busy"><span>7:00pm to 9:00pm</span><span>Unavailable</span></div>
+        <div class="slot busy"><span>9:00pm to 11:00pm</span><span>Unavailable</span></div>
+        <div class="slot open"><span>after 11:00pm</span><span>Open</span></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="frame" id="f6">
+    <div class="fhead"><b>4 · Phone, 390px</b><span>Month grid becomes a week list</span></div>
+    <div class="fbody">
+      <div class="phone">
+        <div class="pbar"><div class="logo"></div></div>
+        <div class="ptabs"><div class="on">Dates</div><div>Event details</div><div>Links</div></div>
+        <div style="padding:10px" class="row"><button class="btn ghost" aria-label="Previous week">‹</button><b style="font-size:14px">Nov 15 to 21</b><button class="btn ghost" aria-label="Next week">›</button><div class="sp"></div><span class="tag mute">Week</span></div>
+        <div class="pweek" data-phone></div>
+        <div class="sticky-cta"><button class="btn primary" style="width:100%">+ Request dates</button></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="side">Staff side (CRM)</div>
+
+  <section class="frame" id="f7">
+    <div class="fhead"><b>5 · Booking requests (Max approves)</b><span>Each date is checked against the Program Calendar</span></div>
+    <div class="fbody">
+      <div class="crm portal">
+        <div class="nav"><div></div><div></div><div class="on"></div><div></div><div></div><div></div></div>
+        <div class="pmain">
+          <div class="row"><div class="mtitle">Booking requests</div><span class="tag warn">2 waiting</span><div class="sp"></div><span class="chip on">Waiting</span><span class="chip">Approved</span><span class="chip">Declined</span></div>
+          <div style="height:12px"></div>
+          <div class="req-card">
+            <div class="row"><b>Floorwork Arts Collective</b><span class="tag mute">Resident</span><div class="sp"></div><span class="meta">Sent Nov 4, 9:12am by Mara Einson</span></div>
+            <div class="meta">Private Nature rehearsals · 6:00pm to 10:00pm · "We'll need the back room chairs."</div>
+            <div class="dlist" data-staff></div>
+            <div class="row"><button class="btn primary">Approve 5 checked</button><button class="btn ghost">Change times</button><button class="btn danger">Decline</button><div class="sp"></div><span class="meta">Note to client (optional)</span></div>
+            <input class="fld" id="s-note" placeholder="e.g. Nov 23 got booked, can you do Nov 26 instead?">
+          </div>
+          <div class="req-card">
+            <div class="row"><b>Queer Social</b><span class="tag mute">Member</span><div class="sp"></div><span class="meta">Sent Nov 3, 4:40pm by Jonathan Winkles</span></div>
+            <div class="meta">Sober Hangout · Thu, Dec 10 · 7:00pm to 10:00pm</div>
+            <div class="dlist"><div class="dl"><input type="checkbox" checked aria-label="Dec 10"> Thu, Dec 10 <span class="tag ok">Open</span></div></div>
+            <div class="row"><button class="btn primary">Approve</button><button class="btn danger">Decline</button></div>
+          </div>
+          <div class="callout"><b>On Approve:</b> each date goes on the Program Calendar and the CRM event, the client's blocks turn solid, and they get one email listing every confirmed date. A date that clashes arrives unchecked with the reason, so you can't approve a double booking by accident.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="frame" id="f8">
+    <div class="fhead"><b>6 · Staff empty</b><span>No requests waiting</span></div>
+    <div class="fbody"><div class="empty"><b>No requests waiting</b>New requests from portal links show up here, and you get an email for each one.</div></div>
+  </section>
+
+  <section class="frame" id="calls">
+    <div class="fhead"><b>Your calls before I build</b><span>My recommendation in brackets</span></div>
+    <div class="fbody">
+      <ol class="calls">
+        <li><b>Coming back later:</b> someone who said "Not yet" returns through their portal link, not /book, so it stays one request instead of two. [Portal link.]</li>
+        <li><b>Regular bookings vs events:</b> a regular booking (Floorwork rehearsals) becomes one rental record with a list of dates, not an event. It shows on the calendar and Grant Metrics as rental hours. [Yes.]</li>
+        <li><b>Existing clients:</b> Floorwork and Queer Social never filled /book for these. I'd create their portals and send them the link. [Yes.]</li>
+        <li><b>Grey blocks:</b> show the exact busy times, or block the whole evening? [Exact times, so a client can still take 5 to 7pm before an event.]</li>
+        <li><b>GGC daytime:</b> show 10am to 5pm weekdays as Unavailable? [Yes.]</li>
+        <li><b>How far ahead clients can see and request:</b> [3 months.]</li>
+        <li><b>Minimum notice:</b> block requests for dates less than X days out? [3 days.]</li>
+        <li><b>Staff queue location:</b> a section on the Events page, or its own sidebar item? [Events page, next to the existing Requests count, since the sidebar is being cut down.]</li>
+        <li><b>Existing bookings:</b> I'd put Floorwork's and Queer Social's real upcoming dates in by hand first, so the calendars are right on day one.</li>
+      </ol>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  // November 2026 starts on a Sunday. Example data only.
+  var DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  var typical={
+    1:[["m","6 to 10pm Rehearsal"]],2:[["b","10am to 5pm"],["m","6 to 10pm Rehearsal"]],
+    3:[["b","10am to 5pm"],["b","7 to 10pm"]],4:[["b","10am to 5pm"],["m","6 to 10pm Rehearsal"]],
+    5:[["b","10am to 5pm"]],6:[["b","10am to 5pm"]],7:[["b","2 to 6pm"]],
+    8:[["m","6 to 10pm Rehearsal"]],9:[["b","10am to 5pm"],["m","6 to 10pm Rehearsal"]],
+    10:[["b","10am to 5pm"],["b","7 to 9pm"]],11:[["b","10am to 5pm"],["m","6 to 10pm Rehearsal"]],
+    12:[["b","10am to 5pm"]],13:[["b","10am to 5pm"],["b","7 to 10pm"]],14:[],
+    15:[["r","6 to 10pm Rehearsal"]],16:[["b","10am to 5pm"],["r","6 to 10pm Rehearsal"]],
+    17:[["b","10am to 5pm"],["b","7 to 9pm"]],18:[["b","10am to 5pm"],["r","6 to 10pm Rehearsal"]],
+    19:[["b","10am to 5pm"]],20:[["b","10am to 5pm"],["b","6 to 10pm"]],21:[],
+    22:[["b","5 to 11pm"]],23:[["b","10am to 5pm"]],24:[["b","10am to 5pm"]],25:[["b","10am to 5pm"]],
+    26:[],27:[],28:[],29:[],30:[["b","10am to 5pm"]]
+  };
+  var busy={};
+  for(var d=1;d<=30;d++){busy[d]=(typical[d]||[]).slice();}
+  busy[12]=[["b","10am to 5pm"],["m","5:30 to 7pm Producers"],["b","7 to 9pm"],["b","9 to 11pm"]];
+  busy[13]=[["b","10am to 5pm"],["b","5 to 7pm"],["b","7 to 10pm"]];
+  busy[14]=[["b","11am to 2pm"],["b","3 to 6pm"],["b","7 to 11pm"]];
+  var cls={m:"mine",r:"req",b:"busy"};
+  function label(t){return t[0]==="b"?t[1]+" Unavailable":t[1];}
+  document.querySelectorAll("[data-month]").forEach(function(el){
+    var data=el.dataset.month==="busy"?busy:typical, html="";
+    DOW.forEach(function(x){html+='<div class="dow">'+x+'</div>';});
+    for(var i=1;i<=35;i++){
+      if(i>30){html+='<div class="day out"></div>';continue;}
+      var items=data[i]||[], cap=el.dataset.month==="busy"?2:3, inner="";
+      items.slice(0,cap).forEach(function(t){inner+='<div class="blk '+cls[t[0]]+'">'+label(t)+'</div>';});
+      if(items.length>cap) inner+='<div class="blk more">+'+(items.length-cap)+' more</div>';
+      var sel=(el.dataset.month==="typical"&&i===15)||(el.dataset.month==="busy"&&i===12);
+      html+='<div class="day'+(i<4?' past':'')+(sel?' sel':'')+'" tabindex="0" aria-label="November '+i+'"><span class="dn">'+i+'</span>'+inner+'</div>';
+    }
+    el.innerHTML=html;
+  });
+  var mine=[["Sun, Nov 1","6 to 10pm","ok","Confirmed"],["Mon, Nov 2","6 to 10pm","ok","Confirmed"],["Wed, Nov 4","6 to 10pm","ok","Confirmed"],["Sun, Nov 8","6 to 10pm","ok","Confirmed"],["Mon, Nov 9","6 to 10pm","ok","Confirmed"],["Wed, Nov 11","6 to 10pm","ok","Confirmed"],["Sun, Nov 15","6 to 10pm","mute","Waiting"],["Mon, Nov 16","6 to 10pm","mute","Waiting"],["Wed, Nov 18","6 to 10pm","mute","Waiting"]];
+  document.querySelectorAll("[data-mine]").forEach(function(el){
+    el.innerHTML=mine.map(function(r){return '<div class="mrow"><span>'+r[0]+'</span><span>'+r[1]+'</span><span class="tag '+r[2]+'">'+r[3]+'</span></div>';}).join("");
+  });
+  // Sun to Wed, Nov 15 to 25 = 8 dates; 2 already taken, so 6 get sent.
+  var gen=[["Sun, Nov 15",1],["Mon, Nov 16",1],["Tue, Nov 17",0,"Taken 7 to 9pm"],["Wed, Nov 18",1],["Sun, Nov 22",0,"Taken 5 to 11pm"],["Mon, Nov 23",1],["Tue, Nov 24",1],["Wed, Nov 25",1]];
+  var genHtml=gen.map(function(g,i){
+    if(g[1]===0) return '<div class="li bad"><input type="checkbox" disabled aria-label="'+g[0]+'"> '+g[0]+' <span class="tag warn">'+g[2]+'</span></div>';
+    return '<label class="li"><input type="checkbox" checked id="g'+i+'"> '+g[0]+' · 6 to 10pm</label>';
+  });
+  document.querySelectorAll("[data-gen]").forEach(function(el){el.innerHTML=genHtml.join("");});
+  var staff=[["Sun, Nov 15",1],["Mon, Nov 16",1],["Wed, Nov 18",1],["Mon, Nov 23",0,"Booked after this request: 7 to 10pm"],["Tue, Nov 24",1],["Wed, Nov 25",1]];
+  document.querySelectorAll("[data-staff]").forEach(function(el){
+    el.innerHTML=staff.map(function(s,i){
+      return s[1]?'<label class="dl"><input type="checkbox" checked id="s'+i+'"> '+s[0]+' <span class="tag ok">Open</span></label>'
+                 :'<label class="dl bad"><input type="checkbox" id="s'+i+'"> <span>'+s[0]+'<br><span class="why">'+s[2]+'</span></span></label>';
+    }).join("");
+  });
+  var week=[["Sun",15,[["r","6 to 10pm Rehearsal · waiting"]]],["Mon",16,[["b","10am to 5pm Unavailable"],["r","6 to 10pm Rehearsal · waiting"]]],["Tue",17,[["b","10am to 5pm Unavailable"],["b","7 to 9pm Unavailable"]]],["Wed",18,[["b","10am to 5pm Unavailable"],["r","6 to 10pm Rehearsal · waiting"]]],["Thu",19,[["b","10am to 5pm Unavailable"]]],["Fri",20,[["b","10am to 5pm Unavailable"],["b","6 to 10pm Unavailable"]]],["Sat",21,[]]];
+  document.querySelectorAll("[data-phone]").forEach(function(el){
+    el.innerHTML=week.map(function(w){
+      var bl=w[2].length?w[2].map(function(t){return '<div class="blk '+cls[t[0]]+'" style="font-size:12.5px;padding:5px 7px">'+t[1]+'</div>';}).join(""):'<div style="font-size:12.5px;color:var(--muted);padding:5px 0">Open all evening</div>';
+      return '<div class="pday"><div class="d">'+w[0]+'<b>'+w[1]+'</b></div><div class="bl">'+bl+'</div></div>';
+    }).join("");
+  });
+})();
+</script>
