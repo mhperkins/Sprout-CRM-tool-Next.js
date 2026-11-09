@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-11-09: Portal shows a confirmed date first
+
+Merge `6a8f98e` (branch `portal-confirmed-dates`). Effort: medium.
+
+- **Your dates on the event portal** now opens to the confirmed date and time once an event is set, with a **Request a different time** button that opens the calendar (Max's ask, for Awestruck Collective). Requests and events with no date still open straight to the calendar.
+- **Hand-set events count as confirmed.** The portal slots API adds the event's own date when it is upcoming or past, not repeating, and has no confirmed booking dates.
+- **No calendar flash:** a short "Loading your dates…" line shows until the first load finishes.
+- Verified on Aalisha's real portal on a local build.
+
 ## 2026-11-06: Completed events hidden from the Events list
 
 Merge `51ce4a4` (branch `hide-completed`). Effort: low.

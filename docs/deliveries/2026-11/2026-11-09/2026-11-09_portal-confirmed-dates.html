@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portal confirmed dates</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#030000;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--paper:#F7F7F6}
+*{box-sizing:border-box}body{margin:0;background:var(--ink);font-family:Lato,system-ui,sans-serif;color:#fff;display:flex;justify-content:center;padding:40px 16px}
+.slide{width:100%;max-width:1100px}
+.eyebrow{color:var(--acid);font-weight:900;letter-spacing:3px;text-transform:uppercase;font-size:13px}
+h1{font-size:40px;font-weight:900;margin:10px 0 6px;line-height:1.1}
+.sub{color:#bdbdb8;font-size:17px;margin:0 0 26px}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px}
+.b{border-radius:999px;padding:6px 14px;font-size:13px;font-weight:700}
+.b1{background:var(--acid);color:var(--ink)}.b2{background:var(--fuchsia)}.b3{background:#222;border:1px solid #444;font-family:monospace}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.card{background:#fff;color:var(--ink);border-radius:10px;padding:20px;border-left:6px solid var(--cyan)}
+.card:nth-child(2){border-color:var(--banana)}.card:nth-child(3){border-color:var(--fuchsia)}.card:nth-child(4){border-color:var(--acid)}
+.ic{font-size:26px}.card h3{margin:8px 0 6px;font-size:18px}.card p{margin:0;font-size:14.5px;line-height:1.5;color:#3a3a38}
+.mock{margin-top:28px;background:var(--paper);color:var(--ink);border-radius:10px;padding:20px;max-width:520px}
+.row{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e3e3e0;padding:8px 0;font-weight:700}
+.tag{border:1px solid #4f6b00;color:#4f6b00;border-radius:999px;font-size:12px;padding:2px 10px}
+.btn{display:inline-block;margin-top:12px;background:var(--ink);color:#fff;border-radius:6px;padding:8px 14px;font-size:13px;font-weight:700}
+.foot{margin-top:28px;color:#8a8a86;font-size:13px}
+</style></head><body><div class="slide">
+<div class="eyebrow">Sprout CRM · Delivered 2026-11-09</div>
+<h1>Event portal shows the confirmed date first</h1>
+<p class="sub">Once a date is set, the host sees their date. The calendar only opens when they ask for a different time.</p>
+<div class="badges"><span class="b b1">Merged to main</span><span class="b b2">Effort: medium</span><span class="b b3">6a8f98e</span><span class="b b3">fea8197</span></div>
+<div class="grid">
+<div class="card"><div class="ic">📅</div><h3>Date first</h3><p>Your dates opens to the confirmed day and time with a Confirmed tag.</p></div>
+<div class="card"><div class="ic">🔁</div><h3>Request a different time</h3><p>One button opens the calendar, with "Back to my date". A new request then shows as Waiting for Sprout.</p></div>
+<div class="card"><div class="ic">✍️</div><h3>Hand-set events count</h3><p>Events Sprout dated by hand (like Awestruck) now show their date even with no booking dates.</p></div>
+<div class="card"><div class="ic">⚡</div><h3>No calendar flash</h3><p>A short "Loading your dates…" line shows until the first load finishes.</p></div>
+</div>
+<div class="mock"><div style="font-size:13px;color:#555">Your dates · The Awestruck Collective</div>
+<div class="row"><span>Sun, Dec 13 · 4pm to 8pm</span><span class="tag">Confirmed</span></div>
+<span class="btn">Request a different time</span></div>
+<div class="foot">Files: components/BookingCalendar.jsx · app/api/portal/[token]/slots/route.js · lib/portalDb.js · branch main</div>
+</div></body></html>
