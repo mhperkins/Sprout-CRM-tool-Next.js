@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-11-09: Discord set up for public chat and private Sprout N Tell comms
+
+No app code; Discord only. Effort: medium.
+
+- **Layout (Max's calls):** START HERE (#welcome) and COMMUNITY (#introductions, #sprout-chat, #promote-collaborate forum) are public. EVENT PARTICIPANTS is private and holds only the #sprout-n-tell forum: staff start one post per show, and participants are added one by one with full access inside it (reply, attach, react) but no new posts. Partner hosts promote and connect in #promote-collaborate; their logistics stay in the event portal.
+- **Fixed:** #sprout-n-tell was visible to all 18 members (its own settings overrode the private category); now hidden from @everyone. #welcome is read-only. #community-events forum and the empty Voice Channels category deleted. grizzlyperks given the Staff role (Administrator).
+- **Bot:** the token was reset and the Russell Sprout role made Administrator (Max), so Claude changes roles and permissions through the Discord API with a small script; the Discord MCP has no tools for that. Every change was read back to confirm.
+- **No retroactive adds:** people join #sprout-n-tell going forward, show by show.
+
+---
+
 ## 2026-11-09: Survey thank-yous sent and logged in the CRM
 
 Merge `beb87e0` (branch `survey-thanks-touchpoint`). Effort: medium.
