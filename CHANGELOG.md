@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-11-09: Survey thank-yous sent and logged in the CRM
+
+Merge `beb87e0` (branch `survey-thanks-touchpoint`). Effort: medium.
+
+- **Catch-up sent.** The 15 people who replied before the automatic thank-you went live got it from maxperkins@ (drafts made 11/6, sent 11/9 on Max's go; first one checked, no bounces). Potters In Crime and Maia Baird, who have no email, got the same message by Instagram DM from @sproutsocietyorg.
+- **Logged.** All 18 respondents (15 email, 2 DM, plus Salit Cohen's automatic one) have a dated touchpoint.
+- **Automatic logging.** After the site sends a thank-you, `logSurveyThanks` (`lib/surveyDb.js`) adds the same touchpoint to the person's contact: the survey link's contact, else one exact email match. It only appends; a failure never blocks the reply.
+- **Why:** Max wanted every thank-you to show up in the CRM, not just in Gmail.
+
+---
+
 ## 2026-11-09: Portal shows a confirmed date first
 
 Merge `6a8f98e` (branch `portal-confirmed-dates`). Effort: medium.

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Survey Thanks Logged</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#030000;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6}
+*{box-sizing:border-box}body{margin:0;background:var(--ink);font-family:Lato,Helvetica,Arial,sans-serif;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px}
+.slide{width:100%;max-width:1100px;border:1px solid #222;border-radius:14px;padding:40px}
+.eyebrow{font-size:12px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--acid)}
+h1{font-size:40px;font-weight:900;margin:8px 0 6px;line-height:1.1}
+.sub{color:#bdbdb8;font-size:16px;margin:0 0 22px}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px}
+.b{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;background:#1b1b1b;border:1px solid #333}
+.b.acid{background:var(--acid);color:var(--ink);border:0}.b.fu{background:var(--fuchsia);border:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{background:#111;border-radius:10px;padding:18px;border-left:6px solid var(--cyan)}
+.card:nth-child(2){border-color:var(--fuchsia)}.card:nth-child(3){border-color:var(--acid)}.card:nth-child(4){border-color:var(--banana)}
+.ic{font-size:22px}.card h3{margin:6px 0;font-size:17px}.card p{margin:0;color:#c9c9c4;font-size:14px;line-height:1.5}
+code{background:#222;padding:1px 5px;border-radius:4px;font-size:12.5px}
+</style></head><body>
+<div class="slide">
+  <div class="eyebrow">Sprout CRM · Delivery · Nov 9, 2026</div>
+  <h1>Every survey respondent thanked, and it's in the CRM</h1>
+  <p class="sub">The catch-up batch went out, and from now on each automatic thank-you logs a touchpoint on the person's record.</p>
+  <div class="badges"><span class="b acid">main</span><span class="b">merge beb87e0</span><span class="b">commit d60cd15</span><span class="b fu">Live on Vercel</span><span class="b">Effort: medium</span></div>
+  <div class="grid">
+    <div class="card"><div class="ic">✉️</div><h3>15 emails sent</h3><p>From maxperkins@ to everyone who replied before the auto email went live. First one checked, no bounces.</p></div>
+    <div class="card"><div class="ic">💬</div><h3>2 Instagram DMs</h3><p>Potters In Crime and Maia Baird (no email) got the same message from @sproutsocietyorg.</p></div>
+    <div class="card"><div class="ic">📒</div><h3>18 touchpoints</h3><p>Every respondent, including Salit Cohen's automatic thank-you, now shows it on their record.</p></div>
+    <div class="card"><div class="ic">⚙️</div><h3>Auto-logging</h3><p><code>logSurveyThanks</code> adds the touchpoint after each automatic send. Append-only; never blocks a reply.</p></div>
+  </div>
+</div>
+</body></html>
