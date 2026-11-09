@@ -36,9 +36,17 @@ export async function GET(req, { params }) {
     return Response.json({ error: "Ask for up to 100 days at a time." }, { status: 400 });
   }
   try {
-    const [mine, busy] = await Promise.all([slotsForEvent(portal.event_id), busyFor({ from, to, eventId: portal.event_id })]);
+    const [mine, busy, event] = await Promise.all([slotsForEvent(portal.event_id), busyFor({ from, to, eventId: portal.event_id }), publicEvent(portal.event_id)]);
+    const listed = mine.filter((s) => s.status !== "cancelled").map(publicSlot);
+    // An event Sprout set by hand (no booking dates) still has a confirmed date:
+    // show it as one, so the host sees their date instead of an empty calendar.
+    if (!listed.some((s) => s.status === "confirmed") && event && ["upcoming", "completed"].includes(event.status)
+        && ISO.test(event.event_date || "") && !event.repeats) {
+      listed.unshift({ id: "event", date: event.event_date, start_time: event.start_time || "", end_time: event.end_time || "",
+        status: "confirmed", note: "", decline_reason: "", fromEvent: true });
+    }
     return Response.json({
-      mine: mine.filter((s) => s.status !== "cancelled").map(publicSlot),
+      mine: listed,
       busy,
     }, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {

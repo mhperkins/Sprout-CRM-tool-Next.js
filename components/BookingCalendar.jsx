@@ -337,6 +337,8 @@ export function DatesSection({ token }) {
   const [toast, setToast] = useState("");
   const [busyId, setBusyId] = useState("");
   const [showPast, setShowPast] = useState(false);
+  const [showCal, setShowCal] = useState(false);
+  const [ready, setReady] = useState(false);   // first load done, so we know whether a date is set
 
   const loadBusy = useCallback(async (from, to) => (await fetchJSON(`/api/portal/${token}/slots?from=${from}&to=${to}`)).busy || [], [token]);
 
@@ -346,7 +348,7 @@ export function DatesSection({ token }) {
       const j = await fetchJSON(`/api/portal/${token}/slots?from=${monthStart(month)}&to=${monthEnd(month)}`);
       setMine(j.mine || []); setBusy(j.busy || []);
     } catch (e) { setErr(e.message); }
-    setLoading(false);
+    setLoading(false); setReady(true);
   }, [token, month]);
   useEffect(() => { load(); }, [load]);
 
@@ -356,7 +358,7 @@ export function DatesSection({ token }) {
     setSending(true); setSendErr("");
     try {
       const j = await fetchJSON(`/api/portal/${token}/slots`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slots, note }) });
-      setModal(null);
+      setModal(null); setShowCal(false);
       const n = j.created?.length || 0;
       setToast(`Request sent for ${n} date${n === 1 ? "" : "s"}.${j.rejected?.length ? ` ${j.rejected.length} couldn't be added because the time is taken.` : ""} We'll confirm by email.`);
       await load();
@@ -378,13 +380,44 @@ export function DatesSection({ token }) {
   const upcoming = mine.filter((s) => s.date >= today);
   const past = mine.filter((s) => s.date < today && s.status === "confirmed");
   const listed = showPast ? [...past, ...upcoming] : upcoming;
+  // Once a date is confirmed, the host sees that date first; the calendar only
+  // opens when they ask for a different time.
+  const isSet = upcoming.some((s) => s.status === "confirmed");
+  const calOpen = ready && (!isSet || showCal);
+  const calMine = mine.filter((s) => s.start_time && s.end_time);
+  const when = (s) => `${shortDate(s.date)} · ${s.start_time && s.end_time ? timeRange(s.start_time, s.end_time) : "time to be set"}`;
 
   return (
     <div>
       <style>{BK_CSS}</style>
+      {!ready && <p className="pt-help" style={{ marginTop: 6 }}>Loading your dates…</p>}
+      {isSet && !showCal && (
+        <div style={{ marginTop: 6 }}>
+          <p className="pt-sec-blurb" style={{ margin: "0 0 12px" }}>You're on our calendar. Need a different time? Ask below and we'll confirm by email.</p>
+          <div className="bk-list">
+            {upcoming.map((s) => {
+              const [cls, label] = STATUS_TAG[s.status] || ["wait", s.status];
+              return (
+                <div className="bk-lrow" key={s.id}>
+                  <span className="when" style={s.status === "confirmed" ? { fontWeight: 700 } : undefined}>{when(s)}</span>
+                  <span className={`bk-tag ${cls}`}>{label}</span>
+                  {s.status === "requested" && <button type="button" className="pt-btn-lnk" disabled={busyId === s.id} onClick={() => cancel(s)}>Withdraw</button>}
+                </div>
+              );
+            })}
+          </div>
+          <button type="button" className="pt-btn pt-btn-sm" style={{ marginTop: 14 }} onClick={() => setShowCal(true)}>Request a different time</button>
+          {toast && <div className="pt-note pt-good" style={{ marginTop: 14, marginBottom: 0 }} role="status">✓ {toast}</div>}
+          {err && <div className="pt-err" style={{ marginTop: 14 }}>{err}</div>}
+        </div>
+      )}
+      {calOpen && <>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginTop: 6 }}>
-        <p className="pt-sec-blurb" style={{ margin: 0 }}>Your dates with us. Click a day to ask for it. Grey times are taken by someone else.</p>
-        <button type="button" className="pt-btn pt-btn-sm" onClick={() => open()}>+ Ask for dates</button>
+        <p className="pt-sec-blurb" style={{ margin: 0 }}>{isSet ? "Pick the new day you'd like. Your current date stays on the calendar until we confirm the change." : "Your dates with us. Click a day to ask for it. Grey times are taken by someone else."}</p>
+        <div style={{ display: "flex", gap: 8 }}>
+          {isSet && <button type="button" className="pt-btn-lnk" onClick={() => setShowCal(false)}>Back to my date</button>}
+          <button type="button" className="pt-btn pt-btn-sm" onClick={() => open()}>+ Ask for dates</button>
+        </div>
       </div>
       {toast && <div className="pt-note pt-good" style={{ marginTop: 14, marginBottom: 0 }} role="status">✓ {toast}</div>}
       {err && <div className="pt-err" style={{ marginTop: 14 }}>{err}</div>}
@@ -396,7 +429,7 @@ export function DatesSection({ token }) {
       )}
 
       <div style={{ marginTop: 16 }}>
-        <MonthView month={month} setMonth={setMonth} busy={busy} mine={mine} onDay={(d) => open(bookable(d) ? d : "")} loading={loading} withMine />
+        <MonthView month={month} setMonth={setMonth} busy={busy} mine={calMine} onDay={(d) => open(bookable(d) ? d : "")} loading={loading} withMine />
       </div>
 
       {mine.length > 0 && (
@@ -410,7 +443,7 @@ export function DatesSection({ token }) {
               const [cls, label] = STATUS_TAG[s.status] || ["wait", s.status];
               return (
                 <div className="bk-lrow" key={s.id}>
-                  <span className="when">{shortDate(s.date)} · {timeRange(s.start_time, s.end_time)}</span>
+                  <span className="when">{when(s)}</span>
                   <span className={`bk-tag ${cls}`}>{label}</span>
                   {s.status === "requested" && <button type="button" className="pt-btn-lnk" disabled={busyId === s.id} onClick={() => cancel(s)}>Withdraw</button>}
                   {s.status === "declined" && s.decline_reason && <span className="pt-help" style={{ flexBasis: "100%", margin: 0 }}>{s.decline_reason}</span>}
@@ -421,8 +454,9 @@ export function DatesSection({ token }) {
           </div>
         </div>
       )}
+      </>}
 
-      {modal && <PickDatesModal initialDate={modal.date} loadBusy={loadBusy} mine={mine} onClose={() => setModal(null)}
+      {modal && <PickDatesModal initialDate={modal.date} loadBusy={loadBusy} mine={calMine} onClose={() => setModal(null)}
         onDone={(slots, note) => send(slots, note)} doneLabel="Send request" sending={sending} error={sendErr} />}
     </div>
   );
