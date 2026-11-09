@@ -7,7 +7,7 @@
 // on any device shows and changes their own answers.
 
 import { hasServiceKey } from "@/lib/portalDb";
-import { inviteByToken, surveyById, inviteEvents, saveInviteAnswers, recentOpenReplies, createOpenReply } from "@/lib/surveyDb";
+import { inviteByToken, surveyById, inviteEvents, saveInviteAnswers, recentOpenReplies, createOpenReply, logSurveyThanks } from "@/lib/surveyDb";
 import { sanitizeAnswers, answerProblems, isOpenLink, isTestInvite } from "@/lib/surveyForm";
 import { notifySurveyReply, sendSurveyThanks } from "@/lib/notify";
 
@@ -21,7 +21,9 @@ const fail = (error, status = 400) => Response.json({ error }, { status });
 async function thank(invite) {
   if (!invite?.email || isTestInvite(invite)) return;
   try { await sendSurveyThanks({ to: invite.email, name: invite.name }); }
-  catch (e) { console.error("survey — thank-you email failed:", e?.message || e); }
+  catch (e) { console.error("survey — thank-you email failed:", e?.message || e); return; }
+  try { await logSurveyThanks(invite); }
+  catch (e) { console.error("survey — thank-you touchpoint failed:", e?.message || e); }
 }
 
 async function load(params) {
