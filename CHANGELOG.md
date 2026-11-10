@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-11-09: Inbox audit and a daily "Waiting on you" list
+
+Merge `1e5ac25` (branch `inbox-waiting`). Effort: medium.
+
+- **Why:** an audit of hello@ and maxperkins@ (Oct 26 to Nov 9) found people who had waited two weeks for a reply. Max wanted a daily check, not a weekly one, so nobody falls through the cracks.
+- **What:** the 9am Today & Tomorrow email gains a "Waiting on you (N)" section and the count in its subject. New `lib/inboxWatch.js` reads both inboxes (last 30 days, read-only) and lists every thread where a real person wrote last 24h+ ago and nobody at Sprout has written to them since. Automated mail is filtered out; website contact-form notifications are read for the real sender. Each entry links to the thread and says whether the person is in the CRM. Archiving a thread in Gmail removes it.
+- **Max's calls:** hello@ counts any non-automated person (first built as forms, replies and CRM contacts only; widened after it missed Jessica Hirsh). Lookback 30 days, since a 14-day window had already dropped her.
+- **Safety:** a failed inbox check never blocks the calendar email (it shows a one-line note); Gmail rate limits are retried. The email now also sends on days with no calendar events if someone is waiting.
+- **Audit follow-through:** replies sent from hello@ to Jenni Pirmann, Jordan Hollender, Vidlain Rios Perez and Quintessential Cardboard Design; Jenni and Jordan added to the CRM with 11/23 check-ins.
+
 ## 2026-11-09: Discord set up for public chat and private Sprout N Tell comms
 
 No app code; Discord only. Effort: medium.

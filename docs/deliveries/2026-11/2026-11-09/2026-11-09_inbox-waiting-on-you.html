@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Waiting On You · 2026-11-09</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+:root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6}
+*{box-sizing:border-box}body{margin:0;background:var(--ink);color:#fff;font-family:Lato,system-ui,sans-serif;padding:40px 16px}
+.slide{max-width:1100px;margin:0 auto}
+.eyebrow{color:var(--acid);font-weight:900;letter-spacing:3px;text-transform:uppercase;font-size:13px}
+h1{font-size:40px;font-weight:900;margin:8px 0 6px}
+.sub{color:#bdbdb8;font-size:17px;margin:0 0 24px}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.b{border-radius:999px;padding:6px 14px;font-weight:700;font-size:13px}
+.b1{background:var(--acid);color:var(--ink)}.b2{background:var(--fuchsia)}.b3{background:var(--cyan);color:var(--ink)}.b4{background:#222;border:1px solid #444}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.card{background:#111;border-radius:10px;padding:20px;border-left:6px solid var(--cyan)}
+.card.f{border-color:var(--fuchsia)}.card.a{border-color:var(--acid)}.card.y{border-color:var(--banana)}
+.card h3{margin:0 0 10px;font-size:18px}.card ul{margin:0;padding-left:18px;color:#d8d8d4;line-height:1.55;font-size:15px}
+.ic{font-size:22px;margin-right:6px}
+.mock{background:#fff;color:var(--ink);border-radius:10px;padding:18px 20px;margin-top:20px}
+.mock .h{font-size:12px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:var(--fuchsia);margin-bottom:6px}
+.mock .r{border-top:1px solid #ECECEA;padding:8px 0;font-size:14px}
+.mock .m{color:#6c6c61;font-size:13px}
+.foot{margin-top:24px;color:#8a8a86;font-size:13px}
+code{background:#222;padding:1px 6px;border-radius:4px;color:var(--banana)}
+</style></head><body><div class="slide">
+<div class="eyebrow">Delivery · Sprout CRM Next</div>
+<h1>Waiting on you: a daily inbox check</h1>
+<p class="sub">The 9am email now lists everyone who wrote to hello@ or maxperkins@ and hasn't heard back.</p>
+<div class="badges"><span class="b b1">merge 1e5ac25</span><span class="b b2">branch main</span><span class="b b3">Effort: medium</span><span class="b b4">2026-11-09</span></div>
+<div class="grid">
+<div class="card f"><h3><span class="ic">📬</span>What counts</h3><ul><li>A real person wrote last, 24h+ ago</li><li>Nobody at Sprout has written to them since</li><li>Both inboxes, last 30 days</li><li>Website form messages read for the real sender</li></ul></div>
+<div class="card"><h3><span class="ic">🧹</span>What's filtered</h3><ul><li>No-reply and notification senders</li><li>Lists, receipts, auto-replies</li><li>Promotions, Social, Updates, Forums tabs</li><li>Archive in Gmail to clear an item</li></ul></div>
+<div class="card a"><h3><span class="ic">🛟</span>Safe by design</h3><ul><li>Read-only on Gmail</li><li>A failed check never blocks the email</li><li>Gmail rate limits retried</li><li>Sends even on days with no events</li></ul></div>
+<div class="card y"><h3><span class="ic">✉️</span>Audit follow-through</h3><ul><li>Replied to Jenni, Jordan, Vidlain, Quintessential</li><li>Jenni + Jordan in the CRM, check-ins 11/23</li><li>Jessica Hirsh: not a fit</li></ul></div>
+</div>
+<div class="mock"><div class="h">Waiting on you (3)</div>
+<div class="r"><b>Music Major records</b> <span class="m">· maxperkins@ · 12 days</span><br><span class="m">SnT buzzkill footage · Not in CRM</span></div>
+<div class="r"><b>Vidlain Rios Perez</b> <span class="m">· hello@ · website form · 16 days</span><br><span class="m">Contact Us - Inquiry · Not in CRM</span></div>
+<div class="r"><b>Jessica Hirsh</b> <span class="m">· hello@ · 14 days</span><br><span class="m">Comedy game show night for Sprout Society? · Not in CRM</span></div>
+</div>
+<div class="foot">Files: <code>lib/inboxWatch.js</code> (new) · <code>lib/dayBoardSummary.js</code> · <code>app/api/cron/summaries/route.js</code>. Runs on the existing pg_cron job; no migration.</div>
+</div></body></html>
