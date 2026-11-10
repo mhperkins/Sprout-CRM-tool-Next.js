@@ -3,8 +3,9 @@
 // time, claims it so it sends once, sends it, and gives the claim back if the send fails so
 // the next check retries.
 //
-// Monday overview: Monday from 8am. Today and tomorrow: every day from 9am, skipped when
-// both days are empty on the Sprout calendar.
+// Monday overview: Monday from 8am. Today and tomorrow: every day from 9am, with a
+// "Waiting on you" list of unanswered email (lib/inboxWatch.js). Skipped only when both
+// days are empty on the Sprout calendar AND nobody is waiting.
 //
 // Auth: pg_cron sends the Vault secret as a Bearer token; the route compares its sha256
 // with sprout_cron_keys. The plaintext never leaves the database.
@@ -15,6 +16,7 @@ import { svc, hasServiceKey } from "@/lib/portalDb";
 import { sendEmail } from "@/lib/notify";
 import { fetchSproutEvents } from "@/lib/googleCalendar";
 import { buildMondayOverview, buildTodayTomorrow, DAY_BOARD_TO } from "@/lib/dayBoardSummary";
+import { fetchWaiting } from "@/lib/inboxWatch";
 import { etParts, addDays, weekdayIndex } from "@/lib/dayBoard";
 
 export const runtime = "nodejs";
@@ -96,8 +98,17 @@ export async function POST(req) {
         const events = await fetchSproutEvents(now.date, tomorrow);
         const todayEvents = events.filter((e) => e.date === now.date);
         const tomorrowEvents = events.filter((e) => e.date === tomorrow);
-        out.daily = events.length
-          ? await sendOnce("daily", now.date, () => buildTodayTomorrow(now.date, todayEvents, tomorrowEvents))
+        // A failed inbox check never blocks the calendar email; it shows a one-line note.
+        let waiting;
+        try {
+          waiting = await fetchWaiting();
+        } catch (e) {
+          console.error("inbox check failed:", e?.message || e);
+          waiting = null;
+        }
+        out.waiting = waiting === null ? "check failed" : waiting.length;
+        out.daily = events.length || waiting?.length
+          ? await sendOnce("daily", now.date, () => buildTodayTomorrow(now.date, todayEvents, tomorrowEvents, waiting))
           : "nothing today or tomorrow";
       }
     } else {
