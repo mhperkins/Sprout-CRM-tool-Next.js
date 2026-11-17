@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-11-17: Give button under the header on Russell's email
+
+Merge `7875eea` (branch `top-button`). Effort: low.
+
+- **Why:** Max wanted the "Give for Russell's birthday" button right below the header image too, not only after the letter.
+- **Quick Hit:** new optional `topBtn` field (`[Label](URL)`), a centered pink button right under the header image or masthead.
+- **Data:** `nl_nov_2026_russell_34` re-read and given `topBtn` (same Givebutter link); HTML rebuilt. Checked at 390px.
+
+---
+
 ## 2026-11-17: Russell's 34th birthday donor email (Quick Hit header image, body button, closing)
 
 Merge `ae6f60f` (branch `russell-email`). Effort: low.

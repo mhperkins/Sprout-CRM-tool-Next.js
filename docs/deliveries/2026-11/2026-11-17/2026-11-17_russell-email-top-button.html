@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Top Give Button</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#030000; --paper:#F7F7F6; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ink); font-family:'Lato',Helvetica,Arial,sans-serif; color:var(--ink); }
+  .slide { max-width:1100px; margin:0 auto; padding:48px 16px; }
+  .eyebrow { color:var(--acid); font-weight:900; letter-spacing:3px; font-size:13px; text-transform:uppercase; }
+  h1 { color:#fff; font-size:42px; font-weight:900; margin:10px 0 6px; line-height:1.1; }
+  .sub { color:#bdbdb8; font-size:17px; margin:0 0 28px; }
+  .badges { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:28px; }
+  .badge { background:#1a1717; color:#fff; border-radius:999px; padding:7px 14px; font-size:13px; font-weight:700; }
+  .badge b { color:var(--banana); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+  .card { background:var(--paper); border-radius:10px; padding:22px; border-top:6px solid var(--fuchsia); }
+  .card.c { border-top-color:var(--cyan); } .card.a { border-top-color:var(--acid); }
+  .card h2 { margin:0 0 10px; font-size:19px; font-weight:900; }
+  .card ul { margin:0; padding-left:18px; font-size:15px; line-height:1.55; color:#3a3a38; }
+  .btn { display:inline-block; background:var(--fuchsia); color:#fff; font-weight:900; padding:12px 24px; border-radius:6px; margin-top:6px; }
+  code { background:#e6e6e2; padding:1px 5px; border-radius:4px; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="eyebrow">Delivered · 2026-11-17</div>
+  <h1>Give button under the header</h1>
+  <p class="sub">Russell's 34th email now asks right at the top, and again after the letter.</p>
+  <div class="badges">
+    <span class="badge">Branch <b>main</b></span>
+    <span class="badge">Merge <b>7875eea</b></span>
+    <span class="badge">Branch commit <b>0ca9fd7</b></span>
+    <span class="badge">Effort <b>low</b></span>
+  </div>
+  <div class="grid">
+    <div class="card"><h2>🎂 On the email</h2><ul><li>Centered under the birthday image</li><li>Links to <code>givebutter.com/RJE34</code></li></ul><span class="btn">Give for Russell's birthday →</span></div>
+    <div class="card c"><h2>🧩 Template</h2><ul><li>New Quick Hit field: top button</li><li><code>[Label](URL)</code>, blank = no button</li></ul></div>
+    <div class="card a"><h2>✅ Checked</h2><ul><li>Build passes</li><li>Draft fields kept; only the button added</li><li>Screenshot at 390px</li></ul></div>
+  </div>
+</div>
+</body>
+</html>
