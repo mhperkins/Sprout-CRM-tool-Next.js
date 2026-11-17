@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-11-17: Russell's 34th birthday donor email (Quick Hit header image, body button, closing)
+
+Merge `ae6f60f` (branch `russell-email`). Effort: low.
+
+- **Why:** Max needed a one-off HTML email in the CRM from Danielle's donor letter PDF with the "Happy Birthday, Russell" image as the header. The Quick Hit had no place for a header image or a button in the middle of the letter.
+- **Quick Hit template (`lib/newsletter.js`):** new optional fields `headerImage` (replaces the logo masthead), `preheader` (inbox preview text), `bodyBtn` (a pink `[Label](URL)` button after the body) and `closing` (text after the button). `richText` now renders `**bold**` and `_italic_` in every field. An empty "Next up" block no longer shows. Existing Quick Hit drafts render the same.
+- **Data:** draft `nl_nov_2026_russell_34` ("Russell would have been 34 today"), header image in `newsletter-images/oneoff/`, button and footer Donate → `givebutter.com/RJE34` (campaign 769178, live). Checked at 640 and 390px. Not sent.
+
+---
+
 ## 2026-11-09: Inbox audit and a daily "Waiting on you" list
 
 Merge `1e5ac25` (branch `inbox-waiting`). Effort: medium.
