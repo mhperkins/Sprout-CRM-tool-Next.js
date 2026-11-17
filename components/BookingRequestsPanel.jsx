@@ -13,7 +13,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { fetchBookingRequests, decideBookingSlots } from "../lib/services";
+import { fetchBookingRequests, decideBookingSlots, editBookingSlot } from "../lib/services";
 import { shortDate, timeRange } from "../lib/booking";
 
 const KINDS = [["sprout", "Sprout"], ["partner", "Partner"], ["rental", "Rental"]];
@@ -26,6 +26,8 @@ export default function BookingRequestsPanel({ onEventChanged, onOpenEvent, show
   const [reasons, setReasons] = useState({});   // event id -> note
   const [working, setWorking] = useState("");   // event id being decided
   const [hostOpen, setHostOpen] = useState(false);
+  const [edit, setEdit] = useState(null);       // { id, date, start, end } while fixing a waiting date
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -64,6 +66,20 @@ export default function BookingRequestsPanel({ onEventChanged, onOpenEvent, show
     load();
   };
 
+  // Fix a waiting date (the client picked the wrong day) before approving it.
+  // Nothing goes on the calendar until Approve.
+  const saveEdit = async () => {
+    if (!edit) return;
+    setSavingEdit(true);
+    const { data, error } = await editBookingSlot(edit);
+    setSavingEdit(false);
+    if (error || data?.ok === false) { showToast?.(error || data?.message || "Not changed", "err"); return; }
+    if (data?.event && onEventChanged) onEventChanged(data.event);
+    showToast?.(data?.message || "Date changed ✓");
+    setEdit(null);
+    load();
+  };
+
   const inGroups = new Set(groups.map((g) => g.event_id));
   const loose = pendingEvents.filter((e) => !inGroups.has(e.id));
   const count = groups.length + loose.length + (unsetHost.length ? 1 : 0);
@@ -95,12 +111,24 @@ export default function BookingRequestsPanel({ onEventChanged, onOpenEvent, show
             </div>
             {g.slots[0]?.note && <div style={{ fontSize: 12.5, color: "var(--g600)", marginTop: 6 }}>"{g.slots[0].note}"</div>}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))", gap: 6, margin: "10px 0" }}>
-              {g.slots.map((s) => (
+              {g.slots.map((s) => edit?.id === s.id ? (
+                <div key={s.id} style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", fontSize: 12.5, padding: "6px 8px", borderRadius: 6, border: "1px solid var(--black)", background: "var(--g50)" }}>
+                  <input type="date" className="fi" style={{ width: 150, fontSize: 12 }} aria-label="Date" value={edit.date} onChange={(e) => setEdit((v) => ({ ...v, date: e.target.value }))} />
+                  <input type="time" className="fi" style={{ width: 105, fontSize: 12 }} aria-label="Start" value={edit.start} onChange={(e) => setEdit((v) => ({ ...v, start: e.target.value }))} />
+                  <span style={{ color: "var(--g500)" }}>to</span>
+                  <input type="time" className="fi" style={{ width: 105, fontSize: 12 }} aria-label="End" value={edit.end} onChange={(e) => setEdit((v) => ({ ...v, end: e.target.value }))} />
+                  <button className="btn btn-blk btn-xs" disabled={savingEdit} onClick={saveEdit}>{savingEdit ? "Saving…" : "Save"}</button>
+                  <button className="btn btn-ghost btn-xs" disabled={savingEdit} onClick={() => setEdit(null)}>Cancel</button>
+                </div>
+              ) : (
                 <label key={s.id} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 12.5, padding: "6px 8px", borderRadius: 6, cursor: "pointer",
                   border: `1px solid ${s.clash ? "var(--fuchsia)" : "var(--g200)"}` }}>
                   <input type="checkbox" checked={!!checked[s.id]} onChange={() => setChecked((c) => ({ ...c, [s.id]: !c[s.id] }))} style={{ marginTop: 2 }} />
-                  <span>
+                  <span style={{ flex: 1 }}>
                     <b>{shortDate(s.date)}</b> · {timeRange(s.start_time, s.end_time)}
+                    <button type="button" className="btn btn-ghost btn-xs" style={{ marginLeft: 6, padding: "0 6px" }} disabled={!!working || savingEdit}
+                      title="Fix the date or time before approving"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEdit({ id: s.id, date: s.date, start: s.start_time, end: s.end_time }); }}>Edit</button>
                     {s.clash && <span style={{ display: "block", color: "var(--fuchsia)", fontSize: 11.5 }}>{s.clash}</span>}
                     {!s.clash && s.also_requested && <span style={{ display: "block", color: "#5c4a00", fontSize: 11.5 }}>{s.also_requested}</span>}
                     {!s.clash && !s.also_requested && <span style={{ display: "block", color: "#4f6b00", fontSize: 11.5 }}>Open</span>}
