@@ -2,6 +2,13 @@
 
 ---
 
+## 2026-11-17: Discord #announcements locked + Russell campaign update
+
+No app code. Effort: low.
+
+- New #announcements channel set to view-only through the bot REST API: everyone can view, read and react; only Staff can post or start threads. Read back to confirm.
+- Drafted a short Discord update on the Russell birthday campaign that frames it as bringing back the Seed Fund, not an ask. Max posted it with a 🌱 reaction (Discord has no default reaction outside forums).
+
 ## 2026-11-17: Edit a waiting booking date before approving
 
 Merge `6c13867`. Effort: medium.
