@@ -4771,10 +4771,11 @@ function EventDetailPage({event,allEvents,contacts,onBack,onDelete,onUpdateEvent
           : dateLine;
         const datesBody=<>
           {waiting.length>0&&<div className="evb-rows">
-            {waiting.map(s=>(
+            {waiting.map(s=>slotEdit?.id===s.id?slotRow(s):(
               <div key={s.id} className="evb-row">
                 <span className="evb-grow"><b>{slotDate(s.date)}</b> · {slotTimes(s.start_time,s.end_time)}</span>
                 <span className="evd-chip" style={{background:"#fff8d6",color:"#5c4a00"}}>Waiting</span>
+                <button className="btn btn-ghost btn-xs" disabled={!!slotBusy} title="Fix the date or time before approving" onClick={()=>setSlotEdit({id:s.id,date:s.date,start:s.start_time,end:s.end_time})}>Edit</button>
                 <button className="btn btn-blk btn-xs" disabled={!!slotBusy} onClick={()=>decideSlot(s,"approve")}>{slotBusy===s.id?"Working…":"Approve"}</button>
                 <button className="btn btn-ghost btn-xs" disabled={!!slotBusy} onClick={()=>decideSlot(s,"decline")}>Decline</button>
               </div>
