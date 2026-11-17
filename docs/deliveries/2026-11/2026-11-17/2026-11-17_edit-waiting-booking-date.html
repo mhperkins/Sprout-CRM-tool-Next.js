@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edit Waiting Dates</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#030000;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--paper:#F7F7F6;--g:#6b6b68}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ink);font-family:Lato,system-ui,sans-serif;color:var(--ink);display:flex;justify-content:center;padding:32px 16px}
+  .slide{width:100%;max-width:1100px;background:var(--paper);border-radius:14px;overflow:hidden}
+  .top{background:var(--ink);color:#fff;padding:28px 32px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .top h1{margin:0;font-size:30px;font-weight:900;flex:1 1 420px}
+  .badge{font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:20px}
+  .rule{height:4px;background:var(--acid)}
+  .body{padding:26px 32px 32px}
+  .lead{font-size:17px;line-height:1.55;margin:0 0 22px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .card{background:#fff;border-radius:10px;padding:18px;border-left:6px solid var(--cyan);box-shadow:0 4px 14px rgba(0,0,0,.12)}
+  .card.f{border-color:var(--fuchsia)}.card.b{border-color:var(--banana)}.card.a{border-color:var(--acid)}
+  .card .ic{font-size:24px}
+  .card h3{margin:6px 0;font-size:16px;font-weight:900}
+  .card p{margin:0;font-size:14px;line-height:1.5;color:#3a3a38}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:22px 0;font-size:14px;font-weight:700}
+  .step{background:#fff;border:2px solid var(--ink);border-radius:8px;padding:8px 12px}
+  .arrow{color:var(--fuchsia);font-weight:900}
+  .foot{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;color:var(--g);margin-top:18px}
+  code{background:var(--ink);color:var(--acid);padding:2px 7px;border-radius:5px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="top">
+    <h1>Fix a booking date, then approve</h1>
+    <span class="badge" style="background:var(--acid)">Merged + pushed</span>
+    <span class="badge" style="background:var(--cyan)">Effort: medium</span>
+  </div>
+  <div class="rule"></div>
+  <div class="body">
+    <p class="lead">When a client picks the wrong day, staff can now edit the waiting date and approve it. There's no need to decline and ask them to resubmit.</p>
+    <div class="flow">
+      <span class="step">Waiting date</span><span class="arrow">→</span>
+      <span class="step">Edit date / times</span><span class="arrow">→</span>
+      <span class="step">Calendar clash check</span><span class="arrow">→</span>
+      <span class="step">Approve</span><span class="arrow">→</span>
+      <span class="step">Sprout calendar + host email</span>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="ic">✏️</div><h3>Edit button in two places</h3><p>The event page Dates bar and the Needs you box both have it.</p></div>
+      <div class="card f"><div class="ic">🗓</div><h3>No calendar write on edit</h3><p>An edit only changes the request. Google Calendar gets the date when you approve.</p></div>
+      <div class="card b"><div class="ic">🔁</div><h3>Event stays in step</h3><p>A one-date request's event date and times follow the edit.</p></div>
+      <div class="card a"><div class="ic">✅</div><h3>Tested on real data</h3><p>Ran on throwaway records: the date moved, and a declined date and a bad time range were refused. Cleaned up after.</p></div>
+    </div>
+    <div class="foot">
+      <span>Branch <code>main</code></span>
+      <span>Merge <code>6c13867</code></span>
+      <span>Commit <code>9c825c3</code></span>
+      <span>Files: lib/bookingDb.js · components/CRMManager.jsx · components/BookingRequestsPanel.jsx</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

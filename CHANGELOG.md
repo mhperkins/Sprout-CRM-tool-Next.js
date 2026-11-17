@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-11-17: Edit a waiting booking date before approving
+
+Merge `6c13867`. Effort: medium.
+
+- Why: a client picked the wrong date; Max wanted to approve with the right date instead of declining and asking for a resubmit.
+- `editConfirmedSlot` (`lib/bookingDb.js`) now also edits a waiting (`requested`) slot: calendar clash check, no Google write, slot update, event date (and a one-date event's times) kept in step via `resyncEventDate`'s new `times` option. Approve writes the corrected date to the calendar as before.
+- Edit button on waiting dates in the event page Dates bar and the Needs you box.
+- Tested on throwaway records against the real DB; cleaned up. UI not clicked through (login wall).
+
 ## 2026-11-17: Russell's email into Campaign Monitor + Sprout-Community re-sync
 
 No app code. Effort: low.
