@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-11-17: Russell's email into Campaign Monitor + Sprout-Community re-sync
+
+No app code. Effort: low.
+
+- Exported the draft's HTML (`nl_nov_2026_russell_34`) to `virtual-agency/employees/Communications/deliverables/2026-11-17_russell-34-donor-email.html`; Max uploaded it via CM Import HTML.
+- Sprout-Community was behind the CRM (Community bucket now 1,323 unique emails vs 1,200 at the June import). Built a fresh CSV (Email, First Name, Last Name), Max imported it: CM list 1,157 → 1,280 active. Donors unchanged.
+- Send list: Sprout-Community + Sprout-Donors, 3,250 unique. Max sends.
+
+---
+
 ## 2026-11-17: Give button under the header on Russell's email
 
 Merge `7875eea` (branch `top-button`). Effort: low.
