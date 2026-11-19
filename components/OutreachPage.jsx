@@ -23,6 +23,7 @@ import {
   nextBatch, batchStats, promoteContact, contactFromAccount, contactIdFor,
 } from "../lib/outreach";
 import { todayET } from "../lib/dayBoard";
+import OutreachProtocol from "./OutreachProtocol";
 import { validateContact } from "../lib/schemas";
 
 const OT_STYLES = `
@@ -377,10 +378,12 @@ export default function OutreachPage({ contacts = [], orgs = [], events = [], sh
       </div>
 
       <div className="ot-bar">
-        {[["send", "Send"], ["results", "Results"], ["messages", `Messages${msgDirty ? " •" : ""}`]].map(([k, l]) => (
+        {[["send", "Send"], ["results", "Results"], ["messages", `Messages${msgDirty ? " •" : ""}`], ["protocol", "Protocol"]].map(([k, l]) => (
           <button key={k} className="ot-chip" aria-pressed={tab === k} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
+
+      {tab === "protocol" && <OutreachProtocol showToast={showToast} />}
 
       {tab === "send" && (all.length === 0 && !adding
         ? <div className="ot-empty"><b>No accounts yet</b>Add an Instagram account to start your first batch.<br /><br />
