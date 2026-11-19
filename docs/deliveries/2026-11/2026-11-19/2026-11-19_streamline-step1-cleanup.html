@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Streamline Step 1</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+:root{--ink:#030000;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--paper:#F7F7F6}
+*{box-sizing:border-box}body{margin:0;background:var(--ink);font-family:Lato,Arial,sans-serif;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px}
+.slide{width:100%;max-width:1000px}
+.eyebrow{color:var(--acid);font-weight:900;letter-spacing:3px;text-transform:uppercase;font-size:13px}
+h1{font-size:40px;font-weight:900;margin:8px 0 6px;line-height:1.1}
+.sub{color:#bdbdb8;font-size:16px;margin-bottom:22px}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.b{padding:6px 12px;border-radius:999px;font-size:13px;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.card{background:#141212;border-radius:10px;padding:18px;border-left:6px solid var(--cyan)}
+.card h3{margin:0 0 8px;font-size:17px}.card p{margin:0;color:#cfcfca;font-size:14px;line-height:1.5}
+.ico{font-size:24px;margin-bottom:6px}
+.stat{font-size:44px;font-weight:900;color:var(--acid)}
+.next{margin-top:20px;background:var(--banana);color:var(--ink);border-radius:10px;padding:14px 18px;font-weight:700}
+code{font-family:Consolas,monospace;font-size:13px}
+</style></head><body><div class="slide">
+<div class="eyebrow">Sprout CRM · Delivered 2026-11-19</div>
+<h1>Streamline step 1: cleanup merged</h1>
+<div class="sub">Dead code out, newsletter list sending moved fully to Campaign Monitor.</div>
+<div class="badges">
+<span class="b" style="background:var(--acid);color:var(--ink)">main</span>
+<span class="b" style="background:var(--fuchsia)">merge 12ef617</span>
+<span class="b" style="background:#2a2828">branch commit 1fb6c13</span>
+<span class="b" style="background:var(--cyan);color:var(--ink)">Effort: low</span>
+<span class="b" style="background:#2a2828">build passes</span>
+</div>
+<div class="grid">
+<div class="card" style="border-color:var(--acid)"><div class="stat">−272</div><p>lines removed across 3 files</p></div>
+<div class="card"><div class="ico">🗑</div><h3>Dead code</h3><p><code>DashboardView</code> (replaced by Day Board) and <code>PostSchema</code> deleted.</p></div>
+<div class="card" style="border-color:var(--fuchsia)"><div class="ico">📰</div><h3>Newsletter</h3><p>Send to list removed. Test send, editor and Copy HTML stay; the card points to Campaign Monitor.</p></div>
+<div class="card" style="border-color:var(--banana)"><div class="ico">✉️</div><h3><code>/api/send</code></h3><p>Test sends only. List mode and recipient fetch gone.</p></div>
+</div>
+<div class="next">Next: wireframe the merged sidebar, 13 items down to 8.</div>
+</div></body></html>

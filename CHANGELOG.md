@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-11-19: Streamline step 1, dead code and newsletter Send to list removed
+
+App code. Effort: low. Merge `12ef617`.
+
+- **Why:** Max asked why the planned tab cleanup never happened. It was step 4 of `docs/plans/2026-11-02_app-streamline-plan.md`; step 1 had also never run, so it went first.
+- **Deleted dead code:** unused `DashboardView` (replaced by the Day Board) and `PostSchema`.
+- **Newsletter:** Send to list removed from the editor. Test send, the editor and Copy HTML stay; the Send card points to Campaign Monitor.
+- **`/api/send`:** test sends only; list mode and the server-side recipient fetch are gone.
+- 272 lines removed, build passes. Next: wireframe the merged sidebar (13 items to 8).
+
+---
+
 ## 2026-11-19: Instagram outreach, Batch 6 sent, response protocol, CRM synced
 
 Data and docs only, no app code. Effort: medium.
