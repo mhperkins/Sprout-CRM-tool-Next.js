@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-11-19: Instagram outreach, Batch 6 sent, response protocol, CRM synced
+
+Data and docs only, no app code. Effort: medium.
+
+- **Outreach 6 sent:** 14 cold DMs from @sproutsocietyorg with the new video-chat intro. Cenny Ray was cut (Max reaches out himself).
+- **New response protocol** in `docs/guides/ig-outreach-protocol.md`: every send and reply is logged on the DM Plan sheet, the Outreach page and the contact or org record together; a response check runs before each outreach session; a meeting gets a prep task the day before and the meeting itself, as CRM next actions and Day Board tasks.
+- **CRM synced to the sheet.** The Outreach page had never recorded the Instagram sends. Now 44 sent (6 replied, 2 interested), 28 contacts and 17 orgs got their DM touchpoints, responders are warm, and the 4 holds carry their reason.
+- **Meetings:** Ali (@wl_pma) video chat Tue 11/24 at 11:30am, link goes out Mon 11/23. Jules (@gadzucks) offered a visit Tue 12/1, confirm Mon 11/30. All four on the Day Board.
+- **Outreach 7 approved:** 10 to send on Max's go. EveryThai, Zep and Charles R. Bullard cut as businesses.
+
 ## 2026-11-19: Events through year end, Sing Easy 12/8, Sober Hangout rebuilt
 
 Data only, no app code. Effort: low for the breakdown; max on both diagnose and fix for the deleted event.
