@@ -15,18 +15,18 @@ import { fetchInboxThreads, setInboxMark } from "../lib/services";
 
 const IB_STYLES = `
 .ib{--line:#E3E3DD;--dim:#5F5F57;--sunk:#F4F4F0}
-.ib-hd{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.ib-hd{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between;margin-bottom:18px}
 .ib-hd h1{font-size:23px;font-weight:900;letter-spacing:-.01em}
 .ib-meta{font-size:12px;color:var(--dim);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.ib-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.ib-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
 .ib-chip{appearance:none;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:var(--dim);border-radius:999px;padding:5px 12px}
 .ib-chip.on{background:var(--cyan);border-color:var(--cyan);color:var(--black)}
 .ib-chip .n{opacity:.7;margin-left:5px;font-variant-numeric:tabular-nums}
-.ib-list{display:flex;flex-direction:column;gap:8px}
-.ib-row{display:flex;flex-wrap:wrap;gap:10px 14px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--black)}
+.ib-list{display:flex;flex-direction:column;gap:12px}
+.ib-row{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:16px 18px;color:var(--black);min-width:0}
 .ib-row.pinned{border-color:var(--cyan);box-shadow:inset 4px 0 0 var(--cyan)}
 .ib-row.muted{opacity:.62}
-.ib-l{flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:3px}
+.ib-l{flex:1 1 320px;min-width:0;max-width:100%;display:flex;flex-direction:column;gap:5px}
 .ib-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .ib-who{font-weight:900;font-size:14px}
 .ib-tag{font-size:11px;padding:1px 8px;border-radius:999px;background:var(--sunk);color:var(--dim)}
@@ -38,7 +38,7 @@ const IB_STYLES = `
 .ib-crm{font-size:12px;color:var(--dim)}
 .ib-crm button{appearance:none;font:inherit;border:0;background:none;padding:0;color:#2a8ca0;font-weight:700;cursor:pointer}
 .ib-crm .no{color:var(--fuchsia);font-weight:700}
-.ib-a{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.ib-a{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .ib-btn{appearance:none;font:inherit;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:#2c2c26;border-radius:6px;padding:5px 10px;white-space:nowrap}
 .ib-btn:hover{border-color:var(--dim)}
 .ib-btn.pri{background:var(--black);color:var(--white);border-color:var(--black)}
@@ -121,7 +121,7 @@ export default function InboxEmail({ openContact, setView, showToast, onCount })
   const inboxLabel = (it) => (it.source === "instagram" ? "Instagram" : it.account.split("@")[0] + "@");
 
   return (
-    <div className="ib">
+    <div className="page ib">
       <style>{IB_STYLES}</style>
       <div className="ib-hd">
         <h1>Email</h1>
