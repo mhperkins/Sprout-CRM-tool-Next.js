@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-11-19: Inbox › Email padding and overflow fix
+
+Merge `30a420c` (branch `inbox-padding`, commit `672e2d7`). Effort: low.
+
+- **Why:** Max saw the Email tab run past the screen edge, hiding the row buttons on a narrow window, and the page felt cramped.
+- **Cause:** Email was the only view not wrapped in `.page` (no padding, no max width), and `.main` lacked `min-width:0`, so a long no-wrap snippet line widened the row past the viewport.
+- **Fix:** `InboxEmail` root is now `page ib`; `.main` gets `min-width:0` (guards every view); rows padded 16/18px with bigger gaps between rows, chips and header; action buttons wrap under the text when narrow.
+- **Verified:** build passes. Not clicked through by Claude (login wall).
+
+---
+
 ## 2026-11-19: Sidebar 13 to 8, Inbox › Email, Outreach › Protocol
 
 Merge `d5f33c9` (branch `sidebar-merge`). Migration `sprout_inbox_triage` applied. Effort: medium.

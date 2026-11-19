@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inbox Padding Fix</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#030000;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--paper:#F7F7F6}
+*{box-sizing:border-box;margin:0}
+body{font-family:Lato,system-ui,sans-serif;background:var(--ink);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px}
+.slide{width:100%;max-width:1000px;background:var(--ink);border:1px solid #2a2a26;border-radius:14px;padding:40px}
+.eyebrow{color:var(--acid);font-weight:900;letter-spacing:.14em;text-transform:uppercase;font-size:12px}
+h1{font-size:38px;font-weight:900;margin:10px 0 6px;line-height:1.1}
+.sub{color:#bdbdb6;font-size:16px;margin-bottom:26px}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.b{border-radius:999px;padding:5px 12px;font-size:12px;font-weight:900}
+.b1{background:var(--acid);color:var(--ink)}.b2{background:var(--cyan);color:var(--ink)}.b3{background:var(--banana);color:var(--ink)}.b4{background:var(--fuchsia);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.card{background:#fff;color:var(--ink);border-radius:10px;padding:20px;box-shadow:inset 6px 0 0 var(--c)}
+.card .i{font-size:24px}
+.card h3{font-size:17px;font-weight:900;margin:8px 0 6px}
+.card p{font-size:14px;line-height:1.5;color:#3a3a38}
+code{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:#F0F0EC;padding:1px 5px;border-radius:4px}
+.foot{margin-top:24px;color:#8a8a86;font-size:13px}
+</style></head>
+<body><div class="slide">
+<div class="eyebrow">Sprout CRM · Delivered 2026-11-19</div>
+<h1>Inbox › Email fits the screen</h1>
+<div class="sub">Buttons stay visible on narrow windows, with more room around everything.</div>
+<div class="badges"><span class="b b1">main</span><span class="b b2">merge 30a420c</span><span class="b b3">commit 672e2d7</span><span class="b b4">Effort: low</span></div>
+<div class="grid">
+<div class="card" style="--c:var(--fuchsia)"><div class="i">🔍</div><h3>The cause</h3><p>Email was the only view outside <code>.page</code>, and <code>.main</code> had no <code>min-width:0</code>, so a long snippet line pushed rows past the screen.</p></div>
+<div class="card" style="--c:var(--cyan)"><div class="i">📐</div><h3>The fix</h3><p>Page padding like every other view. <code>.main</code> can no longer grow past the screen, which guards all pages.</p></div>
+<div class="card" style="--c:var(--acid)"><div class="i">🧘</div><h3>More room</h3><p>Roomier cards (16/18px), bigger gaps between rows, filters and header. Actions wrap under the text when narrow.</p></div>
+</div>
+<div class="foot">Files: components/InboxEmail.jsx · components/CRMManager.jsx · Build passes · Hard-refresh to see it</div>
+</div></body></html>
