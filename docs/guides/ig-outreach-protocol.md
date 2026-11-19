@@ -53,7 +53,8 @@ Batches 1 to 5 got an older, longer message with the /get-involved link and the 
 | Outreach 1 to 5 | Sent 11/2 to 11/9 (old message). Holds in 3 and 4 need Max's call: SPARŚA, Asylum Arts, ARTYARDBKLYN, ivyhousestudio, Daria Tennikova, Lisa Sniderman (Aoede), and Ashley Dreyfus in 5. |
 | Responders | 7 got the video-chat follow-up on 11/19: Alexis Viele (replied), and Rsri, Fabian Guhl, Lauren Wax, zinnergy, QTs QommuniT, Gianna Alessi (liked). Noted in column H. |
 | Outreach 6 | 14 sent 2026-11-19 (new video-chat intro). Cenny Ray cut. |
-| Outreach 7 to 10 | Queued from the 9/29 scrape. Not shown to Max yet. |
+| Outreach 7 | Approved by Max 11/19: 10 to send on his trigger (EveryThai, Zep, Charles R. Bullard cut as businesses; Tina Demel and Paty don't follow us). |
+| Outreach 8 to 10 | Queued from the 9/29 scrape. Not shown to Max yet. |
 | Outreach 11 to 14 | 58 new follow-backs added 11/19. Not shown to Max yet. |
 
 When someone agrees to a chat, log it in the CRM (touchpoint + next action) and note it in column H.
