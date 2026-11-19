@@ -69,6 +69,7 @@ import MembersView from "./MembersView";
 import SurveyView from "./SurveyView";
 import OutreachPage from "./OutreachPage";
 import BookingRequestsPanel from "./BookingRequestsPanel";
+import InboxEmail from "./InboxEmail";
 
 /* ─── Styles ───────────────────────────────────────────────────────────────── */
 const STYLES = `
@@ -118,6 +119,12 @@ const STYLES = `
   .sb-item.on { background:var(--cyan); color:var(--black); }
   .sb-badge { margin-left:auto; background:var(--fuchsia); color:#fff; border-radius:10px; padding:1px 6px; font-size:9px; font-weight:900; min-width:18px; text-align:center; }
   .sb-item.on .sb-badge { background:var(--black); color:var(--white); }
+  .grp-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--g200); }
+  .grp-tab { appearance:none; font:inherit; font-size:13px; font-weight:700; cursor:pointer; border:1.5px solid var(--g200); background:#fff; color:var(--g600); border-radius:999px; padding:6px 14px; display:inline-flex; align-items:center; gap:6px; }
+  .grp-tab:hover { border-color:var(--g600); }
+  .grp-tab.on { background:var(--black); color:var(--white); border-color:var(--black); }
+  .grp-tab:focus-visible { outline:2px solid var(--cyan); outline-offset:2px; }
+  .grp-n { background:var(--fuchsia); color:#fff; border-radius:999px; padding:0 6px; font-size:11px; }
   .sb-foot { padding:12px 18px 16px; border-top:1px solid rgba(247,247,246,0.06); margin-top:auto; }
   .sb-foot-txt { font-size:8px; color:rgba(247,247,246,0.18); text-transform:uppercase; letter-spacing:0.1em; font-weight:700; line-height:1.7; }
 
@@ -1481,7 +1488,33 @@ function EventDetail({event,contacts,onClose,onUpdate,onOpenFull,onContactClick,
 }
 
 /* ─── Sidebar ────────────────────────────────────────────────────────────────── */
-function Sidebar({view,setView,contacts,events,profile,onQuickLog,onCollapse}) {
+/* Sidebar groups: one sidebar item, several pages shown as tabs. The view ids stay the
+   same as before, so every setView("contacts") / ?view=showcase link keeps working. */
+const NAV_GROUPS = {
+  people:   [{id:"contacts",label:"Contacts"},{id:"orgs",label:"Organizations"},{id:"members",label:"Members"}],
+  inbox:    [{id:"inbox",label:"Email"},{id:"showcase",label:"Showcase"},{id:"interest",label:"Get Involved"}],
+  impact:   [{id:"grants",label:"Grant Metrics"},{id:"survey",label:"Surveys"}],
+  settings: [{id:"settings",label:"Organization"},{id:"import",label:"Import JSON"}],
+};
+const groupForView = (v) => Object.keys(NAV_GROUPS).find(g=>NAV_GROUPS[g].some(t=>t.id===v)) || null;
+
+/** Tab row above a grouped page. Remembers the last tab per group. */
+function GroupTabs({view,setView,inboxCount}) {
+  const g = groupForView(view);
+  if(!g) return null;
+  return (
+    <div className="grp-tabs" role="tablist">
+      {NAV_GROUPS[g].map(t=>
+        <button key={t.id} role="tab" aria-selected={view===t.id} className={`grp-tab ${view===t.id?"on":""}`}
+          onClick={()=>{ try{ localStorage.setItem("sprout_nav_"+g,t.id); }catch{} setView(t.id); }}>
+          {t.label}{t.id==="inbox"&&inboxCount>0&&<span className="grp-n">{inboxCount}</span>}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function Sidebar({view,setView,contacts,events,profile,onQuickLog,onCollapse,inboxCount}) {
   const notifCount = (() => {
     const items = [];
     contacts.forEach(c=>{
@@ -1495,33 +1528,30 @@ function Sidebar({view,setView,contacts,events,profile,onQuickLog,onCollapse}) {
     return items.filter(d=>{ const n=daysUntil(d); return n!==null&&n<=3; }).length;
   })();
   const nav = [
-    {section:"Overview"},
     {id:"dashboard",label:"Day Board",icon:"📋",badge:notifCount>0?notifCount:null},
-    {section:"Relationships"},
-    {id:"contacts",label:"Contacts",icon:"👤"},
-    {id:"orgs",label:"Organizations",icon:"🏢"},
+    {id:"people",label:"People",icon:"👤"},
     {id:"events",label:"Events",icon:"🗓"},
-    {id:"showcase",label:"Showcase",icon:"🎤"},
-    {id:"interest",label:"Get Involved",icon:"🙋"},
-    {id:"newsletter",label:"Newsletter",icon:"📰"},
+    {id:"inbox",label:"Inbox",icon:"📥",badge:inboxCount>0?inboxCount:null},
     {id:"outreach",label:"Outreach",icon:"📣"},
-    {id:"members",label:"Members",icon:"★"},
-    {id:"grants",label:"Grant Metrics",icon:"📈"},
-    {id:"survey",label:"Impact Survey",icon:"📝"},
-    {section:"Tools"},
-    {id:"import",label:"Import JSON",icon:"⬇"},
+    {id:"impact",label:"Impact",icon:"📈"},
+    {id:"newsletter",label:"Newsletter",icon:"📰"},
     {id:"settings",label:"Settings",icon:"⚙"},
   ];
+  const curGroup = groupForView(view) || view;
+  const go = (id) => {
+    if(!NAV_GROUPS[id]) return setView(id);
+    let last=null; try{ last=localStorage.getItem("sprout_nav_"+id); }catch{}
+    setView(NAV_GROUPS[id].some(t=>t.id===last) ? last : NAV_GROUPS[id][0].id);
+  };
   return (
     <nav className="sb">
       <div className="sb-brand"><div><div className="sb-name">Sprout Society</div><div className="sb-sub">CRM Manager v1</div></div><button className="sb-collapse" onClick={onCollapse} title="Hide sidebar">«</button></div>
       <div className="sb-nav">
-        {nav.map((item,i)=>item.section
-          ? <div key={i} className="sb-sect">{item.section}</div>
-          : <div key={item.id} className={`sb-item ${view===item.id?"on":""}`} onClick={()=>setView(item.id)}>
-              <span>{item.icon}</span><span>{item.label}</span>
-              {item.badge&&<span className="sb-badge">{item.badge}</span>}
-            </div>
+        {nav.map(item=>
+          <div key={item.id} className={`sb-item ${curGroup===item.id?"on":""}`} onClick={()=>go(item.id)}>
+            <span>{item.icon}</span><span>{item.label}</span>
+            {item.badge&&<span className="sb-badge">{item.badge}</span>}
+          </div>
         )}
       </div>
 <div className="sb-foot">
@@ -5402,6 +5432,10 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
 /* ─── Main App ───────────────────────────────────────────────────────────────── */
 export default function CRMApp() {
   const [view,setView]=useState("dashboard");
+  // Inbox badge: threads waiting on you, as of the last time Inbox › Email loaded.
+  const [inboxCount,setInboxCount]=useState(0);
+  useEffect(()=>{ try{ const n=Number(localStorage.getItem("sprout_inbox_count")); if(n>0) setInboxCount(n); }catch{} },[]);
+  const onInboxCount=useCallback((n)=>{ setInboxCount(n); try{ localStorage.setItem("sprout_inbox_count",String(n)); }catch{} },[]);
   const [contacts,setContacts]=useState([]);
   const [orgs,setOrgs]=useState([]);
   const [events,setEvents]=useState([]);
@@ -5682,9 +5716,11 @@ if (dbError) return (
   return (
     <><style>{STYLES}</style>
     <div className={`app ${sbCollapsed?"app-sb-collapsed":""}`}>
-<Sidebar view={view} setView={(v)=>{setPendingDetail(null);setPendingEvent(null);setSurveyStart(null);setView(v);}} contacts={contacts} events={events} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)} onCollapse={toggleSidebar}/>
+<Sidebar view={view} setView={(v)=>{setPendingDetail(null);setPendingEvent(null);setSurveyStart(null);setView(v);}} contacts={contacts} events={events} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)} onCollapse={toggleSidebar} inboxCount={inboxCount}/>
       {sbCollapsed&&<button className="sb-reopen" onClick={toggleSidebar} title="Show sidebar">☰</button>}
       <main className="main">
+        <GroupTabs view={view} setView={setView} inboxCount={inboxCount}/>
+        {view==="inbox"&&<InboxEmail openContact={openContact} setView={setView} showToast={showToast} onCount={onInboxCount}/>}
         {view==="dashboard"&&<DayBoard contacts={contacts} orgs={orgs} onContactChanged={contactChanged} onOrgChanged={orgChanged} openContact={openContact} setView={setView} showToast={showToast}/>}
 {view==="contacts"&&<ContactsView contacts={contacts} orgs={orgs} events={events} onUpdate={saveContacts} onDelete={deleteContact} onUpdateEvents={saveEvents} showToast={showToast} pendingDetail={pendingDetail} onPendingDetailConsumed={clearPendingDetail} setView={setView}/>}
         {view==="orgs"&&<OrgsView orgs={orgs} contacts={contacts} onUpdate={saveOrgs} onDelete={deleteOrg} showToast={showToast}/>}
