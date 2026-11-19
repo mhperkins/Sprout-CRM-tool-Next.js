@@ -2,6 +2,14 @@
 
 ---
 
+## 2026-11-19: Donations in Grant Metrics
+
+Merge `08765c9`. Effort: medium.
+
+- New staff-only route reads Givebutter gifts (tickets included, membership dues campaign left out). Grant Metrics shows a Donations box (total, gifts, donors, first-time donors), a by-campaign table, a Donations column by month, and a line in Copy numbers. $12,739 from 74 gifts since May 1.
+- `GIVEBUTTER_API_KEY` added to Vercel Production.
+- Fix: repeating-event dates (12-Step Fridays) no longer block the door sign-in count for a show on the same night.
+
 ## 2026-11-19: Grant Metrics caught up, Member hosts, repeating events counted per date
 
 Merge `e2a940f`. Effort: medium.
