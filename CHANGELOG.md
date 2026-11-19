@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-11-19: Grant Metrics caught up, Member hosts, repeating events counted per date
+
+Merge `e2a940f`. Effort: medium.
+
+- Typed headcounts for every past one-time event; renamed the 10/8 Bar Nun hold to Bar Nun Sober October (it was held). Sober October 10/8 + 10/22 are $60 paid rentals; Bar Nun Happy Hour, Dry Social and the Sauna Hat Workshop are free rentals.
+- Memberships: added Queer Social's 10/21 payment and set them to end 11/30 (cancelling as of December); created Gene Wang as a monthly member (10/15 + 11/14), likely paying for 12-Step after Bryce stopped.
+- New Hosted by option **Member**. Member-hosted events count toward attendance and get their own count in Grant Metrics and Copy numbers. Sing Easy, Pat's Industry Day and both Queer Social series set to Member.
+- Repeating events are no longer left out of Grant Metrics: each held date is its own row with its own numbers (`outcomes.by_date`). Recurrence math moved to `lib/recurrence.js`.
+
 ## 2026-11-17: Discord #announcements locked + Russell campaign update
 
 No app code. Effort: low.
