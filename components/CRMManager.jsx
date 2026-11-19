@@ -4666,7 +4666,7 @@ function EventDetailPage({event,allEvents,contacts,onBack,onDelete,onUpdateEvent
       {(()=>{
         const lt=localTodayISO();
         const kind=event.outcomes?.hosted_by||"sprout";
-        const KIND={sprout:"Sprout event",partner:"Partner event",rental:"Rental"}[kind];
+        const KIND={sprout:"Sprout event",member:"Member event",partner:"Partner event",rental:"Rental"}[kind];
         const isRequest=event.status==="pending";
         const recurringLive=!!rec?.frequency&&!!nextOccurrence(event,lt);
         const isPast=event.status==="completed"||(!isRequest&&event.status!=="cancelled"&&!recurringLive&&!!event.event_date&&event.event_date<lt);
@@ -5100,6 +5100,7 @@ function EventDetailPage({event,allEvents,contacts,onBack,onDelete,onUpdateEvent
                   <select className="evb-sel" aria-label="Hosted by" value={event.outcomes?.hosted_by||""} onChange={e=>setHosted(e.target.value)}>
                     <option value="" disabled>Hosted by: not set</option>
                     <option value="sprout">Hosted by: Sprout</option>
+                    <option value="member">Hosted by: Member</option>
                     <option value="partner">Hosted by: Partner</option>
                     <option value="rental">Hosted by: Rental</option>
                   </select>
@@ -5490,6 +5491,7 @@ function EventsView({events,contacts,orgs,onUpdate,onEventChanged,onDelete,showT
         <select className="fs" style={{maxWidth:170}} aria-label="Hosted by" value={fHost} onChange={e=>setFHost(e.target.value)}>
           <option value="all">Any host</option>
           <option value="sprout">Hosted by Sprout</option>
+          <option value="member">Hosted by Member</option>
           <option value="partner">Hosted by Partner</option>
           <option value="rental">Rental</option>
           <option value="none">Hosted by: not set</option>

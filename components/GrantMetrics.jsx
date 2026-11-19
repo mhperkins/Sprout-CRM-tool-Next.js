@@ -215,7 +215,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
         <div className="gm-card gm-empty">No events in this range. Pick a wider range, or check that past events are marked completed.</div>
       ) : <>
         <div className="gm-kpis">
-          <div className="gm-kpi"><b>{m.events}</b><span>Events held</span><small>{partners ? "Sprout + partner" : "Run by Sprout"}</small></div>
+          <div className="gm-kpi"><b>{m.events}</b><span>Events held</span><small>{(partners ? "Sprout + partner" : "Run by Sprout") + (m.memberEvents ? ` · ${m.memberEvents} by members` : "")}</small></div>
           <div className="gm-kpi"><b>{m.attendance.toLocaleString()}</b><span>Total attendance</span><small>{kiosk.loading ? "Reading the sign-in sheets…" : m.missing.length ? `${m.missing.length} events not counted yet` : "Every event counted"}{m.fromSheet.length > 0 && <> · {m.fromSheet.length} from {kiosk.folderUrl ? <a href={kiosk.folderUrl} target="_blank" rel="noopener noreferrer">sign-in sheets</a> : "sign-in sheets"}</>}</small></div>
           <div className="gm-kpi"><b>{m.unique}</b><span>Unique people</span><small>On event lists in the CRM</small></div>
           <div className="gm-kpi"><b>{m.repeatRate}%</b><span>Came back</span><small>{m.repeat} of {m.unique} at 2+ events</small></div>
@@ -249,7 +249,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
                       onChange={e => setOutcome(ev.id, { hosted_by: e.target.value },
                         e.target.value === "partner" && !partners ? "Marked Partner ✓ (hidden until partner events are included)"
                         : e.target.value === "rental" ? "Marked Rental ✓ (now on the rentals line)" : "Saved to the event ✓")}>
-                      <option value="sprout">Sprout</option><option value="partner">Partner</option><option value="rental">Rental</option>
+                      <option value="sprout">Sprout</option><option value="member">Member</option><option value="partner">Partner</option><option value="rental">Rental</option>
                     </select></td>
                     <td>
                       <input key={ev.id + "hc" + (ev.typed ?? "")} className="gm-in" inputMode="numeric" aria-label={`Headcount, ${ev.name}`}

@@ -178,7 +178,7 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
         .filter(s => s.eventIds.length);
     }
     const by = new Map();
-    held.filter(ev => ["partner", "rental"].includes(ev.outcomes?.hosted_by)).forEach(ev => {
+    held.filter(ev => ["member", "partner", "rental"].includes(ev.outcomes?.hosted_by)).forEach(ev => {
       const c = pickOrganizer(ev, contacts);
       if (!c) return;
       const row = by.get(c.id) || { key: c.id, contact: c, name: fullName(c), eventIds: [] };
@@ -189,7 +189,7 @@ export default function SurveyView({ events = [], contacts = [], orgs = [], show
   }, [audience, held, contacts, participants]);
 
   const hostsWithoutPerson = useMemo(() => audience !== "host" ? [] :
-    held.filter(ev => ["partner", "rental"].includes(ev.outcomes?.hosted_by) && !pickOrganizer(ev, contacts)), [audience, held, contacts]);
+    held.filter(ev => ["member", "partner", "rental"].includes(ev.outcomes?.hosted_by) && !pickOrganizer(ev, contacts)), [audience, held, contacts]);
 
   const rows = useMemo(() => {
     const invited = new Set(mine.map(i => i.contact_id).filter(Boolean));
