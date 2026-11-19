@@ -15,7 +15,7 @@
  */
 
 import { useState, useEffect, useMemo } from "react";
-import { fetchProgramEntryEventIds, fetchShowcaseApplications, fetchKioskSignins, fetchStripeMemberInvoices, fetchSurveyInvites } from "../lib/services";
+import { fetchProgramEntryEventIds, fetchShowcaseApplications, fetchKioskSignins, fetchStripeMemberInvoices, fetchSurveyInvites, fetchGivebutterDonations } from "../lib/services";
 import { surveyHeadcounts, isTestInvite } from "../lib/surveyForm";
 import { withStripeInvoices } from "../lib/memberBilling";
 import { computeGrantMetrics, metricsToText } from "../lib/grantMetrics";
@@ -96,6 +96,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
   const [loaded, setLoaded] = useState(false);
   const [kiosk, setKiosk] = useState({ nights: {}, sheets: [], folderUrl: null, error: null, loading: true });
   const [stripe, setStripe] = useState({ invoices: [], error: null, loading: true });
+  const [gb, setGb] = useState({ donations: [], error: null, loading: true });
   const [openMonths, setOpenMonths] = useState(() => new Set());
   const [invites, setInvites] = useState([]);
   // Edits from the dropdown rows land on the event itself (its Outcomes tile).
@@ -133,6 +134,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
     });
     fetchKioskSignins().then(k => { if (live) setKiosk({ ...k, loading: false }); });
     fetchStripeMemberInvoices().then(st => { if (live) setStripe({ ...st, loading: false }); });
+    fetchGivebutterDonations().then(d => { if (live) setGb({ ...d, loading: false }); });
     fetchSurveyInvites().then(i => { if (live) setInvites(i.filter(x => !isTestInvite(x))); });
     return () => { live = false; };
   }, []);
@@ -164,8 +166,8 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
 
   const m = useMemo(() => computeGrantMetrics({
     events, contacts: billed.contacts, orgs: billed.orgs, programEventIds: programIds, applications: apps, signins: kiosk.nights,
-    surveyCounts: survey.counts, surveyQuotes: survey.quotes, from, to, today, includePartners: partners,
-  }), [events, billed, programIds, apps, kiosk.nights, survey, from, to, today, partners]);
+    surveyCounts: survey.counts, surveyQuotes: survey.quotes, donations: gb.donations, from, to, today, includePartners: partners,
+  }), [events, billed, programIds, apps, kiosk.nights, survey, gb.donations, from, to, today, partners]);
 
   const togglePartners = () => {
     const next = !partners; setPartners(next);
@@ -180,8 +182,8 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
 
   const totals = m.months.reduce((t, r) => ({
     events: t.events + r.events, attendance: t.attendance + r.attendance, firstTimers: t.firstTimers + r.firstTimers,
-    artists: t.artists + r.artists, dues: t.dues + r.dues, rentals: t.rentals + r.rentals, rentalFees: t.rentalFees + r.rentalFees,
-  }), { events: 0, attendance: 0, firstTimers: 0, artists: 0, dues: 0, rentals: 0, rentalFees: 0 });
+    artists: t.artists + r.artists, dues: t.dues + r.dues, donations: t.donations + r.donations, rentals: t.rentals + r.rentals, rentalFees: t.rentalFees + r.rentalFees,
+  }), { events: 0, attendance: 0, firstTimers: 0, artists: 0, dues: 0, donations: 0, rentals: 0, rentalFees: 0 });
   const heardMax = m.heard[0]?.n || 1;
   const RANGES = [["all", "All time"], ["year", "This year"], ["3m", "Last 3 months"], ["custom", "Custom"]];
 
@@ -208,6 +210,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
         </button>
       </div>
 
+      {gb.error && <div className="gm-warn"><b>Couldn't read Givebutter.</b> Donations below are missing. ({gb.error})</div>}
       {stripe.error && <div className="gm-warn"><b>Couldn't read Stripe.</b> Dues below leave out Stripe membership invoices. ({stripe.error})</div>}
       {billed.unmatched.length > 0 && <div className="gm-warn"><b>{billed.unmatched.length} Stripe membership invoice{billed.unmatched.length === 1 ? " isn't" : "s aren't"} tied to a member,</b> so {billed.unmatched.length === 1 ? "it doesn't" : "they don't"} count yet. Add {billed.unmatched.length === 1 ? "that person or org" : "them"} on the <button onClick={() => setView?.("members")}>Members page</button>.</div>}
       {kiosk.error && <div className="gm-warn"><b>Couldn't read the sign-in sheets.</b> Attendance below uses typed headcounts only. ({kiosk.error})</div>}
@@ -233,13 +236,14 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
           <div className="gm-kpi"><b>{loaded ? m.artists : "…"}</b><span>Artists featured</span><small>From Program submissions</small></div>
           <div className="gm-kpi"><b>{loaded ? m.applications : "…"}</b><span>Showcase applications</span><small>Through /showcase</small></div>
           <div className="gm-kpi"><b>{m.activeMembers}</b><span>Active members</span><small>{m.activeOrgMembers > 0 && `${m.activeMembers - m.activeOrgMembers} people · ${m.activeOrgMembers} orgs · `}{m.newMembers} joined · {money(m.dues)} dues logged</small></div>
+          <div className="gm-kpi"><b>{gb.loading ? "…" : money(m.donations.total)}</b><span>Donations</span><small>{gb.loading ? "Reading Givebutter…" : `${m.donations.gifts} gifts · ${m.donations.donors} donors · ${m.donations.firstTime} first-time`}</small></div>
           <div className="gm-kpi"><b>{m.rentals}</b><span>Space rentals</span><small>{money(m.rentalFees)} in fees{m.rentalsUnpaid ? ` · ${m.rentalsUnpaid} unpaid` : ""}</small></div>
         </div>
 
         <div className="gm-h">By month <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400 }}>· open a month to see its events</span></div>
         <div className="gm-tw">
           <table className="gm-t">
-            <thead><tr><th>Month</th><th>Events</th><th>Attendance</th><th>First-timers</th><th>Artists</th><th>Members</th><th>Dues</th><th>Rentals</th><th>Rental fees</th></tr></thead>
+            <thead><tr><th>Month</th><th>Events</th><th>Attendance</th><th>First-timers</th><th>Artists</th><th>Members</th><th>Dues</th><th>Donations</th><th>Rentals</th><th>Rental fees</th></tr></thead>
             <tbody>{m.months.map(r => {
               const open = openMonths.has(r.key);
               return [
@@ -249,7 +253,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
                     : <span style={{ paddingLeft: 16 }}>{r.label}</span>}</td>
                   <td>{r.events}</td>
                   <td>{r.attendance}{r.missing > 0 && <span className="gm-miss">· {r.missing} missing</span>}</td>
-                  <td>{r.firstTimers}</td><td>{r.artists}</td><td>{r.members}</td><td>{money(r.dues)}</td><td>{r.rentals}</td><td>{money(r.rentalFees)}</td>
+                  <td>{r.firstTimers}</td><td>{r.artists}</td><td>{r.members}</td><td>{money(r.dues)}</td><td>{money(r.donations)}</td><td>{r.rentals}</td><td>{money(r.rentalFees)}</td>
                 </tr>,
                 ...(open ? r.list.map(ev => (
                   <tr key={r.key + ev.id} className="gm-sub">
@@ -280,6 +284,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
                     <td><input key={ev.id + "dc" + (ev.duesCollected ?? "")} className="gm-in" inputMode="decimal" aria-label={`Dues collected, ${ev.name}`}
                       defaultValue={ev.duesCollected ?? ""} placeholder="$" title="Membership dues taken at the event. Adds to the month's Dues."
                       onBlur={numBlur(ev.id, "dues_collected", ev.duesCollected)} onKeyDown={numKey}/></td>
+                    <td/>
                     <td><input type="checkbox" className="gm-ck" aria-label={`Rental, ${ev.name}`} checked={ev.hosted === "rental"}
                       onChange={e => setOutcome(ev.id, { hosted_by: e.target.checked ? "rental" : "sprout" },
                         e.target.checked ? "Marked Rental ✓ (add the fee)" : "Marked Sprout ✓")}/></td>
@@ -289,9 +294,20 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
                   </tr>)) : []),
               ];
             })}</tbody>
-            <tfoot><tr><td>Total</td><td>{totals.events}</td><td>{totals.attendance}</td><td>{totals.firstTimers}</td><td>{totals.artists}</td><td>{m.activeMembers}</td><td>{money(totals.dues)}</td><td>{totals.rentals}</td><td>{money(totals.rentalFees)}</td></tr></tfoot>
+            <tfoot><tr><td>Total</td><td>{totals.events}</td><td>{totals.attendance}</td><td>{totals.firstTimers}</td><td>{totals.artists}</td><td>{m.activeMembers}</td><td>{money(totals.dues)}</td><td>{money(totals.donations)}</td><td>{totals.rentals}</td><td>{money(totals.rentalFees)}</td></tr></tfoot>
           </table>
         </div>
+
+        {m.donations.gifts > 0 && <>
+          <div className="gm-h">Donations <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400 }}>· from Givebutter, membership dues left out · avg {money(m.donations.average)} a gift</span></div>
+          <div className="gm-tw" style={{ marginBottom: 22 }}>
+            <table className="gm-t">
+              <thead><tr><th>Campaign</th><th>Gifts</th><th>Raised</th></tr></thead>
+              <tbody>{m.donations.byCampaign.map(c => <tr key={c.campaign}><td>{c.campaign}</td><td>{c.gifts}</td><td>{money(c.total)}</td></tr>)}</tbody>
+              <tfoot><tr><td>Total</td><td>{m.donations.gifts}</td><td>{money(m.donations.total)}</td></tr></tfoot>
+            </table>
+          </div>
+        </>}
 
         <div className="gm-two">
           <div className="gm-card">
