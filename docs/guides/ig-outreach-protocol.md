@@ -120,7 +120,7 @@ The history and touchpoint text mirrors what the Outreach page buttons write (`L
 2. For each thread whose last message is theirs, open the chat and read the whole thread, not just the preview. Pull out: what they want, any date and time agreed, how they want to meet, contact details, and the name they go by.
 3. Resolve relative dates against today ("next Tuesday" said on Thu 11/19 = Tue 11/24) and state the resolved date back to Max.
 4. Log it in all three places above.
-5. **Meeting agreed:** next action = the meeting date, text says what to do before it (for example "Send Ali the video chat link, then video chat Tue 11/24 at 11:30am"). Put the sheet note in caps (VIDEO CHAT ...) so it stands out.
+5. **Meeting agreed or offered:** two contact next actions: the prep step the day before (send the video link, or confirm a visit) and the meeting itself. Then put both on the **Day Board**: insert `sprout_tasks` rows (category `outreach`, hours 1, kind `follow_up`, `week_start` = that week's Monday, `day` = the date, `action_key` = `ind:<contact id>:<next action id>` so the board's sync never duplicates them). The board only syncs the current week, so a task for a later week must be inserted directly. Put the sheet note in caps (VIDEO CHAT / VISIT ...) so it stands out.
 6. **Needs an answer from us:** draft the reply, show Max, send only on his go. Max sometimes replies himself in the app: read the thread first so we never answer twice.
 7. Report to Max: who responded, what was agreed, what needs his answer.
 
