@@ -99,10 +99,19 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
   const [openMonths, setOpenMonths] = useState(() => new Set());
   const [invites, setInvites] = useState([]);
   // Edits from the dropdown rows land on the event itself (its Outcomes tile).
+  // A repeating event's row id is "<event id>@<date>": its numbers go under outcomes.by_date[date],
+  // while Hosted by stays on the series.
   const setOutcome = (id, patch, msg) => {
-    const ev = events.find(e => e.id === id);
+    const [eventId, date] = id.split("@");
+    const ev = events.find(e => e.id === eventId);
     if (!ev || !onUpdateEvent) return;
-    onUpdateEvent({ ...ev, outcomes: { hosted_by: "sprout", ...(ev.outcomes || {}), ...patch } });
+    const o = { hosted_by: "sprout", ...(ev.outcomes || {}) };
+    if (date) {
+      const { hosted_by, ...night } = patch;
+      const byDate = { ...(o.by_date || {}) };
+      if (Object.keys(night).length) byDate[date] = { ...(byDate[date] || {}), ...night };
+      onUpdateEvent({ ...ev, outcomes: { ...o, ...(hosted_by ? { hosted_by } : {}), by_date: byDate } });
+    } else onUpdateEvent({ ...ev, outcomes: { ...o, ...patch } });
     showToast?.(msg || "Saved to the event ✓");
   };
   const numBlur = (id, key, current, max, extra) => (e) => {
@@ -206,7 +215,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
       {m.missing.length > 0 && (
         <div className="gm-warn">
           <b>{m.missing.length} event{m.missing.length === 1 ? " has" : "s have"} no headcount.</b> No sign-in sheet covers {m.missing.length === 1 ? "it" : "them"} either, so attendance below undercounts until they are filled in. Open one and fill in its Outcomes tile:
-          <ul>{m.missing.map(ev => <li key={ev.id}><button onClick={() => openEvent?.({ id: ev.id })}>{ev.name || "(unnamed)"}</button> · {fmtD(ev.date)}</li>)}</ul>
+          <ul>{m.missing.map(ev => <li key={ev.id}><button onClick={() => openEvent?.({ id: ev.id.split("@")[0] })}>{ev.name || "(unnamed)"}</button> · {fmtD(ev.date)}</li>)}</ul>
           <div style={{ marginTop: 6 }}>Or type them right here: <button onClick={() => setOpenMonths(new Set(m.months.filter(r => r.missing > 0).map(r => r.key)))}>open those months below</button>.</div>
         </div>
       )}
@@ -215,7 +224,7 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
         <div className="gm-card gm-empty">No events in this range. Pick a wider range, or check that past events are marked completed.</div>
       ) : <>
         <div className="gm-kpis">
-          <div className="gm-kpi"><b>{m.events}</b><span>Events held</span><small>{partners ? "Sprout + partner" : "Run by Sprout"}</small></div>
+          <div className="gm-kpi"><b>{m.events}</b><span>Events held</span><small>{(partners ? "Sprout + partner" : "Run by Sprout") + (m.memberEvents ? ` · ${m.memberEvents} by members` : "")}</small></div>
           <div className="gm-kpi"><b>{m.attendance.toLocaleString()}</b><span>Total attendance</span><small>{kiosk.loading ? "Reading the sign-in sheets…" : m.missing.length ? `${m.missing.length} events not counted yet` : "Every event counted"}{m.fromSheet.length > 0 && <> · {m.fromSheet.length} from {kiosk.folderUrl ? <a href={kiosk.folderUrl} target="_blank" rel="noopener noreferrer">sign-in sheets</a> : "sign-in sheets"}</>}</small></div>
           <div className="gm-kpi"><b>{m.unique}</b><span>Unique people</span><small>On event lists in the CRM</small></div>
           <div className="gm-kpi"><b>{m.repeatRate}%</b><span>Came back</span><small>{m.repeat} of {m.unique} at 2+ events</small></div>
@@ -244,12 +253,12 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
                 </tr>,
                 ...(open ? r.list.map(ev => (
                   <tr key={r.key + ev.id} className="gm-sub">
-                    <td><button onClick={() => openEvent?.({ id: ev.id })}>{ev.name || "(unnamed)"}</button> · {fmtD(ev.date)}</td>
+                    <td><button onClick={() => openEvent?.({ id: ev.eventId })}>{ev.name || "(unnamed)"}</button> · {fmtD(ev.date)}{ev.series && <span className="gm-src">repeats</span>}</td>
                     <td><select className="gm-sel" aria-label={`Hosted by, ${ev.name}`} value={ev.hosted}
                       onChange={e => setOutcome(ev.id, { hosted_by: e.target.value },
                         e.target.value === "partner" && !partners ? "Marked Partner ✓ (hidden until partner events are included)"
                         : e.target.value === "rental" ? "Marked Rental ✓ (now on the rentals line)" : "Saved to the event ✓")}>
-                      <option value="sprout">Sprout</option><option value="partner">Partner</option><option value="rental">Rental</option>
+                      <option value="sprout">Sprout</option><option value="member">Member</option><option value="partner">Partner</option><option value="rental">Rental</option>
                     </select></td>
                     <td>
                       <input key={ev.id + "hc" + (ev.typed ?? "")} className="gm-in" inputMode="numeric" aria-label={`Headcount, ${ev.name}`}
@@ -304,7 +313,6 @@ export default function GrantMetrics({ events = [], contacts = [], orgs = [], on
           Sign-in sheets filled in attendance for {m.fromSheet.map(ev => `${ev.name} (${ev.n})`).join(", ")}. A headcount typed in an event's Outcomes tile always wins, so type one in if more people came than signed in.
           {kiosk.sheets.length > 0 && <> Read from: {kiosk.sheets.map((s, i) => <span key={s.url}>{i > 0 && ", "}<a href={s.url} target="_blank" rel="noopener noreferrer">{s.name}</a></span>)}.</>}
         </p>}
-        {m.skippedSeries > 0 && <p className="gm-empty" style={{ fontSize: 11.5, marginTop: 14 }}>{m.skippedSeries} repeating series are left out: one record covers many nights, so it cannot carry one headcount.</p>}
       </>}
     </div>
   );

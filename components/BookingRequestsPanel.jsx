@@ -16,7 +16,7 @@ import { useState, useEffect, useCallback } from "react";
 import { fetchBookingRequests, decideBookingSlots, editBookingSlot } from "../lib/services";
 import { shortDate, timeRange } from "../lib/booking";
 
-const KINDS = [["sprout", "Sprout"], ["partner", "Partner"], ["rental", "Rental"]];
+const KINDS = [["sprout", "Sprout"], ["member", "Member"], ["partner", "Partner"], ["rental", "Rental"]];
 
 export default function BookingRequestsPanel({ onEventChanged, onOpenEvent, showToast, onGroups, pendingEvents = [], unsetHost = [], onSetHostedBy }) {
   const [groups, setGroups] = useState([]);
