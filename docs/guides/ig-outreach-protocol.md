@@ -52,7 +52,7 @@ Batches 1 to 5 got an older, longer message with the /get-involved link and the 
 | Survey 1, 2 | Sent 11/3 |
 | Outreach 1 to 5 | Sent 11/2 to 11/9 (old message). Holds in 3 and 4 need Max's call: SPARŚA, Asylum Arts, ARTYARDBKLYN, ivyhousestudio, Daria Tennikova, Lisa Sniderman (Aoede), and Ashley Dreyfus in 5. |
 | Responders | 7 got the video-chat follow-up on 11/19: Alexis Viele (replied), and Rsri, Fabian Guhl, Lauren Wax, zinnergy, QTs QommuniT, Gianna Alessi (liked). Noted in column H. |
-| Outreach 6 | 14 queued (Cenny Ray cut). Not sent. |
+| Outreach 6 | 14 sent 2026-11-19 (new video-chat intro). Cenny Ray cut. |
 | Outreach 7 to 10 | Queued from the 9/29 scrape. Not shown to Max yet. |
 | Outreach 11 to 14 | 58 new follow-backs added 11/19. Not shown to Max yet. |
 
@@ -101,6 +101,28 @@ out
 ```
 
 For a follow-up, swap the "View profile" guard for two checks on the chat pane text (walk 12 parents up from the textbox): it must contain our earlier message ("Thanks for following Sprout Society" or "Thank you for following Sprout Society") and must not already contain "20-minute".
+
+## Logging every send and response (do this every time)
+
+Three places must agree. Update all three in the same pass, never just one.
+
+| Place | On a send | On a response |
+|---|---|---|
+| **DM Plan sheet** | Date in column J | Short note in column H: what they said, any meeting date/time, contact details given |
+| **Outreach page** (`sprout_outreach_accounts`, matched by `handle`) | `status='messaged'`, `sent_at`, history line `Instagram DM sent from @sproutsocietyorg (Outreach).` | `status` = `replied` (wrote back) or `interested` (wants to talk / meeting set), `reply` (one-line summary), `replied_at`, history line `Instagram reply (<Status>): <summary>` |
+| **Contact record** (row's `contact_id`) | Touchpoint with the same text as the history line | Touchpoint with the summary; fill email/phone/website if given; `relationship_status` cold/cool → warm; next action via `create_or_update_contact` or `set_next_action` (never raw SQL, so the dual-field rule holds) |
+
+The history and touchpoint text mirrors what the Outreach page buttons write (`LOG` in `lib/outreach.js`), so the page and the CRM read the same either way. A like with no words is a response too: status `replied`, then the "liked" follow-up message.
+
+### The response check (run at the start of every outreach session, before sending anything new)
+
+1. Open the Primary inbox and collect thread previews (see "Finding who responded" below). Also check the **Requests** tab.
+2. For each thread whose last message is theirs, open the chat and read the whole thread, not just the preview. Pull out: what they want, any date and time agreed, how they want to meet, contact details, and the name they go by.
+3. Resolve relative dates against today ("next Tuesday" said on Thu 11/19 = Tue 11/24) and state the resolved date back to Max.
+4. Log it in all three places above.
+5. **Meeting agreed:** next action = the meeting date, text says what to do before it (for example "Send Ali the video chat link, then video chat Tue 11/24 at 11:30am"). Put the sheet note in caps (VIDEO CHAT ...) so it stands out.
+6. **Needs an answer from us:** draft the reply, show Max, send only on his go. Max sometimes replies himself in the app: read the thread first so we never answer twice.
+7. Report to Max: who responded, what was agreed, what needs his answer.
 
 ## Finding who responded
 
