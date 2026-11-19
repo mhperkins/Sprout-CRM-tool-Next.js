@@ -2,6 +2,14 @@
 
 ---
 
+## 2026-11-19: Grant Metrics Email list, sign-in emails, Givebutter key fix
+
+Merges `730bba3` + `05c56a5`. Effort: low.
+
+- "Emails collected" (16, Outcomes tiles only) became **Email list**: every unique email in the CRM (3,850), with new contacts in the range below it, not counting the June 9 import of older lists (238 since May 1).
+- "Taken at events" now uses each night's door sign-ins when no number was typed (about 91 since May 1).
+- Donations read $0 because the Givebutter key reached Vercel with a hidden leading character from a PowerShell pipe. Re-added cleanly and redeployed.
+
 ## 2026-11-19: Instagram outreach protocol, new message, follow-backs
 
 Commit `a357d33`. No app code. Effort: medium.
