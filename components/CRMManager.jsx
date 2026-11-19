@@ -1537,171 +1537,6 @@ function Sidebar({view,setView,contacts,events,profile,onQuickLog,onCollapse}) {
   );
 }
 
-/* ─── Dashboard ──────────────────────────────────────────────────────────────── */
-function DashboardView({contacts,orgs,setView,openContact,openEvent,events,onUpdateContacts,onUpdateOrgs,onUpdateEvents,showToast}) {
-  const today = new Date().toISOString().slice(0,10);
-  const overdue = contacts.filter(isOverdue);
-  const active = contacts.filter(c=>c.relationship_status==="active").length;
-
-  const allActions = [];
-  contacts.forEach(c=>{
-    const actions = c.next_actions||[];
-    const activeActions = actions.filter(a=>!a.completed&&a.date);
-    activeActions.forEach(a=>{
-      allActions.push({type:"contact",contact:c,text:a.text,date:a.date,id:a.id});
-    });
-    if(!activeActions.length && c.next_action && c.next_action_date){
-      allActions.push({type:"contact",contact:c,text:c.next_action,date:c.next_action_date,id:c.id+"-na"});
-    }
-  });
-  // Orgs track a single current action in the flat next_action/next_action_date fields
-  // (completed actions move to next_actions_log). They have no next_actions[] array —
-  // OrgSchema omits it, so reading one here would always come back empty.
-  (orgs||[]).forEach(o=>{
-    if(o.next_action && o.next_action_date){
-      allActions.push({type:"org",org:o,text:o.next_action,date:o.next_action_date,id:o.id+"-na"});
-    }
-  });
-  (events||[]).forEach(ev=>{
-    (ev.checklist||[]).filter(item=>!item.completed&&item.date).forEach(item=>{
-      allActions.push({type:"event",event:ev,text:item.text,date:item.date,id:ev.id+"-"+item.id});
-    });
-  });
-  allActions.sort((a,b)=>new Date(a.date)-new Date(b.date));
-
-  const getNotiTag = (date) => {
-    const d=daysUntil(date);
-    if(d===null) return null;
-    if(d<0) return {label:"Overdue",color:"#B91C1C"};
-    if(d===0) return {label:"Due today",color:"var(--fuchsia)"};
-    if(d<=3) return {label:"Due soon",color:"var(--acid)"};
-    return null;
-  };
-
-  const dueSoon = allActions.filter(a=>{ const d=daysUntil(a.date); return d!==null&&d>=0&&d<=14; });
-  const totalNotifications = allActions.filter(a=>{ const d=daysUntil(a.date); return d!==null&&d<=3; }).length;
-  const upcomingEvents = (events||[])
-    .filter(ev=>ev.status==="upcoming")
-    .map(ev=>({...ev,_next:eventDisplayDate(ev,today)}))
-    .filter(ev=>ev._next&&ev._next>=today)
-    .sort((a,b)=>a._next.localeCompare(b._next));
-
-  const [dashEditing,setDashEditing]=useState(null);
-  const openDashEdit=(c)=>setDashEditing({...c});
-  const saveDashEdit=()=>{
-    onUpdateContacts(contacts.map(c=>c.id===dashEditing.id?dashEditing:c));
-    setDashEditing(null);
-    showToast("Contact saved ✓");
-  };
-  const [dashContact,setDashContact]=useState(null);
-  const [dashOrg,setDashOrg]=useState(null);
-  const [dashEvent,setDashEvent]=useState(null);
-  // Every action row opens its record in a side panel — contact, org, or event.
-  const openAction=(a)=>{
-    if(a.type==="contact") setDashContact(a.contact);
-    else if(a.type==="org") setDashOrg(a.org);
-    else setDashEvent(a.event);
-  };
-  return (
-    <div className="page">
-      <div className="pg-hd">
-        <div>
-          <div className="pg-ttl">Dashboard
-            {totalNotifications>0&&<span style={{marginLeft:8,fontSize:11,fontWeight:700,background:"var(--fuchsia)",color:"#fff",borderRadius:10,padding:"2px 8px",verticalAlign:"middle"}}>{totalNotifications}</span>}
-          </div>
-          <div className="pg-sub">{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})}</div>
-        </div>
-      </div>
-      <div className="stats">
-        <div className="stat"><div className="stat-lbl">Total Contacts</div><div className="stat-val">{contacts.length}</div><div className="stat-meta">{orgs.length} organizations</div></div>
-        <div className="stat"><div className="stat-lbl">Active Relationships</div><div className="stat-val" style={{color:"var(--cyan)"}}>{active}</div><div className="stat-meta">of {contacts.length} contacts</div></div>
-        <div className="stat"><div className="stat-lbl">Overdue</div><div className="stat-val" style={{color:overdue.length>0?"var(--fuchsia)":"var(--black)"}}>{overdue.length}</div><div className="stat-meta">need contact now</div></div>
-        <div className="stat"><div className="stat-lbl">Due This Week</div><div className="stat-val" style={{color:"var(--acid)"}}>{dueSoon.length}</div><div className="stat-meta">actions in 14 days</div></div>
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-
-        <div className="card">
-          <div className="card-hd"><span className="card-ttl">🗓 Upcoming Events</span><button className="btn btn-ghost btn-xs" onClick={()=>setView("events")}>View all</button></div>
-          <div className="card-bd">
-            {upcomingEvents.length===0
-              ? <p style={{fontSize:12,color:"var(--g400)",textAlign:"center",padding:"12px 0"}}>No upcoming events</p>
-              : upcomingEvents.slice(0,5).map(ev=>{
-                  const d=daysUntil(ev._next);
-                  const tag=d===0?"Today":d===1?"Tomorrow":d!==null?`In ${d}d`:null;
-                  return (
-                    <div key={ev.id} className="overdue-row" onClick={()=>setDashEvent(ev)}>
-                      <div><div className="overdue-name">{ev.name}{ev.recurrence?.frequency?" 🔁":""}</div><div className="overdue-meta">{ev.start_time?`${fmtTime(ev.start_time)} · `:""}{ev.location||"No location"} · {(ev.contact_ids||[]).length} contacts</div></div>
-                      {tag&&<span style={{fontSize:11,fontWeight:700,color:d===0?"var(--fuchsia)":d<=3?"var(--acid)":"var(--g600)",whiteSpace:"nowrap"}}>{tag}</span>}
-                    </div>
-                  );
-                })
-            }
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="card-hd"><span className="card-ttl">📅 Next Actions</span></div>
-          <div className="card-bd" style={dueSoon.length>5?{maxHeight:280,overflowY:"auto"}:{}}>
-            {dueSoon.length===0
-              ? <p style={{fontSize:12,color:"var(--g400)",textAlign:"center",padding:"12px 0"}}>No actions due in next 14 days</p>
-              : dueSoon.map(a=>{
-                  const tag=getNotiTag(a.date);
-                  return (
-                    <div key={a.id} className="overdue-row" onClick={()=>openAction(a)}>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div className="overdue-name">
-                          {a.type==="contact"?`${a.contact.first_name} ${a.contact.last_name}`:a.type==="org"?a.org?.name||"Org":a.event?.name||"Event"}
-                          {a.type==="org"&&<span style={{fontSize:10,marginLeft:6,color:"var(--g400)"}}>🏢 org</span>}
-                          {a.type==="event"&&<span style={{fontSize:10,marginLeft:6,color:"var(--g400)"}}>📅 event</span>}
-                        </div>
-                        <div className="overdue-meta" style={{maxWidth:180,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.text}</div>
-                      </div>
-                      <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:2,whiteSpace:"nowrap"}}>
-                        {tag&&<span style={{fontSize:10,fontWeight:700,color:tag.color,background:tag.color+"18",borderRadius:4,padding:"1px 5px"}}>{tag.label}</span>}
-                        <span style={{fontSize:11,color:"var(--g600)"}}>{fmtDate(a.date)}</span>
-                      </div>
-                    </div>
-                  );
-                })
-            }
-          </div>
-        </div>
-
-        <div className="card" style={{gridColumn:"1/-1"}}>
-          <div className="card-hd"><span className="card-ttl">⚠ Overdue Actions</span></div>
-          <div className="card-bd" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,maxHeight:allActions.filter(a=>{const d=daysUntil(a.date);return d!==null&&d<0;}).length>4?260:undefined,overflowY:allActions.filter(a=>{const d=daysUntil(a.date);return d!==null&&d<0;}).length>4?"auto":"visible"}}>
-            {allActions.filter(a=>{const d=daysUntil(a.date);return d!==null&&d<0;}).length===0
-              ? <p style={{fontSize:12,color:"var(--g400)",textAlign:"center",padding:"12px 0",gridColumn:"1/-1"}}>No overdue actions 🎉</p>
-              : allActions.filter(a=>{const d=daysUntil(a.date);return d!==null&&d<0;}).map(a=>{
-                  const name=a.type==="contact"?`${a.contact.first_name} ${a.contact.last_name}`:a.type==="org"?a.org?.name||"Org":a.event?.name||"Event";
-                  const daysAgo=Math.abs(Math.ceil((new Date(a.date)-new Date())/86400000));
-                  return (
-                    <div key={a.id} className="overdue-row" onClick={()=>openAction(a)}>
-                      <div><div className="overdue-name">{name}{a.type==="org"&&<span style={{fontSize:10,marginLeft:6,color:"var(--g400)"}}>🏢 org</span>}{a.type==="event"&&<span style={{fontSize:10,marginLeft:6,color:"var(--g400)"}}>📅 event</span>}</div><div className="overdue-meta">{a.text}</div></div>
-                      <span style={{fontSize:11,fontWeight:700,color:"#B91C1C",whiteSpace:"nowrap"}}>{daysAgo}d ago</span>
-                    </div>
-                  );
-                })
-            }
-          </div>
-        </div>
-
-      </div>
-      {dashEditing&&<ContactEditModal editing={dashEditing} setEditing={setDashEditing} onSave={saveDashEdit} orgs={orgs} events={events||[]} onUpdateEvents={onUpdateEvents} onNavigate={setView}/>}
-      {dashContact&&<ContactDetail contact={contacts.find(c=>c.id===dashContact.id)||dashContact} orgs={orgs} events={events||[]} onClose={()=>setDashContact(null)} onUpdate={(updated)=>{onUpdateContacts(contacts.map(c=>c.id===updated.id?updated:c));setDashContact(updated);showToast("Contact saved ✓");}} onEdit={()=>{setDashEditing({...dashContact});setDashContact(null);}} showToast={showToast}/>}
-      {dashOrg&&<OrgDetail org={orgs.find(o=>o.id===dashOrg.id)||dashOrg} contacts={contacts}
-        onClose={()=>setDashOrg(null)}
-        onUpdate={(updated)=>{onUpdateOrgs((orgs||[]).map(o=>o.id===updated.id?updated:o));setDashOrg(updated);}}
-        onEdit={()=>{setDashOrg(null);setView("orgs");}} showToast={showToast}/>}
-      {dashEvent&&<EventDetail event={(events||[]).find(e=>e.id===dashEvent.id)||dashEvent} contacts={contacts}
-        onClose={()=>setDashEvent(null)}
-        onUpdate={(updated)=>{onUpdateEvents((events||[]).map(e=>e.id===updated.id?updated:e));setDashEvent(updated);}}
-        onOpenFull={()=>{const id=dashEvent.id;setDashEvent(null);openEvent?openEvent({id}):setView("events");}}
-        onContactClick={(c)=>{setDashEvent(null);setDashContact(c);}} showToast={showToast}/>}
-    </div>
-  );
-}
-
 /* ─── Contact Edit Modal ─────────────────────────────────────────────────────── */
 function ContactEditModal({editing,setEditing,onSave,orgs,events,onUpdateEvents,onNavigate,initialTab="overview"}) {
   const [eTab,setETab]=useState(initialTab);
@@ -3045,8 +2880,7 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
   const toggleTest=(em)=>setTestOn(p=>p.includes(em)?p.filter(x=>x!==em):[...p,em]);
   const [showManual,setShowManual]=useState(false);
   const [testTo,setTestTo]=useState("");   // manually-added extra addresses
-  const [listSeg,setListSeg]=useState("all");
-  const [sending,setSending]=useState("");   // "" | "test" | "list"
+  const [sending,setSending]=useState("");   // "" | "test"
   // Version-history modals (window.prompt/confirm aren't supported in the Next dev runtime).
   const [nameVersion,setNameVersion]=useState(null);   // { defaultLabel } when the name-version modal is open
   const [versionLabel,setVersionLabel]=useState("");
@@ -3323,47 +3157,26 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
     return ()=>{ window.removeEventListener("beforeunload",onBeforeUnload); autoSaveRef.current(); };
   },[]);
 
-  // Count contacts in a bucket that have a usable email (for the recipient preview).
-  const emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const segCount=(seg)=>contacts.filter(c=>{
-    const s=(c.segment)||"community"; const em=(c.email||"").trim();
-    if(!emailRe.test(em)) return false;
-    if(seg==="all") return true;
-    if(seg==="member") return !!c.is_member;   // Members is an additive flag, not a base segment
-    return s===seg;
-  }).length;
-
-  // Fire a send. mode "test" → typed addresses; mode "list" → server-resolved bucket blast.
+  // Test send only. List sends go through Campaign Monitor (Copy HTML).
   const doSend=async(mode)=>{
     if(!sendSecret.trim()){ showToast("Enter the send passphrase","err"); return; }
     if(!(draft.subject||"").trim()){ showToast("Add a subject first","err"); return; }
-    const payload={mode,subject:draft.subject,html:built.html,secret:sendSecret.trim()};
-    if(mode==="test"){
-      const manual=testTo.split(/[\s,;]+/).map(x=>x.trim()).filter(Boolean);
-      const to=[...new Set([...testOn,...manual])];
-      if(!to.length){ showToast("Pick at least one test recipient","err"); return; }
-      payload.to=to;
-    } else {
-      payload.segment=listSeg;
-      if(!window.confirm(`Send "${draft.subject}" to ${segCount(listSeg)} contact(s) in "${listSeg}"? This goes out for real.`)) return;
-    }
+    const manual=testTo.split(/[\s,;]+/).map(x=>x.trim()).filter(Boolean);
+    const to=[...new Set([...testOn,...manual])];
+    if(!to.length){ showToast("Pick at least one test recipient","err"); return; }
+    const payload={mode:"test",to,subject:draft.subject,html:built.html,secret:sendSecret.trim()};
     setSending(mode);
     try{
       const r=await fetch("/api/send",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
       const j=await r.json();
       if(!r.ok) throw new Error(j.error||"Send failed");
-      if(mode==="test"){ showToast(`Test sent to ${j.sent} address${j.sent!==1?"es":""} ✓`); }
-      else{
-        showToast(`Sent to ${j.sent} contact${j.sent!==1?"s":""} ✓`);
-        setDraft(p=>({...p,status:"sent",send_date:today}));
-        onSaveStay(makeRecord({...draftRef.current,status:"sent",send_date:today}).rec);
-      }
+      showToast(`Test sent to ${j.sent} address${j.sent!==1?"es":""} ✓`);
     }catch(e){ showToast("Send: "+(e.message||"failed"),"err"); }
     finally{ setSending(""); }
   };
 
   const copyHtml = async () => {
-    try{ await navigator.clipboard.writeText(built.html); showToast("HTML copied — paste into Mailchimp ✓"); }
+    try{ await navigator.clipboard.writeText(built.html); showToast("HTML copied — paste into Campaign Monitor ✓"); }
     catch{ showToast("Copy failed — check console","err"); console.error("clipboard write failed"); }
   };
 
@@ -3610,24 +3423,8 @@ function NewsletterEditor({draft,setDraft,today,events,contacts,profile,newslett
                 {showManual&&<input className="fi" style={{marginTop:8}} value={testTo} onChange={e=>setTestTo(e.target.value)} placeholder="extra@email.com, another@email.com"/>}
                 <button className="btn btn-ghost btn-sm" style={{marginTop:8}} disabled={sending==="test"} onClick={()=>doSend("test")}>{sending==="test"?"Sending…":"✉️ Send test"}</button>
               </div>
-
-              <div style={{flex:1}}>
-                <label className="fl">Send to list</label>
-                <div style={{fontSize:11,color:"var(--g500)",margin:"2px 0 6px",lineHeight:1.5}}>Goes to every contact in the bucket with an email. Enabled once the issue is <b>Approved</b>.</div>
-                <div className="frow">
-                  <div className="fg"><select className="fi" value={listSeg} onChange={e=>setListSeg(e.target.value)}>
-                    <option value="all">All buckets</option>
-                    <option value="community">Community</option>
-                    <option value="member">Members</option>
-                    <option value="donor">Donors</option>
-                    <option value="prospect">Prospects</option>
-                  </select></div>
-                  <div style={{fontSize:12,color:"var(--g600)",alignSelf:"center",whiteSpace:"nowrap"}}>{segCount(listSeg)} with email</div>
-                </div>
-                <button className="btn btn-acid btn-sm" style={{marginTop:8}} disabled={draft.status!=="approved"||sending==="list"} onClick={()=>doSend("list")}>{sending==="list"?"Sending…":"🚀 Send to list"}</button>
-                {draft.status!=="approved"&&<div style={{fontSize:11,color:"var(--g500)",marginTop:6}}>Set status to <b>Approved</b> above to enable.</div>}
-              </div>
             </div>
+            <div style={{fontSize:11,color:"var(--g500)",marginTop:10,lineHeight:1.5}}>To send to the list, use <b>Copy HTML</b> and paste it into Campaign Monitor.</div>
           </div></div>
 
           {/* ── Preview (sticky panel that scrolls to whatever field you focus) ── */}
