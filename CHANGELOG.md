@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-11-19: Events through year end, Sing Easy 12/8, Sober Hangout rebuilt
+
+Data only, no app code. Effort: low for the breakdown; max on both diagnose and fix for the deleted event.
+
+- **Breakdown of events from 11/19 to 12/31**, comparing the Program Calendar with the CRM (GGC left out). Queer Social's December dates are cancelled on the calendar.
+- **Created Sing Easy, Tue 12/8, 6:30 to 8:30pm** (`evt_sing_easy_20261208`): on the calendar but missing from the CRM. Jess McAvoy linked, Hosted by Partner.
+- **The Queer Social Sober Hangout event was deleted** at 10:45am ET (an app DELETE 9 seconds after the page opened, so the Delete event button or the list's Del, both behind a confirm), while Max was trying to remove 12/11. It was not a stale-tab overwrite. **Rebuilt under the same id** with the 8/21, 9/25, 10/30, 11/3 and 11/13 dates, 7 to 10pm, Hosted by Rental, Jonathan Winkles linked, both links, and the flyer (the file and the portal row survived). Status Completed. Lost for good: the 9/5 comms entry and the original description.
+- **Attendance:** 15 per night = headcount 75 on the series, with the breakdown in the notes. Grant Metrics still skips repeating series.
+
 ## 2026-11-19: Grant Metrics Email list, sign-in emails, Givebutter key fix
 
 Merges `730bba3` + `05c56a5`. Effort: low.
