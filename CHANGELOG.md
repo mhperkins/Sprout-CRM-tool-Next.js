@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-11-19: Sidebar 13 to 8, Inbox › Email, Outreach › Protocol
+
+Merge `d5f33c9` (branch `sidebar-merge`). Migration `sprout_inbox_triage` applied. Effort: medium.
+
+- **Why:** step 4 of the streamline plan. Max picked the Lean wireframe (`docs/wireframes/2026-11-19_sidebar-merge.html`) and asked for an inbox he can triage plus the outreach protocol inside the CRM.
+- **Sidebar:** Day Board, People, Events, Inbox, Outreach, Impact, Newsletter, Settings. Grouped pages become tabs (`NAV_GROUPS`, `GroupTabs`); view ids unchanged; each group remembers its last tab.
+- **Inbox › Email:** both Gmail inboxes (hello@ + maxperkins@) plus logged Instagram outreach replies, one entry per person, last 30 days. Pin, Completed and Ignore save in the CRM only (`sprout_inbox_triage`), never Gmail. Completed reopens when the person writes again; 14 quiet days waiting on them counts as Completed. The 9am email follows the marks. Sidebar badge counts threads waiting on you.
+- **Outreach › Protocol:** Run buttons copy the phrase for Claude Code; the playbook reads `docs/guides/ig-outreach-protocol.md` read-only.
+- **Not verified by Claude:** live Gmail read (privacy guard) and the UI (login wall).
+
+---
+
 ## 2026-11-19: Impact survey reminders sent (102 emails)
 
 Data and email only, no app code. Effort: low.

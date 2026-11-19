@@ -1,0 +1,328 @@
+<title>Sidebar Merge Wireframe</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap">
+<style>
+/* Layout: stacked wireframe frames, each a grey-box mock of the CRM shell (sidebar + page) with clickable nav. */
+:root{
+  --bg:#f3f3f1; --fg:#1d1c1a; --dim:#6d6b66; --line:#d6d5d0; --box:#e6e5e1; --box2:#d9d8d3;
+  --panel:#ffffff; --side:#1d1c1a; --side-fg:#e9e8e4; --side-dim:#8f8d87; --on:#73C4D6; --badge:#E10098; --note:#fff6c7; --note-fg:#4a3b00;
+  --font:Lato,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141413; --fg:#ecebe7; --dim:#a19f99; --line:#34332f; --box:#262522; --box2:#302f2b;
+  --panel:#1c1b19; --side:#0b0b0a; --side-fg:#e9e8e4; --side-dim:#7c7a74; --note:#3a3313; --note-fg:#f3e3a0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141413; --fg:#ecebe7; --dim:#a19f99; --line:#34332f; --box:#262522; --box2:#302f2b;
+  --panel:#1c1b19; --side:#0b0b0a; --side-fg:#e9e8e4; --side-dim:#7c7a74; --note:#3a3313; --note-fg:#f3e3a0; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:30px}
+h1{font-size:28px;font-weight:900;margin:0;text-wrap:balance}
+h2{font-size:19px;font-weight:900;margin:0;text-wrap:balance}
+.lede{color:var(--dim);max-width:70ch;margin:6px 0 0}
+.tag{display:inline-block;font-size:11px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--box2);color:var(--fg)}
+.tag.rec{background:var(--on);color:#06262d}
+.tag.gate{background:var(--badge);color:#fff}
+.fhd{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:10px}
+.fhd p{margin:0;color:var(--dim);flex-basis:100%}
+.note{background:var(--note);color:var(--note-fg);border-radius:8px;padding:12px 14px;font-size:13px;max-width:80ch}
+.note b{font-weight:900}
+/* the app shell */
+.shell{display:grid;grid-template-columns:200px minmax(0,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel);min-height:430px}
+.sb{background:var(--side);color:var(--side-fg);padding:14px 0;display:flex;flex-direction:column;gap:2px}
+.sb .brand{padding:0 14px 12px;font-weight:900;font-size:14px}
+.sb .brand small{display:block;color:var(--side-dim);font-weight:400;font-size:11px}
+.sb .sect{padding:10px 14px 4px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--side-dim);font-weight:700}
+.sb button{all:unset;cursor:pointer;display:flex;align-items:center;gap:8px;padding:7px 14px;font-size:13px;border-left:3px solid transparent}
+.sb button:hover{background:#ffffff12}
+.sb button:focus-visible{outline:2px solid var(--on);outline-offset:-2px}
+.sb button.on{border-left-color:var(--on);background:#ffffff14;font-weight:700}
+.sb .ic{width:14px;height:14px;border-radius:3px;background:#ffffff33;flex:none}
+.sb .bd{margin-left:auto;background:var(--badge);color:#fff;font-size:10px;font-weight:900;border-radius:999px;padding:1px 7px;font-variant-numeric:tabular-nums}
+.sb .foot{margin-top:auto;padding:12px 14px 0;display:flex;flex-direction:column;gap:6px}
+.sb .foot span{display:block;background:#ffffff1a;border-radius:6px;padding:6px 8px;font-size:12px;text-align:center}
+.main{padding:18px 20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.ptitle{font-size:20px;font-weight:900}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.tabs button{all:unset;cursor:pointer;font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);color:var(--dim)}
+.tabs button.on{background:var(--fg);color:var(--panel);border-color:var(--fg)}
+.tabs button:focus-visible{outline:2px solid var(--on)}
+.tabs .n{opacity:.65;margin-left:5px;font-variant-numeric:tabular-nums}
+.tabs .nb{background:var(--badge);color:#fff;border-radius:999px;padding:0 6px;margin-left:6px;font-size:11px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--box);color:var(--fg)}
+.chips span.cut{text-decoration:line-through;color:var(--dim)}
+.ef button{all:unset;cursor:pointer;font-size:12px;padding:3px 10px;border-radius:999px;background:var(--box);color:var(--fg)}
+.ef button.on{background:var(--on);color:#06262d;font-weight:700}
+.ef button:focus-visible,.th-a button:focus-visible{outline:2px solid var(--on)}
+.ef .n{opacity:.7;font-variant-numeric:tabular-nums}
+.threads{display:flex;flex-direction:column;gap:8px}
+.th{display:flex;flex-wrap:wrap;gap:10px 14px;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.th.pinned{border-color:var(--on);box-shadow:inset 3px 0 0 var(--on)}
+.th.done,.th.ignored{opacity:.6}
+.th-l{flex:1 1 360px;min-width:0;display:flex;flex-direction:column;gap:3px}
+.th-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.ib{font-size:11px;padding:1px 7px;border-radius:999px;background:var(--box2);color:var(--dim)}
+.pin{font-size:11px;font-weight:700}
+.age{font-size:12px;color:var(--dim);margin-left:auto}
+.th-s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+.subj{font-weight:700}.snip{color:var(--dim)}
+.th-c{font-size:12px;color:var(--dim)}.th-c.no{color:var(--badge)}
+.th-a{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.th-a button{all:unset;cursor:pointer;font-size:12px;font-weight:700;padding:5px 10px;border-radius:6px;border:1.5px solid var(--line)}
+.th-a button.pri{background:var(--fg);color:var(--panel);border-color:var(--fg)}
+.th-a button.lnk{border:0;color:var(--dim);font-weight:400;text-decoration:underline}
+.proto{display:flex;flex-direction:column;gap:14px}
+.run{border:1.5px solid var(--on);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.run-hd,.pb-hd{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.run-btns{display:flex;flex-wrap:wrap;gap:6px}
+.run-btns button{all:unset;cursor:pointer;font-size:13px;font-weight:700;padding:7px 12px;border-radius:6px;background:var(--fg);color:var(--panel)}
+.run-btns button:focus-visible{outline:2px solid var(--on)}
+.pb{display:flex;flex-direction:column;gap:4px}
+.pb details{border:1px solid var(--line);border-radius:6px;padding:8px 12px}
+.pb summary{cursor:pointer;font-weight:700}
+.pb p{margin:6px 0 0;color:var(--dim);max-width:70ch}
+.rows{display:flex;flex-direction:column;gap:6px}
+.row{height:30px;border-radius:6px;background:var(--box)}
+.row:nth-child(2n){background:var(--box2)}
+.empty{border:1.5px dashed var(--line);border-radius:8px;padding:22px;text-align:center;color:var(--dim)}
+.empty b{display:block;color:var(--fg);margin-bottom:4px}
+.sub{font-size:12px;color:var(--dim)}
+/* before/after table */
+.map{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.map table{border-collapse:collapse;width:100%;min-width:560px;font-size:13px}
+.map th,.map td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.map th{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+.map tr:last-child td{border-bottom:0}
+/* phone */
+.phones{display:flex;flex-wrap:wrap;gap:24px}
+.phone{width:300px;max-width:100%;border:1px solid var(--line);border-radius:22px;overflow:hidden;background:var(--panel)}
+.phone .top{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:900}
+.phone .burger{width:22px;height:16px;background:linear-gradient(var(--fg) 0 2px,transparent 2px 7px,var(--fg) 7px 9px,transparent 9px 14px,var(--fg) 14px 16px)}
+.phone .tabs{overflow-x:auto;flex-wrap:nowrap;padding:10px 12px}
+.phone .tabs button{white-space:nowrap}
+.phone .body{padding:0 12px 14px;display:flex;flex-direction:column;gap:6px}
+.phone.drawer{background:var(--side);color:var(--side-fg)}
+.phone.drawer .sb{padding-top:10px}
+.qs{display:flex;flex-direction:column;gap:8px;max-width:80ch}
+.qs li{margin-left:18px}
+@media (max-width:720px){.shell{grid-template-columns:1fr}.shell .sb{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="tag">Wireframe · 2026-11-19</span>
+    <h1>Sidebar merge: 13 items to 8</h1>
+    <p class="lede">Step 4 of the streamline plan. Pages that belong together become tabs on one page. No page gets deleted and no record changes in the lean version. Click the sidebar and the tabs in each frame. Counts are live from the CRM today.</p>
+  </header>
+
+  <section>
+    <div class="fhd"><h2>Where every current item goes</h2></div>
+    <div class="map"><table>
+      <thead><tr><th>Today (13)</th><th>After (8)</th><th>Change</th></tr></thead>
+      <tbody>
+        <tr><td>Day Board</td><td>Day Board</td><td>Same</td></tr>
+        <tr><td>Contacts · Organizations · Members</td><td>People</td><td>Three tabs on one page</td></tr>
+        <tr><td>Events</td><td>Events</td><td>Same</td></tr>
+        <tr><td>Showcase (incl. Gallery open call + /submit list) · Get Involved</td><td>Inbox</td><td>Everything people send in, one badge for what's new</td></tr>
+        <tr><td>Outreach</td><td>Outreach</td><td>Same</td></tr>
+        <tr><td>Impact Survey · Grant Metrics</td><td>Impact</td><td>Two tabs</td></tr>
+        <tr><td>Newsletter</td><td>Newsletter</td><td>Same</td></tr>
+        <tr><td>Import JSON · Settings</td><td>Settings</td><td>Import becomes a tab</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <div class="fhd"><h2>Lean</h2><span class="tag rec">Chosen</span>
+      <p>Regroup only. Contacts keeps its buckets, Prospects included. It opens on <b>Inbox › Email</b> (new): both inboxes, real people only. <b>Try the buttons</b> on a thread and the filter chips.</p></div>
+    <div class="note" style="margin-bottom:12px"><b>How the Email tab works.</b> It reads hello@ and maxperkins@ the same way the 9am "Waiting on you" email does: last 30 days, automated mail filtered out, website form messages show the real sender. Each thread shows who, which inbox, subject, the latest line, how long it has waited, and whether they're in the CRM. <b>Pin</b> keeps it at the top. <b>Completed</b> clears it, and it comes back on its own if they write again. <b>Ignore</b> hides that one thread for good (not the whole sender). After you reply, a thread sits in Waiting on them; after 14 days with no answer it moves to Completed on its own. <b>Instagram replies</b> join this list once they're logged as Replied on Outreach (tagged Instagram); the app can't read DMs directly. Outreach also gets a <b>Protocol</b> tab: Run buttons that copy the phrase for Claude Code, and the playbook read straight from the repo guide. All three live in the CRM only; Gmail is never changed. The 9am email follows the same calls: completed and ignored threads drop off, pinned ones lead. The sidebar badge counts threads waiting on you plus new form submissions.</div>
+    <div class="shell" data-shell="lean"></div>
+  </section>
+
+  <section>
+    <div class="fhd"><h2>Full</h2><span class="tag gate">Gated: contact data</span>
+      <p>Lean plus the Contacts split from step 2: Contacts opens on people we've dealt with, the 3,609 imported emails move to a Mailing list tab, and the Prospects bucket goes away (those people live on Outreach). Still a view change, but every export and the bucket rules change with it, so it needs a backup and Opus.</p></div>
+    <div class="shell" data-shell="full"></div>
+  </section>
+
+  <section>
+    <div class="fhd"><h2>States</h2><p>Inbox with nothing new, and a busy week with big badges and a long tab row.</p></div>
+    <div class="shell" data-shell="empty" style="margin-bottom:18px"></div>
+    <div class="shell" data-shell="busy"></div>
+  </section>
+
+  <section>
+    <div class="fhd"><h2>Phone (390px)</h2><p>The sidebar becomes a drawer behind ☰. Tabs scroll sideways inside their row; the page never does.</p></div>
+    <div class="phones">
+      <div class="phone drawer"><div class="sb" data-phone-drawer></div></div>
+      <div class="phone">
+        <div class="top"><span class="burger" aria-hidden="true"></span>People</div>
+        <div class="tabs"><button class="on">Contacts <span class="n">3,981</span></button><button>Organizations <span class="n">47</span></button><button>Members <span class="n">5</span></button></div>
+        <div class="body"><div class="chips"><span>Community 1,349</span><span>Donors 2,177</span><span>Prospects 455</span></div><div class="row"></div><div class="row"></div><div class="row"></div><div class="row"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="note">
+    <b>Details that come with the build.</b> Old links keep working: alert emails link to <code>/?view=showcase</code> and <code>/?event=</code>, so those open Inbox › Showcase and the event as before. Each page remembers its last tab. The Day Board badge stays. "+ Log Touchpoint" and Sign out stay at the bottom. The Members bucket chip inside Contacts goes away because Members has its own tab.
+  </section>
+
+  <section>
+    <h2>Your calls</h2>
+    <ol class="qs">
+      <li><b>Lean: chosen.</b> Email status lives in the CRM only, both inboxes (your calls, 11/19).</li>
+      <li><b>Inbox and Outreach stay two pages</b>; Instagram replies feed Inbox › Email. Okay?</li>
+      <li><b>Ignore</b> hides one thread, not the sender. <b>Waiting on them</b> clears itself after 14 days. Okay?</li>
+      <li><b>Protocol tab</b> is read-only; Claude updates the guide after each run. Okay?</li>
+      <li><b>Names:</b> People, Inbox, Impact. Okay, or different words?</li>
+      <li><b>Order:</b> Day Board, People, Events, Inbox, Outreach, Impact, Newsletter, Settings. Move anything?</li>
+      <li><b>Past participants</b> (artists who showed) sits inside Inbox › Showcase today. Keep it there, or move it to People as a fourth tab?</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+const NAV=[
+  {id:"day",label:"Day Board",badge:"3"},
+  {id:"people",label:"People"},
+  {id:"events",label:"Events"},
+  {id:"inbox",label:"Inbox",badge:"1"},
+  {id:"outreach",label:"Outreach"},
+  {id:"impact",label:"Impact"},
+  {id:"newsletter",label:"Newsletter"},
+  {id:"settings",label:"Settings"},
+];
+const rows=n=>`<div class="rows">${'<div class="row"></div>'.repeat(n)}</div>`;
+const PAGES={
+  lean:{
+    day:{t:"Day Board",tabs:null,body:`<div class="sub">Checklist + Sprout calendar, unchanged.</div>${rows(5)}`},
+    people:{t:"People",tabs:[["Contacts","3,981"],["Organizations","47"],["Members","5"]],body:{
+      Contacts:`<div class="chips"><span>Community 1,349</span><span>Donors 2,177</span><span>Prospects 455</span></div>${rows(6)}`,
+      Organizations:`<div class="chips"><span>Active</span><span>Prospects</span></div>${rows(5)}`,
+      Members:`<div class="sub">4 people, 1 org. Stripe invoices + Add member, as today.</div>${rows(4)}`}},
+    events:{t:"Events",tabs:null,body:`<div class="sub">Needs you box + calendar, unchanged.</div>${rows(5)}`},
+    inbox:{t:"Inbox",tabs:[["Email","5","new"],["Showcase","1","new"],["Gallery & /submit","4"],["Get Involved","0"]],body:{
+      Email:"@email",
+      Showcase:`<div class="chips"><span>New 1</span><span>Accepted</span><span>Passed</span><span>Past participants</span></div>${rows(3)}`,
+      "Gallery & /submit":`<div class="sub">Open-call gallery entries and the 4 people from /submit.</div>${rows(4)}`,
+      "Get Involved":`<div class="empty"><b>No new messages</b>Share sproutsociety's /get-involved link. New ones show here.</div>`}},
+    outreach:{t:"Outreach",tabs:[["Send"],["Results"],["Messages"],["Protocol"]],body:{Send:`<div class="sub">Batch queue: copy message, mark sent. Replies marked here also land in Inbox › Email.</div>${rows(5)}`,Results:rows(3),Messages:rows(3),Protocol:`
+      <div class="proto">
+        <div class="run">
+          <div class="run-hd"><b>Run with Claude</b><span class="sub">Each button copies the phrase. Paste it into Claude Code; Claude follows the playbook below and updates it when done.</span></div>
+          <div class="run-btns">
+            <button data-copy>① Check who responded</button>
+            <button data-copy>② Send the next batch</button>
+            <button data-copy>③ Refresh the follow-backs</button>
+            <button data-copy>④ Log a reply</button>
+          </div>
+          <div class="sub" data-copied>Order each session: ① before ②. ③ every week or two.</div>
+        </div>
+        <div class="pb">
+          <div class="pb-hd"><b>Playbook</b><span class="sub">From docs/guides/ig-outreach-protocol.md · updated by Claude 11/19 · read-only here</span></div>
+          ${[["The rules","Every DM from @sproutsocietyorg, signed Max, Community Manager. Only accounts that follow us. Max sees each batch first and cuts by name. About 15 cold DMs a day."],
+             ["Where things live","DM Plan tab on the triage sheet · this Outreach page · the contact or org record. Every send and reply goes in all three."],
+             ["The messages","Cold intro (20-minute video chat, no links) · survey DM · follow-up. Same text as the Messages tab."],
+             ["Status as of 2026-11-19","Outreach 6 sent (14). Outreach 7 approved (10), waiting on your go. Batches 8 to 14 not shown yet. 4 held."],
+             ["How to send (Claude in Chrome)","Open the profile, Message, paste the text, check it, Send. Private accounts go through New message."],
+             ["Logging every send and response","Sheet column J, Outreach status, a touchpoint on the record. A meeting gets a prep task the day before plus the meeting, on the Day Board."],
+             ["Finding who responded","Read the inbox list on instagram.com/direct; replies sort to the top."],
+             ["Refreshing the follow-backs","Newest follows first, dedupe against the CRM and the sheet, add new batches, skip past artists and existing threads."]]
+            .map(([h,b],i)=>`<details ${i===3?"open":""}><summary>${h}</summary><p>${b}</p></details>`).join("")}
+        </div>
+      </div>`}},
+    impact:{t:"Impact",tabs:[["Grant Metrics"],["Surveys"]],body:{"Grant Metrics":`<div class="chips"><span>Attendance</span><span>Members</span><span>Donations</span></div>${rows(4)}`,Surveys:`<div class="chips"><span>Showcase artists</span><span>Attendees</span><span>Hosts</span></div>${rows(4)}`}},
+    newsletter:{t:"Newsletter",tabs:null,body:`<div class="sub">Drafts and templates, unchanged.</div>${rows(4)}`},
+    settings:{t:"Settings",tabs:[["Organization"],["Flyer logos"],["Import JSON"]],body:{Organization:rows(4),"Flyer logos":rows(3),"Import JSON":`<div class="sub">Paste JSON, preview, import. Moved here from the sidebar.</div>${rows(2)}`}},
+  }
+};
+PAGES.full=structuredClone(PAGES.lean);
+PAGES.full.people={t:"People",tabs:[["Contacts","264"],["Organizations","47"],["Members","5"],["Mailing list","3,609"]],body:{
+  Contacts:`<div class="chips"><span>Community 238</span><span>Donors 26</span><span class="cut">Prospects</span></div><div class="sub">Opens on people we've dealt with. Prospects live on Outreach.</div>${rows(5)}`,
+  Organizations:`<div class="chips"><span>Active</span><span>Prospects</span></div>${rows(5)}`,
+  Members:`<div class="sub">4 people, 1 org.</div>${rows(4)}`,
+  "Mailing list":`<div class="sub">The 2026-06-09 email import + email-grab subscribers. Export CSV for Campaign Monitor lives here. Nothing deleted.</div>${rows(5)}`}};
+PAGES.empty=structuredClone(PAGES.lean);
+PAGES.empty.inbox={t:"Inbox",tabs:[["Email","0"],["Showcase","0"],["Gallery & /submit","0"],["Get Involved","0"]],body:{
+  Email:"@email",
+  Showcase:`<div class="empty"><b>No new applications</b>Share /showcase. Accepted ones are on the Accepted chip.</div>`,
+  "Gallery & /submit":`<div class="empty"><b>Nothing sent in yet</b>The open-call link and /submit land here.</div>`,
+  "Get Involved":`<div class="empty"><b>No new messages</b>New /get-involved replies show here.</div>`}};
+PAGES.busy=structuredClone(PAGES.lean);
+PAGES.busy.inbox={t:"Inbox",tabs:[["Email","23","new"],["Showcase","14","new"],["Gallery & /submit","38","new"],["Get Involved","7","new"]],body:{
+  Email:"@email",
+  Showcase:`<div class="chips"><span>New 14</span><span>Accepted 22</span><span>Passed 9</span><span>Past participants 58</span></div>${rows(7)}`,
+  "Gallery & /submit":rows(7),"Get Involved":rows(7)}};
+const BADGES={lean:{inbox:"6"},full:{inbox:"6"},empty:{inbox:null},busy:{inbox:"82",day:"99+"}};
+const START={lean:"inbox",full:"people",empty:"inbox",busy:"inbox"};
+
+/* Email tab: sample threads (shape of what lib/inboxWatch.js already finds). */
+const T=(id,who,em,inbox,subj,snip,age,crm,dir,st)=>({id,who,em,inbox,subj,snip,age,crm,dir,st});
+const SAMPLE=[
+  T(1,"Aalisha Jaisinghani","aalisha@…","hello@","Re: Awestruck Collective 12/13","Thanks Max! Can we do the call Tuesday instead? Also wanted to ask about bringing our own speakers…","2 days","In CRM · call 11/24","you","pinned"),
+  T(2,"Andie Mechanic","andie@…","maxperkins@","The Humanhood, January","Following up on the site visit. Do either of the times next week work? I can also send the deck…","3 days","In CRM · site visit","you","open"),
+  T(3,"Website form: Riley T.","riley@…","hello@","Contact Us - Inquiry","Hi! Do you rent the space for a birthday party of about 40 people on a Saturday in January?","1 day","Not in CRM","you","open"),
+  T(4,"Jodi","jodi@…","hello@","Quick question about membership","Is the monthly membership month to month, or is there a minimum? And does it include weekends?","5 days","Not in CRM","you","open"),
+  T(5,"Ali S.","lipstickmanifesto@…","maxperkins@","Video chat Tuesday","(you) Here's the link for Tuesday at 11:30. Looking forward to it!","today","In CRM · chat 11/24","them","open"),
+  T(6,"Diego R.","diego@…","hello@","Re: Flyer files","(you) Sent over the PNGs, let me know if you need the SVG too.","4 days","In CRM","them","open"),
+  T(7,"Mara Einson","mara@…","maxperkins@","Floorwork dates","Got it, thank you!","6 days","In CRM","you","done"),
+  T(9,"Jules (@gadzucks)","IG","Instagram","Outreach reply · Batch 5","Would love to come see the space! Does Tuesday 12/1 work?","1 day","In CRM · visit 12/1","you","open"),
+  T(8,"PR agency pitch","pitch@…","hello@","Partnership opportunity for Sprout","We help nonprofits 10x their reach with our proprietary…","2 days","Not in CRM","you","ignored"),
+];
+const BUSY=[...SAMPLE.map(t=>({...t})),...Array.from({length:18},(_,i)=>T(100+i,["Sam K.","Priya N.","Jordan L.","Bea M.","Theo W.","Luz G."][i%6],"x@…",i%2?"hello@":"maxperkins@",["Hosting a workshop in February?","Re: Sprout N Tell lineup","Volunteer question","Sponsorship for Vol. 6","Re: Photos from Friday","Can I book the back room?"][i%6],"A longer message that runs past one line on a laptop so you can see how it wraps or truncates in the row…",`${(i%9)+1} days`,i%3?"In CRM":"Not in CRM","you","open"))];
+const EMAIL_STATE={lean:SAMPLE.map(t=>({...t})),full:SAMPLE.map(t=>({...t})),empty:[],busy:BUSY};
+const FILT={};
+const FILTERS=[["you","Waiting on you"],["them","Waiting on them"],["pinned","Pinned"],["done","Completed"],["ignored","Ignored"]];
+function inFilter(t,f){
+  if(f==="pinned") return t.st==="pinned";
+  if(f==="done"||f==="ignored") return t.st===f;
+  return (t.st==="open"||t.st==="pinned")&&t.dir===f;
+}
+function emailBody(state){
+  const list=EMAIL_STATE[state]; const f=FILT[state]||"you";
+  const chips=`<div class="chips ef">${FILTERS.map(([k,l])=>`<button data-ef="${k}" class="${k===f?"on":""}">${l} <span class="n">${list.filter(t=>inFilter(t,k)).length}</span></button>`).join("")}<span class="sub" style="margin-left:auto;align-self:center">hello@ + maxperkins@ + Instagram replies · last 30 days · checked 2 min ago ↻</span></div>`;
+  let shown=list.filter(t=>inFilter(t,f));
+  if(f==="you"||f==="them") shown.sort((a,b)=>(b.st==="pinned")-(a.st==="pinned"));
+  if(!list.length) return chips+`<div class="empty"><b>Inbox zero</b>Nobody is waiting on a reply in either inbox. Automated mail (receipts, newsletters, notifications) never shows here.</div>`;
+  if(!shown.length) return chips+`<div class="empty"><b>Nothing here</b>${f==="pinned"?"Pin a thread to keep it at the top.":f==="done"?"Threads you mark Completed land here. They come back if the person writes again.":f==="ignored"?"Ignored threads stay hidden, even if they write again.":"All caught up."}</div>`;
+  return chips+`<div class="threads">${shown.map(t=>`
+    <div class="th ${t.st}">
+      <div class="th-l">
+        <div class="th-top"><b>${t.who}</b><span class="ib">${t.inbox}</span>${t.st==="pinned"?'<span class="pin">📌 Pinned</span>':""}<span class="age">${t.dir==="you"?"waiting on you":"you replied"} · ${t.age}</span></div>
+        <div class="th-s"><span class="subj">${t.subj}</span> <span class="snip">${t.snip}</span></div>
+        <div class="th-c ${t.crm.startsWith("Not")?"no":""}">${t.crm}${t.crm.startsWith("Not")?' · <u>Add as contact</u>':""}</div>
+      </div>
+      <div class="th-a">
+        ${t.st==="done"||t.st==="ignored"?`<button data-act="open" data-id="${t.id}">↩ Move back</button>`:`
+        <button data-act="${t.st==="pinned"?"open":"pinned"}" data-id="${t.id}">${t.st==="pinned"?"Unpin":"📌 Pin"}</button>
+        <button data-act="done" data-id="${t.id}" class="pri">✓ Completed</button>
+        <button data-act="ignored" data-id="${t.id}">Ignore</button>`}
+        <button tabindex="-1" class="lnk">${t.inbox==="Instagram"?"Open on Outreach →":"Open in Gmail ↗"}</button>
+      </div>
+    </div>`).join("")}</div>`;
+}
+
+function sidebar(state,cur,interactive){
+  const b=BADGES[state]||{};
+  return `<div class="brand">Sprout Society<small>CRM Manager</small></div>`+NAV.map(n=>{
+    const badge=(n.id in b)?b[n.id]:n.badge;
+    return `<button data-go="${n.id}" class="${n.id===cur?"on":""}" ${interactive?"":"tabindex=-1"}><span class="ic"></span>${n.label}${badge?`<span class="bd">${badge}</span>`:""}</button>`;
+  }).join("")+`<div class="foot"><span>+ Log Touchpoint</span><span>Sign out</span></div>`;
+}
+function render(el,state,page,tab){
+  const p=PAGES[state][page];
+  if(!tab&&p.tabs) tab=p.tabs[0][0];
+  const tabs=p.tabs?`<div class="tabs">${p.tabs.map(([l,n,flag])=>`<button data-tab="${l}" class="${l===tab?"on":""}">${l}${n!==undefined?(flag?`<span class="nb">${n}</span>`:`<span class="n">${n}</span>`):""}</button>`).join("")}</div>`:"";
+  let body=p.tabs?p.body[tab]:p.body;
+  if(body==="@email") body=emailBody(state);
+  el.innerHTML=`<nav class="sb">${sidebar(state,page,true)}</nav><div class="main"><div class="ptitle">${p.t}</div>${tabs}${body}</div>`;
+  el.querySelectorAll("[data-go]").forEach(x=>x.onclick=()=>render(el,state,x.dataset.go));
+  el.querySelectorAll("[data-tab]").forEach(x=>x.onclick=()=>render(el,state,page,x.dataset.tab));
+  el.querySelectorAll("[data-copy]").forEach(x=>x.onclick=()=>{const m=el.querySelector("[data-copied]");if(m)m.textContent=`Copied "${x.textContent.slice(2)}". Paste it into Claude Code.`;});
+  el.querySelectorAll("[data-ef]").forEach(x=>x.onclick=()=>{FILT[state]=x.dataset.ef;render(el,state,page,tab);});
+  el.querySelectorAll("[data-act]").forEach(x=>x.onclick=()=>{const t=EMAIL_STATE[state].find(t=>t.id==x.dataset.id);t.st=x.dataset.act;render(el,state,page,tab);});
+}
+document.querySelectorAll("[data-shell]").forEach(el=>{const s=el.dataset.shell;render(el,s,START[s]);});
+document.querySelector("[data-phone-drawer]").innerHTML=sidebar("lean","people",false);
+</script>
