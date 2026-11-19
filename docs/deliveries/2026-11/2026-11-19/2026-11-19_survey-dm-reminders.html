@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Survey DM Reminders</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root { --ink:#030000; --paper:#F7F7F6; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ink); color:#fff; font-family:Lato,Arial,sans-serif; }
+  .slide { max-width:1100px; margin:0 auto; padding:48px 24px 56px; }
+  .eyebrow { color:var(--fuchsia); font-weight:900; letter-spacing:3px; text-transform:uppercase; font-size:13px; }
+  h1 { font-size:40px; font-weight:900; margin:10px 0 6px; line-height:1.1; }
+  .sub { color:#cfcfcb; font-size:17px; margin:0 0 22px; }
+  .badges { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:26px; }
+  .badge { border-radius:999px; padding:6px 14px; font-size:13px; font-weight:700; }
+  .b1 { background:var(--fuchsia); } .b2 { background:var(--acid); color:var(--ink); } .b3 { background:#222; border:1px solid #444; font-family:monospace; }
+  .names { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
+  .name { background:#141414; border-left:5px solid var(--cyan); border-radius:8px; padding:10px 14px; font-weight:700; font-size:15px; }
+  .name.p { border-color:var(--banana); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; }
+  .card { background:var(--paper); color:var(--ink); border-radius:12px; padding:20px; }
+  .card h3 { margin:0 0 10px; font-size:17px; font-weight:900; }
+  .card ul { margin:0; padding-left:18px; line-height:1.55; font-size:15px; }
+  .foot { margin-top:26px; color:#8e8e8a; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="eyebrow">Sprout CRM · Delivery · Nov 19, 2026</div>
+  <h1>Survey reminders by Instagram DM</h1>
+  <p class="sub">The artists with no email on file got the same friendly nudge, from @sproutsocietyorg, in their original survey chat.</p>
+  <div class="badges">
+    <span class="badge b1">📸 13 DMs sent</span>
+    <span class="badge b2">13 touchpoints logged</span>
+    <span class="badge b3">branch main · docs commit</span>
+  </div>
+  <div class="names">
+    <span class="name">Ali Joy Jewelry</span><span class="name p">BENSN</span><span class="name">Christina Madrid</span><span class="name">Cody Naka</span>
+    <span class="name">Girlypop(up)</span><span class="name">Isabella</span><span class="name">Jillian Howery</span><span class="name p">Kali Winkler</span>
+    <span class="name p">Kyle</span><span class="name">Maxwell Höuse</span><span class="name">Natalya Ixchel</span><span class="name">Saint Vintage</span><span class="name">Normal Again</span>
+  </div>
+  <div class="grid">
+    <div class="card"><h3>🛡 Safe send</h3><ul>
+      <li>Sent only when the chat already held that person's own survey link</li>
+      <li>Pasted, checked word for word, then sent</li>
+      <li>Private accounts (yellow) reached through inbox search</li>
+    </ul></div>
+    <div class="card"><h3>🚫 Skipped</h3><ul>
+      <li>Modern Mystic Studios: that's Natasha, already replied</li>
+      <li>The Bar Nun Life: Cullie got the email reminder</li>
+    </ul></div>
+    <div class="card"><h3>🗂 CRM</h3><ul>
+      <li>Dated touchpoint on all 13 records</li>
+      <li>Cody Naka's handle saved: @codynaka</li>
+    </ul></div>
+  </div>
+  <div class="foot">Commit: CHANGELOG entry on main · CLAUDE.md Current State updated (gitignored)</div>
+</div>
+</body>
+</html>
