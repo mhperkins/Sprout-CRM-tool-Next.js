@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IG Outreach Protocol</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+:root{--ink:#030000;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--paper:#F7F7F6}
+*{box-sizing:border-box;margin:0}
+body{background:var(--ink);color:#fff;font-family:Lato,system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px}
+.slide{width:100%;max-width:1100px}
+.eyebrow{color:var(--acid);font-weight:900;letter-spacing:3px;text-transform:uppercase;font-size:13px}
+h1{font-size:clamp(28px,4.4vw,48px);font-weight:900;margin:10px 0 6px}
+.sub{color:#bdbdb8;font-size:16px;margin-bottom:22px}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.b{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;background:#1c1c1a;border:1px solid #333}
+.b.c{border-color:var(--cyan);color:var(--cyan)}.b.f{border-color:var(--fuchsia);color:var(--fuchsia)}.b.a{border-color:var(--acid);color:var(--acid)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{background:#141413;border-radius:10px;padding:18px;border-left:6px solid var(--cyan)}
+.card:nth-child(2){border-color:var(--fuchsia)}.card:nth-child(3){border-color:var(--acid)}.card:nth-child(4){border-color:var(--banana)}
+.ic{font-size:24px}
+.card h3{font-size:17px;font-weight:900;margin:8px 0 6px}
+.card p{font-size:14px;line-height:1.5;color:#d8d8d4}
+.num{font-size:34px;font-weight:900;color:var(--banana)}
+.foot{margin-top:22px;font-size:13px;color:#9a9a96}
+code{background:#222;padding:2px 6px;border-radius:4px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="eyebrow">Delivered · 2026-11-19</div>
+  <h1>Instagram outreach, ready to hand off</h1>
+  <div class="sub">A protocol any new conversation can pick up, a shorter video-chat message, and 58 new follow-backs queued.</div>
+  <div class="badges">
+    <span class="b c">commit a357d33</span><span class="b f">branch main</span><span class="b a">pushed</span><span class="b">no app code</span><span class="b">effort: medium</span>
+  </div>
+  <div class="grid">
+    <div class="card"><div class="ic">📘</div><h3>Protocol guide</h3><p><code>docs/guides/ig-outreach-protocol.md</code>: rules, messages, batch status, send script, finding responders, follow-back refresh. Pointed to from CLAUDE.md and project memory.</p></div>
+    <div class="card"><div class="ic">💬</div><h3>New cold intro</h3><p>Short, no links, asks for a 20-minute video chat. Scheduling happens in the DMs. Saved to the Outreach page template.</p></div>
+    <div class="card"><div class="ic">❤️</div><h3>Responders followed up</h3><div class="num">7</div><p>Alexis Viele replied; six liked. Each got a video-chat follow-up and a note on the sheet.</p></div>
+    <div class="card"><div class="ic">➕</div><h3>New follow-backs</h3><div class="num">58</div><p>Added as Outreach 11 to 14. 11 set aside (past artists, existing threads, a duplicate account, one non-follower).</p></div>
+  </div>
+  <div class="foot">Next: send Batch 6 (14) with the new message. Batches 7 to 14 still need Max's review. Batch 5 sent 11/9 (13 of 14).</div>
+</div>
+</body>
+</html>

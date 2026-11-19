@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-11-19: Instagram outreach protocol, new message, follow-backs
+
+Commit `a357d33`. No app code. Effort: medium.
+
+- New guide `docs/guides/ig-outreach-protocol.md` so outreach can continue in any conversation: rules, messages, batch status, send script, finding responders, follow-back refresh.
+- New cold intro (Max): short, asks for a 20-minute video chat, scheduling in the DMs. Saved to the Outreach page template.
+- Outreach 5 sent 11/9 (13 of 14). Video-chat follow-up sent to the 7 people who liked or answered earlier DMs.
+- 58 new follow-backs added to the DM Plan as Outreach 11 to 14; 11 set aside with notes. Cenny Ray left for Max to contact personally (CRM next action).
+
 ## 2026-11-19: Donations in Grant Metrics
 
 Merge `08765c9`. Effort: medium.
