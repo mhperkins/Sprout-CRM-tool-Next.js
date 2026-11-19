@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Survey Reminders Sent</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+  :root { --ink:#030000; --paper:#F7F7F6; --acid:#C6C902; --banana:#FAD100; --fuchsia:#E10098; --cyan:#73C4D6; --muted:#6b6b68; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ink); color:#fff; font-family:Lato,Arial,sans-serif; }
+  .slide { max-width:1100px; margin:0 auto; padding:48px 24px 56px; }
+  .eyebrow { color:var(--acid); font-weight:900; letter-spacing:3px; text-transform:uppercase; font-size:13px; }
+  h1 { font-size:40px; font-weight:900; margin:10px 0 6px; line-height:1.1; }
+  .sub { color:#cfcfcb; font-size:17px; margin:0 0 22px; }
+  .badges { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:28px; }
+  .badge { border-radius:999px; padding:6px 14px; font-size:13px; font-weight:700; }
+  .b1 { background:var(--acid); color:var(--ink); } .b2 { background:var(--fuchsia); } .b3 { background:#222; border:1px solid #444; font-family:monospace; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:22px; }
+  .stat { background:#141414; border-radius:12px; padding:18px; border-top:5px solid var(--cyan); }
+  .stat:nth-child(2) { border-color:var(--fuchsia); } .stat:nth-child(3) { border-color:var(--banana); } .stat:nth-child(4) { border-color:var(--acid); }
+  .num { font-size:38px; font-weight:900; } .lbl { color:#bdbdb9; font-size:14px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; }
+  .card { background:var(--paper); color:var(--ink); border-radius:12px; padding:20px; }
+  .card h3 { margin:0 0 10px; font-size:17px; font-weight:900; }
+  .card ul { margin:0; padding-left:18px; line-height:1.55; font-size:15px; }
+  .quote { background:#141414; border-left:6px solid var(--acid); border-radius:8px; padding:16px 18px; margin:22px 0; font-size:16px; color:#e8e8e4; }
+  .foot { margin-top:26px; color:#8e8e8a; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="eyebrow">Sprout CRM · Delivery · Nov 19, 2026</div>
+  <h1>Impact survey reminders sent</h1>
+  <p class="sub">Short threaded nudges to everyone who hadn't replied, plus the Sauna Hat host survey to the right person.</p>
+  <div class="badges">
+    <span class="badge b1">✉ 102 emails sent</span>
+    <span class="badge b2">0 errors · 0 bounces</span>
+    <span class="badge b3">branch main · docs commit</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="num">82</div><div class="lbl">attendee reminders</div></div>
+    <div class="stat"><div class="num">17</div><div class="lbl">artist reminders</div></div>
+    <div class="stat"><div class="num">2</div><div class="lbl">host reminders (Cullie, Jess)</div></div>
+    <div class="stat"><div class="num">1</div><div class="lbl">first email to Julia Bartley</div></div>
+  </div>
+
+  <div class="quote">"Hi Aidan, Just a friendly reminder in case you were still interested in filling out our survey. You can find it here. Thank you, Max" · sent as a reply in each person's original thread, with their own link</div>
+
+  <div class="grid">
+    <div class="card"><h3>🧵 How it went out</h3><ul>
+      <li>From maxperkins@, via the Gmail API</li>
+      <li>Each reminder matched to the original email carrying the same survey link</li>
+      <li>No "REMINDER:" subject, so it stays in the thread</li>
+      <li>One test sent and inspected before the other 101</li>
+    </ul></div>
+    <div class="card"><h3>🚫 Left out on purpose</h3><ul>
+      <li>Jonathan (membership cancel in progress)</li>
+      <li>Beth Graybill · Mara (rehearsals only)</li>
+      <li>Pat + Rachel Long (did the host survey)</li>
+      <li>15 artists with no email (DM only)</li>
+    </ul></div>
+    <div class="card"><h3>🧖 Sauna Hat host fixed</h3><ul>
+      <li>Real host: Julia Bartley ("J B"), not Maria</li>
+      <li>New contact <code>ind_julia_bartley</code>, Event Host</li>
+      <li>Wants a weekly Artist's Way group from Jan/Feb</li>
+      <li>Host survey sent and marked sent</li>
+    </ul></div>
+    <div class="card"><h3>📊 Tracking, decided</h3><ul>
+      <li>Click tracking on personal links: cheap, deferred</li>
+      <li>Open tracking: skipped (pixel data unreliable)</li>
+      <li>Replies land on the Impact Survey page</li>
+    </ul></div>
+  </div>
+  <div class="foot">Commit: CHANGELOG entry on main · CLAUDE.md Current State updated (gitignored)</div>
+</div>
+</body>
+</html>

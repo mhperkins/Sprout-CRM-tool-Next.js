@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-11-19: Impact survey reminders sent (102 emails)
+
+Data and email only, no app code. Effort: low.
+
+- **Who hadn't replied (of 139 sent):** hosts 3 of 5, artists 36 of 49 (15 of them DM-only, no email), attendees 82 of 85. Jonathan Winkles had not filled out the host survey (checked invites, answers and Gmail).
+- **Sent from maxperkins@ on Max's go (Gmail API, one test inspected first, 0 errors, 0 bounces on the first check):** 101 short reminders, each a threaded reply in the person's original email ("Just a friendly reminder in case you were still interested in filling out our survey. You can find it here."), matched to the original by the person's own survey link. 82 attendees, 17 artists, Cullie Poseria and Jess McAvoy. No "REMINDER:" subject, so Gmail keeps it in the thread.
+- **Left out (Max):** Jonathan (asked 11/16 to cancel the QS membership), Beth Graybill, Mara Einson (rehearsals only, will host later), Pat Hopkins and Rachel Long (already did the host survey), DM-only artists.
+- **Sauna Hat Workshop host survey:** first made for Maria Chernova, then moved to the real host, **Julia Bartley** ("J B", bartleyjulia@gmail.com). New contact `ind_julia_bartley` (Event Host, warm; wants a weekly 14-week Artist's Way group from Jan/Feb), added to `evt_sauna_hat_workshop`; invite `sinv_julia_bartley_host` sent and marked sent.
+- **Decided:** click tracking (log when a personal survey link is opened) is cheap to build but not worth delaying this send; build it if surveys become a regular thing. Open tracking skipped (pixel data is unreliable).
+
+---
+
 ## 2026-11-19: Streamline step 1, dead code and newsletter Send to list removed
 
 App code. Effort: low. Merge `12ef617`.
