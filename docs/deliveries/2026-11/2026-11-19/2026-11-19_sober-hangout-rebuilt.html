@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sober Hangout Rebuilt</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--g:#6b6b68}
+*{box-sizing:border-box}body{margin:0;background:var(--ink);font-family:Lato,sans-serif;color:var(--ink);display:flex;justify-content:center;padding:32px 16px}
+.slide{width:100%;max-width:1100px;background:var(--paper);border-radius:14px;overflow:hidden}
+.top{background:var(--ink);color:#fff;padding:28px 32px;border-bottom:6px solid var(--acid)}
+.eyebrow{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acid);font-weight:900}
+h1{margin:8px 0 6px;font-size:30px;font-weight:900}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.badge{font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;background:#222;color:#fff}
+.badge.c{background:var(--cyan);color:var(--ink)}.badge.f{background:var(--fuchsia)}.badge.b{background:var(--banana);color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;padding:24px 32px}
+.card{background:#fff;border-radius:10px;padding:18px;border-left:6px solid var(--cyan);box-shadow:0 4px 14px rgba(0,0,0,.1)}
+.card.f{border-color:var(--fuchsia)}.card.b{border-color:var(--banana)}.card.a{border-color:var(--acid)}
+.card h3{margin:0 0 8px;font-size:17px;font-weight:900}.card p,.card li{font-size:14px;line-height:1.5;color:#333;margin:0}
+.card ul{padding-left:18px;margin:0}
+.foot{padding:0 32px 24px;font-size:13px;color:var(--g)}
+</style></head><body>
+<div class="slide">
+  <div class="top">
+    <div class="eyebrow">Delivery · 2026-11-19</div>
+    <h1>Events to year end + Sober Hangout rebuilt</h1>
+    <div>Data-only session: calendar vs CRM check, one new event, one deleted event restored.</div>
+    <div class="meta"><span class="badge c">main</span><span class="badge">commit 77a1a22</span><span class="badge f">Effort: max (data loss)</span><span class="badge b">No app code</span></div>
+  </div>
+  <div class="grid">
+    <div class="card"><h3>🗓 Nov 19 to Dec 31</h3><p>Program Calendar compared with the CRM, GGC left out. Queer Social's December dates are cancelled on the calendar.</p></div>
+    <div class="card a"><h3>🎤 Sing Easy 12/8</h3><p>On the calendar, missing from the CRM. Created <b>evt_sing_easy_20261208</b>, 6:30 to 8:30pm, Jess linked, Hosted by Partner.</p></div>
+    <div class="card f"><h3>⚠ Sober Hangout deleted</h3><p>Edge logs: the event was deleted from the app 9 seconds after its page opened (a confirmed Delete), not overwritten by a stale tab.</p></div>
+    <div class="card b"><h3>↺ Rebuilt, same id</h3><ul><li>Dates 8/21, 9/25, 10/30, 11/3, 11/13</li><li>7 to 10pm, Rental, Jonathan linked</li><li>Links + flyer back; portal survived</li><li>Lost: the 9/5 comms entry and the original description</li></ul></div>
+    <div class="card"><h3>👥 Attendance</h3><p>15 per night = headcount <b>75</b> on the series, with the breakdown in the notes. Grant Metrics still skips repeating series.</p></div>
+  </div>
+  <div class="foot">Committed: CHANGELOG.md · CLAUDE.md (gitignored) updated · data written straight to sprout_events.</div>
+</div>
+</body></html>
