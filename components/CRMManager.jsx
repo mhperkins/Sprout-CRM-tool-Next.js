@@ -128,7 +128,7 @@ const STYLES = `
   .sb-foot { padding:12px 18px 16px; border-top:1px solid rgba(247,247,246,0.06); margin-top:auto; }
   .sb-foot-txt { font-size:8px; color:rgba(247,247,246,0.18); text-transform:uppercase; letter-spacing:0.1em; font-weight:700; line-height:1.7; }
 
-  .main { margin-left:220px; flex:1; transition:margin-left 0.2s ease; }
+  .main { margin-left:220px; flex:1; min-width:0; transition:margin-left 0.2s ease; }
   .page { padding:30px 32px; max-width:1140px; }
   .pg-hd { margin-bottom:24px; display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; }
   .pg-ttl { font-size:23px; font-weight:900; letter-spacing:-0.01em; }
