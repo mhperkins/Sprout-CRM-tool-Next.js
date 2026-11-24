@@ -9,7 +9,7 @@ import { INTERESTS, HEARD_OPTIONS, LIMITS } from "@/lib/interestForm";
 
 const BRAND = "https://ixdnmjchvjzytyhmripc.supabase.co/storage/v1/object/public/newsletter-images/brand";
 const LOGO_DARK = `${BRAND}/sprout-logo-blackheart.png`;
-const DISCORD_URL = "https://discord.gg/SUuDdrSAv";
+const DISCORD_URL = "https://discord.gg/CH93QSDwrD";
 const IG_URL = "https://instagram.com/sproutsocietyorg";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
