@@ -8,6 +8,7 @@
 
 import { nextOccurrence, occurrencesInRange } from "../lib/recurrence";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import QuickLinks from "./QuickLinks";
 
 import {
   fetchContacts,
@@ -5718,6 +5719,7 @@ if (dbError) return (
     <div className={`app ${sbCollapsed?"app-sb-collapsed":""}`}>
 <Sidebar view={view} setView={(v)=>{setPendingDetail(null);setPendingEvent(null);setSurveyStart(null);setView(v);}} contacts={contacts} events={events} profile={profile} onQuickLog={()=>setGlobalQuickLog(true)} onCollapse={toggleSidebar} inboxCount={inboxCount}/>
       {sbCollapsed&&<button className="sb-reopen" onClick={toggleSidebar} title="Show sidebar">☰</button>}
+      <QuickLinks/>
       <main className="main">
         <GroupTabs view={view} setView={setView} inboxCount={inboxCount}/>
         {view==="inbox"&&<InboxEmail openContact={openContact} setView={setView} showToast={showToast} onCount={onInboxCount}/>}
