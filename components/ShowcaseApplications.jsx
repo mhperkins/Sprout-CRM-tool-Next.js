@@ -1,7 +1,11 @@
 "use client";
 
 /**
- * ShowcaseApplications.jsx — the review queue for the public /showcase form.
+ * ShowcaseApplications.jsx — the review queue for the public /submit form.
+ *
+ * Started = they gave name + email (step 1) but haven't sent their work yet. Those
+ * get two automatic reminders (day 3, day 14); "Add to mailing list" is a manual,
+ * create-only contact add. Finished submissions land in New.
  *
  * Applications arrive inert. Accepting one here is the ONLY thing that touches the
  * CRM: it creates or updates the contact, tags them Showcase, and adds them to the
@@ -19,7 +23,6 @@ import {
   fetchSurveyInvites,
 } from "../lib/services";
 import { showcaseLinks, showcaseInstagramUrl, showcaseToText, splitName } from "../lib/showcaseForm";
-import { OpenCallGallery } from "./GalleryEntries";
 import PastParticipants from "./PastParticipants";
 import { buildPastParticipants } from "../lib/pastParticipants";
 
@@ -71,14 +74,16 @@ const SA_STYLES = `
 `;
 
 const TABS = [
+  { id: "started", label: "Started" },
   { id: "new", label: "New" },
   { id: "accepted", label: "Accepted" },
   { id: "passed", label: "Passed" },
-  { id: "gallery", label: "Gallery (open call)" },
   { id: "past", label: "Past participants" },
 ];
 
 const today = () => new Date().toISOString().slice(0, 10);
+// Links people get must work for them, so copy the production host even on localhost.
+const PROD = "https://sprout-crm-tool-next-js.vercel.app";
 const fmtWhen = (iso) => {
   try { return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }); }
   catch { return ""; }
@@ -118,7 +123,7 @@ export default function ShowcaseApplications({
   useEffect(() => { load(); }, [load]);
 
   const counts = useMemo(() => {
-    const c = { new: 0, accepted: 0, passed: 0 };
+    const c = { started: 0, new: 0, accepted: 0, passed: 0 };
     apps.forEach((a) => { if (c[a.status] != null) c[a.status] += 1; });
     c.past = buildPastParticipants({ contacts, events, entries, today: today() }).length;
     return c;
@@ -193,7 +198,7 @@ export default function ShowcaseApplications({
         instagram_handle: existing.instagram_handle || d.instagram || "",
         relationship_types: [...types],
         relationship_status: ["warm", "active"].includes(existing.relationship_status) ? existing.relationship_status : "warm",
-        how_heard: existing.how_heard || "Showcase application (/showcase)",
+        how_heard: existing.how_heard || "Submission form (/submit)",
         notes: [existing.notes, `— Showcase application ${stamp}${where}\n${d.pitch || ""}`].filter(Boolean).join("\n\n").trim(),
         touchpoints: [...(existing.touchpoints || []), { date: stamp, summary, next_action: "", next_action_date: null }],
       };
@@ -217,7 +222,7 @@ export default function ShowcaseApplications({
         instagram_handle: d.instagram || "",
         relationship_types: ["showcase", d.role === "Music" ? "music" : d.role === "Art" ? "art" : null].filter(Boolean),
         other_description: "",
-        how_heard: "Showcase application (/showcase)",
+        how_heard: "Submission form (/submit)",
         segment: "community",
         is_member: false,
         campaign: "",
@@ -246,8 +251,98 @@ export default function ShowcaseApplications({
     showToast(existing ? `Updated ${d.name}${ev ? ` and added them to ${ev.name}` : ""}` : `Added ${d.name} to your contacts${ev ? ` and to ${ev.name}` : ""}`);
   };
 
+  /* ── Started: manual, create-only add to the mailing list (Community bucket) ── */
+  const addToList = async (app) => {
+    const d = app.data || {};
+    if (matchOf(app)) { showToast("Already in the CRM"); return; }
+    setBusy(true);
+    const { first, last } = splitName(d.name);
+    let id = `ind_${slug(d.name) || `submit_${app.id.slice(4)}`}`;
+    let n = 2;
+    while (contacts.some((c) => c.id === id)) id = `ind_${slug(d.name)}_${n++}`;
+    const stamp = today();
+    const role = d.role === "Music" ? "music" : d.role === "Art" ? "art" : null;
+    const contact = {
+      id,
+      record_type: "individual",
+      org_id: null,
+      org_ids: [],
+      first_name: first,
+      last_name: last,
+      email: d.email || null,
+      alt_emails: [],
+      phone: "",
+      website: "",
+      instagram_handle: "",
+      relationship_types: role ? [role] : [],
+      other_description: "",
+      how_heard: "Submission form (/submit)",
+      segment: "community",
+      is_member: false,
+      campaign: "",
+      campaign_id: "",
+      tags: ["submit_started"],
+      notes: `Started a submission at /submit on ${String(app.created_at || "").slice(0, 10)} (${d.role || "no type"}) and didn't finish. Added to the mailing list ${stamp}.`,
+      relationship_status: "cool",
+      next_action: "",
+      next_action_date: null,
+      next_actions: [],
+      touchpoints: [{ date: stamp, summary: "Added to the mailing list from a started /submit submission.", next_action: "", next_action_date: null }],
+      createdAt: new Date().toISOString(),
+    };
+    onCreateContact(contact);
+    await patch(app.id, { contact_id: id });
+    setBusy(false);
+    showToast(`Added ${d.name || "them"} to the mailing list (Community)`);
+  };
+
+  const copyFinishLink = (app) => {
+    const url = `${PROD}/submit?t=${encodeURIComponent(app.token)}`;
+    navigator.clipboard?.writeText(url).then(
+      () => showToast("Their finish link is copied. Only send it to them."),
+      () => showToast(url, "err")
+    );
+  };
+
+  const startedCard = (app) => {
+    const d = app.data || {};
+    const match = matchOf(app);
+    const reminded = app.reminders_sent
+      ? ` · reminder${app.reminders_sent > 1 ? "s" : ""} sent${app.last_reminded_at ? `, last ${fmtWhen(app.last_reminded_at)}` : ""}`
+      : "";
+    const roleClass = d.role === "Music" ? "music" : d.role === "Art" ? "art" : "";
+    return (
+      <article className="sa-card" key={app.id}>
+        <div>
+          <div className="sa-hd">
+            <h3>{d.name || "(no name given)"}</h3>
+            {d.role && <span className={`sa-tag ${roleClass}`}>{d.role}</span>}
+            {match && <span className="sa-tag ok">{app.contact_id ? "On mailing list" : "In CRM"}</span>}
+          </div>
+          <div className="sa-meta">
+            <span>Started {fmtWhen(app.created_at)}{reminded}</span>
+            {d.email && <a href={`mailto:${d.email}`}>{d.email}</a>}
+          </div>
+          <p className="sa-pitch" style={{ color: "#9A9A90" }}>
+            {d.legacy
+              ? "Signed up on the old /submit list and got the old gallery link. No automatic reminders: send their finish link if you want them to fill it in."
+              : app.reminders_sent >= 2 ? "Both reminders sent. No more automatic emails." : "Gets an automatic reminder on day 3 and day 14."}
+          </p>
+        </div>
+        <div className="sa-side">
+          {match
+            ? <button className="sa-act pri" onClick={() => openContact(match)}>Open in CRM</button>
+            : <button className="sa-act pri" disabled={busy} onClick={() => addToList(app)}>Add to mailing list</button>}
+          {app.token && <button className="sa-act" onClick={() => copyFinishLink(app)}>Copy their finish link</button>}
+          {d.email && <a className="sa-act" style={{ textAlign: "center", textDecoration: "none" }} href={`mailto:${d.email}?subject=${encodeURIComponent("Your Sprout submission")}`}>Email them</a>}
+          <button className="sa-act danger" onClick={() => remove(app)}>Delete</button>
+        </div>
+      </article>
+    );
+  };
+
   const copyLink = () => {
-    const url = `${window.location.origin}/showcase`;
+    const url = `${PROD}/submit`;
     navigator.clipboard?.writeText(url).then(
       () => showToast("Link copied"),
       () => showToast(url, "err")
@@ -352,14 +447,15 @@ export default function ShowcaseApplications({
 
       <div className="sa-top">
         <div>
-          <h1>Showcase applications</h1>
+          <h1>Submissions</h1>
           <p>
-            Everyone who applied at /showcase. Nothing here has touched your contacts: accepting is
-            what creates or updates the record and puts them on a night.
+            Everyone who used the /submit form. Started means they left their name and email but
+            haven't sent their work yet. Nothing here touches your contacts until you accept someone
+            or add them to the mailing list.
           </p>
         </div>
         <div className="sa-top-r">
-          <button className="sa-act" onClick={copyLink}>Copy the /showcase link</button>
+          <button className="sa-act" onClick={copyLink}>Copy the /submit link</button>
           <button className="sa-act" onClick={load} disabled={loading}>{loading ? "Loading…" : "Refresh"}</button>
         </div>
       </div>
@@ -372,29 +468,29 @@ export default function ShowcaseApplications({
         ))}
       </div>
 
-      {tab === "gallery" ? (
-        <OpenCallGallery events={events} showToast={showToast} />
-      ) : tab === "past" ? (
+      {tab === "past" ? (
         <PastParticipants contacts={contacts} events={events} entries={entries} invites={invites} loading={loading} openContact={openContact} openSurvey={openSurvey} showToast={showToast} />
       ) : loading ? (
         <div className="sa-empty"><b>Loading…</b></div>
       ) : shown.length === 0 ? (
         <div className="sa-empty">
-          <b>{tab === "new" ? "No new applications" : tab === "accepted" ? "Nobody accepted yet" : "Nothing passed"}</b>
+          <b>{{ started: "Nobody halfway through", new: "No new submissions", accepted: "Nobody accepted yet", passed: "Nothing passed" }[tab]}</b>
           <p>
-            {tab === "new"
-              ? "Share the link and applications land here. Accepted ones are on the Accepted tab."
-              : "Applications you act on move here."}
+            {tab === "started"
+              ? "People who leave their name and email but don't send their work show up here."
+              : tab === "new"
+                ? "Share the link and finished submissions land here. Accepted ones are on the Accepted tab."
+                : "Submissions you act on move here."}
           </p>
           {tab === "new" && (
             <div className="sa-link-box" style={{ justifyContent: "center", marginTop: 16, display: "inline-flex" }}>
-              <code>/showcase</code>
+              <code>/submit</code>
               <button className="sa-act" onClick={copyLink}>Copy link</button>
             </div>
           )}
         </div>
       ) : (
-        <div className="sa-list">{shown.map(card)}</div>
+        <div className="sa-list">{shown.map(tab === "started" ? startedCard : card)}</div>
       )}
 
       {accepting && (

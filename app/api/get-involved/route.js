@@ -2,7 +2,7 @@
 //
 //   POST  { name, email, interests[], message, instagram, how_heard }
 //
-// Same shape as /api/submit-list: no token, its own table (sprout_interest),
+// Same shape as /api/coming-soon: no token, its own table (sprout_interest),
 // never sprout_contacts. Hourly cap; a repeat send from the same email within the
 // hour is answered as success without a second row. No honeypot.
 

@@ -4,14 +4,12 @@
  * GalleryEntries.jsx — the staff side of the gallery submission form.
  *
  *   EventGalleryPanel  the popup behind an event's Gallery tile: link + every entry
- *   OpenCallGallery    the Showcase page tab: the standing open-call link, entries not
- *                      yet on a show (assign each to an event), and the /submit list
  *
  * Uses the CRM's global classes (btn, type-tag, fi) from CRMManager's STYLES.
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { fetchOpenCallGallery, assignGalleryEntry, deleteGalleryEntry } from "../lib/services";
+import { assignGalleryEntry, deleteGalleryEntry } from "../lib/services";
 import { pieceLine, readyLabel, moreLabel, galleryToText } from "../lib/galleryForm";
 
 const origin = () => (typeof window !== "undefined" ? window.location.origin : "");
@@ -137,85 +135,6 @@ export function EventGalleryPanel({ gallery, events, onCreate, onRotate, onAssig
         ? <p style={{ fontSize: 12, color: "var(--g500)", lineHeight: 1.7 }}>Nothing yet. Send the link above to your artists.</p>
         : <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {entries.map((en) => <GalleryEntryCard key={en.id} entry={en} events={events} onAssign={onAssign} onDelete={onDeleteEntry} />)}
-          </div>}
-    </div>
-  );
-}
-
-/** Showcase page tab: the open call. */
-export function OpenCallGallery({ events, showToast }) {
-  const [state, setState] = useState({ form: null, entries: [], list: [], loaded: false });
-  const load = useCallback(async () => {
-    const { data, error } = await fetchOpenCallGallery();
-    if (error) { console.error("fetchOpenCallGallery:", error); showToast?.("Could not load the open call", "err"); }
-    setState({ ...data, loaded: true });
-  }, [showToast]);
-  useEffect(() => { load(); }, [load]);
-
-  const today = new Date().toISOString().slice(0, 10);
-  const shows = (events || []).filter((e) => e.event_date && e.event_date >= today && e.status !== "cancelled")
-    .sort((a, b) => a.event_date.localeCompare(b.event_date));
-
-  const assign = async (entry, eventId) => {
-    const { error } = await assignGalleryEntry(entry.id, eventId);
-    if (error) { showToast?.("Could not move that", "err"); return; }
-    setState((s) => ({ ...s, entries: s.entries.filter((e) => e.id !== entry.id) }));
-    showToast?.("Moved to that show's Gallery tile ✓");
-  };
-  const remove = async (entry) => {
-    const { error } = await deleteGalleryEntry(entry.id);
-    if (error) { showToast?.("Could not delete that", "err"); return; }
-    setState((s) => ({ ...s, entries: s.entries.filter((e) => e.id !== entry.id) }));
-    showToast?.("Submission deleted");
-  };
-
-  if (!state.loaded) return <div className="sa-empty"><b>Loading…</b></div>;
-  const sent = state.list.filter((r) => r.sent_form_at).length;
-
-  return (
-    <div>
-      {state.form && (
-        <LinkBox label="Open-call gallery link (the one /submit emails)" url={`${origin()}/gallery/${state.form.token}`} showToast={showToast}
-          note="Anyone who signs up at /submit (the TV slide QR) gets this link by email automatically. Submissions land below until you put them on a show." />
-      )}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-        <div className="dp-sect-lbl" style={{ margin: 0 }}>{state.entries.length} waiting for a show</div>
-        <div style={{ marginLeft: "auto", display: "flex", gap: 7 }}>
-          {state.entries.length > 0 && <button className="btn btn-ghost btn-sm" onClick={() => copy(galleryToText(state.entries), "Copied ✓", showToast)}>Copy all as text</button>}
-          <button className="btn btn-ghost btn-sm" onClick={load}>↻ Refresh</button>
-        </div>
-      </div>
-      {state.entries.length === 0
-        ? <p style={{ fontSize: 12.5, color: "var(--g500)", lineHeight: 1.7, marginBottom: 22 }}>No open-call submissions yet.</p>
-        : <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 22 }}>
-            {state.entries.map((en) => <GalleryEntryCard key={en.id} entry={en} events={shows} onAssign={assign} onDelete={remove} />)}
-          </div>}
-
-      <div className="dp-sect-lbl" style={{ marginBottom: 8 }}>
-        Email list from /submit · {state.list.length} signed up · {sent} sent the form
-      </div>
-      {state.list.length === 0
-        ? <p style={{ fontSize: 12.5, color: "var(--g500)" }}>Nobody yet.</p>
-        : <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
-              <thead><tr style={{ textAlign: "left", color: "var(--g500)", fontSize: 11 }}>
-                <th style={{ padding: "6px 8px" }}>Name</th><th style={{ padding: "6px 8px" }}>Email</th>
-                <th style={{ padding: "6px 8px" }}>Makes</th><th style={{ padding: "6px 8px" }}>Instagram</th>
-                <th style={{ padding: "6px 8px" }}>Form sent</th><th style={{ padding: "6px 8px" }}>Signed up</th>
-              </tr></thead>
-              <tbody>
-                {state.list.map((r) => (
-                  <tr key={r.id} style={{ borderTop: "1px solid var(--g200)" }}>
-                    <td style={{ padding: "6px 8px", fontWeight: 700 }}>{r.name}</td>
-                    <td style={{ padding: "6px 8px" }}>{r.email}</td>
-                    <td style={{ padding: "6px 8px" }}>{{ music: "Music", art: "Art", other: "Something else" }[r.role] || r.role}</td>
-                    <td style={{ padding: "6px 8px" }}>{r.instagram}</td>
-                    <td style={{ padding: "6px 8px" }}>{r.sent_form_at ? `✓ ${fmtDay(r.sent_form_at)}` : "Not sent"}</td>
-                    <td style={{ padding: "6px 8px" }}>{fmtDay(r.created_at)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>}
     </div>
   );

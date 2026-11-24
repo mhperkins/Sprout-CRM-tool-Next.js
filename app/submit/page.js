@@ -1,11 +1,15 @@
-import SubmitList from "@/components/SubmitList";
+import ShowcaseForm from "@/components/ShowcaseForm";
 
-// Call for submissions: the QR on the Sprout N Tell TV slide lands here.
+// The one public submission form for musicians, artists and makers. The Sprout N Tell
+// TV slide QR, flyers and /showcase all land here. ?t=<token> reopens someone's own
+// unfinished submission (the link in their reminder email).
 export const metadata = {
-  title: "Sprout Society | Show your work at Sprout N Tell",
-  description: "Artists and musicians: leave your email and we'll send you the Sprout N Tell submission form.",
+  title: "Show your work | Sprout Society",
+  description: "Musicians, artists and makers: submit your work to show at Sprout Society in Bushwick.",
 };
 
-export default function SubmitPage() {
-  return <SubmitList />;
+export default async function SubmitPage({ searchParams }) {
+  const sp = await searchParams;
+  const t = typeof sp?.t === "string" ? sp.t : "";
+  return <ShowcaseForm resumeToken={t} />;
 }
