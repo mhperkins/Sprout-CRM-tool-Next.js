@@ -12,7 +12,7 @@ const LOGO_WHITE = `${BRAND}/sprout-logo-white.png`;
 const FLOWER = "/brand/sprout-flower-icon.svg";
 
 const DONATE_URL = "https://givebutter.com/sproutspacedonors";
-const DISCORD_URL = "https://discord.gg/SUuDdrSAv";
+const DISCORD_URL = "https://discord.gg/CH93QSDwrD";
 
 const CSS = `
 @import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap");
