@@ -29,6 +29,8 @@ async function load(params) {
   try { form = await galleryFormByToken(token); }
   catch { return { res: fail("The form is temporarily unavailable. Please try again in a few minutes.", 503) }; }
   if (!form) return { res: fail("This link is not valid. Check with us for a fresh one.", 404) };
+  // The standing open call is retired; /submit is the one submission form now.
+  if (form.kind === "open") return { res: fail("This link has moved. Submit your work at /submit instead.", 410) };
   return { form };
 }
 

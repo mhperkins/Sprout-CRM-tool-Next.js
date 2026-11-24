@@ -1493,7 +1493,7 @@ function EventDetail({event,contacts,onClose,onUpdate,onOpenFull,onContactClick,
    same as before, so every setView("contacts") / ?view=showcase link keeps working. */
 const NAV_GROUPS = {
   people:   [{id:"contacts",label:"Contacts"},{id:"orgs",label:"Organizations"},{id:"members",label:"Members"}],
-  inbox:    [{id:"inbox",label:"Email"},{id:"showcase",label:"Showcase"},{id:"interest",label:"Get Involved"}],
+  inbox:    [{id:"inbox",label:"Email"},{id:"showcase",label:"Submissions"},{id:"interest",label:"Get Involved"}],
   impact:   [{id:"grants",label:"Grant Metrics"},{id:"survey",label:"Surveys"}],
   settings: [{id:"settings",label:"Organization"},{id:"import",label:"Import JSON"}],
 };

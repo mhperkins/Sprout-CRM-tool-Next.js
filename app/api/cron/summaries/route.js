@@ -7,13 +7,18 @@
 // "Waiting on you" list of unanswered email (lib/inboxWatch.js). Skipped only when both
 // days are empty on the Sprout calendar AND nobody is waiting.
 //
+// Also: /submit reminders. Anyone who stopped after step 1 gets one email on day 3 and
+// one on day 14, sent between 10am and 8pm New York time. Each is claimed before it
+// sends (see lib/showcaseDb.js) and given back if the send fails.
+//
 // Auth: pg_cron sends the Vault secret as a Bearer token; the route compares its sha256
 // with sprout_cron_keys. The plaintext never leaves the database.
 
 import { NextResponse } from "next/server";
 import { createHash, randomBytes, timingSafeEqual } from "crypto";
 import { svc, hasServiceKey } from "@/lib/portalDb";
-import { sendEmail } from "@/lib/notify";
+import { sendEmail, sendSubmitReminder } from "@/lib/notify";
+import { dueReminders, claimReminder, releaseReminder } from "@/lib/showcaseDb";
 import { fetchSproutEvents } from "@/lib/googleCalendar";
 import { buildMondayOverview, buildTodayTomorrow, DAY_BOARD_TO } from "@/lib/dayBoardSummary";
 import { fetchWaiting } from "@/lib/inboxWatch";
@@ -82,6 +87,14 @@ export async function POST(req) {
   const now = etParts();
   const out = {};
 
+  // Runs first and catches its own errors, so it never blocks the calendar emails
+  // and a calendar failure below never skips it.
+  if (now.minutes >= 10 * 60 && now.minutes < 20 * 60) {
+    out.submitReminders = await sendSubmitReminders(new URL(req.url).origin);
+  } else {
+    out.submitReminders = "not due";
+  }
+
   try {
     if (weekdayIndex(now.date) === 0 && now.minutes >= 8 * 60) {
       out.monday = await sendOnce("monday", now.date, async () =>
@@ -120,4 +133,22 @@ export async function POST(req) {
   }
 
   return NextResponse.json(out);
+}
+
+async function sendSubmitReminders(origin) {
+  let rows;
+  try { rows = await dueReminders(); }
+  catch (e) { console.error("submit reminders — lookup failed:", e?.message || e); return "check failed"; }
+  let sent = 0;
+  for (const row of rows.slice(0, 20)) {
+    if (!(await claimReminder(row))) continue;
+    try {
+      await sendSubmitReminder({ name: row.name, email: row.email, url: `${origin}/submit?t=${encodeURIComponent(row.token)}` });
+      sent += 1;
+    } catch (e) {
+      await releaseReminder(row);
+      console.error(`submit reminder ${row.id} failed:`, e?.message || e);
+    }
+  }
+  return sent;
 }

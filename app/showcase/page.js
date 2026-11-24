@@ -1,13 +1,7 @@
-import ShowcaseForm from "@/components/ShowcaseForm";
+import { redirect } from "next/navigation";
 
-// The standing public link that replaces the Sprout N Tell Google Form. This one IS
-// meant to be found: it goes on flyers, the TV slide, Instagram and the sign-in page.
-export const metadata = {
-  title: "Showcase at Sprout N Tell | Sprout Society",
-  description:
-    "Apply to showcase your music or art at Sprout N Tell, a monthly showcase in Bushwick at Sprout Society.",
-};
-
+// /showcase was the old application link (still on flyers and the sign-in page).
+// Everything now goes through the one submission form.
 export default function ShowcasePage() {
-  return <ShowcaseForm />;
+  redirect("/submit");
 }
