@@ -14,7 +14,7 @@ export const QUICK_LINKS = [
   { label: "Instagram", note: "@sproutsocietyorg", url: "https://www.instagram.com/sproutsocietyorg" },
   { group: "Hosting & submissions" },
   { label: "Host an event", note: "Hosting / booking request", url: `${APP}/book` },
-  { label: "Submit your work", note: "Music, art, anything: we place it in an event", url: `${APP}/showcase` },
+  { label: "Submit your work", note: "Music, art, anything: we place it in an event", url: `${APP}/submit` },
 ];
 
 const CSS = `
