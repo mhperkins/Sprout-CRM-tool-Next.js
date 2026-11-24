@@ -12,16 +12,9 @@ export const QUICK_LINKS = [
   { label: "Discord", note: "Permanent invite, never expires", url: "https://discord.gg/CH93QSDwrD" },
   { label: "Get involved", note: "General interest form", url: `${APP}/get-involved` },
   { label: "Instagram", note: "@sproutsocietyorg", url: "https://www.instagram.com/sproutsocietyorg" },
-  { group: "Hosting & showcasing" },
+  { group: "Hosting & submissions" },
   { label: "Host an event", note: "Hosting / booking request", url: `${APP}/book` },
-  { label: "Showcase application", note: "Musicians and artists apply to play or show", url: `${APP}/showcase` },
-  { label: "Call for submissions", note: "Join the submissions list", url: `${APP}/submit` },
-  { label: "Gallery open call", note: "Submit art for the gallery", url: `${APP}/gallery/bfe8f9b0b4f6d7d196ea8e963dfb4f24` },
-  { group: "Support" },
-  { label: "Membership", note: "Day pass, monthly, annual", url: "https://givebutter.com/sproutmembership" },
-  { label: "Scholarship", note: "Membership scholarship", url: "https://givebutter.com/sproutscholarship" },
-  { label: "Donate", note: "Givebutter donation page", url: "https://givebutter.com/sproutspacedonors" },
-  { label: "Website", note: "Coming-soon page + email sign-up", url: `${APP}/coming-soon` },
+  { label: "Submit your work", note: "Music, art, anything: we place it in an event", url: `${APP}/showcase` },
 ];
 
 const CSS = `
