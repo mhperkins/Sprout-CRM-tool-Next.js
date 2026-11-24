@@ -1,0 +1,240 @@
+<title>Submit Form Wireframe</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: grey-box wireframe. Frames left to right in flow order, wrapping; desktop + 390px phone frames. */
+:root{
+  --bg:#f3f3f1; --fg:#1e1e1c; --muted:#6d6d68; --box:#ffffff; --line:#c9c9c4; --fill:#e4e4e0; --fill2:#d4d4cf;
+  --pick:#1e1e1c; --pickfg:#ffffff; --flag:#b8186f; --ok:#2f7a3a; --note:#fff6c9; --notefg:#4a3d00;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#171716; --fg:#ececea; --muted:#a1a19b; --box:#22221f; --line:#45453f; --fill:#2f2f2b; --fill2:#3c3c37;
+  --pick:#ececea; --pickfg:#171716; --flag:#ff6fb5; --ok:#79c987; --note:#3a3412; --notefg:#f2e6a6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#171716; --fg:#ececea; --muted:#a1a19b; --box:#22221f; --line:#45453f; --fill:#2f2f2b; --fill2:#3c3c37;
+  --pick:#ececea; --pickfg:#171716; --flag:#ff6fb5; --ok:#79c987; --note:#3a3412; --notefg:#f2e6a6; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:14px/1.45 Lato,system-ui,sans-serif;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+h1{font-size:22px;margin:0 0 4px}
+.lede{color:var(--muted);max-width:68ch;margin:0 0 20px}
+.sec{font-size:11px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:28px 0 10px}
+.row{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.frame{background:var(--box);border:1px solid var(--line);border-radius:10px;padding:18px;width:420px;max-width:100%;min-width:0}
+.frame.phone{width:340px}
+.frame.wide{width:860px}
+.cap{font-size:12px;font-weight:700;color:var(--muted);margin:0 0 10px;display:flex;justify-content:space-between;gap:8px}
+.logo{height:26px;width:110px;background:var(--fill2);border-radius:4px;margin-bottom:14px}
+.h{font-size:18px;font-weight:900;margin:0 0 4px}
+.p{color:var(--muted);margin:0 0 12px}
+.steps{display:flex;gap:6px;margin-bottom:14px}
+.steps span{flex:1;height:5px;border-radius:3px;background:var(--fill2)}
+.steps span.on{background:var(--pick)}
+.lbl{font-size:12px;font-weight:700;margin:10px 0 4px}
+.lbl i{font-weight:400;color:var(--muted);font-style:normal}
+.in{border:1px solid var(--line);background:var(--fill);border-radius:6px;padding:8px 10px;color:var(--muted);min-height:18px}
+.in.tall{min-height:64px}
+.in.err{border-color:var(--flag)}
+.errtxt{color:var(--flag);font-size:12px;margin-top:4px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px}
+.chip.on{background:var(--pick);color:var(--pickfg);border-color:var(--pick)}
+.linkrow{display:flex;gap:6px;margin-bottom:6px}
+.linkrow .in{flex:1;min-width:0}
+.x{border:1px solid var(--line);border-radius:6px;padding:8px 10px;color:var(--muted)}
+.add{font-size:13px;font-weight:700;margin-top:4px}
+.drop{border:2px dashed var(--line);border-radius:8px;padding:16px;text-align:center;color:var(--muted)}
+.file{display:flex;justify-content:space-between;background:var(--fill);border-radius:6px;padding:6px 10px;margin-top:6px;font-size:13px}
+.btn{display:block;text-align:center;background:var(--pick);color:var(--pickfg);border-radius:8px;padding:10px;font-weight:900;margin-top:16px}
+.btn.ghost{background:none;color:var(--fg);border:1px solid var(--line);font-weight:700;margin-top:8px}
+.saved{font-size:12px;color:var(--ok);margin-top:8px}
+.note{background:var(--note);color:var(--notefg);border-radius:6px;padding:8px 10px;font-size:12px;margin-top:12px}
+.mail{border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.mailhd{background:var(--fill);padding:8px 12px;font-size:12px;color:var(--muted)}
+.mailbd{padding:12px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:10px;flex-wrap:wrap}
+.tab{padding:6px 12px;font-size:13px;font-weight:700;color:var(--muted)}
+.tab.on{color:var(--fg);border-bottom:2px solid var(--fg)}
+.q{display:grid;grid-template-columns:1.3fr 1fr .8fr 1.2fr auto;gap:10px;align-items:center;padding:9px 6px;border-bottom:1px solid var(--line);font-size:13px}
+.q.hd{font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.pill{display:inline-block;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;background:var(--fill2)}
+.pill.s{background:var(--note);color:var(--notefg)}
+.mini{border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px;white-space:nowrap}
+.scroll{overflow-x:auto}
+.decide{max-width:72ch;background:var(--box);border:1px solid var(--line);border-radius:10px;padding:14px 18px}
+.decide li{margin:4px 0}
+</style>
+
+<h1>Submit form: one form, two steps</h1>
+<p class="lede">Replaces /submit, /showcase and the gallery open call. One address (<b>/submit</b>, so the printed QR codes keep working). Step 1 saves the email right away. Everything lands in the Showcase queue.</p>
+
+<div class="sec">Step 1 · captures the email</div>
+<div class="row">
+  <div class="frame">
+    <div class="cap"><span>A · Step 1, typical</span><span>desktop</span></div>
+    <div class="logo"></div>
+    <div class="steps"><span class="on"></span><span></span></div>
+    <div class="h">Show your work at Sprout</div>
+    <p class="p">Musicians, artists, makers: tell us who you are. We'll find the right event for you and write back with date options.</p>
+    <div class="lbl">What do you do?</div>
+    <div class="chips"><span class="chip">Music</span><span class="chip on">Art</span><span class="chip">Something else</span></div>
+    <div class="lbl">Your name</div><div class="in">Rosa Delgado</div>
+    <div class="lbl">Email</div><div class="in">rosa@example.com</div>
+    <div class="btn">Next: show us your work →</div>
+    <div class="note">Pressing Next saves her to the queue as <b>Started</b>.</div>
+  </div>
+
+  <div class="frame">
+    <div class="cap"><span>B · Step 1, missing info</span><span>desktop</span></div>
+    <div class="logo"></div>
+    <div class="steps"><span class="on"></span><span></span></div>
+    <div class="h">Show your work at Sprout</div>
+    <p class="p">Musicians, artists, makers: tell us who you are. We'll find the right event for you and write back with date options.</p>
+    <div class="lbl">What do you do?</div>
+    <div class="chips"><span class="chip">Music</span><span class="chip">Art</span><span class="chip">Something else</span></div>
+    <div class="errtxt">Pick one.</div>
+    <div class="lbl">Your name</div><div class="in">Rosa Delgado</div>
+    <div class="lbl">Email</div><div class="in err">rosa@example</div>
+    <div class="errtxt">That email looks incomplete. Check it and try again.</div>
+    <div class="btn">Next: show us your work →</div>
+  </div>
+
+  <div class="frame phone">
+    <div class="cap"><span>C · Step 1</span><span>390px</span></div>
+    <div class="logo"></div>
+    <div class="steps"><span class="on"></span><span></span></div>
+    <div class="h">Show your work at Sprout</div>
+    <p class="p">Tell us who you are. We'll find the right event and write back with dates.</p>
+    <div class="lbl">What do you do?</div>
+    <div class="chips"><span class="chip on">Music</span><span class="chip">Art</span><span class="chip">Something else</span></div>
+    <div class="lbl">Your name</div><div class="in">Jonah Reyes</div>
+    <div class="lbl">Email</div><div class="in">jonah@example.com</div>
+    <div class="btn">Next →</div>
+  </div>
+</div>
+
+<div class="sec">Step 2 · the work (all optional except the description)</div>
+<div class="row">
+  <div class="frame">
+    <div class="cap"><span>D · Step 2, typical</span><span>desktop</span></div>
+    <div class="logo"></div>
+    <div class="steps"><span class="on"></span><span class="on"></span></div>
+    <div class="h">Thanks, Rosa. Show us your work.</div>
+    <p class="p">Links are the most helpful. Uploads are optional.</p>
+    <div class="lbl">What would you show?</div>
+    <div class="in tall">Large acrylic portraits of Bushwick bodega cats, 4 pieces, 24×36. Ready to hang.</div>
+    <div class="lbl">Links to your work <i>(Instagram, Spotify, site, Bandcamp…)</i></div>
+    <div class="linkrow"><div class="in">instagram.com/rosapaints</div><div class="x">×</div></div>
+    <div class="linkrow"><div class="in">rosadelgado.art</div><div class="x">×</div></div>
+    <div class="add">＋ Add another link</div>
+    <div class="lbl">Upload audio or images <i>(optional, up to 3, 25MB each)</i></div>
+    <div class="drop">Drop files here or tap to choose</div>
+    <div class="file"><span>cat-portrait-1.jpg</span><span>×</span></div>
+    <div class="lbl">Instagram <i>(optional)</i></div><div class="in">@rosapaints</div>
+    <div class="lbl">Phone <i>(optional)</i></div><div class="in"></div>
+    <div class="lbl">Anything we should know? <i>(optional)</i></div><div class="in"></div>
+    <div class="btn">Send my submission</div>
+    <div class="btn ghost">← Back</div>
+  </div>
+
+  <div class="frame">
+    <div class="cap"><span>E · Step 2, too much content</span><span>desktop</span></div>
+    <div class="logo"></div>
+    <div class="steps"><span class="on"></span><span class="on"></span></div>
+    <div class="h">Thanks, Jonah. Show us your work.</div>
+    <div class="lbl">What would you show?</div>
+    <div class="in tall">Four-piece indie folk band (guitar, upright bass, fiddle, drums). We play 45-minute sets of originals plus a couple of covers. We need 2 vocal mics, a DI for the bass, and room for a small kit. We've played Baby's All Right, Pete's Candy Store and a lot of house shows, and we're putting out our second EP in February, so a release show would be amazing…</div>
+    <div class="lbl">Links to your work</div>
+    <div class="linkrow"><div class="in">open.spotify.com/artist/…</div><div class="x">×</div></div>
+    <div class="linkrow"><div class="in">jonahreyes.bandcamp.com</div><div class="x">×</div></div>
+    <div class="linkrow"><div class="in">youtube.com/watch?v=…</div><div class="x">×</div></div>
+    <div class="linkrow"><div class="in">instagram.com/jonahreyesband</div><div class="x">×</div></div>
+    <div class="add">＋ Add another link <i style="color:var(--muted);font-style:normal">(12 max)</i></div>
+    <div class="lbl">Upload audio or images</div>
+    <div class="file"><span>live-at-petes.mp3</span><span>×</span></div>
+    <div class="file"><span>band-photo.jpg</span><span>×</span></div>
+    <div class="file"><span>ep-cover.png</span><span>×</span></div>
+    <div class="p" style="margin-top:6px">3 of 3 files. Remove one to add another.</div>
+    <div class="btn">Send my submission</div>
+  </div>
+
+  <div class="frame phone">
+    <div class="cap"><span>F · Step 2</span><span>390px</span></div>
+    <div class="logo"></div>
+    <div class="steps"><span class="on"></span><span class="on"></span></div>
+    <div class="h">Show us your work</div>
+    <div class="lbl">What would you show?</div><div class="in tall"></div>
+    <div class="lbl">Links to your work</div>
+    <div class="linkrow"><div class="in">https://</div><div class="x">×</div></div>
+    <div class="add">＋ Add another link</div>
+    <div class="lbl">Upload <i>(optional)</i></div>
+    <div class="drop">Tap to choose files</div>
+    <div class="lbl">Instagram · Phone · Notes <i>(optional)</i></div>
+    <div class="in"></div>
+    <div class="btn">Send my submission</div>
+  </div>
+</div>
+
+<div class="sec">After · sent, or left halfway</div>
+<div class="row">
+  <div class="frame">
+    <div class="cap"><span>G · Sent</span><span>desktop</span></div>
+    <div class="logo"></div>
+    <div class="h">Got it, Rosa. Thank you!</div>
+    <p class="p">We read every submission and place people in the event that fits best. We'll email you with date options.</p>
+    <p class="p">Meanwhile, come say hi in our community:</p>
+    <div class="btn ghost">Join our Discord</div>
+    <div class="btn ghost">Follow @sproutsocietyorg</div>
+  </div>
+
+  <div class="frame">
+    <div class="cap"><span>H · Reminder email (only if they stop after step 1)</span><span>day 3, then day 14</span></div>
+    <div class="mail">
+      <div class="mailhd">From: Sprout Society · To: rosa@example.com<br>Subject: Finish your Sprout submission</div>
+      <div class="mailbd">
+        <p>Hi Rosa,</p>
+        <p>Thanks for starting a submission to show at Sprout. When you have a minute, add a few links to your work so we can find the right event for you:</p>
+        <div class="btn" style="margin:8px 0">Finish my submission</div>
+        <p>Your name and email are already filled in.</p>
+        <p>Max<br>Community Manager</p>
+      </div>
+    </div>
+    <div class="note">The button opens <b>her own</b> submission at step 2 (private link). Sent 3 days after she stops, again at 14 days, then never. Finishing stops the reminders.</div>
+  </div>
+
+  <div class="frame phone">
+    <div class="cap"><span>I · Reopened from the email</span><span>390px</span></div>
+    <div class="logo"></div>
+    <div class="steps"><span class="on"></span><span class="on"></span></div>
+    <div class="h">Welcome back, Rosa</div>
+    <p class="p">Pick up where you left off.</p>
+    <div class="lbl">What would you show?</div><div class="in tall"></div>
+    <div class="lbl">Links to your work</div>
+    <div class="linkrow"><div class="in">https://</div><div class="x">×</div></div>
+    <div class="btn">Send my submission</div>
+  </div>
+</div>
+
+<div class="sec">CRM · Showcase queue</div>
+<div class="row">
+  <div class="frame wide">
+    <div class="cap"><span>J · Showcase queue, Started tab</span><span>CRM, signed in</span></div>
+    <div class="tabs"><span class="tab on">Started (3)</span><span class="tab">New (5)</span><span class="tab">Accepted</span><span class="tab">Passed</span></div>
+    <div class="scroll">
+      <div style="min-width:640px">
+        <div class="q hd"><span>Name</span><span>Email</span><span>Type</span><span>Status</span><span></span></div>
+        <div class="q"><span>Rosa Delgado</span><span>rosa@example.com</span><span>Art</span><span><span class="pill s">Started 11/10 · reminders 11/13, 11/24</span></span><span class="mini">Add to mailing list</span></div>
+        <div class="q"><span>Ada Kim</span><span>ada@example.com</span><span>Music</span><span><span class="pill s">Started 11/20 · reminder 11/23</span></span><span class="mini">✓ On mailing list</span></div>
+        <div class="q"><span>Mara Lin</span><span>mara@example.com</span><span>Something else</span><span><span class="pill s">Started today</span></span><span class="mini">Add to mailing list</span></div>
+      </div>
+    </div>
+    <div class="note">Finished submissions move to <b>New</b> automatically and look the way Showcase applications do today (pitch, links, audio, images, Accept / Pass). Accept is still the only thing that creates a contact.</div>
+  </div>
+</div>
+
+<div class="sec">Max's calls (2026-11-24)</div>
+<div class="decide">
+  <ul>
+    <li><b>Mailing list:</b> manual. "Add to mailing list" on a row creates a Community contact (an email already in the CRM shows "In CRM").</li>
+    <li><b>Reminders:</b> day 3 and day 14, then stop.</li>
+    <li><b>Step 2:</b> the description is the only required field.</li>
+    <li><b>Old lists:</b> existing /submit sign-ups and gallery open-call entries move into the queue.</li>
+  </ul>
+</div>

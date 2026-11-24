@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-11-24: One submission form, Links panel, Nyrie/CAMBA
+
+Merges `52f5f2d` (`quick-links`) + `27adcef` (`submit-form`); migration `sprout_showcase_started_step`. Effort: medium.
+
+- **Why:** showcase, call for submissions and the gallery open call were three forms and three lists. Max: "we just want people's submissions," then decide which event fits. He also wanted the email captured even when someone doesn't finish.
+- **One two-step form at `/submit`:** step 1 (what you do, name, email) saves a Started row with a private token; step 2 (description required, links/uploads/Instagram/phone/notes optional) finishes it and alerts Max. `/showcase` and the old open-call gallery link redirect to `/submit`.
+- **Reminders:** day 3 and day 14 to anyone who stopped after step 1, from the existing 15-minute cron (10am to 8pm ET), claim-first, one email per due point.
+- **CRM:** Showcase tab renamed Submissions; new Started tab with a manual, create-only Add to mailing list (Max chose manual for spam reasons), Copy their finish link, Delete. Gallery (open call) tab, the `/submit` sign-up list and their code removed. Joseph Acosta, Beth Graybill and Zach Seals moved into Started with no auto reminders.
+- **Links panel:** floating 🔗 Links button on every CRM page with the general links staff send (Discord, Get involved, Instagram, Host an event, Submit your work).
+- **Data:** Nyrie Smith + CAMBA created with the 13-week LGBTQ+ youth arts workshop meeting; Day Board tasks for Nyrie (11/30), Instagram bio links (11/30) and Aris (12/4).
+- **Verified:** build passes; local production checks of every API path (hostile fields ignored, foreign files stripped, double finish safe, redirects); reminder timing tested on backdated rows; form screenshotted at 1200 and 390px with no sideways scroll; live `/showcase` → `/submit`. CRM queue not clicked through (login wall). Test rows deleted; three test alerts went to maxperkins@.
+
+---
+
 ## 2026-11-19: Inbox › Email padding and overflow fix
 
 Merge `30a420c` (branch `inbox-padding`, commit `672e2d7`). Effort: low.

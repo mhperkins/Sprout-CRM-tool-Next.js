@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>One Submission Form</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#030000;--paper:#F7F7F6;--acid:#C6C902;--banana:#FAD100;--fuchsia:#E10098;--cyan:#73C4D6;--dim:#5f5f5c;--line:#e3e3dd}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);font-family:Lato,system-ui,sans-serif;color:var(--ink);display:flex;justify-content:center;padding:32px 16px}
+.slide{width:1200px;max-width:100%;background:var(--paper);border-radius:14px;overflow:hidden}
+.top{background:var(--ink);color:#fff;padding:28px 36px 22px;border-bottom:5px solid var(--acid)}
+.eyebrow{font-size:12px;font-weight:900;letter-spacing:2.5px;text-transform:uppercase;color:var(--acid)}
+h1{font-size:38px;font-weight:900;margin:8px 0 6px;letter-spacing:-.02em}
+.sub{color:#cfcfca;font-size:15px;max-width:80ch}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.badge{font-size:12px;font-weight:700;border-radius:999px;padding:5px 12px;background:#1c1c1a;color:#fff;border:1px solid #333}
+.badge.a{background:var(--acid);color:var(--ink);border-color:var(--acid)}
+.badge.c{background:var(--cyan);color:var(--ink);border-color:var(--cyan)}
+.body{padding:26px 36px 32px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+.card h3{margin:0 0 8px;font-size:16px;font-weight:900;display:flex;gap:8px;align-items:center}
+.ic{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;font-size:15px;flex:0 0 auto}
+.card ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.55;color:#2c2c26}
+.card li{margin:3px 0}
+.flow{grid-column:1/-1;display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+.step{flex:1;min-width:160px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.step b{display:block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--fuchsia);margin-bottom:4px}
+.step span{font-size:13.5px}
+.arrow{align-self:center;font-weight:900;color:var(--dim)}
+.foot{grid-column:1/-1;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12.5px;color:var(--dim);border-top:1px solid var(--line);padding-top:14px}
+code{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:#eeeee9;padding:1px 5px;border-radius:4px}
+@media(max-width:820px){.body{grid-template-columns:1fr}}
+</style></head>
+<body><div class="slide">
+  <div class="top">
+    <div class="eyebrow">Sprout CRM · Delivered 2026-11-24</div>
+    <h1>One submission form, two steps</h1>
+    <div class="sub">Showcase, call for submissions and the gallery open call are now one form at <b>/submit</b>. We keep every email, even from people who stop halfway, and staff place people in events later.</div>
+    <div class="badges">
+      <span class="badge a">main · 27adcef</span>
+      <span class="badge">merge 52f5f2d · quick-links</span>
+      <span class="badge">migration sprout_showcase_started_step</span>
+      <span class="badge c">Effort: medium</span>
+      <span class="badge">Live: /showcase → /submit</span>
+    </div>
+  </div>
+  <div class="body">
+    <div class="flow">
+      <div class="step"><b>Step 1</b><span>Music / Art / Something else, name, email → saved as <b>Started</b></span></div>
+      <div class="arrow">→</div>
+      <div class="step"><b>Step 2</b><span>What you'd show (required), links, uploads → <b>New</b> + alert to Max</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><b>Stopped?</b><span>Reminder on day 3 and day 14 with a link back to their own submission</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><b>Queue</b><span>Accept puts them on a night. Started rows get a manual Add to mailing list</span></div>
+    </div>
+    <div class="card">
+      <h3><span class="ic" style="background:var(--fuchsia);color:#fff">✎</span>Public form</h3>
+      <ul>
+        <li><code>/submit</code> keeps the printed QR codes working</li>
+        <li><code>/showcase</code> and the old gallery link redirect here</li>
+        <li>Private <code>/submit?t=…</code> reopens step 2</li>
+        <li>Name and email locked to step 1; uploads only from our bucket</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><span class="ic" style="background:var(--acid)">⏰</span>Reminders</h3>
+      <ul>
+        <li>Runs in the 15-minute cron, 10am to 8pm ET</li>
+        <li>Claimed before sending, given back on failure</li>
+        <li>A missed day 3 sends one email at day 14, never two</li>
+        <li>Tested on backdated rows, then cleaned up</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><span class="ic" style="background:var(--cyan)">☰</span>CRM</h3>
+      <ul>
+        <li>Inbox tab renamed <b>Submissions</b>, new <b>Started</b> tab</li>
+        <li>Add to mailing list: manual, create-only Community contact</li>
+        <li>Gallery open-call tab and old <code>/submit</code> list retired</li>
+        <li>Joseph, Beth, Zach moved to Started, no auto emails</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><span class="ic" style="background:var(--ink);color:#fff">🔗</span>Links panel</h3>
+      <ul>
+        <li>Floating Links button on every CRM page</li>
+        <li>Discord, Get involved, Instagram, Host an event, Submit your work</li>
+        <li>Copies the production address</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><span class="ic" style="background:var(--banana)">★</span>Relationships</h3>
+      <ul>
+        <li>Nyrie Smith + CAMBA created; 13-week LGBTQ+ youth arts workshop</li>
+        <li>Max checks payment, storage, consent form with Danielle</li>
+        <li>Day Board: Nyrie + IG bio links 11/30, Aris 12/4</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><span class="ic" style="background:#e4f3ea;color:#15804a">✓</span>Verified</h3>
+      <ul>
+        <li>Build passes; every API path checked on a local production build</li>
+        <li>Screenshots at 1200 and 390px, no sideways scroll</li>
+        <li>Live redirect confirmed after deploy</li>
+        <li>Not clicked through in the CRM (login wall)</li>
+      </ul>
+    </div>
+    <div class="foot"><span>Next: open Inbox › Submissions › Started</span><span>Wireframe: docs/wireframes/2026-11-24_submit-form.html</span></div>
+  </div>
+</div></body></html>
